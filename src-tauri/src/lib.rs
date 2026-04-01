@@ -236,6 +236,7 @@ pub fn run() {
             commands::git_remote_list,
             commands::git_clone,
             commands::git_reset,
+            commands::git_show,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

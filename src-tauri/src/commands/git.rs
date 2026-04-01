@@ -320,3 +320,20 @@ pub async fn git_reset(path: String, files: Vec<String>) -> Result<(), String> {
     run_git(&path, &cmd)?;
     Ok(())
 }
+
+#[tauri::command]
+pub async fn git_show(path: String, file: String) -> Result<Vec<u8>, String> {
+    let rev_file = format!("HEAD:{}", file);
+    let output = Command::new("git")
+        .current_dir(&path)
+        .args(["show", &rev_file])
+        .output()
+        .map_err(|e| format!("Failed to execute git show: {}", e))?;
+
+    if output.status.success() {
+        Ok(output.stdout)
+    } else {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        Err(format!("git show error: {}", stderr.trim()))
+    }
+}

@@ -35,7 +35,7 @@ import './browser/web.main.js';
 //#region --- workbench services
 
 import './services/integrity/browser/integrityService.js';
-import './services/search/browser/searchService.js';
+import './services/search/browser/tauriSearchService.js';
 import './services/textfile/browser/browserTextFileService.js';
 import './services/keybinding/browser/keyboardLayoutService.js';
 import './services/extensions/browser/extensionService.js';

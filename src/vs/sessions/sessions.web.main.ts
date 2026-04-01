@@ -34,7 +34,7 @@ import './browser/web.main.js';
 //#region --- workbench services (browser equivalents of the electron services)
 
 import '../workbench/services/integrity/browser/integrityService.js';
-import '../workbench/services/search/browser/searchService.js';
+import '../workbench/services/search/browser/tauriSearchService.js';
 import '../workbench/services/textfile/browser/browserTextFileService.js';
 import '../workbench/services/keybinding/browser/keyboardLayoutService.js';
 import '../workbench/services/extensions/browser/extensionService.js';

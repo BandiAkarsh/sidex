@@ -5,18 +5,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Disposable } from '../../../../base/common/lifecycle.js';
+import type { IDisposable } from '../../../../base/common/lifecycle.js';
 import { Emitter } from '../../../../base/common/event.js';
 import { observableValue } from '../../../../base/common/observable.js';
 import type { IObservable } from '../../../../base/common/observable.js';
 import { URI } from '../../../../base/common/uri.js';
 import { ResourceTree } from '../../../../base/common/resourceTree.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
-import { basename } from '../../../../base/common/resources.js';
+import { basename, relativePath } from '../../../../base/common/resources.js';
 import { Schemas } from '../../../../base/common/network.js';
 import { registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
 import type { IWorkbenchContribution } from '../../../common/contributions.js';
 import { ISCMService, ISCMProvider, ISCMResource, ISCMResourceGroup, ISCMResourceDecorations, ISCMActionButtonDescriptor } from '../common/scm.js';
-import type { ISCMHistoryProvider } from '../common/history.js';
+import type { ISCMHistoryProvider, ISCMHistoryOptions, ISCMHistoryItem, ISCMHistoryItemChange, ISCMHistoryItemRef, ISCMHistoryItemRefsChangeEvent } from '../common/history.js';
+import type { CancellationToken } from '../../../../base/common/cancellation.js';
 import type { ISCMArtifactProvider } from '../common/artifact.js';
 import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
 import { IModelService } from '../../../../editor/common/services/model.js';
@@ -26,6 +28,9 @@ import { ILogService } from '../../../../platform/log/common/log.js';
 import { CommandsRegistry } from '../../../../platform/commands/common/commands.js';
 import { MenuId, MenuRegistry } from '../../../../platform/actions/common/actions.js';
 import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
+import { IFileService } from '../../../../platform/files/common/files.js';
+import { FileSystemProviderCapabilities, FileType, FilePermission } from '../../../../platform/files/common/files.js';
+import type { IFileSystemProvider, IStat, IFileDeleteOptions, IFileOverwriteOptions, IFileWriteOptions, IWatchOptions, IFileChange } from '../../../../platform/files/common/files.js';
 import type { ITextModel } from '../../../../editor/common/model.js';
 import type { Command } from '../../../../editor/common/languages.js';
 import type { Event } from '../../../../base/common/event.js';
@@ -41,6 +46,13 @@ interface TauriGitChange {
 interface TauriGitStatus {
 	branch: string;
 	changes: TauriGitChange[];
+}
+
+interface TauriGitLogEntry {
+	hash: string;
+	message: string;
+	author: string;
+	date: string;
 }
 
 let _invoke: ((cmd: string, args?: Record<string, unknown>) => Promise<unknown>) | undefined;
@@ -66,6 +78,65 @@ async function invokeGit<T>(cmd: string, args?: Record<string, unknown>): Promis
 	return invoke(cmd, args) as Promise<T>;
 }
 
+// ─── Git Original File System Provider ──────────────────────────────────────
+
+const GIT_ORIGINAL_SCHEME = 'git-original';
+
+class TauriGitOriginalFileProvider implements IFileSystemProvider {
+
+	readonly capabilities = FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.Readonly;
+
+	private readonly _onDidChangeCapabilities = new Emitter<void>();
+	readonly onDidChangeCapabilities: Event<void> = this._onDidChangeCapabilities.event;
+
+	private readonly _onDidChangeFile = new Emitter<readonly IFileChange[]>();
+	readonly onDidChangeFile: Event<readonly IFileChange[]> = this._onDidChangeFile.event;
+
+	constructor(private readonly _workspaceRoot: string) {}
+
+	watch(_resource: URI, _opts: IWatchOptions): IDisposable {
+		return Disposable.None;
+	}
+
+	async stat(_resource: URI): Promise<IStat> {
+		return { type: FileType.File, ctime: 0, mtime: 0, size: 0, permissions: FilePermission.Readonly };
+	}
+
+	async mkdir(_resource: URI): Promise<void> {
+		throw new Error('git-original is read-only');
+	}
+
+	async readdir(_resource: URI): Promise<[string, FileType][]> {
+		return [];
+	}
+
+	async delete(_resource: URI, _opts: IFileDeleteOptions): Promise<void> {
+		throw new Error('git-original is read-only');
+	}
+
+	async rename(_from: URI, _to: URI, _opts: IFileOverwriteOptions): Promise<void> {
+		throw new Error('git-original is read-only');
+	}
+
+	async readFile(resource: URI): Promise<Uint8Array> {
+		const filePath = resource.path.startsWith('/') ? resource.path.slice(1) : resource.path;
+		const invoke = await getTauriInvoke();
+		if (!invoke) {
+			return new Uint8Array();
+		}
+		try {
+			const bytes = await invoke('git_show', { path: this._workspaceRoot, file: filePath }) as number[];
+			return new Uint8Array(bytes);
+		} catch {
+			return new Uint8Array();
+		}
+	}
+
+	async writeFile(_resource: URI, _content: Uint8Array, _opts: IFileWriteOptions): Promise<void> {
+		throw new Error('git-original is read-only');
+	}
+}
+
 // ─── SCM Resource ───────────────────────────────────────────────────────────
 
 class TauriGitResource implements ISCMResource {
@@ -81,16 +152,40 @@ class TauriGitResource implements ISCMResource {
 		readonly sourceUri: URI,
 		private readonly _status: string,
 		private readonly _staged: boolean,
+		private readonly _workspaceRootUri: URI,
 	) {
 		this.decorations = TauriGitResource._decorationForStatus(_status);
 		this.contextValue = _staged ? 'staged' : 'unstaged';
-		this.command = undefined;
-		this.multiDiffEditorOriginalUri = undefined;
-		this.multiDiffEditorModifiedUri = undefined;
+
+		const relPath = relativePath(_workspaceRootUri, sourceUri) ?? sourceUri.path;
+
+		if (_status === 'untracked' || _status === 'added') {
+			this.command = { id: 'tauri-git.openFile', title: 'Open File' };
+			this.multiDiffEditorOriginalUri = undefined;
+			this.multiDiffEditorModifiedUri = sourceUri;
+		} else if (_status === 'deleted') {
+			const originalUri = URI.from({ scheme: GIT_ORIGINAL_SCHEME, path: `/${relPath}` });
+			this.command = { id: 'tauri-git.openDiff', title: 'Open Changes' };
+			this.multiDiffEditorOriginalUri = originalUri;
+			this.multiDiffEditorModifiedUri = undefined;
+		} else {
+			const originalUri = URI.from({ scheme: GIT_ORIGINAL_SCHEME, path: `/${relPath}` });
+			this.command = { id: 'tauri-git.openDiff', title: 'Open Changes' };
+			this.multiDiffEditorOriginalUri = originalUri;
+			this.multiDiffEditorModifiedUri = sourceUri;
+		}
 	}
 
 	async open(_preserveFocus: boolean): Promise<void> {
-		// TODO: open diff editor via Tauri git_diff
+		const commandService = (globalThis as any).__sidex_commandService;
+		if (!commandService) {
+			return;
+		}
+		if (this.command?.id === 'tauri-git.openDiff') {
+			await commandService.executeCommand('tauri-git.openDiff', this);
+		} else {
+			await commandService.executeCommand('tauri-git.openFile', this);
+		}
 	}
 
 	private static _decorationForStatus(status: string): ISCMResourceDecorations {
@@ -159,6 +254,136 @@ class TauriGitResourceGroup implements ISCMResourceGroup {
 	}
 }
 
+// ─── SCM History Provider ───────────────────────────────────────────────────
+
+class TauriGitHistoryProvider implements ISCMHistoryProvider {
+
+	private readonly _historyItemRef = observableValue<ISCMHistoryItemRef | undefined>(this, undefined);
+	readonly historyItemRef: IObservable<ISCMHistoryItemRef | undefined> = this._historyItemRef;
+
+	private readonly _historyItemRemoteRef = observableValue<ISCMHistoryItemRef | undefined>(this, undefined);
+	readonly historyItemRemoteRef: IObservable<ISCMHistoryItemRef | undefined> = this._historyItemRemoteRef;
+
+	private readonly _historyItemBaseRef = observableValue<ISCMHistoryItemRef | undefined>(this, undefined);
+	readonly historyItemBaseRef: IObservable<ISCMHistoryItemRef | undefined> = this._historyItemBaseRef;
+
+	private readonly _historyItemRefChanges = observableValue<ISCMHistoryItemRefsChangeEvent>(this, { added: [], removed: [], modified: [], silent: true });
+	readonly historyItemRefChanges: IObservable<ISCMHistoryItemRefsChangeEvent> = this._historyItemRefChanges;
+
+	constructor(
+		private readonly _rootPath: string,
+		private readonly _rootUri: URI,
+		private readonly _logService: ILogService,
+	) { }
+
+	updateRef(branch: string, headHash?: string): void {
+		this._historyItemRef.set({
+			id: `refs/heads/${branch}`,
+			name: branch,
+			revision: headHash,
+			icon: ThemeIcon.fromId('git-branch'),
+		}, undefined);
+	}
+
+	async provideHistoryItemRefs(_historyItemRefs?: string[], _token?: CancellationToken): Promise<ISCMHistoryItemRef[] | undefined> {
+		const current = this._historyItemRef.get();
+		return current ? [current] : [];
+	}
+
+	async provideHistoryItems(options: ISCMHistoryOptions, _token?: CancellationToken): Promise<ISCMHistoryItem[] | undefined> {
+		try {
+			const limit = typeof options.limit === 'number' ? options.limit : 50;
+			const entries = await invokeGit<TauriGitLogEntry[]>('git_log', {
+				path: this._rootPath,
+				limit: limit + (options.skip ?? 0),
+			});
+
+			if (!entries) {
+				return [];
+			}
+
+			const skip = options.skip ?? 0;
+			const sliced = skip > 0 ? entries.slice(skip) : entries;
+
+			return sliced.map(entry => ({
+				id: entry.hash,
+				parentIds: [],
+				subject: entry.message,
+				message: entry.message,
+				displayId: entry.hash.substring(0, 7),
+				author: entry.author,
+				timestamp: new Date(entry.date).getTime(),
+				references: [],
+			} satisfies ISCMHistoryItem));
+		} catch (err) {
+			this._logService.warn('[TauriGit] git_log failed', err);
+			return [];
+		}
+	}
+
+	async provideHistoryItemChanges(historyItemId: string, _historyItemParentId: string | undefined, _token?: CancellationToken): Promise<ISCMHistoryItemChange[] | undefined> {
+		try {
+			const parentRef = _historyItemParentId ?? `${historyItemId}~1`;
+
+			const invoke = await getTauriInvoke();
+			if (!invoke) {
+				return [];
+			}
+
+			let nameOutput: string;
+			try {
+				nameOutput = await invoke('git_run', {
+					path: this._rootPath,
+					args: ['diff-tree', '--no-commit-id', '-r', '--name-status', parentRef, historyItemId],
+				}) as string;
+			} catch {
+				// git_run may not exist; fall back to returning empty
+				nameOutput = await invoke('git_run', {
+					path: this._rootPath,
+					args: ['diff-tree', '--no-commit-id', '-r', '--name-only', historyItemId],
+				}) as string;
+			}
+
+			if (!nameOutput || !nameOutput.trim()) {
+				return [];
+			}
+
+			return nameOutput.trim().split('\n')
+				.filter(line => line.trim())
+				.map(line => {
+					const parts = line.split('\t');
+					const filePath = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+					const fileUri = URI.joinPath(this._rootUri, filePath.trim());
+					return {
+						uri: fileUri,
+						originalUri: fileUri.with({ scheme: 'git', query: parentRef }),
+						modifiedUri: fileUri.with({ scheme: 'git', query: historyItemId }),
+					} satisfies ISCMHistoryItemChange;
+				});
+		} catch (err) {
+			this._logService.warn('[TauriGit] provideHistoryItemChanges failed', err);
+			return [];
+		}
+	}
+
+	async resolveHistoryItem(historyItemId: string, _token?: CancellationToken): Promise<ISCMHistoryItem | undefined> {
+		const items = await this.provideHistoryItems({ limit: 100 });
+		return items?.find(item => item.id === historyItemId);
+	}
+
+	async resolveHistoryItemChatContext(_historyItemId: string, _token?: CancellationToken): Promise<string | undefined> {
+		return undefined;
+	}
+
+	async resolveHistoryItemChangeRangeChatContext(_historyItemId: string, _historyItemParentId: string, _path: string, _token?: CancellationToken): Promise<string | undefined> {
+		return undefined;
+	}
+
+	async resolveHistoryItemRefsCommonAncestor(_historyItemRefs: string[], _token?: CancellationToken): Promise<string | undefined> {
+		return undefined;
+	}
+}
+
 // ─── SCM Provider ───────────────────────────────────────────────────────────
 
 class TauriGitSCMProvider extends Disposable implements ISCMProvider {
@@ -201,6 +426,7 @@ class TauriGitSCMProvider extends Disposable implements ISCMProvider {
 	private readonly _stagedGroup: TauriGitResourceGroup;
 	private readonly _changesGroup: TauriGitResourceGroup;
 	readonly groups: TauriGitResourceGroup[];
+	private _historyProviderInstance: TauriGitHistoryProvider | undefined;
 
 	private readonly _onDidChangeResourceGroups = new Emitter<void>();
 	readonly onDidChangeResourceGroups: Event<void> = this._onDidChangeResourceGroups.event;
@@ -242,8 +468,21 @@ class TauriGitSCMProvider extends Disposable implements ISCMProvider {
 		this._register(this._changesGroup._onDidChangeResources);
 	}
 
-	async getOriginalResource(_uri: URI): Promise<URI | null> {
-		return null;
+	setupHistoryProvider(): void {
+		this._historyProviderInstance = new TauriGitHistoryProvider(
+			this.rootUri.fsPath,
+			this.rootUri,
+			this.logService,
+		);
+		this._historyProvider.set(this._historyProviderInstance, undefined);
+	}
+
+	async getOriginalResource(uri: URI): Promise<URI | null> {
+		const relPath = relativePath(this.rootUri, uri);
+		if (!relPath) {
+			return null;
+		}
+		return URI.from({ scheme: GIT_ORIGINAL_SCHEME, path: `/${relPath}` });
 	}
 
 	async refresh(): Promise<void> {
@@ -266,15 +505,25 @@ class TauriGitSCMProvider extends Disposable implements ISCMProvider {
 		this._branch = status.branch;
 		console.log('[TauriGit] Branch:', this._branch, 'Changes:', status.changes.length);
 
+		if (this._historyProviderInstance) {
+			try {
+				const logEntries = await invokeGit<TauriGitLogEntry[]>('git_log', { path: rootPath, limit: 1 });
+				const headHash = logEntries?.[0]?.hash;
+				this._historyProviderInstance.updateRef(this._branch, headHash);
+			} catch {
+				this._historyProviderInstance.updateRef(this._branch);
+			}
+		}
+
 		const stagedResources: ISCMResource[] = [];
 		const changesResources: ISCMResource[] = [];
 
 		for (const change of status.changes) {
 			const fileUri = URI.joinPath(this.rootUri, change.path);
 			if (change.staged) {
-				stagedResources.push(new TauriGitResource(this._stagedGroup, fileUri, change.status, true));
+				stagedResources.push(new TauriGitResource(this._stagedGroup, fileUri, change.status, true, this.rootUri));
 			} else {
-				changesResources.push(new TauriGitResource(this._changesGroup, fileUri, change.status, false));
+				changesResources.push(new TauriGitResource(this._changesGroup, fileUri, change.status, false, this.rootUri));
 			}
 		}
 
@@ -322,6 +571,7 @@ class TauriGitContribution extends Disposable implements IWorkbenchContribution 
 		@ILanguageService private readonly languageService: ILanguageService,
 		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
 		@ILogService private readonly logService: ILogService,
+		@IFileService private readonly fileService: IFileService,
 	) {
 		super();
 		this._init();
@@ -373,10 +623,21 @@ class TauriGitContribution extends Disposable implements IWorkbenchContribution 
 		this._register(repository);
 		this._register(provider);
 
+		// Register the git-original file system provider for diff views
+		const originalProvider = new TauriGitOriginalFileProvider(rootPath);
+		try {
+			this._register(this.fileService.registerProvider(GIT_ORIGINAL_SCHEME, originalProvider));
+		} catch {
+			// Already registered from a previous init
+		}
+
 		// Set the commit message placeholder
 		repository.input.placeholder = `Message (⌘Enter to commit on "${provider.name}")`;
 
+		this._registerDiffCommands(provider, rootPath);
 		this._registerCommitCommand(provider, rootPath);
+
+		provider.setupHistoryProvider();
 
 		await provider.refresh();
 
@@ -389,6 +650,29 @@ class TauriGitContribution extends Disposable implements IWorkbenchContribution 
 				}
 			}
 		});
+	}
+
+	private _registerDiffCommands(provider: TauriGitSCMProvider, rootPath: string): void {
+		this._register(CommandsRegistry.registerCommand('tauri-git.openDiff', async (_accessor, ...args: any[]) => {
+			try {
+				const commandService = (globalThis as any).__sidex_commandService;
+				if (!commandService) { return; }
+
+				const resource = args[0];
+				const sourceUri: URI | undefined = resource?.sourceUri ?? resource;
+				if (!sourceUri) { return; }
+
+				const relPath = relativePath(provider.rootUri, sourceUri) ?? sourceUri.path;
+				const originalUri = URI.from({ scheme: GIT_ORIGINAL_SCHEME, path: `/${relPath}` });
+				const modifiedUri = sourceUri;
+				const fileName = basename(sourceUri);
+				const title = `${fileName} (Working Tree)`;
+
+				await commandService.executeCommand('vscode.diff', originalUri, modifiedUri, title);
+			} catch (err) {
+				console.error('[TauriGit] open diff failed:', err);
+			}
+		}));
 	}
 
 	private _registerCommitCommand(provider: TauriGitSCMProvider, rootPath: string): void {
@@ -452,7 +736,14 @@ class TauriGitContribution extends Disposable implements IWorkbenchContribution 
 				if (!status) { return; }
 				for (const change of status.changes) {
 					const fileUri = URI.joinPath(provider.rootUri, change.path);
-					await commandService.executeCommand('vscode.open', fileUri);
+					if (change.status === 'untracked' || change.status === 'added') {
+						await commandService.executeCommand('vscode.open', fileUri);
+					} else {
+						const relPath = change.path;
+						const originalUri = URI.from({ scheme: GIT_ORIGINAL_SCHEME, path: `/${relPath}` });
+						const fileName = basename(fileUri);
+						await commandService.executeCommand('vscode.diff', originalUri, fileUri, `${fileName} (Working Tree)`);
+					}
 				}
 			} catch (err) {
 				console.error('[TauriGit] open all changes failed', err);
@@ -492,7 +783,12 @@ class TauriGitContribution extends Disposable implements IWorkbenchContribution 
 				if (uri) {
 					const commandService = (globalThis as any).__sidex_commandService;
 					if (commandService) {
-						await commandService.executeCommand('vscode.open', uri);
+						const status = (resource as any)?._status;
+						if (status && status !== 'untracked' && status !== 'added' && status !== 'deleted') {
+							await commandService.executeCommand('tauri-git.openDiff', resource);
+						} else {
+							await commandService.executeCommand('vscode.open', uri);
+						}
 					}
 				}
 			} catch (err) {

@@ -307,6 +307,9 @@ import './contrib/output/browser/outputView.js';
 // Terminal
 import './contrib/terminal/terminal.all.js';
 
+// Tauri Terminal PTY Bridge
+import './contrib/terminal/browser/tauriTerminal.contribution.js';
+
 // External terminal
 import './contrib/externalTerminal/browser/externalTerminal.contribution.js';
 
