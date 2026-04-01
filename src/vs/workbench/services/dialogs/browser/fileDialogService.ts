@@ -28,7 +28,15 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 		return this.fileService.getProvider(Schemas.file) as HTMLFileSystemProvider;
 	}
 
+	private get isTauri(): boolean {
+		return !!(globalThis as any).__TAURI_INTERNALS__;
+	}
+
 	async pickFileFolderAndOpen(options: IPickAndOpenOptions): Promise<void> {
+		if (this.isTauri) {
+			return this._tauriPickFolderAndOpen(options);
+		}
+
 		const schema = this.getFileSystemSchema(options);
 
 		if (!options.defaultUri) {
@@ -48,6 +56,10 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 	}
 
 	async pickFileAndOpen(options: IPickAndOpenOptions): Promise<void> {
+		if (this.isTauri) {
+			return this._tauriPickFileAndOpen(options);
+		}
+
 		const schema = this.getFileSystemSchema(options);
 
 		if (!options.defaultUri) {
@@ -82,6 +94,10 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 	}
 
 	async pickFolderAndOpen(options: IPickAndOpenOptions): Promise<void> {
+		if (this.isTauri) {
+			return this._tauriPickFolderAndOpen(options);
+		}
+
 		const schema = this.getFileSystemSchema(options);
 
 		if (!options.defaultUri) {
@@ -93,6 +109,32 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 		}
 
 		throw new Error(localize('pickFolderAndOpen', "Can't open folders, try adding a folder to the workspace instead."));
+	}
+
+	private async _tauriPickFolderAndOpen(_options: IPickAndOpenOptions): Promise<void> {
+		try {
+			const { open } = await import('@tauri-apps/plugin-dialog');
+			const selected = await open({ directory: true, multiple: false, title: 'Open Folder' });
+			if (selected && typeof selected === 'string') {
+				const folderUri = URI.file(selected);
+				await this.openerService.open(folderUri, { openExternal: false });
+			}
+		} catch (e) {
+			console.error('[SideX] Failed to open folder dialog:', e);
+		}
+	}
+
+	private async _tauriPickFileAndOpen(_options: IPickAndOpenOptions): Promise<void> {
+		try {
+			const { open } = await import('@tauri-apps/plugin-dialog');
+			const selected = await open({ directory: false, multiple: false, title: 'Open File' });
+			if (selected && typeof selected === 'string') {
+				const fileUri = URI.file(selected);
+				await this.editorService.openEditor({ resource: fileUri, options: { pinned: true } });
+			}
+		} catch (e) {
+			console.error('[SideX] Failed to open file dialog:', e);
+		}
 	}
 
 	async pickWorkspaceAndOpen(options: IPickAndOpenOptions): Promise<void> {
