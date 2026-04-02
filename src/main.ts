@@ -39,7 +39,7 @@ async function boot() {
 		// The workspace provider tells VSCode what folder/workspace to open
 		workspaceProvider: {
 			workspace,
-			trusted: false,
+			trusted: true,
 			open: async (_workspace: any, _options: any) => {
 				// When VSCode asks to open a new workspace, reload with the folder param
 				if (_workspace && 'folderUri' in _workspace) {
@@ -71,11 +71,14 @@ async function boot() {
 			layout: { editors: {} },
 		},
 		configurationDefaults: {
-			'workbench.startupEditor': 'none',
+			'workbench.startupEditor': 'welcomePage',
 			'workbench.enableExperiments': false,
 			'workbench.iconTheme': 'vs-seti',
-			'workbench.colorTheme': 'Default Dark Modern',
+			'workbench.colorTheme': 'SideX Monochrome Dark',
 			'workbench.productIconTheme': 'Default',
+			'workbench.editor.showTabs': 'multiple',
+			'workbench.editor.enablePreview': true,
+			'workbench.editor.tabCloseButton': 'right',
 			'window.menuBarVisibility': 'hidden',
 			'window.titleBarStyle': 'custom',
 			'window.commandCenter': true,
@@ -117,14 +120,15 @@ async function boot() {
 			'editor.occurrencesHighlight': 'singleFile',
 			'workbench.editor.highlightModifiedTabs': true,
 			'workbench.tree.renderIndentGuides': 'always',
-			'security.workspace.trust.startupPrompt': 'once',
-			'security.workspace.trust.banner': 'untilDismissed',
+			'security.workspace.trust.startupPrompt': 'never',
+			'security.workspace.trust.banner': 'never',
+			'security.workspace.trust.enabled': false,
 		},
 	};
 
 	create(document.body, options);
 
-	// Wire up native macOS menu actions → VSCode commands
+	// Wire up native menu actions to VSCode commands
 	setupMenuActions();
 
 	console.log('[SideX] Workbench created' + (folderParam ? ` (folder: ${folderParam})` : ' (no folder)'), 'workspace:', workspace);
@@ -197,7 +201,7 @@ function setupMenuActions() {
 
 	(window as any).__sidex_menu_action = async (menuId: string) => {
 		if (menuId === 'toggle_dev_tools') {
-			console.log('[SideX] Dev tools: use Cmd+Alt+I (handled natively by Tauri)');
+			console.log('[SideX] Dev tools: use Ctrl+Shift+I / Cmd+Alt+I (handled natively by Tauri)');
 			return;
 		}
 

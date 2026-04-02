@@ -19,9 +19,7 @@
         "minHeight": 600,
         "resizable": true,
         "fullscreen": false,
-        "decorations": true,
-        "titleBarStyle": "Overlay",
-        "hiddenTitle": true
+        "decorations": true
       }
     ],
     "security": {
@@ -44,6 +42,16 @@
     ],
     "macOS": {
       "minimumSystemVersion": "10.15"
+    },
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      }
+    },
+    "linux": {
+      "deb": {
+        "depends": ["libwebkit2gtk-4.1-0", "libgtk-3-0"]
+      }
     }
   }
 }

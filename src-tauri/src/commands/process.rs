@@ -448,7 +448,7 @@ fn detect_shells() -> Vec<ShellInfo> {
             ("PowerShell", "powershell.exe"),
             ("PowerShell Core", "pwsh.exe"),
             ("Command Prompt", "cmd.exe"),
-            ("Git Bash", "C:\\Program Files\\Git\\bin\\bash.exe"),
+            ("Git Bash", "bash.exe"),
             ("WSL", "wsl.exe"),
         ]
     } else {
@@ -530,7 +530,13 @@ fn get_best_shell(preferred: Option<&str>) -> (String, String) {
     
     shells.first()
         .map(|s| (s.name.clone(), s.path.clone()))
-        .unwrap_or_else(|| ("sh".to_string(), "/bin/sh".to_string()))
+        .unwrap_or_else(|| {
+            if cfg!(target_os = "windows") {
+                ("PowerShell".to_string(), "powershell.exe".to_string())
+            } else {
+                ("sh".to_string(), "/bin/sh".to_string())
+            }
+        })
 }
 
 // ============================================================================
@@ -649,10 +655,19 @@ pub fn term_spawn(
     cmd.env("TERM_PROGRAM", "SideX");
     cmd.env("TERM_PROGRAM_VERSION", env!("CARGO_PKG_VERSION"));
 
-    // Copy essential environment
-    for key in ["HOME", "USER", "PATH", "LANG", "SHELL"] {
-        if let Ok(val) = std::env::var(key) {
-            cmd.env(key, val);
+    // Copy essential environment (platform-aware)
+    if cfg!(target_os = "windows") {
+        for key in ["PATH", "USERPROFILE", "USERNAME", "APPDATA", "LOCALAPPDATA",
+                     "HOMEDRIVE", "HOMEPATH", "COMSPEC", "SystemRoot", "HOME", "TEMP", "TMP"] {
+            if let Ok(val) = std::env::var(key) {
+                cmd.env(key, val);
+            }
+        }
+    } else {
+        for key in ["HOME", "USER", "PATH", "LANG", "SHELL"] {
+            if let Ok(val) = std::env::var(key) {
+                cmd.env(key, val);
+            }
         }
     }
     
@@ -663,9 +678,16 @@ pub fn term_spawn(
 
     // Set working directory
     let cwd_str = cwd.unwrap_or_else(|| {
-        std::env::var("HOME").or_else(|_| std::env::current_dir()
-            .map(|p| p.to_string_lossy().to_string()))
-            .unwrap_or_else(|_| ".".to_string())
+        if cfg!(target_os = "windows") {
+            std::env::var("USERPROFILE")
+                .or_else(|_| std::env::var("HOME"))
+                .or_else(|_| std::env::current_dir().map(|p| p.to_string_lossy().to_string()))
+                .unwrap_or_else(|_| ".".to_string())
+        } else {
+            std::env::var("HOME")
+                .or_else(|_| std::env::current_dir().map(|p| p.to_string_lossy().to_string()))
+                .unwrap_or_else(|_| ".".to_string())
+        }
     });
     cmd.cwd(&cwd_str);
 
@@ -1098,8 +1120,12 @@ pub fn term_set_cwd(
         .get_mut(&handle)
         .ok_or_else(|| format!("Terminal {:?} not found", handle))?;
 
-    // Send cd command via shell
-    let cd_cmd = format!("cd '{}'\n", cwd.replace('\\', "\\\\").replace('\'', "'\"'\"'"));
+    // Send cd command via shell (platform-aware quoting)
+    let cd_cmd = if cfg!(target_os = "windows") {
+        format!("cd /d \"{}\"\n", cwd.replace('"', "\"\""))
+    } else {
+        format!("cd '{}'\n", cwd.replace('\'', "'\"'\"'"))
+    };
     terminal.write(&cd_cmd)?;
     terminal.cwd = cwd;
     

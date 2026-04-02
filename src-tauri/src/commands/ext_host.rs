@@ -28,11 +28,15 @@ struct PortMessage {
 
 fn find_node() -> Result<String, String> {
     let candidates = if cfg!(target_os = "windows") {
-        vec!["node.exe", "node"]
+        vec![
+            "node.exe",
+            "node",
+        ]
     } else {
         vec![
             "node",
             "/usr/local/bin/node",
+            "/usr/bin/node",
             "/opt/homebrew/bin/node",
         ]
     };

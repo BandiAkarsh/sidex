@@ -52,14 +52,14 @@ pub fn task_spawn(
 
     let mut cmd = if use_shell {
         let shell_path = if cfg!(target_os = "windows") {
-            "cmd".to_string()
+            "powershell".to_string()
         } else {
             std::env::var("SHELL").unwrap_or_else(|_| "/bin/sh".to_string())
         };
 
         let mut c = Command::new(&shell_path);
         if cfg!(target_os = "windows") {
-            c.arg("/C");
+            c.args(&["-NoProfile", "-Command"]);
         } else {
             c.arg("-c");
         }
@@ -70,6 +70,13 @@ pub fn task_spawn(
             command.clone()
         };
         c.arg(&full_cmd);
+
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            c.creation_flags(0x08000000); // CREATE_NO_WINDOW
+        }
+
         c
     } else {
         let mut c = Command::new(&command);

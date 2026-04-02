@@ -63,13 +63,11 @@ pub fn terminal_spawn(
         .map_err(|e| format!("Failed to open PTY: {}", e))?;
 
     let shell_path = shell.unwrap_or_else(|| {
-        std::env::var("SHELL").unwrap_or_else(|_| {
-            if cfg!(target_os = "windows") {
-                "powershell.exe".to_string()
-            } else {
-                "/bin/zsh".to_string()
-            }
-        })
+        if cfg!(target_os = "windows") {
+            std::env::var("COMSPEC").unwrap_or_else(|_| "powershell.exe".to_string())
+        } else {
+            std::env::var("SHELL").unwrap_or_else(|_| "/bin/bash".to_string())
+        }
     });
 
     if !cfg!(target_os = "windows") {
@@ -123,25 +121,39 @@ pub fn terminal_spawn(
     if let Ok(home) = std::env::var("HOME") {
         cmd.env("HOME", &home);
     }
-    if let Ok(user) = std::env::var("USER") {
-        cmd.env("USER", &user);
+    if cfg!(target_os = "windows") {
+        if let Ok(profile) = std::env::var("USERPROFILE") {
+            cmd.env("USERPROFILE", &profile);
+            if std::env::var("HOME").is_err() {
+                cmd.env("HOME", &profile);
+            }
+        }
+        for key in &["USERNAME", "APPDATA", "LOCALAPPDATA", "HOMEDRIVE", "HOMEPATH", "COMSPEC", "SystemRoot"] {
+            if let Ok(val) = std::env::var(key) {
+                cmd.env(key, &val);
+            }
+        }
+    } else {
+        if let Ok(user) = std::env::var("USER") {
+            cmd.env("USER", &user);
+        }
     }
     if let Ok(path) = std::env::var("PATH") {
         cmd.env("PATH", &path);
     }
     if let Ok(lang) = std::env::var("LANG") {
         cmd.env("LANG", &lang);
-    } else {
+    } else if !cfg!(target_os = "windows") {
         cmd.env("LANG", "en_US.UTF-8");
     }
 
     if let Some(ref dir) = cwd {
         if !dir.is_empty() && std::path::Path::new(dir).is_dir() {
             cmd.cwd(dir);
-        } else if let Ok(home) = std::env::var("HOME") {
+        } else if let Some(home) = home_dir_string() {
             cmd.cwd(&home);
         }
-    } else if let Ok(home) = std::env::var("HOME") {
+    } else if let Some(home) = home_dir_string() {
         cmd.cwd(&home);
     }
 
@@ -326,9 +338,29 @@ pub fn terminal_get_pid(
     Ok(pid)
 }
 
+fn home_dir_string() -> Option<String> {
+    if cfg!(target_os = "windows") {
+        std::env::var("USERPROFILE").ok()
+            .or_else(|| std::env::var("HOME").ok())
+    } else {
+        std::env::var("HOME").ok()
+    }
+}
+
 #[tauri::command]
 pub fn get_default_shell() -> String {
-    std::env::var("SHELL").unwrap_or_else(|_| "/bin/zsh".to_string())
+    if cfg!(target_os = "windows") {
+        std::env::var("COMSPEC").unwrap_or_else(|_| "powershell.exe".to_string())
+    } else {
+        std::env::var("SHELL").unwrap_or_else(|_| {
+            for fb in &["/bin/bash", "/bin/zsh", "/bin/sh"] {
+                if std::path::Path::new(fb).exists() {
+                    return fb.to_string();
+                }
+            }
+            "/bin/sh".to_string()
+        })
+    }
 }
 
 #[tauri::command]
@@ -341,12 +373,16 @@ pub fn get_available_shells() -> Vec<ShellInfo> {
     let candidates: &[(&str, &str)] = if cfg!(target_os = "windows") {
         &[
             ("PowerShell", "powershell.exe"),
+            ("PowerShell Core", "pwsh.exe"),
             ("Command Prompt", "cmd.exe"),
+            ("Git Bash", "bash.exe"),
+            ("WSL", "wsl.exe"),
         ]
     } else {
         &[
             ("zsh", "/bin/zsh"),
             ("bash", "/bin/bash"),
+            ("bash", "/usr/bin/bash"),
             ("fish", "/usr/bin/fish"),
             ("fish", "/usr/local/bin/fish"),
             ("fish", "/opt/homebrew/bin/fish"),

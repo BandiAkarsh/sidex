@@ -14,18 +14,6 @@ use tauri::Manager;
 use tauri::menu::{Menu, MenuItemBuilder, SubmenuBuilder, PredefinedMenuItem};
 
 fn build_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
-    let sidex_menu = SubmenuBuilder::new(app, "SideX")
-        .item(&PredefinedMenuItem::about(app, Some("About SideX"), None)?)
-        .separator()
-        .item(&PredefinedMenuItem::services(app, None)?)
-        .separator()
-        .item(&PredefinedMenuItem::hide(app, None)?)
-        .item(&PredefinedMenuItem::hide_others(app, None)?)
-        .item(&PredefinedMenuItem::show_all(app, None)?)
-        .separator()
-        .item(&PredefinedMenuItem::quit(app, None)?)
-        .build()?;
-
     let file_menu = SubmenuBuilder::new(app, "File")
         .item(&MenuItemBuilder::with_id("new_file", "New File").accelerator("CmdOrCtrl+N").build(app)?)
         .item(&MenuItemBuilder::with_id("new_window", "New Window").accelerator("CmdOrCtrl+Shift+N").build(app)?)
@@ -87,7 +75,7 @@ fn build_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
         .item(&MenuItemBuilder::with_id("terminal", "Terminal").accelerator("CmdOrCtrl+`").build(app)?)
         .item(&MenuItemBuilder::with_id("debug_console", "Debug Console").accelerator("CmdOrCtrl+Shift+Y").build(app)?)
         .separator()
-        .item(&MenuItemBuilder::with_id("toggle_fullscreen", "Toggle Full Screen").accelerator("Ctrl+CmdOrCtrl+F").build(app)?)
+        .item(&MenuItemBuilder::with_id("toggle_fullscreen", "Toggle Full Screen").accelerator("F11").build(app)?)
         .item(&MenuItemBuilder::with_id("zoom_in", "Zoom In").accelerator("CmdOrCtrl+=").build(app)?)
         .item(&MenuItemBuilder::with_id("zoom_out", "Zoom Out").accelerator("CmdOrCtrl+-").build(app)?)
         .item(&MenuItemBuilder::with_id("reset_zoom", "Reset Zoom").accelerator("CmdOrCtrl+0").build(app)?)
@@ -125,8 +113,6 @@ fn build_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
     let window_menu = SubmenuBuilder::new(app, "Window")
         .item(&PredefinedMenuItem::minimize(app, None)?)
         .item(&PredefinedMenuItem::maximize(app, None)?)
-        .separator()
-        .item(&PredefinedMenuItem::fullscreen(app, None)?)
         .build()?;
 
     let help_menu = SubmenuBuilder::new(app, "Help")
@@ -141,8 +127,36 @@ fn build_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
         .item(&MenuItemBuilder::with_id("toggle_dev_tools", "Toggle Developer Tools").accelerator("CmdOrCtrl+Alt+I").build(app)?)
         .build()?;
 
-    Menu::with_items(app, &[
-        &sidex_menu,
+    #[cfg(target_os = "macos")]
+    let menu = {
+        let sidex_menu = SubmenuBuilder::new(app, "SideX")
+            .item(&PredefinedMenuItem::about(app, Some("About SideX"), None)?)
+            .separator()
+            .item(&PredefinedMenuItem::services(app, None)?)
+            .separator()
+            .item(&PredefinedMenuItem::hide(app, None)?)
+            .item(&PredefinedMenuItem::hide_others(app, None)?)
+            .item(&PredefinedMenuItem::show_all(app, None)?)
+            .separator()
+            .item(&PredefinedMenuItem::quit(app, None)?)
+            .build()?;
+
+        Menu::with_items(app, &[
+            &sidex_menu,
+            &file_menu,
+            &edit_menu,
+            &selection_menu,
+            &view_menu,
+            &go_menu,
+            &run_menu,
+            &terminal_menu,
+            &window_menu,
+            &help_menu,
+        ])?
+    };
+
+    #[cfg(not(target_os = "macos"))]
+    let menu = Menu::with_items(app, &[
         &file_menu,
         &edit_menu,
         &selection_menu,
@@ -152,7 +166,9 @@ fn build_menu(app: &tauri::AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
         &terminal_menu,
         &window_menu,
         &help_menu,
-    ])
+    ])?;
+
+    Ok(menu)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

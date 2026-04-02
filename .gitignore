@@ -1,6 +1,10 @@
 node_modules/
 dist/
 src-tauri/target/
+src-wasm/**/target/
+src-wasm/**/pkg/
+public/wasm/scroll/.gitignore
+public/wasm/scroll/package.json
 *.log
 .DS_Store
 extensions/
