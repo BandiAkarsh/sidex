@@ -22,6 +22,14 @@ pub struct GitLogEntry {
     pub date: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub parent_hashes: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub email: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub files_changed: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub insertions: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deletions: Option<u32>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -131,6 +139,10 @@ pub async fn git_log(path: String, limit: Option<u32>) -> Result<Vec<GitLogEntry
             author: chunk[2].to_string(),
             date: chunk[3].to_string(),
             parent_hashes: None,
+            email: None,
+            files_changed: None,
+            insertions: None,
+            deletions: None,
         })
         .collect();
 
@@ -354,28 +366,70 @@ pub async fn git_log_graph(path: String, limit: Option<u32>) -> Result<Vec<GitLo
         &path,
         &[
             "log",
-            "--format=%H%n%P%n%s%n%an%n%aI",
+            "--format=%H%n%P%n%s%n%an%n%ae%n%aI",
+            "--shortstat",
             &limit_str,
         ],
     )?;
 
-    let lines: Vec<&str> = output.lines().collect();
-    let entries = lines
-        .chunks(5)
-        .filter(|chunk| chunk.len() == 5)
-        .map(|chunk| GitLogEntry {
-            hash: chunk[0].to_string(),
-            message: chunk[2].to_string(),
-            author: chunk[3].to_string(),
-            date: chunk[4].to_string(),
-            parent_hashes: Some(
-                chunk[1]
-                    .split_whitespace()
-                    .map(|s| s.to_string())
-                    .collect(),
-            ),
-        })
-        .collect();
+    let mut entries = Vec::new();
+    let mut lines = output.lines().peekable();
+
+    while lines.peek().is_some() {
+        let hash = match lines.next() {
+            Some(h) if !h.is_empty() => h.to_string(),
+            _ => break,
+        };
+        let parents_line = lines.next().unwrap_or("");
+        let subject = lines.next().unwrap_or("").to_string();
+        let author = lines.next().unwrap_or("").to_string();
+        let email = lines.next().unwrap_or("").to_string();
+        let date = lines.next().unwrap_or("").to_string();
+
+        let mut files_changed: Option<u32> = None;
+        let mut insertions: Option<u32> = None;
+        let mut deletions: Option<u32> = None;
+
+        // Skip empty lines and parse shortstat line if present
+        while let Some(&next) = lines.peek() {
+            if next.is_empty() {
+                lines.next();
+                continue;
+            }
+            if next.contains("file") && next.contains("changed") {
+                let stat_line = lines.next().unwrap_or("");
+                for part in stat_line.split(',') {
+                    let part = part.trim();
+                    if part.contains("file") {
+                        files_changed = part.split_whitespace().next().and_then(|n| n.parse().ok());
+                    } else if part.contains("insertion") {
+                        insertions = part.split_whitespace().next().and_then(|n| n.parse().ok());
+                    } else if part.contains("deletion") {
+                        deletions = part.split_whitespace().next().and_then(|n| n.parse().ok());
+                    }
+                }
+                break;
+            }
+            break;
+        }
+
+        let parent_hashes: Vec<String> = parents_line
+            .split_whitespace()
+            .map(|s| s.to_string())
+            .collect();
+
+        entries.push(GitLogEntry {
+            hash,
+            message: subject,
+            author,
+            date,
+            parent_hashes: Some(parent_hashes),
+            email: if email.is_empty() { None } else { Some(email) },
+            files_changed,
+            insertions,
+            deletions,
+        });
+    }
 
     Ok(entries)
 }

@@ -14,6 +14,7 @@ import { ResourceTree } from '../../../../base/common/resourceTree.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
 import { basename, relativePath } from '../../../../base/common/resources.js';
 import { Schemas } from '../../../../base/common/network.js';
+import { MarkdownString } from '../../../../base/common/htmlContent.js';
 import { registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
 import type { IWorkbenchContribution } from '../../../common/contributions.js';
 import { ISCMService, ISCMProvider, ISCMResource, ISCMResourceGroup, ISCMResourceDecorations, ISCMActionButtonDescriptor } from '../common/scm.js';
@@ -29,6 +30,7 @@ import { CommandsRegistry } from '../../../../platform/commands/common/commands.
 import { MenuId, MenuRegistry } from '../../../../platform/actions/common/actions.js';
 import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
 import { IFileService } from '../../../../platform/files/common/files.js';
+import { IQuickInputService } from '../../../../platform/quickinput/common/quickInput.js';
 import { FileSystemProviderCapabilities, FileType, FilePermission } from '../../../../platform/files/common/files.js';
 import type { IFileSystemProvider, IStat, IFileDeleteOptions, IFileOverwriteOptions, IFileWriteOptions, IWatchOptions, IFileChange } from '../../../../platform/files/common/files.js';
 import type { ITextModel } from '../../../../editor/common/model.js';
@@ -36,6 +38,7 @@ import type { Command } from '../../../../editor/common/languages.js';
 import type { Event } from '../../../../base/common/event.js';
 import { IDecorationsService, IDecorationsProvider, IDecorationData } from '../../../services/decorations/common/decorations.js';
 import { registerColor } from '../../../../platform/theme/common/colorRegistry.js';
+import { historyItemRefColor, historyItemRemoteRefColor } from './scmHistory.js';
 
 // ─── Tauri invoke() bridge ──────────────────────────────────────────────────
 
@@ -54,8 +57,12 @@ interface TauriGitLogEntry {
 	hash: string;
 	message: string;
 	author: string;
+	email?: string;
 	date: string;
 	parent_hashes?: string[];
+	files_changed?: number;
+	insertions?: number;
+	deletions?: number;
 }
 
 let _invoke: ((cmd: string, args?: Record<string, unknown>) => Promise<unknown>) | undefined;
@@ -293,11 +300,30 @@ class TauriGitHistoryProvider implements ISCMHistoryProvider {
 		private readonly _logService: ILogService,
 	) { }
 
+	_githubUrl: string | undefined;
+
+	async _detectGitHubUrl(): Promise<string | undefined> {
+		try {
+			const invoke = await getTauriInvoke();
+			if (!invoke) { return undefined; }
+			const output = await invoke('git_run', {
+				path: this._rootPath,
+				args: ['remote', 'get-url', 'origin'],
+			}) as string;
+			const url = output.trim();
+			this._githubUrl = url;
+			return url;
+		} catch {
+			return undefined;
+		}
+	}
+
 	updateRef(branch: string, headHash?: string): void {
 		const newRef: ISCMHistoryItemRef = {
 			id: `refs/heads/${branch}`,
 			name: branch,
 			revision: headHash,
+			color: historyItemRefColor,
 			icon: ThemeIcon.fromId('git-branch'),
 		};
 
@@ -341,6 +367,7 @@ class TauriGitHistoryProvider implements ISCMHistoryProvider {
 					id: `refs/remotes/${remoteBranch}`,
 					name: remoteBranch,
 					revision: remoteHash,
+					color: historyItemRemoteRefColor,
 					icon: ThemeIcon.fromId('cloud'),
 				}, undefined);
 
@@ -385,12 +412,56 @@ class TauriGitHistoryProvider implements ISCMHistoryProvider {
 			const sliced = skip > 0 ? entries.slice(skip) : entries;
 
 			const currentRef = this._historyItemRef.get();
+			const remoteRef = this._historyItemRemoteRef.get();
 
 			return sliced.map((entry, index) => {
 				const references: ISCMHistoryItemRef[] = [];
 				if (index === 0 && skip === 0 && currentRef) {
 					references.push(currentRef);
 				}
+				if (index === 0 && skip === 0 && remoteRef) {
+					references.push(remoteRef);
+				}
+
+				const authorDate = new Date(entry.date);
+				const dateString = authorDate.toLocaleString(undefined, {
+					year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric'
+				});
+				const relativeDate = this._fromNow(authorDate);
+
+				const tooltip: MarkdownString[] = [];
+
+				// Section 1: Author + message
+				const authorMd = new MarkdownString('', { supportThemeIcons: true, supportHtml: true });
+				authorMd.appendMarkdown('$(account) [**');
+				authorMd.appendText(entry.author);
+				authorMd.appendMarkdown('**](mailto:');
+				authorMd.appendText(entry.email ?? entry.author);
+				authorMd.appendMarkdown(')');
+				if (!isNaN(authorDate.getTime())) {
+					authorMd.appendMarkdown(', $(history)');
+					authorMd.appendText(` ${relativeDate} (${dateString})`);
+				}
+				authorMd.appendMarkdown('\n\n');
+				authorMd.appendMarkdown(entry.message.replace(/!\[/g, '&#33;&#91;').replace(/\r\n|\r|\n/g, '\n\n'));
+				authorMd.appendMarkdown('\n\n---\n\n');
+				tooltip.push(authorMd);
+
+				// Section 2: Stats
+				if (entry.files_changed !== undefined) {
+					const statsMd = new MarkdownString('', { supportThemeIcons: true, supportHtml: true });
+					const fc = entry.files_changed;
+					statsMd.appendMarkdown(`<span>${fc === 1 ? `${fc} file changed` : `${fc} files changed`}</span>`);
+					if (entry.insertions) {
+						statsMd.appendMarkdown(`,&nbsp;<span style="color:var(--vscode-scmGraph-historyItemHoverAdditionsForeground);">${entry.insertions} insertion${entry.insertions === 1 ? '' : 's'}(+)</span>`);
+					}
+					if (entry.deletions) {
+						statsMd.appendMarkdown(`,&nbsp;<span style="color:var(--vscode-scmGraph-historyItemHoverDeletionsForeground);">${entry.deletions} deletion${entry.deletions === 1 ? '' : 's'}(-)</span>`);
+					}
+					statsMd.appendMarkdown('\n\n---\n\n');
+					tooltip.push(statsMd);
+				}
+
 				return {
 					id: entry.hash,
 					parentIds: entry.parent_hashes ?? [],
@@ -398,8 +469,16 @@ class TauriGitHistoryProvider implements ISCMHistoryProvider {
 					message: entry.message,
 					displayId: entry.hash.substring(0, 7),
 					author: entry.author,
-					timestamp: new Date(entry.date).getTime(),
+					authorEmail: entry.email,
+					authorIcon: ThemeIcon.fromId('account'),
+					timestamp: authorDate.getTime(),
+					statistics: entry.files_changed !== undefined ? {
+						files: entry.files_changed,
+						insertions: entry.insertions ?? 0,
+						deletions: entry.deletions ?? 0,
+					} : undefined,
 					references,
+					tooltip,
 				} satisfies ISCMHistoryItem;
 			});
 		} catch (err) {
@@ -469,6 +548,21 @@ class TauriGitHistoryProvider implements ISCMHistoryProvider {
 		return undefined;
 	}
 
+	private _fromNow(date: Date): string {
+		const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+		if (seconds < 60) { return 'just now'; }
+		const minutes = Math.floor(seconds / 60);
+		if (minutes < 60) { return `${minutes} minute${minutes === 1 ? '' : 's'} ago`; }
+		const hours = Math.floor(minutes / 60);
+		if (hours < 24) { return `${hours} hour${hours === 1 ? '' : 's'} ago`; }
+		const days = Math.floor(hours / 24);
+		if (days < 30) { return `${days} day${days === 1 ? '' : 's'} ago`; }
+		const months = Math.floor(days / 30);
+		if (months < 12) { return `${months} month${months === 1 ? '' : 's'} ago`; }
+		const years = Math.floor(months / 12);
+		return `${years} year${years === 1 ? '' : 's'} ago`;
+	}
+
 	async resolveHistoryItemRefsCommonAncestor(_historyItemRefs: string[], _token?: CancellationToken): Promise<string | undefined> {
 		if (_historyItemRefs.length < 2) {
 			return _historyItemRefs[0];
@@ -496,7 +590,7 @@ class TauriGitSCMProvider extends Disposable implements ISCMProvider {
 	readonly label = 'Git';
 	readonly name: string;
 	readonly rootUri: URI;
-	readonly iconPath = ThemeIcon.fromId('source-control');
+	readonly iconPath = ThemeIcon.fromId('repo');
 	readonly isHidden = false;
 	readonly inputBoxTextModel: ITextModel;
 
@@ -578,6 +672,10 @@ class TauriGitSCMProvider extends Disposable implements ISCMProvider {
 			this.logService,
 		);
 		this._historyProvider.set(this._historyProviderInstance, undefined);
+
+		this._historyProviderInstance._detectGitHubUrl().then(url => {
+			(this as any)._historyProviderGitHubUrl = url;
+		});
 	}
 
 	async getOriginalResource(uri: URI): Promise<URI | null> {
@@ -642,8 +740,8 @@ class TauriGitSCMProvider extends Disposable implements ISCMProvider {
 
 		this._statusBarCommands.set([{
 			id: 'tauri-git.checkoutTo',
-			title: `$(git-branch) ${this._branch}`,
-			tooltip: `Branch: ${this._branch}`,
+			title: `$(git-branch) ${this._branch}${total > 0 ? '*' : ''}`,
+			tooltip: `Branch: ${this._branch}${total > 0 ? ' (modified)' : ''}`,
 		}, {
 			id: 'tauri-git.sync',
 			title: '$(sync)',
@@ -652,6 +750,16 @@ class TauriGitSCMProvider extends Disposable implements ISCMProvider {
 
 		this._actionButton.set({
 			command: { id: 'tauri-git.commit', title: '$(check) Commit' },
+			secondaryCommands: [
+				[
+					{ id: 'tauri-git.commit', title: 'Commit' },
+					{ id: 'tauri-git.commitAmend', title: 'Commit (Amend)' },
+				],
+				[
+					{ id: 'tauri-git.commitAndPush', title: 'Commit & Push' },
+					{ id: 'tauri-git.commitAndSync', title: 'Commit & Sync' },
+				],
+			],
 			enabled: true,
 		}, undefined);
 
@@ -781,8 +889,10 @@ class TauriGitContribution extends Disposable implements IWorkbenchContribution 
 		@ILogService private readonly logService: ILogService,
 		@IFileService private readonly fileService: IFileService,
 		@IDecorationsService private readonly decorationsService: IDecorationsService,
+		@IQuickInputService quickInputService: IQuickInputService,
 	) {
 		super();
+		(globalThis as any).__sidex_quickInputService = quickInputService;
 		this._init();
 	}
 
@@ -1083,6 +1193,31 @@ CommandsRegistry.registerCommand('git.init', async () => {
 	}
 });
 
+CommandsRegistry.registerCommand('tauri-git.copyToClipboard', async (_accessor, content: string) => {
+	if (typeof content !== 'string') { return; }
+	try {
+		await navigator.clipboard.writeText(content);
+	} catch {
+		console.error('[TauriGit] clipboard write failed');
+	}
+});
+
+CommandsRegistry.registerCommand('tauri-git.openOnGitHub', async (_accessor, remoteUrl: string, hash: string) => {
+	try {
+		const match = remoteUrl.match(/github\.com[:/]([^/]+\/[^/.]+)/);
+		if (!match) { return; }
+		const commitUrl = `https://github.com/${match[1]}/commit/${hash}`;
+		const openerService = (globalThis as any).__sidex_openerService;
+		if (openerService) {
+			await openerService.open(URI.parse(commitUrl), { openExternal: true });
+		} else {
+			window.open(commitUrl, '_blank');
+		}
+	} catch (err) {
+		console.error('[TauriGit] open on GitHub failed:', err);
+	}
+});
+
 registerWorkbenchContribution2(
 	TauriGitContribution.ID,
 	TauriGitContribution,
@@ -1145,11 +1280,116 @@ CommandsRegistry.registerCommand('tauri-git.clone', async () => {
 CommandsRegistry.registerCommand('tauri-git.checkoutTo', async () => {
 	const path = getWorkspacePath();
 	if (!path) { return; }
-	const branch = window.prompt('Branch name to checkout:');
-	if (!branch) { return; }
 	try {
-		await invokeGit('git_checkout', { path, branch });
-		console.log('[TauriGit] checked out', branch);
+		const invoke = await getTauriInvoke();
+		if (!invoke) { return; }
+
+		const quickInputService = (globalThis as any).__sidex_quickInputService;
+		if (!quickInputService) { return; }
+
+		// Get local branches
+		let branchOutput = '';
+		try {
+			branchOutput = ((await invoke('git_run', {
+				path, args: ['branch', '--format=%(refname:short)|%(objectname:short)|%(committerdate:relative)|%(authorname)|%(subject)']
+			})) as string).trim();
+		} catch { /* no branches */ }
+
+		// Get remote branches
+		let remoteOutput = '';
+		try {
+			remoteOutput = ((await invoke('git_run', {
+				path, args: ['branch', '-r', '--format=%(refname:short)|%(objectname:short)|%(committerdate:relative)|%(authorname)|%(subject)']
+			})) as string).trim();
+		} catch { /* no remotes */ }
+
+		const items: any[] = [];
+
+		items.push({ label: '$(add) Create new branch...', branch: '__create__', alwaysShow: true });
+		items.push({ label: '$(add) Create new branch from...', branch: '__create_from__', alwaysShow: true });
+		items.push({ label: '$(git-compare) Checkout detached...', branch: '__detached__', alwaysShow: true });
+
+		if (branchOutput) {
+			items.push({ type: 'separator', label: 'branches' });
+			for (const line of branchOutput.split('\n')) {
+				const parts = line.split('|');
+				const name = parts[0] || '';
+				if (!name) { continue; }
+				items.push({
+					label: `$(git-branch) ${name}`,
+					description: parts[2] || '',
+					detail: `${parts[3] || ''} • ${parts[1] || ''} • ${parts[4] || ''}`,
+					branch: name,
+				});
+			}
+		}
+
+		if (remoteOutput) {
+			items.push({ type: 'separator', label: 'remote branches' });
+			for (const line of remoteOutput.split('\n')) {
+				const parts = line.split('|');
+				const name = parts[0] || '';
+				if (!name || name.includes('HEAD')) { continue; }
+				items.push({
+					label: `$(cloud) ${name}`,
+					description: parts[2] || '',
+					detail: `${parts[3] || ''} • ${parts[1] || ''} • ${parts[4] || ''}`,
+					branch: name,
+				});
+			}
+		}
+
+		// Get tags
+		let tagsOutput = '';
+		try {
+			tagsOutput = ((await invoke('git_run', {
+				path, args: ['tag', '--sort=-creatordate', '--format=%(refname:short)|%(objectname:short)|%(creatordate:relative)|%(creatorname)|%(subject)']
+			})) as string).trim();
+		} catch { /* no tags */ }
+
+		if (tagsOutput) {
+			items.push({ type: 'separator', label: 'tags' });
+			for (const line of tagsOutput.split('\n')) {
+				const parts = line.split('|');
+				const name = parts[0] || '';
+				if (!name) { continue; }
+				items.push({
+					label: `$(tag) ${name}`,
+					description: parts[2] || '',
+					detail: `${parts[3] || ''} • ${parts[1] || ''} • ${parts[4] || ''}`,
+					branch: name,
+				});
+			}
+		}
+
+		const picked = await quickInputService.pick(items, {
+			placeHolder: 'Select a branch or tag to checkout',
+			matchOnDescription: true,
+			matchOnDetail: true,
+		});
+
+		if (!picked || !picked.branch) { return; }
+
+		if (picked.branch === '__create__') {
+			const name = await quickInputService.input({ placeHolder: 'Branch name' });
+			if (!name) { return; }
+			await invoke('git_run', { path, args: ['checkout', '-b', name] });
+		} else if (picked.branch === '__create_from__') {
+			const base = await quickInputService.input({ placeHolder: 'Base branch or commit' });
+			if (!base) { return; }
+			const name = await quickInputService.input({ placeHolder: 'New branch name' });
+			if (!name) { return; }
+			await invoke('git_run', { path, args: ['checkout', '-b', name, base] });
+		} else if (picked.branch === '__detached__') {
+			const ref = await quickInputService.input({ placeHolder: 'Commit hash, tag, or ref to checkout' });
+			if (!ref) { return; }
+			await invoke('git_run', { path, args: ['checkout', '--detach', ref] });
+		} else {
+			const branchName = picked.branch.replace(/^origin\//, '');
+			await invoke('git_run', { path, args: ['checkout', branchName] });
+		}
+
+		window.location.reload();
 	} catch (err) {
 		console.error('[TauriGit] checkout failed:', err);
 	}
@@ -1236,6 +1476,41 @@ CommandsRegistry.registerCommand('tauri-git.commitAmend', async () => {
 	}
 });
 
+CommandsRegistry.registerCommand('tauri-git.commitAndPush', async () => {
+	const path = getWorkspacePath();
+	if (!path) { return; }
+	try {
+		const invoke = await getTauriInvoke();
+		if (invoke) {
+			const message = (window as any).__sidex_scmInputValue?.() || '';
+			if (!message.trim()) { return; }
+			await invoke('git_run', { path, args: ['commit', '-m', message] });
+			await invokeGit<string>('git_push', { path });
+			console.log('[TauriGit] commit & push complete');
+		}
+	} catch (err) {
+		console.error('[TauriGit] commit & push failed:', err);
+	}
+});
+
+CommandsRegistry.registerCommand('tauri-git.commitAndSync', async () => {
+	const path = getWorkspacePath();
+	if (!path) { return; }
+	try {
+		const invoke = await getTauriInvoke();
+		if (invoke) {
+			const message = (window as any).__sidex_scmInputValue?.() || '';
+			if (!message.trim()) { return; }
+			await invoke('git_run', { path, args: ['commit', '-m', message] });
+			await invokeGit<string>('git_pull', { path });
+			await invokeGit<string>('git_push', { path });
+			console.log('[TauriGit] commit & sync complete');
+		}
+	} catch (err) {
+		console.error('[TauriGit] commit & sync failed:', err);
+	}
+});
+
 CommandsRegistry.registerCommand('tauri-git.commitAll', async () => {
 	const path = getWorkspacePath();
 	if (!path) { return; }
@@ -1253,6 +1528,85 @@ CommandsRegistry.registerCommand('tauri-git.commitAll', async () => {
 	}
 });
 
+CommandsRegistry.registerCommand('tauri-git.addRemote', async () => {
+	const path = getWorkspacePath();
+	if (!path) { return; }
+	const name = window.prompt('Remote name:');
+	if (!name) { return; }
+	const url = window.prompt('Remote URL:');
+	if (!url) { return; }
+	try {
+		const invoke = await getTauriInvoke();
+		if (invoke) {
+			await invoke('git_run', { path, args: ['remote', 'add', name, url] });
+			console.log('[TauriGit] added remote', name);
+		}
+	} catch (err) {
+		console.error('[TauriGit] add remote failed:', err);
+	}
+});
+
+CommandsRegistry.registerCommand('tauri-git.removeRemote', async () => {
+	const path = getWorkspacePath();
+	if (!path) { return; }
+	const name = window.prompt('Remote name to remove:');
+	if (!name) { return; }
+	try {
+		const invoke = await getTauriInvoke();
+		if (invoke) {
+			await invoke('git_run', { path, args: ['remote', 'remove', name] });
+			console.log('[TauriGit] removed remote', name);
+		}
+	} catch (err) {
+		console.error('[TauriGit] remove remote failed:', err);
+	}
+});
+
+CommandsRegistry.registerCommand('tauri-git.createTag', async () => {
+	const path = getWorkspacePath();
+	if (!path) { return; }
+	const name = window.prompt('Tag name:');
+	if (!name) { return; }
+	const message = window.prompt('Tag message (leave empty for lightweight tag):');
+	try {
+		const invoke = await getTauriInvoke();
+		if (invoke) {
+			const args = message ? ['tag', '-a', name, '-m', message] : ['tag', name];
+			await invoke('git_run', { path, args });
+			console.log('[TauriGit] created tag', name);
+		}
+	} catch (err) {
+		console.error('[TauriGit] create tag failed:', err);
+	}
+});
+
+CommandsRegistry.registerCommand('tauri-git.deleteTag', async () => {
+	const path = getWorkspacePath();
+	if (!path) { return; }
+	const name = window.prompt('Tag name to delete:');
+	if (!name) { return; }
+	try {
+		const invoke = await getTauriInvoke();
+		if (invoke) {
+			await invoke('git_run', { path, args: ['tag', '-d', name] });
+			console.log('[TauriGit] deleted tag', name);
+		}
+	} catch (err) {
+		console.error('[TauriGit] delete tag failed:', err);
+	}
+});
+
+CommandsRegistry.registerCommand('tauri-git.showOutput', async () => {
+	try {
+		const commandService = (globalThis as any).__sidex_commandService;
+		if (commandService) {
+			await commandService.executeCommand('workbench.action.output.toggleOutput');
+		}
+	} catch (err) {
+		console.error('[TauriGit] show output failed:', err);
+	}
+});
+
 // ─── SCM Source Control ("...") menu items ──────────────────────────────────
 
 // Define submenus matching VS Code's Git extension
@@ -1260,7 +1614,108 @@ const SCMGitCommitMenu = new MenuId('SCMGitCommit');
 const SCMGitChangesMenu = new MenuId('SCMGitChanges');
 const SCMGitPullPushMenu = new MenuId('SCMGitPullPush');
 const SCMGitBranchMenu = new MenuId('SCMGitBranch');
+const SCMGitRemoteMenu = new MenuId('SCMGitRemote');
 const SCMGitStashMenu = new MenuId('SCMGitStash');
+const SCMGitTagsMenu = new MenuId('SCMGitTags');
+const SCMRepoViewSortMenu = new MenuId('SCMRepoViewSort');
+
+// Repository row "..." in REPOSITORIES view (SCMSourceControlInline)
+// View & Sort submenu
+MenuRegistry.appendMenuItem(MenuId.SCMSourceControlInline, {
+	title: 'View & Sort',
+	submenu: SCMRepoViewSortMenu,
+	group: '0_view&sort',
+	order: 1,
+});
+
+MenuRegistry.appendMenuItem(SCMRepoViewSortMenu, {
+	command: { id: 'workbench.scm.action.setListViewMode', title: 'View as List' },
+	group: '1_viewmode',
+	order: 1,
+});
+MenuRegistry.appendMenuItem(SCMRepoViewSortMenu, {
+	command: { id: 'workbench.scm.action.setTreeViewMode', title: 'View as Tree' },
+	group: '1_viewmode',
+	order: 2,
+});
+
+// Quick actions
+MenuRegistry.appendMenuItem(MenuId.SCMSourceControlInline, {
+	command: { id: 'tauri-git.pull', title: 'Pull' },
+	group: '1_header',
+	order: 1,
+});
+MenuRegistry.appendMenuItem(MenuId.SCMSourceControlInline, {
+	command: { id: 'tauri-git.push', title: 'Push' },
+	group: '1_header',
+	order: 2,
+});
+MenuRegistry.appendMenuItem(MenuId.SCMSourceControlInline, {
+	command: { id: 'tauri-git.clone', title: 'Clone...' },
+	group: '1_header',
+	order: 3,
+});
+MenuRegistry.appendMenuItem(MenuId.SCMSourceControlInline, {
+	command: { id: 'tauri-git.checkoutTo', title: 'Checkout to...' },
+	group: '1_header',
+	order: 4,
+});
+MenuRegistry.appendMenuItem(MenuId.SCMSourceControlInline, {
+	command: { id: 'tauri-git.fetch', title: 'Fetch' },
+	group: '1_header',
+	order: 5,
+});
+
+// Submenus
+MenuRegistry.appendMenuItem(MenuId.SCMSourceControlInline, {
+	title: 'Commit',
+	submenu: SCMGitCommitMenu,
+	group: '2_main',
+	order: 1,
+});
+MenuRegistry.appendMenuItem(MenuId.SCMSourceControlInline, {
+	title: 'Changes',
+	submenu: SCMGitChangesMenu,
+	group: '2_main',
+	order: 2,
+});
+MenuRegistry.appendMenuItem(MenuId.SCMSourceControlInline, {
+	title: 'Pull, Push',
+	submenu: SCMGitPullPushMenu,
+	group: '2_main',
+	order: 3,
+});
+MenuRegistry.appendMenuItem(MenuId.SCMSourceControlInline, {
+	title: 'Branch',
+	submenu: SCMGitBranchMenu,
+	group: '2_main',
+	order: 4,
+});
+MenuRegistry.appendMenuItem(MenuId.SCMSourceControlInline, {
+	title: 'Remote',
+	submenu: SCMGitRemoteMenu,
+	group: '2_main',
+	order: 5,
+});
+MenuRegistry.appendMenuItem(MenuId.SCMSourceControlInline, {
+	title: 'Stash',
+	submenu: SCMGitStashMenu,
+	group: '2_main',
+	order: 6,
+});
+MenuRegistry.appendMenuItem(MenuId.SCMSourceControlInline, {
+	title: 'Tags',
+	submenu: SCMGitTagsMenu,
+	group: '2_main',
+	order: 7,
+});
+
+// Footer
+MenuRegistry.appendMenuItem(MenuId.SCMSourceControlInline, {
+	command: { id: 'tauri-git.showOutput', title: 'Show Git Output' },
+	group: '3_footer',
+	order: 1,
+});
 
 // Navigation toolbar buttons
 MenuRegistry.appendMenuItem(MenuId.SCMTitle, {
@@ -1361,6 +1816,26 @@ MenuRegistry.appendMenuItem(MenuId.SCMTitle, {
 	order: 5,
 });
 
+MenuRegistry.appendMenuItem(MenuId.SCMTitle, {
+	title: 'Remote',
+	submenu: SCMGitRemoteMenu,
+	group: '2_main',
+	order: 6,
+});
+
+MenuRegistry.appendMenuItem(MenuId.SCMTitle, {
+	title: 'Tags',
+	submenu: SCMGitTagsMenu,
+	group: '2_main',
+	order: 7,
+});
+
+MenuRegistry.appendMenuItem(MenuId.SCMTitle, {
+	command: { id: 'tauri-git.showOutput', title: 'Show Git Output' },
+	group: '3_footer',
+	order: 1,
+});
+
 // ─── Commit submenu items ───────────────────────────────────────────────────
 
 MenuRegistry.appendMenuItem(SCMGitCommitMenu, {
@@ -1458,6 +1933,34 @@ MenuRegistry.appendMenuItem(SCMGitStashMenu, {
 MenuRegistry.appendMenuItem(SCMGitStashMenu, {
 	command: { id: 'tauri-git.stashPop', title: 'Pop Stash...' },
 	group: '2_pop',
+	order: 2,
+});
+
+// ─── Remote submenu items ───────────────────────────────────────────────────
+
+MenuRegistry.appendMenuItem(SCMGitRemoteMenu, {
+	command: { id: 'tauri-git.addRemote', title: 'Add Remote...' },
+	group: 'remote',
+	order: 1,
+});
+
+MenuRegistry.appendMenuItem(SCMGitRemoteMenu, {
+	command: { id: 'tauri-git.removeRemote', title: 'Remove Remote...' },
+	group: 'remote',
+	order: 2,
+});
+
+// ─── Tags submenu items ─────────────────────────────────────────────────────
+
+MenuRegistry.appendMenuItem(SCMGitTagsMenu, {
+	command: { id: 'tauri-git.createTag', title: 'Create Tag...' },
+	group: 'tags',
+	order: 1,
+});
+
+MenuRegistry.appendMenuItem(SCMGitTagsMenu, {
+	command: { id: 'tauri-git.deleteTag', title: 'Delete Tag...' },
+	group: 'tags',
 	order: 2,
 });
 

@@ -36,6 +36,13 @@ async function boot() {
 	}
 
 	const options: any = {
+		// Trusted domains — bypasses "open external website?" dialog
+		additionalTrustedDomains: [
+			'https://github.com',
+			'https://*.github.com',
+			'https://*.githubusercontent.com',
+		],
+
 		// The workspace provider tells VSCode what folder/workspace to open
 		workspaceProvider: {
 			workspace,
@@ -61,6 +68,11 @@ async function boot() {
 			applicationName: 'sidex',
 			dataFolderName: '.sidex',
 			version: '1.110.0',
+			linkProtectionTrustedDomains: [
+				'https://github.com',
+				'https://*.github.com',
+				'https://*.githubusercontent.com',
+			],
 		},
 		settingsSyncOptions: {
 			enabled: false,
@@ -128,10 +140,34 @@ async function boot() {
 
 	create(document.body, options);
 
+	// Override external URL opener to use Tauri's shell plugin
+	setupTauriExternalOpener();
+
 	// Wire up native menu actions to VSCode commands
 	setupMenuActions();
 
 	console.log('[SideX] Workbench created' + (folderParam ? ` (folder: ${folderParam})` : ' (no folder)'), 'workspace:', workspace);
+}
+
+function setupTauriExternalOpener() {
+	import('@tauri-apps/plugin-shell').then(shell => {
+		const origOpen = window.open.bind(window);
+		(window as any).__sidex_shellOpen = (url: string) => {
+			shell.open(url).catch(() => origOpen(url, '_blank'));
+		};
+
+		const handler = (e: MouseEvent) => {
+			const target = (e.target as HTMLElement)?.closest?.('a');
+			if (!target) { return; }
+			const href = target.getAttribute('href') || target.dataset?.href;
+			if (href && (href.startsWith('mailto:') || href.startsWith('http://') || href.startsWith('https://'))) {
+				e.preventDefault();
+				e.stopPropagation();
+				shell.open(href).catch(() => {});
+			}
+		};
+		document.addEventListener('click', handler, true);
+	}).catch(() => {});
 }
 
 function setupMenuActions() {

@@ -480,7 +480,47 @@ class HistoryItemRenderer implements ICompressibleTreeRenderer<SCMHistoryItemVie
 
 		const { content, disposables } = toHistoryItemHoverContent(this._markdownRendererService, historyItem, true);
 		const { hoverOptions, hoverLifecycleOptions } = this._getHoverOptions();
-		const historyItemHover = this._hoverService.setupDelayedHover(templateData.element, { ...hoverOptions, content }, hoverLifecycleOptions);
+
+		const hoverActions: import('../../../../base/browser/ui/hover/hover.js').IHoverAction[] = [];
+
+		hoverActions.push({
+			label: `${historyItem.displayId ?? historyItem.id.substring(0, 7)}  `,
+			iconClass: 'codicon codicon-git-commit',
+			commandId: 'tauri-git.copyToClipboard',
+			run: () => {
+				navigator.clipboard.writeText(historyItem.id).catch(() => {});
+			}
+		});
+
+		hoverActions.push({
+			label: '',
+			iconClass: 'codicon codicon-copy',
+			commandId: 'tauri-git.copyToClipboard',
+			run: () => {
+				navigator.clipboard.writeText(historyItem.id).catch(() => {});
+			}
+		});
+
+		const ghUrl = (provider as any)._historyProviderGitHubUrl;
+		if (ghUrl) {
+			hoverActions.push({
+				label: 'Open on GitHub',
+				iconClass: 'codicon codicon-github',
+				commandId: 'tauri-git.openOnGitHub',
+				run: () => {
+					const match = ghUrl.match(/github\.com[:/]([^/]+\/[^/.]+)/);
+					if (match) {
+						import('@tauri-apps/plugin-shell').then(shell => {
+							shell.open(`https://github.com/${match[1]}/commit/${historyItem.id}`);
+						}).catch(() => {
+							window.open(`https://github.com/${match[1]}/commit/${historyItem.id}`, '_blank');
+						});
+					}
+				}
+			});
+		}
+
+		const historyItemHover = this._hoverService.setupDelayedHover(templateData.element, { ...hoverOptions, content, actions: hoverActions }, hoverLifecycleOptions);
 		templateData.elementDisposables.add(historyItemHover);
 		templateData.elementDisposables.add(disposables);
 

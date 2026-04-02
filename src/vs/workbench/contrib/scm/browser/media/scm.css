@@ -666,6 +666,14 @@
 	margin-bottom: 1px !important;
 }
 
+.monaco-hover.history-item-hover .hover-row.status-bar .actions .action-container {
+	margin-right: 4px;
+}
+
+.monaco-hover.history-item-hover .hover-row.status-bar .actions .action-container:first-child {
+	margin-right: 2px;
+}
+
 /* Graph */
 
 .pane-header .scm-graph-view-badge-container {
