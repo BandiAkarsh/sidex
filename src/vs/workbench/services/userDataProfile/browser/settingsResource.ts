@@ -7,6 +7,14 @@ import { VSBuffer } from '../../../../base/common/buffer.js';
 import { FileOperationError, FileOperationResult, IFileService } from '../../../../platform/files/common/files.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { IProfileResource, IProfileResourceChildTreeItem, IProfileResourceInitializer, IProfileResourceTreeItem, IUserDataProfileService } from '../common/userDataProfile.js';
+// Stub function to avoid importing heavy userDataSync module
+const updateIgnoredSettings = (settingsContent: string, _ignoredSettings: string[], _formattingOptions: unknown): string => settingsContent;
+// Inline interface to avoid importing heavy userDataSync module
+export const IUserDataSyncUtilService = Symbol('IUserDataSyncUtilService');
+export interface IUserDataSyncUtilService {
+	_serviceBrand: undefined;
+	resolveDefaultIgnoredSettings(): Promise<string[]>;
+}
 import { ITreeItemCheckboxState, TreeItemCollapsibleState } from '../../../common/views.js';
 import { IUserDataProfile, ProfileResourceType } from '../../../../platform/userDataProfile/common/userDataProfile.js';
 import { API_OPEN_EDITOR_COMMAND_ID } from '../../../browser/parts/editor/editorCommands.js';

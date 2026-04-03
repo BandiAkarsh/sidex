@@ -6,12 +6,14 @@ A Tauri-based port of Visual Studio Code. Same architecture, native performance,
 
 ## What is SideX?
 
-SideX is a 1:1 architectural port of VSCode that replaces Electron with [Tauri](https://tauri.app/) (Rust backend + native webview). The entire VSCode workbench - editor, terminal, extensions, themes, keybindings — ported to run on a native shell.
+SideX is a 1:1 architectural port (HEAVILY STRIPPED) of VSCode that replaces Electron with [Tauri](https://tauri.app/) (Rust backend + native webview). The entire VSCode workbench - editor, terminal, extensions, themes, keybindings — ported to run on a native shell.
 
 - **5,600+ TypeScript files** from VSCode's source, ported and adapted
 - **Rust backend** replacing Electron's main process
 - **Zero Electron imports** remaining in the codebase
 - **Lightweight** — fraction of VSCode's install size
+
+Goal: 200mb RAM usage. 
 
 ## Current State
 

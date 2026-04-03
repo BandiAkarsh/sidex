@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
-import { IAuthenticationProvider, SyncStatus, SyncResource, IUserDataSyncResource, IResourcePreview } from '../../../../platform/userDataSync/common/userDataSync.js';
 import { Event } from '../../../../base/common/event.js';
 import { ContextKeyExpr, RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
 import { localize, localize2 } from '../../../../nls.js';
@@ -15,6 +14,46 @@ import { IView } from '../../../common/views.js';
 import { Categories } from '../../../../platform/action/common/actionCommonCategories.js';
 import { IAction2Options } from '../../../../platform/actions/common/actions.js';
 import { ILocalizedString } from '../../../../platform/action/common/action.js';
+
+// Inline types to avoid importing heavy userDataSync module
+export interface IAuthenticationProvider {
+	readonly id: string;
+	readonly scopes: string[];
+}
+
+export const enum SyncResource {
+	Settings = 'settings',
+	Keybindings = 'keybindings',
+	Snippets = 'snippets',
+	Tasks = 'tasks',
+	Extensions = 'extensions',
+	GlobalState = 'globalState',
+	Profiles = 'profiles',
+	WorkspaceState = 'workspaceState',
+	Prompts = 'prompts',
+}
+
+export const enum SyncStatus {
+	Uninitialized = 'uninitialized',
+	Idle = 'idle',
+	Syncing = 'syncing',
+	HasConflicts = 'hasConflicts',
+}
+
+export interface IUserDataSyncResource {
+	readonly syncResource: SyncResource;
+	readonly profile: unknown;
+}
+
+export interface IResourcePreview {
+	readonly remoteResource: URI;
+	readonly localResource: URI;
+	readonly previewResource: URI;
+	readonly acceptedResource: URI;
+	readonly localChange: number;
+	readonly remoteChange: number;
+	readonly mergeState: unknown;
+}
 
 export interface IUserDataSyncAccount {
 	readonly authenticationProviderId: string;
