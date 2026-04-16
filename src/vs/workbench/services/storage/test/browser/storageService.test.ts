@@ -48,7 +48,13 @@ async function createStorageService(): Promise<[DisposableStore, BrowserStorageS
 		cacheHome: joinPath(inMemoryExtraProfileRoot, 'cache')
 	};
 
-	const storageService = disposables.add(new BrowserStorageService({ id: 'workspace-storage-test' }, disposables.add(new UserDataProfileService(inMemoryExtraProfile)), logService));
+	const storageService = disposables.add(
+		new BrowserStorageService(
+			{ id: 'workspace-storage-test' },
+			disposables.add(new UserDataProfileService(inMemoryExtraProfile)),
+			logService
+		)
+	);
 
 	await storageService.initialize();
 
@@ -92,7 +98,8 @@ flakySuite('StorageService (browser specific)', () => {
 		disposables.clear();
 	});
 
-	test.skip('clear', () => { // slow test and also only ever being used as a developer action
+	test.skip('clear', () => {
+		// slow test and also only ever being used as a developer action
 		return runWithFakedTimers({ useFakeTimers: true }, async () => {
 			storageService.store('bar', 'foo', StorageScope.APPLICATION, StorageTarget.MACHINE);
 			storageService.store('bar', 3, StorageScope.APPLICATION, StorageTarget.USER);
@@ -116,7 +123,6 @@ flakySuite('StorageService (browser specific)', () => {
 });
 
 flakySuite('IndexDBStorageDatabase (browser)', () => {
-
 	const id = 'workspace-storage-db-test';
 	const logService = new NullLogService();
 
@@ -130,7 +136,9 @@ flakySuite('IndexDBStorageDatabase (browser)', () => {
 	});
 
 	test('Basics', async () => {
-		let storage = disposables.add(new Storage(disposables.add(await IndexedDBStorageDatabase.create({ id }, logService))));
+		let storage = disposables.add(
+			new Storage(disposables.add(await IndexedDBStorageDatabase.create({ id }, logService)))
+		);
 
 		await storage.init();
 
@@ -216,7 +224,9 @@ flakySuite('IndexDBStorageDatabase (browser)', () => {
 	});
 
 	test('Clear', async () => {
-		let storage = disposables.add(new Storage(disposables.add(await IndexedDBStorageDatabase.create({ id }, logService))));
+		let storage = disposables.add(
+			new Storage(disposables.add(await IndexedDBStorageDatabase.create({ id }, logService)))
+		);
 
 		await storage.init();
 
@@ -245,7 +255,9 @@ flakySuite('IndexDBStorageDatabase (browser)', () => {
 	});
 
 	test('Inserts and Deletes at the same time', async () => {
-		let storage = disposables.add(new Storage(disposables.add(await IndexedDBStorageDatabase.create({ id }, logService))));
+		let storage = disposables.add(
+			new Storage(disposables.add(await IndexedDBStorageDatabase.create({ id }, logService)))
+		);
 
 		await storage.init();
 
@@ -278,7 +290,9 @@ flakySuite('IndexDBStorageDatabase (browser)', () => {
 	});
 
 	test('Storage change event', async () => {
-		const storage = disposables.add(new Storage(disposables.add(await IndexedDBStorageDatabase.create({ id }, logService))));
+		const storage = disposables.add(
+			new Storage(disposables.add(await IndexedDBStorageDatabase.create({ id }, logService)))
+		);
 		let storageChangeEvents: IStorageChangeEvent[] = [];
 		disposables.add(storage.onDidChangeStorage(e => storageChangeEvents.push(e)));
 

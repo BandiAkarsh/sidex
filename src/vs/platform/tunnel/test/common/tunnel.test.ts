@@ -10,14 +10,15 @@ import {
 } from '../../common/tunnel.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 
-
 suite('Tunnel', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	function portMappingDoTest(uri: string,
+	function portMappingDoTest(
+		uri: string,
 		func: (uri: URI) => { address: string; port: number } | undefined,
 		expectedAddress?: string,
-		expectedPort?: number) {
+		expectedPort?: number
+	) {
 		const res = func(URI.parse(uri));
 		assert.strictEqual(!expectedAddress, !res);
 		assert.strictEqual(res?.address, expectedAddress);
@@ -42,7 +43,15 @@ suite('Tunnel', () => {
 		portMappingTest('http://localhost:8080/path?foo=bar', 'localhost', 8080);
 		portMappingTest('http://localhost:8080/path?foo=http%3A%2F%2Flocalhost%3A8081', 'localhost', 8080);
 		portMappingTestQuery('http://foo.bar/path?url=http%3A%2F%2Flocalhost%3A8081', 'localhost', 8081);
-		portMappingTestQuery('http://foo.bar/path?url=http%3A%2F%2Flocalhost%3A8081&url2=http%3A%2F%2Flocalhost%3A8082', 'localhost', 8081);
-		portMappingTestQuery('http://foo.bar/path?url=http%3A%2F%2Fmicrosoft.com%2Fbad&url2=http%3A%2F%2Flocalhost%3A8081', 'localhost', 8081);
+		portMappingTestQuery(
+			'http://foo.bar/path?url=http%3A%2F%2Flocalhost%3A8081&url2=http%3A%2F%2Flocalhost%3A8082',
+			'localhost',
+			8081
+		);
+		portMappingTestQuery(
+			'http://foo.bar/path?url=http%3A%2F%2Fmicrosoft.com%2Fbad&url2=http%3A%2F%2Flocalhost%3A8081',
+			'localhost',
+			8081
+		);
 	});
 });

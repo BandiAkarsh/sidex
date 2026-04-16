@@ -27,32 +27,34 @@ suite('Notebook Statusbar', () => {
 		await withTestNotebook(
 			[
 				['var b = 1;', 'javascript', CellKind.Code, [], {}],
-				['# header a', 'markdown', CellKind.Markup, [], {}],
+				['# header a', 'markdown', CellKind.Markup, [], {}]
 			],
 			async (editor, viewModel, _ds, accessor) => {
 				const cellStatusbarSvc = accessor.get(INotebookCellStatusBarService);
 				testDisposables.add(accessor.createInstance(ContributedStatusBarItemController, editor));
 
-				const provider = testDisposables.add(new class extends Disposable implements INotebookCellStatusBarItemProvider {
-					private provideCalls = 0;
+				const provider = testDisposables.add(
+					new (class extends Disposable implements INotebookCellStatusBarItemProvider {
+						private provideCalls = 0;
 
-					private _onProvideCalled = this._register(new Emitter<number>());
-					public onProvideCalled = this._onProvideCalled.event;
+						private _onProvideCalled = this._register(new Emitter<number>());
+						public onProvideCalled = this._onProvideCalled.event;
 
-					public _onDidChangeStatusBarItems = this._register(new Emitter<void>());
-					public onDidChangeStatusBarItems = this._onDidChangeStatusBarItems.event;
+						public _onDidChangeStatusBarItems = this._register(new Emitter<void>());
+						public onDidChangeStatusBarItems = this._onDidChangeStatusBarItems.event;
 
-					async provideCellStatusBarItems(_uri: URI, index: number, _token: CancellationToken) {
-						if (index === 0) {
-							this.provideCalls++;
-							this._onProvideCalled.fire(this.provideCalls);
+						async provideCellStatusBarItems(_uri: URI, index: number, _token: CancellationToken) {
+							if (index === 0) {
+								this.provideCalls++;
+								this._onProvideCalled.fire(this.provideCalls);
+							}
+
+							return { items: [] };
 						}
 
-						return { items: [] };
-					}
-
-					viewType = editor.textModel.viewType;
-				});
+						viewType = editor.textModel.viewType;
+					})()
+				);
 				const providePromise1 = asPromise(provider.onProvideCalled, 'registering provider');
 				testDisposables.add(cellStatusbarSvc.registerCellStatusBarItemProvider(provider));
 				assert.strictEqual(await providePromise1, 1, 'should call provider on registration');
@@ -69,7 +71,8 @@ suite('Notebook Statusbar', () => {
 				const providePromise4 = asPromise(provider.onProvideCalled, 'manually firing change event');
 				provider._onDidChangeStatusBarItems.fire();
 				assert.strictEqual(await providePromise4, 4, 'should call provider on manually firing change event');
-			});
+			}
+		);
 	});
 });
 

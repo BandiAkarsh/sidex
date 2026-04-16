@@ -8,11 +8,16 @@ import { bufferToStream, VSBuffer } from '../../../../base/common/buffer.js';
 import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { IRequestContext, IRequestOptions } from '../../../../base/parts/request/common/request.js';
 import { NullLogService } from '../../../log/common/log.js';
-import { AbstractRequestService, AuthInfo, Credentials, IRequestCompleteEvent, NO_FETCH_TELEMETRY } from '../../common/request.js';
+import {
+	AbstractRequestService,
+	AuthInfo,
+	Credentials,
+	IRequestCompleteEvent,
+	NO_FETCH_TELEMETRY
+} from '../../common/request.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 
 class TestRequestService extends AbstractRequestService {
-
 	constructor(private readonly handler: (options: IRequestOptions) => Promise<IRequestContext>) {
 		super(new NullLogService());
 	}
@@ -21,10 +26,18 @@ class TestRequestService extends AbstractRequestService {
 		return this.logAndRequest(options, () => this.handler(options));
 	}
 
-	async resolveProxy(_url: string): Promise<string | undefined> { return undefined; }
-	async lookupAuthorization(_authInfo: AuthInfo): Promise<Credentials | undefined> { return undefined; }
-	async lookupKerberosAuthorization(_url: string): Promise<string | undefined> { return undefined; }
-	async loadCertificates(): Promise<string[]> { return []; }
+	async resolveProxy(_url: string): Promise<string | undefined> {
+		return undefined;
+	}
+	async lookupAuthorization(_authInfo: AuthInfo): Promise<Credentials | undefined> {
+		return undefined;
+	}
+	async lookupKerberosAuthorization(_url: string): Promise<string | undefined> {
+		return undefined;
+	}
+	async loadCertificates(): Promise<string[]> {
+		return [];
+	}
 }
 
 function makeResponse(statusCode: number): IRequestContext {
@@ -35,7 +48,6 @@ function makeResponse(statusCode: number): IRequestContext {
 }
 
 suite('AbstractRequestService', () => {
-
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('onDidCompleteRequest fires with correct data', async () => {
@@ -96,6 +108,9 @@ suite('AbstractRequestService', () => {
 		await service.request({ url: 'http://test/1', callSite: 'first' }, CancellationToken.None);
 		await service.request({ url: 'http://test/2', callSite: 'second' }, CancellationToken.None);
 
-		assert.deepStrictEqual(events.map(e => e.callSite), ['first', 'second']);
+		assert.deepStrictEqual(
+			events.map(e => e.callSite),
+			['first', 'second']
+		);
 	});
 });

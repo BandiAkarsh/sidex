@@ -4,7 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
-import { RemoteAgentConnectionContext, IRemoteAgentEnvironment } from '../../../../platform/remote/common/remoteAgentEnvironment.js';
+import {
+	RemoteAgentConnectionContext,
+	IRemoteAgentEnvironment
+} from '../../../../platform/remote/common/remoteAgentEnvironment.js';
 import { IChannel, IServerChannel } from '../../../../base/parts/ipc/common/ipc.js';
 import { IDiagnosticInfoOptions, IDiagnosticInfo } from '../../../../platform/diagnostics/common/diagnostics.js';
 import { Event } from '../../../../base/common/event.js';
@@ -71,7 +74,6 @@ export interface IRemoteAgentConnection {
 }
 
 export interface IRemoteConnectionLatencyMeasurement {
-
 	readonly initial: number | undefined;
 	readonly current: number;
 	readonly average: number;
@@ -79,8 +81,7 @@ export interface IRemoteConnectionLatencyMeasurement {
 	readonly high: boolean;
 }
 
-export const remoteConnectionLatencyMeasurer = new class {
-
+export const remoteConnectionLatencyMeasurer = new (class {
 	readonly maxSampleCount = 5;
 	readonly sampleDelay = 2000;
 
@@ -95,7 +96,9 @@ export const remoteConnectionLatencyMeasurer = new class {
 	readonly highLatencyMaxThreshold = 1500;
 
 	lastMeasurement: IRemoteConnectionLatencyMeasurement | undefined = undefined;
-	get latency() { return this.lastMeasurement; }
+	get latency() {
+		return this.lastMeasurement;
+	}
 
 	async measure(remoteAgentService: IRemoteAgentService): Promise<IRemoteConnectionLatencyMeasurement | undefined> {
 		let currentLatency = Infinity;
@@ -131,7 +134,6 @@ export const remoteConnectionLatencyMeasurer = new class {
 			current: currentLatency,
 			average: this.average.reduce((sum, value) => sum + value, 0) / this.average.length,
 			high: (() => {
-
 				// based on the initial, average and current latency, try to decide
 				// if the connection has high latency
 				// Some rules:
@@ -148,7 +150,10 @@ export const remoteConnectionLatencyMeasurer = new class {
 					return true;
 				}
 
-				if (currentLatency > this.highLatencyMinThreshold && currentLatency > initialLatency * this.highLatencyMultiple) {
+				if (
+					currentLatency > this.highLatencyMinThreshold &&
+					currentLatency > initialLatency * this.highLatencyMultiple
+				) {
 					return true;
 				}
 
@@ -158,4 +163,4 @@ export const remoteConnectionLatencyMeasurer = new class {
 
 		return this.lastMeasurement;
 	}
-};
+})();

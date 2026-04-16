@@ -4,7 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IRemoteAgentService } from './remoteAgentService.js';
-import { IRemoteExtensionsScannerService, RemoteExtensionsScannerChannelName } from '../../../../platform/remote/common/remoteExtensionsScanner.js';
+import {
+	IRemoteExtensionsScannerService,
+	RemoteExtensionsScannerChannelName
+} from '../../../../platform/remote/common/remoteExtensionsScanner.js';
 import * as platform from '../../../../base/common/platform.js';
 import { IChannel } from '../../../../base/parts/ipc/common/ipc.js';
 import { IExtensionDescription } from '../../../../platform/extensions/common/extensions.js';
@@ -20,7 +23,6 @@ import { Mutable } from '../../../../base/common/types.js';
 import { InstallExtensionSummary } from '../../../../platform/extensionManagement/common/extensionManagement.js';
 
 class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService {
-
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
@@ -29,37 +31,35 @@ class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService 
 		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
 		@IRemoteUserDataProfilesService private readonly remoteUserDataProfilesService: IRemoteUserDataProfilesService,
 		@IActiveLanguagePackService private readonly activeLanguagePackService: IActiveLanguagePackService,
-		@IWorkbenchExtensionManagementService private readonly extensionManagementService: IWorkbenchExtensionManagementService,
-		@ILogService private readonly logService: ILogService,
-	) { }
+		@IWorkbenchExtensionManagementService
+		private readonly extensionManagementService: IWorkbenchExtensionManagementService,
+		@ILogService private readonly logService: ILogService
+	) {}
 
 	whenExtensionsReady(): Promise<InstallExtensionSummary> {
-		return this.withChannel(
-			channel => channel.call<InstallExtensionSummary>('whenExtensionsReady'),
-			{ failed: [] }
-		);
+		return this.withChannel(channel => channel.call<InstallExtensionSummary>('whenExtensionsReady'), { failed: [] });
 	}
 
 	async scanExtensions(): Promise<IExtensionDescription[]> {
 		try {
 			const languagePack = await this.activeLanguagePackService.getExtensionIdProvidingCurrentLocale();
-			return await this.withChannel(
-				async (channel) => {
-					const profileLocation = this.userDataProfileService.currentProfile.isDefault ? undefined : (await this.remoteUserDataProfilesService.getRemoteProfile(this.userDataProfileService.currentProfile)).extensionsResource;
-					const scannedExtensions = await channel.call<Mutable<IExtensionDescription>[]>('scanExtensions', [
-						platform.language,
-						profileLocation,
-						this.extensionManagementService.getInstalledWorkspaceExtensionLocations(),
-						this.environmentService.extensionDevelopmentLocationURI,
-						languagePack
-					]);
-					scannedExtensions.forEach((extension) => {
-						extension.extensionLocation = URI.revive(extension.extensionLocation);
-					});
-					return scannedExtensions;
-				},
-				[]
-			);
+			return await this.withChannel(async channel => {
+				const profileLocation = this.userDataProfileService.currentProfile.isDefault
+					? undefined
+					: (await this.remoteUserDataProfilesService.getRemoteProfile(this.userDataProfileService.currentProfile))
+							.extensionsResource;
+				const scannedExtensions = await channel.call<Mutable<IExtensionDescription>[]>('scanExtensions', [
+					platform.language,
+					profileLocation,
+					this.extensionManagementService.getInstalledWorkspaceExtensionLocations(),
+					this.environmentService.extensionDevelopmentLocationURI,
+					languagePack
+				]);
+				scannedExtensions.forEach(extension => {
+					extension.extensionLocation = URI.revive(extension.extensionLocation);
+				});
+				return scannedExtensions;
+			}, []);
 		} catch (error) {
 			this.logService.error(error);
 			return [];
@@ -71,7 +71,7 @@ class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService 
 		if (!connection) {
 			return Promise.resolve(fallback);
 		}
-		return connection.withChannel(RemoteExtensionsScannerChannelName, (channel) => callback(channel));
+		return connection.withChannel(RemoteExtensionsScannerChannelName, channel => callback(channel));
 	}
 }
 

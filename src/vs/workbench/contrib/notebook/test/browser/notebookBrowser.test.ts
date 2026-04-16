@@ -32,7 +32,6 @@ function getRanges(cells: ICellViewModel[], included: (cell: ICellViewModel) => 
 	return ranges;
 }
 
-
 suite('notebookBrowser', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
@@ -40,26 +39,17 @@ suite('notebookBrowser', () => {
 		const predicate = (cell: ICellViewModel) => cell.cellKind === CellKind.Code;
 
 		test('all code', function () {
-			const cells = [
-				{ cellKind: CellKind.Code },
-				{ cellKind: CellKind.Code },
-			];
+			const cells = [{ cellKind: CellKind.Code }, { cellKind: CellKind.Code }];
 			assert.deepStrictEqual(getRanges(cells as ICellViewModel[], predicate), [{ start: 0, end: 2 }]);
 		});
 
 		test('none code', function () {
-			const cells = [
-				{ cellKind: CellKind.Markup },
-				{ cellKind: CellKind.Markup },
-			];
+			const cells = [{ cellKind: CellKind.Markup }, { cellKind: CellKind.Markup }];
 			assert.deepStrictEqual(getRanges(cells as ICellViewModel[], predicate), []);
 		});
 
 		test('start code', function () {
-			const cells = [
-				{ cellKind: CellKind.Code },
-				{ cellKind: CellKind.Markup },
-			];
+			const cells = [{ cellKind: CellKind.Code }, { cellKind: CellKind.Markup }];
 			assert.deepStrictEqual(getRanges(cells as ICellViewModel[], predicate), [{ start: 0, end: 1 }]);
 		});
 
@@ -71,9 +61,13 @@ suite('notebookBrowser', () => {
 				{ cellKind: CellKind.Code },
 				{ cellKind: CellKind.Markup },
 				{ cellKind: CellKind.Markup },
-				{ cellKind: CellKind.Code },
+				{ cellKind: CellKind.Code }
 			];
-			assert.deepStrictEqual(getRanges(cells as ICellViewModel[], predicate), [{ start: 0, end: 2 }, { start: 3, end: 4 }, { start: 6, end: 7 }]);
+			assert.deepStrictEqual(getRanges(cells as ICellViewModel[], predicate), [
+				{ start: 0, end: 2 },
+				{ start: 3, end: 4 },
+				{ start: 6, end: 7 }
+			]);
 		});
 	});
 });

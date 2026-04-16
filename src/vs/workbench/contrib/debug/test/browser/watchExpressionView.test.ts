@@ -21,7 +21,11 @@ import { TestConfigurationService } from '../../../../../platform/configuration/
 import { DebugExpressionRenderer } from '../../browser/debugExpressionRenderer.js';
 const $ = dom.$;
 
-function assertWatchVariable(disposables: Pick<DisposableStore, 'add'>, watchExpressionsRenderer: WatchExpressionsRenderer, displayType: boolean) {
+function assertWatchVariable(
+	disposables: Pick<DisposableStore, 'add'>,
+	watchExpressionsRenderer: WatchExpressionsRenderer,
+	displayType: boolean
+) {
 	const session = new MockSession();
 	const thread = new Thread(session, 'mockthread', 1);
 	const range = {
@@ -90,7 +94,8 @@ suite('Debug - Watch Debug View', () => {
 		expressionRenderer = instantiationService.createInstance(DebugExpressionRenderer);
 		const debugService = new MockDebugService();
 		instantiationService.stub(IHoverService, NullHoverService);
-		debugService.getViewModel = () => <IViewModel>{ focusedStackFrame: undefined, getSelectedExpression: () => undefined };
+		debugService.getViewModel = () =>
+			<IViewModel>{ focusedStackFrame: undefined, getSelectedExpression: () => undefined };
 		debugService.getViewModel().getSelectedExpression = () => undefined;
 		instantiationService.stub(IDebugService, debugService);
 	});

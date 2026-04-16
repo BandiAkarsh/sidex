@@ -84,8 +84,12 @@ export function wasmEaseInCubic(t: number): number {
 }
 
 export function wasmValidateScrollState(
-	width: number, scrollWidth: number, scrollLeft: number,
-	height: number, scrollHeight: number, scrollTop: number,
+	width: number,
+	scrollWidth: number,
+	scrollLeft: number,
+	height: number,
+	scrollHeight: number,
+	scrollTop: number,
 	forceInt: boolean
 ): IWasmScrollState | null {
 	if (!wasmModule || !outBuf) {
@@ -98,30 +102,47 @@ export function wasmValidateScrollState(
 		scrollLeft: outBuf[2],
 		height: outBuf[3],
 		scrollHeight: outBuf[4],
-		scrollTop: outBuf[5],
+		scrollTop: outBuf[5]
 	};
 }
 
 export function wasmSmoothScrollTick(
-	now: number, startTime: number, duration: number,
-	fromLeft: number, toLeft: number,
-	fromTop: number, toTop: number,
-	viewportWidth: number, viewportHeight: number
+	now: number,
+	startTime: number,
+	duration: number,
+	fromLeft: number,
+	toLeft: number,
+	fromTop: number,
+	toTop: number,
+	viewportWidth: number,
+	viewportHeight: number
 ): IWasmSmoothScrollResult | null {
 	if (!wasmModule || !outBuf) {
 		return null;
 	}
-	wasmModule.smooth_scroll_tick_flat(now, startTime, duration, fromLeft, toLeft, fromTop, toTop, viewportWidth, viewportHeight);
+	wasmModule.smooth_scroll_tick_flat(
+		now,
+		startTime,
+		duration,
+		fromLeft,
+		toLeft,
+		fromTop,
+		toTop,
+		viewportWidth,
+		viewportHeight
+	);
 	return {
 		scrollLeft: outBuf[0],
 		scrollTop: outBuf[1],
-		isDone: outBuf[2] !== 0,
+		isDone: outBuf[2] !== 0
 	};
 }
 
 export function wasmInertialTick(
-	speedX: number, speedY: number,
-	decay: number, threshold: number
+	speedX: number,
+	speedY: number,
+	decay: number,
+	threshold: number
 ): IWasmInertialState | null {
 	if (!wasmModule || !outBuf) {
 		return null;
@@ -130,43 +151,68 @@ export function wasmInertialTick(
 	return {
 		speedX: outBuf[0],
 		speedY: outBuf[1],
-		active: outBuf[2] !== 0,
+		active: outBuf[2] !== 0
 	};
 }
 
 export function wasmComputeScrollbarState(
-	arrowSize: number, scrollbarSize: number, oppositeScrollbarSize: number,
-	visibleSize: number, scrollSize: number, scrollPosition: number,
+	arrowSize: number,
+	scrollbarSize: number,
+	oppositeScrollbarSize: number,
+	visibleSize: number,
+	scrollSize: number,
+	scrollPosition: number,
 	minSliderSize: number
 ): IWasmScrollbarValues | null {
 	if (!wasmModule || !outBuf) {
 		return null;
 	}
-	wasmModule.compute_scrollbar_state_flat(arrowSize, scrollbarSize, oppositeScrollbarSize, visibleSize, scrollSize, scrollPosition, minSliderSize);
+	wasmModule.compute_scrollbar_state_flat(
+		arrowSize,
+		scrollbarSize,
+		oppositeScrollbarSize,
+		visibleSize,
+		scrollSize,
+		scrollPosition,
+		minSliderSize
+	);
 	return {
 		sliderSize: outBuf[0],
 		sliderPosition: outBuf[1],
-		sliderRatio: outBuf[2],
+		sliderRatio: outBuf[2]
 	};
 }
 
 export function wasmProcessWheelDelta(
-	rawDeltaX: number, rawDeltaY: number,
-	sensitivity: number, scrollPredominantAxis: boolean,
-	flipAxes: boolean, scrollYToX: boolean,
-	isShift: boolean, isAlt: boolean,
-	fastSensitivity: number, isMac: boolean
+	rawDeltaX: number,
+	rawDeltaY: number,
+	sensitivity: number,
+	scrollPredominantAxis: boolean,
+	flipAxes: boolean,
+	scrollYToX: boolean,
+	isShift: boolean,
+	isAlt: boolean,
+	fastSensitivity: number,
+	isMac: boolean
 ): IWasmWheelDelta | null {
 	if (!wasmModule || !outBuf) {
 		return null;
 	}
 	wasmModule.process_wheel_delta_flat(
-		rawDeltaX, rawDeltaY, sensitivity, scrollPredominantAxis,
-		flipAxes, scrollYToX, isShift, isAlt, fastSensitivity, isMac
+		rawDeltaX,
+		rawDeltaY,
+		sensitivity,
+		scrollPredominantAxis,
+		flipAxes,
+		scrollYToX,
+		isShift,
+		isAlt,
+		fastSensitivity,
+		isMac
 	);
 	return {
 		deltaX: outBuf[0],
-		deltaY: outBuf[1],
+		deltaY: outBuf[1]
 	};
 }
 

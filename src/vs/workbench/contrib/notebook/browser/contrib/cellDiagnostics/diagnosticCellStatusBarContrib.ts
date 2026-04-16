@@ -19,20 +19,18 @@ import { ICellExecutionError } from '../../../common/notebookExecutionStateServi
 export class DiagnosticCellStatusBarContrib extends Disposable implements INotebookEditorContribution {
 	static id: string = 'workbench.notebook.statusBar.diagtnostic';
 
-	constructor(
-		notebookEditor: INotebookEditor,
-		@IInstantiationService instantiationService: IInstantiationService
-	) {
+	constructor(notebookEditor: INotebookEditor, @IInstantiationService instantiationService: IInstantiationService) {
 		super();
-		this._register(new NotebookStatusBarController(notebookEditor, (vm, cell) =>
-			cell instanceof CodeCellViewModel ?
-				instantiationService.createInstance(DiagnosticCellStatusBarItem, vm, cell) :
-				Disposable.None
-		));
+		this._register(
+			new NotebookStatusBarController(notebookEditor, (vm, cell) =>
+				cell instanceof CodeCellViewModel
+					? instantiationService.createInstance(DiagnosticCellStatusBarItem, vm, cell)
+					: Disposable.None
+			)
+		);
 	}
 }
 registerNotebookContribution(DiagnosticCellStatusBarContrib.id, DiagnosticCellStatusBarContrib);
-
 
 class DiagnosticCellStatusBarItem extends Disposable {
 	private _currentItemIds: string[] = [];
@@ -40,10 +38,10 @@ class DiagnosticCellStatusBarItem extends Disposable {
 	constructor(
 		private readonly _notebookViewModel: INotebookViewModel,
 		private readonly cell: CodeCellViewModel,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IKeybindingService private readonly keybindingService: IKeybindingService
 	) {
 		super();
-		this._register(autorun((reader) => this.updateSparkleItem(reader.readObservable(cell.executionErrorDiagnostic))));
+		this._register(autorun(reader => this.updateSparkleItem(reader.readObservable(cell.executionErrorDiagnostic))));
 	}
 
 	private async updateSparkleItem(error: ICellExecutionError | undefined) {
@@ -51,8 +49,9 @@ class DiagnosticCellStatusBarItem extends Disposable {
 
 		if (error?.location) {
 			const tooltip = this.keybindingService.appendKeybinding(
-				localize('notebook.cell.status.diagnostic', "Quick Actions"),
-				OPEN_CELL_FAILURE_ACTIONS_COMMAND_ID);
+				localize('notebook.cell.status.diagnostic', 'Quick Actions'),
+				OPEN_CELL_FAILURE_ACTIONS_COMMAND_ID
+			);
 
 			item = {
 				text: `$(sparkle)`,
@@ -64,7 +63,9 @@ class DiagnosticCellStatusBarItem extends Disposable {
 		}
 
 		const items = item ? [item] : [];
-		this._currentItemIds = this._notebookViewModel.deltaCellStatusBarItems(this._currentItemIds, [{ handle: this.cell.handle, items }]);
+		this._currentItemIds = this._notebookViewModel.deltaCellStatusBarItems(this._currentItemIds, [
+			{ handle: this.cell.handle, items }
+		]);
 	}
 
 	override dispose() {

@@ -7,7 +7,13 @@ import { sumBy } from '../../../../../base/common/arrays.js';
 import { TaskQueue, timeout } from '../../../../../base/common/async.js';
 import { Lazy } from '../../../../../base/common/lazy.js';
 import { Disposable, DisposableStore, toDisposable } from '../../../../../base/common/lifecycle.js';
-import { autorun, derived, mapObservableArrayCached, observableValue, runOnChange } from '../../../../../base/common/observable.js';
+import {
+	autorun,
+	derived,
+	mapObservableArrayCached,
+	observableValue,
+	runOnChange
+} from '../../../../../base/common/observable.js';
 import { AnnotatedStringEdit } from '../../../../../editor/common/core/edits/stringEdit.js';
 import { isAiEdit, isUserEdit } from '../../../../../editor/common/textModelEditSource.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
@@ -22,66 +28,74 @@ export class AiStatsFeature extends Disposable {
 	constructor(
 		annotatedDocuments: AnnotatedDocuments,
 		@IStorageService private readonly _storageService: IStorageService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService private readonly _instantiationService: IInstantiationService
 	) {
 		super();
 
-		const storedValue = getStoredValue<IData>(this._storageService, 'aiStats', StorageScope.WORKSPACE, StorageTarget.USER);
+		const storedValue = getStoredValue<IData>(
+			this._storageService,
+			'aiStats',
+			StorageScope.WORKSPACE,
+			StorageTarget.USER
+		);
 		this._data = rateLimitWrite<IData>(storedValue, 1 / 60, this._store);
 
 		this.aiRate.recomputeInitiallyAndOnChange(this._store);
 
-		this._register(autorun(reader => {
-			reader.store.add(this._instantiationService.createInstance(AiStatsStatusBar.hot.read(reader), this));
-		}));
-
+		this._register(
+			autorun(reader => {
+				reader.store.add(this._instantiationService.createInstance(AiStatsStatusBar.hot.read(reader), this));
+			})
+		);
 
 		const lastRequestIds: string[] = [];
 
 		const obs = mapObservableArrayCached(this, annotatedDocuments.documents, (doc, store) => {
-			store.add(runOnChange(doc.documentWithAnnotations.value, (_val, _prev, edit) => {
-				const e = AnnotatedStringEdit.compose(edit.map(e => e.edit));
+			store.add(
+				runOnChange(doc.documentWithAnnotations.value, (_val, _prev, edit) => {
+					const e = AnnotatedStringEdit.compose(edit.map(e => e.edit));
 
-				const curSession = new Lazy(() => this._getDataAndSession());
+					const curSession = new Lazy(() => this._getDataAndSession());
 
-				for (const r of e.replacements) {
-					if (isAiEdit(r.data.editSource)) {
-						curSession.value.currentSession.aiCharacters += r.newText.length;
-					} else if (isUserEdit(r.data.editSource)) {
-						curSession.value.currentSession.typedCharacters += r.newText.length;
-					}
-				}
-
-				if (e.replacements.length > 0) {
-					const sessionToUpdate = curSession.value.currentSession;
-					const s = e.replacements[0].data.editSource;
-					if (s.metadata.source === 'inlineCompletionAccept') {
-						if (sessionToUpdate.acceptedInlineSuggestions === undefined) {
-							sessionToUpdate.acceptedInlineSuggestions = 0;
-						}
-						sessionToUpdate.acceptedInlineSuggestions += 1;
-					}
-
-					if (s.metadata.source === 'Chat.applyEdits' && s.metadata.$$requestId !== undefined) {
-						const didSeeRequestId = lastRequestIds.includes(s.metadata.$$requestId);
-						if (!didSeeRequestId) {
-							lastRequestIds.push(s.metadata.$$requestId);
-							if (lastRequestIds.length > 10) {
-								lastRequestIds.shift();
-							}
-							if (sessionToUpdate.chatEditCount === undefined) {
-								sessionToUpdate.chatEditCount = 0;
-							}
-							sessionToUpdate.chatEditCount += 1;
+					for (const r of e.replacements) {
+						if (isAiEdit(r.data.editSource)) {
+							curSession.value.currentSession.aiCharacters += r.newText.length;
+						} else if (isUserEdit(r.data.editSource)) {
+							curSession.value.currentSession.typedCharacters += r.newText.length;
 						}
 					}
-				}
 
-				if (curSession.hasValue) {
-					this._data.writeValue(curSession.value.data);
-					this._dataVersion.set(this._dataVersion.get() + 1, undefined);
-				}
-			}));
+					if (e.replacements.length > 0) {
+						const sessionToUpdate = curSession.value.currentSession;
+						const s = e.replacements[0].data.editSource;
+						if (s.metadata.source === 'inlineCompletionAccept') {
+							if (sessionToUpdate.acceptedInlineSuggestions === undefined) {
+								sessionToUpdate.acceptedInlineSuggestions = 0;
+							}
+							sessionToUpdate.acceptedInlineSuggestions += 1;
+						}
+
+						if (s.metadata.source === 'Chat.applyEdits' && s.metadata.$$requestId !== undefined) {
+							const didSeeRequestId = lastRequestIds.includes(s.metadata.$$requestId);
+							if (!didSeeRequestId) {
+								lastRequestIds.push(s.metadata.$$requestId);
+								if (lastRequestIds.length > 10) {
+									lastRequestIds.shift();
+								}
+								if (sessionToUpdate.chatEditCount === undefined) {
+									sessionToUpdate.chatEditCount = 0;
+								}
+								sessionToUpdate.chatEditCount += 1;
+							}
+						}
+					}
+
+					if (curSession.hasValue) {
+						this._data.writeValue(curSession.value.data);
+						this._dataVersion.set(this._dataVersion.get() + 1, undefined);
+					}
+				})
+			);
 		});
 
 		obs.recomputeInitiallyAndOnChange(this._store);
@@ -148,7 +162,7 @@ export class AiStatsFeature extends Disposable {
 				typedCharacters: 0,
 				aiCharacters: 0,
 				acceptedInlineSuggestions: 0,
-				chatEditCount: 0,
+				chatEditCount: 0
 			});
 			lastSession = state.sessions.at(-1)!;
 
@@ -175,7 +189,6 @@ interface ISession {
 	chatEditCount: number | undefined;
 }
 
-
 function average<T>(arr: T[], selector: (item: T) => number): number {
 	if (arr.length === 0) {
 		return 0;
@@ -183,7 +196,6 @@ function average<T>(arr: T[], selector: (item: T) => number): number {
 	const s = sumBy(arr, selector);
 	return s / arr.length;
 }
-
 
 interface IValue<T> {
 	writeValue(value: T | undefined): void;
@@ -195,12 +207,14 @@ function rateLimitWrite<T>(targetValue: IValue<T>, maxWritesPerSecond: number, s
 	let _value: T | undefined = undefined;
 	let valueVersion = 0;
 	let savedVersion = 0;
-	store.add(toDisposable(() => {
-		if (valueVersion !== savedVersion) {
-			targetValue.writeValue(_value);
-			savedVersion = valueVersion;
-		}
-	}));
+	store.add(
+		toDisposable(() => {
+			if (valueVersion !== savedVersion) {
+				targetValue.writeValue(_value);
+				savedVersion = valueVersion;
+			}
+		})
+	);
 
 	return {
 		writeValue(value: T | undefined): void {
@@ -224,7 +238,12 @@ function rateLimitWrite<T>(targetValue: IValue<T>, maxWritesPerSecond: number, s
 	};
 }
 
-function getStoredValue<T>(service: IStorageService, key: string, scope: StorageScope, target: StorageTarget): IValue<T> {
+function getStoredValue<T>(
+	service: IStorageService,
+	key: string,
+	scope: StorageScope,
+	target: StorageTarget
+): IValue<T> {
 	let lastValue: T | undefined = undefined;
 	let hasLastValue = false;
 	return {
@@ -241,7 +260,7 @@ function getStoredValue<T>(service: IStorageService, key: string, scope: Storage
 				return lastValue;
 			}
 			const strVal = service.get(key, scope);
-			lastValue = strVal === undefined ? undefined : JSON.parse(strVal) as T | undefined;
+			lastValue = strVal === undefined ? undefined : (JSON.parse(strVal) as T | undefined);
 			hasLastValue = true;
 			return lastValue;
 		}

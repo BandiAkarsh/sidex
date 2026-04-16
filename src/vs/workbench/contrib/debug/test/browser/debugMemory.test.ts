@@ -18,7 +18,7 @@ suite('Debug - Memory', () => {
 		type: 'response',
 		seq: 1,
 		request_seq: 1,
-		success: true,
+		success: true
 	};
 
 	ensureNoDisposablesAreLeakedInTestSuite();
@@ -44,34 +44,36 @@ suite('Debug - Memory', () => {
 			});
 
 			session.readMemory.callsFake((ref: string, fromOffset: number, count: number) => {
-				const res: DebugProtocol.ReadMemoryResponse = ({
+				const res: DebugProtocol.ReadMemoryResponse = {
 					...dapResponseCommon,
 					body: {
 						address: '0',
 						data: encodeBase64(memory.slice(fromOffset, fromOffset + Math.max(0, count - unreadable))),
 						unreadableBytes: unreadable
 					}
-				});
+				};
 
 				unreadable = 0;
 
 				return Promise.resolve(res);
 			});
 
-			session.writeMemory.callsFake((ref: string, fromOffset: number, data: string): DebugProtocol.WriteMemoryResponse => {
-				const decoded = decodeBase64(data);
-				for (let i = 0; i < decoded.byteLength; i++) {
-					memory.buffer[fromOffset + i] = decoded.buffer[i];
-				}
-
-				return ({
-					...dapResponseCommon,
-					body: {
-						bytesWritten: decoded.byteLength,
-						offset: fromOffset,
+			session.writeMemory.callsFake(
+				(ref: string, fromOffset: number, data: string): DebugProtocol.WriteMemoryResponse => {
+					const decoded = decodeBase64(data);
+					for (let i = 0; i < decoded.byteLength; i++) {
+						memory.buffer[fromOffset + i] = decoded.buffer[i];
 					}
-				});
-			});
+
+					return {
+						...dapResponseCommon,
+						body: {
+							bytesWritten: decoded.byteLength,
+							offset: fromOffset
+						}
+					};
+				}
+			);
 
 			// eslint-disable-next-line local/code-no-any-casts
 			region = new MemoryRegion('ref', session as any);
@@ -91,7 +93,7 @@ suite('Debug - Memory', () => {
 			unreadable = 3;
 			assert.deepStrictEqual(await region.read(10, 14), [
 				{ type: MemoryRangeType.Valid, offset: 10, length: 1, data: VSBuffer.wrap(new Uint8Array([10])) },
-				{ type: MemoryRangeType.Unreadable, offset: 11, length: 3 },
+				{ type: MemoryRangeType.Unreadable, offset: 11, length: 3 }
 			]);
 		});
 	});

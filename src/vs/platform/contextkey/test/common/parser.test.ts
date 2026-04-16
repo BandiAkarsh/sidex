@@ -11,21 +11,31 @@ function parseToStr(input: string): string {
 
 	const prints: string[] = [];
 
-	const print = (...ss: string[]) => { ss.forEach(s => prints.push(s)); };
+	const print = (...ss: string[]) => {
+		ss.forEach(s => prints.push(s));
+	};
 
 	const expr = parser.parse(input);
 	if (expr === undefined) {
 		if (parser.lexingErrors.length > 0) {
 			print('Lexing errors:', '\n\n');
-			parser.lexingErrors.forEach(lexingError => print(`Unexpected token '${lexingError.lexeme}' at offset ${lexingError.offset}. ${lexingError.additionalInfo}`, '\n'));
+			parser.lexingErrors.forEach(lexingError =>
+				print(
+					`Unexpected token '${lexingError.lexeme}' at offset ${lexingError.offset}. ${lexingError.additionalInfo}`,
+					'\n'
+				)
+			);
 		}
 
 		if (parser.parsingErrors.length > 0) {
-			if (parser.lexingErrors.length > 0) { print('\n --- \n'); }
+			if (parser.lexingErrors.length > 0) {
+				print('\n --- \n');
+			}
 			print('Parsing errors:', '\n\n');
-			parser.parsingErrors.forEach(parsingError => print(`Unexpected '${parsingError.lexeme}' at offset ${parsingError.offset}.`, '\n'));
+			parser.parsingErrors.forEach(parsingError =>
+				print(`Unexpected '${parsingError.lexeme}' at offset ${parsingError.offset}.`, '\n')
+			);
 		}
-
 	} else {
 		print(expr.serialize());
 	}
@@ -34,7 +44,6 @@ function parseToStr(input: string): string {
 }
 
 suite('Context Key Parser', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test(' foo', () => {
@@ -109,7 +118,10 @@ suite('Context Key Parser', () => {
 
 	test(`key contains &nbsp: view == vsc-packages-activitybar-folders && vsc-packages-folders-loaded`, () => {
 		const input = `view == vsc-packages-activitybar-folders && vsc-packages-folders-loaded`;
-		assert.deepStrictEqual(parseToStr(input), `vsc-packages-folders-loaded && view == 'vsc-packages-activitybar-folders'`);
+		assert.deepStrictEqual(
+			parseToStr(input),
+			`vsc-packages-folders-loaded && view == 'vsc-packages-activitybar-folders'`
+		);
 	});
 
 	test('foo.bar <= -1', () => {
@@ -163,34 +175,38 @@ suite('Context Key Parser', () => {
 			const input = ` viewItem == VSCode WorkSpace`;
 			assert.deepStrictEqual(parseToStr(input), `Parsing errors:\n\nUnexpected 'WorkSpace' at offset 20.\n`);
 		});
-
-
 	});
 
 	suite('regex', () => {
-
 		test(`resource =~ //foo/(barr|door/(Foo-Bar%20Templates|Soo%20Looo)|Web%20Site%Jjj%20Llll)(/.*)*$/`, () => {
 			const input = `resource =~ //foo/(barr|door/(Foo-Bar%20Templates|Soo%20Looo)|Web%20Site%Jjj%20Llll)(/.*)*$/`;
-			assert.deepStrictEqual(parseToStr(input), 'resource =~ /\\/foo\\/(barr|door\\/(Foo-Bar%20Templates|Soo%20Looo)|Web%20Site%Jjj%20Llll)(\\/.*)*$/');
+			assert.deepStrictEqual(
+				parseToStr(input),
+				'resource =~ /\\/foo\\/(barr|door\\/(Foo-Bar%20Templates|Soo%20Looo)|Web%20Site%Jjj%20Llll)(\\/.*)*$/'
+			);
 		});
 
 		test(`resource =~ /((/scratch/(?!update)(.*)/)|((/src/).*/)).*$/`, () => {
 			const input = `resource =~ /((/scratch/(?!update)(.*)/)|((/src/).*/)).*$/`;
-			assert.deepStrictEqual(parseToStr(input), 'resource =~ /((\\/scratch\\/(?!update)(.*)\\/)|((\\/src\\/).*\\/)).*$/');
+			assert.deepStrictEqual(
+				parseToStr(input),
+				'resource =~ /((\\/scratch\\/(?!update)(.*)\\/)|((\\/src\\/).*\\/)).*$/'
+			);
 		});
 
 		test(`resourcePath =~ /\.md(\.yml|\.txt)*$/giym`, () => {
 			const input = `resourcePath =~ /\.md(\.yml|\.txt)*$/giym`;
 			assert.deepStrictEqual(parseToStr(input), 'resourcePath =~ /.md(.yml|.txt)*$/im');
 		});
-
 	});
 
 	suite('error handling', () => {
-
 		test(`/foo`, () => {
 			const input = `/foo`;
-			assert.deepStrictEqual(parseToStr(input), `Lexing errors:\n\nUnexpected token '/foo' at offset 0. Did you forget to escape the '/' (slash) character? Put two backslashes before it to escape, e.g., '\\\\/'.\n\n --- \nParsing errors:\n\nUnexpected '/foo' at offset 0.\n`);
+			assert.deepStrictEqual(
+				parseToStr(input),
+				`Lexing errors:\n\nUnexpected token '/foo' at offset 0. Did you forget to escape the '/' (slash) character? Put two backslashes before it to escape, e.g., '\\\\/'.\n\n --- \nParsing errors:\n\nUnexpected '/foo' at offset 0.\n`
+			);
 		});
 
 		test(`!b == 'true'`, () => {
@@ -205,12 +221,18 @@ suite('Context Key Parser', () => {
 
 		test('vim<c-r> == 1 && vim<2<=3', () => {
 			const input = 'vim<c-r> == 1 && vim<2<=3';
-			assert.deepStrictEqual(parseToStr(input), `Lexing errors:\n\nUnexpected token '=' at offset 23. Did you mean == or =~?\n\n --- \nParsing errors:\n\nUnexpected '=' at offset 23.\n`); // FIXME
+			assert.deepStrictEqual(
+				parseToStr(input),
+				`Lexing errors:\n\nUnexpected token '=' at offset 23. Did you mean == or =~?\n\n --- \nParsing errors:\n\nUnexpected '=' at offset 23.\n`
+			); // FIXME
 		});
 
 		test(`foo && 'bar`, () => {
 			const input = `foo && 'bar`;
-			assert.deepStrictEqual(parseToStr(input), `Lexing errors:\n\nUnexpected token ''bar' at offset 7. Did you forget to open or close the quote?\n\n --- \nParsing errors:\n\nUnexpected ''bar' at offset 7.\n`);
+			assert.deepStrictEqual(
+				parseToStr(input),
+				`Lexing errors:\n\nUnexpected token ''bar' at offset 7. Did you forget to open or close the quote?\n\n --- \nParsing errors:\n\nUnexpected ''bar' at offset 7.\n`
+			);
 		});
 
 		test(`config.foo &&  &&bar =~ /^foo$|^bar-foo$|^joo$|^jar$/ && !foo`, () => {
@@ -227,7 +249,5 @@ suite('Context Key Parser', () => {
 			const input = `!!foo`;
 			assert.deepStrictEqual(parseToStr(input), `Parsing errors:\n\nUnexpected '!' at offset 1.\n`);
 		});
-
 	});
-
 });

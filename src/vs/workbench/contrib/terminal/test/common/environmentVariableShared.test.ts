@@ -4,8 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { deepStrictEqual } from 'assert';
-import { deserializeEnvironmentVariableCollection, serializeEnvironmentVariableCollection } from '../../../../../platform/terminal/common/environmentVariableShared.js';
-import { EnvironmentVariableMutatorType, IEnvironmentVariableMutator } from '../../../../../platform/terminal/common/environmentVariable.js';
+import {
+	deserializeEnvironmentVariableCollection,
+	serializeEnvironmentVariableCollection
+} from '../../../../../platform/terminal/common/environmentVariableShared.js';
+import {
+	EnvironmentVariableMutatorType,
+	IEnvironmentVariableMutator
+} from '../../../../../platform/terminal/common/environmentVariable.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('EnvironmentVariable - deserializeEnvironmentVariableCollection', () => {

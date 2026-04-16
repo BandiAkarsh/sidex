@@ -7,12 +7,23 @@ import { $, addDisposableListener, getActiveWindow } from '../../../../../base/b
 import { IContentActionHandler, renderFormattedText } from '../../../../../base/browser/formattedTextRenderer.js';
 import { StandardMouseEvent } from '../../../../../base/browser/mouseEvent.js';
 import { status } from '../../../../../base/browser/ui/aria/aria.js';
-import { WorkbenchActionExecutedClassification, WorkbenchActionExecutedEvent } from '../../../../../base/common/actions.js';
+import {
+	WorkbenchActionExecutedClassification,
+	WorkbenchActionExecutedEvent
+} from '../../../../../base/common/actions.js';
 import { Event } from '../../../../../base/common/event.js';
 import { Disposable } from '../../../../../base/common/lifecycle.js';
 import { Schemas } from '../../../../../base/common/network.js';
-import { ContentWidgetPositionPreference, ICodeEditor, IContentWidget, IContentWidgetPosition } from '../../../../../editor/browser/editorBrowser.js';
-import { EditorContributionInstantiation, registerEditorContribution } from '../../../../../editor/browser/editorExtensions.js';
+import {
+	ContentWidgetPositionPreference,
+	ICodeEditor,
+	IContentWidget,
+	IContentWidgetPosition
+} from '../../../../../editor/browser/editorBrowser.js';
+import {
+	EditorContributionInstantiation,
+	registerEditorContribution
+} from '../../../../../editor/browser/editorExtensions.js';
 import { ConfigurationChangedEvent, EditorOption } from '../../../../../editor/common/config/editorOptions.js';
 import { Position } from '../../../../../editor/common/core/position.js';
 import { IEditorContribution } from '../../../../../editor/common/editorCommon.js';
@@ -32,7 +43,6 @@ import './emptyTextEditorHint.css';
 
 export const emptyTextEditorHintSetting = 'workbench.editor.empty.hint';
 export class EmptyTextEditorHintContribution extends Disposable implements IEditorContribution {
-
 	static readonly ID = 'editor.contrib.emptyTextEditorHint';
 
 	private textHintContentWidget: EmptyTextEditorHintContentWidget | undefined;
@@ -48,16 +58,20 @@ export class EmptyTextEditorHintContribution extends Disposable implements IEdit
 		this._register(this.editor.onDidChangeModelLanguage(() => this.update()));
 		this._register(this.editor.onDidChangeModelContent(() => this.update()));
 		this._register(this.editor.onDidChangeModelDecorations(() => this.update()));
-		this._register(this.editor.onDidChangeConfiguration((e: ConfigurationChangedEvent) => {
-			if (e.hasChanged(EditorOption.readOnly)) {
-				this.update();
-			}
-		}));
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(emptyTextEditorHintSetting)) {
-				this.update();
-			}
-		}));
+		this._register(
+			this.editor.onDidChangeConfiguration((e: ConfigurationChangedEvent) => {
+				if (e.hasChanged(EditorOption.readOnly)) {
+					this.update();
+				}
+			})
+		);
+		this._register(
+			this.configurationService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration(emptyTextEditorHintSetting)) {
+					this.update();
+				}
+			})
+		);
 	}
 
 	protected shouldRenderHint() {
@@ -72,7 +86,12 @@ export class EmptyTextEditorHintContribution extends Disposable implements IEdit
 
 		const model = this.editor.getModel();
 		const languageId = model?.getLanguageId();
-		if (!model || languageId === OUTPUT_MODE_ID || languageId === LOG_MODE_ID || languageId === SEARCH_RESULT_LANGUAGE_ID) {
+		if (
+			!model ||
+			languageId === OUTPUT_MODE_ID ||
+			languageId === LOG_MODE_ID ||
+			languageId === SEARCH_RESULT_LANGUAGE_ID
+		) {
 			return false;
 		}
 
@@ -80,12 +99,17 @@ export class EmptyTextEditorHintContribution extends Disposable implements IEdit
 			return false;
 		}
 
-		const hasConflictingDecorations = Boolean(this.editor.getLineDecorations(1)?.find((d) =>
-			d.options.beforeContentClassName
-			|| d.options.afterContentClassName
-			|| d.options.before?.content
-			|| d.options.after?.content
-		));
+		const hasConflictingDecorations = Boolean(
+			this.editor
+				.getLineDecorations(1)
+				?.find(
+					d =>
+						d.options.beforeContentClassName ||
+						d.options.afterContentClassName ||
+						d.options.before?.content ||
+						d.options.after?.content
+				)
+		);
 		if (hasConflictingDecorations) {
 			return false;
 		}
@@ -97,7 +121,10 @@ export class EmptyTextEditorHintContribution extends Disposable implements IEdit
 	protected update(): void {
 		const shouldRenderHint = this.shouldRenderHint();
 		if (shouldRenderHint && !this.textHintContentWidget) {
-			this.textHintContentWidget = this.instantiationService.createInstance(EmptyTextEditorHintContentWidget, this.editor);
+			this.textHintContentWidget = this.instantiationService.createInstance(
+				EmptyTextEditorHintContentWidget,
+				this.editor
+			);
 		} else if (!shouldRenderHint && this.textHintContentWidget) {
 			this.textHintContentWidget.dispose();
 			this.textHintContentWidget = undefined;
@@ -112,7 +139,6 @@ export class EmptyTextEditorHintContribution extends Disposable implements IEdit
 }
 
 class EmptyTextEditorHintContentWidget extends Disposable implements IContentWidget {
-
 	private static readonly ID = 'editor.widget.emptyHint';
 
 	private domNode: HTMLElement | undefined;
@@ -125,21 +151,30 @@ class EmptyTextEditorHintContentWidget extends Disposable implements IContentWid
 		@IConfigurationService private readonly configurationService: IConfigurationService,
 		@IKeybindingService private readonly keybindingService: IKeybindingService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		@IContextMenuService private readonly contextMenuService: IContextMenuService
 	) {
 		super();
 
-		this._register(this.editor.onDidChangeConfiguration((e: ConfigurationChangedEvent) => {
-			if (this.domNode && e.hasChanged(EditorOption.fontInfo)) {
-				this.editor.applyFontInfo(this.domNode);
-			}
-		}));
+		this._register(
+			this.editor.onDidChangeConfiguration((e: ConfigurationChangedEvent) => {
+				if (this.domNode && e.hasChanged(EditorOption.fontInfo)) {
+					this.editor.applyFontInfo(this.domNode);
+				}
+			})
+		);
 		const onDidFocusEditorText = Event.debounce(this.editor.onDidFocusEditorText, () => undefined, 500);
-		this._register(onDidFocusEditorText(() => {
-			if (this.editor.hasTextFocus() && this.isVisible && this.ariaLabel && this.configurationService.getValue(AccessibilityVerbositySettingId.EmptyEditorHint)) {
-				status(this.ariaLabel);
-			}
-		}));
+		this._register(
+			onDidFocusEditorText(() => {
+				if (
+					this.editor.hasTextFocus() &&
+					this.isVisible &&
+					this.ariaLabel &&
+					this.configurationService.getValue(AccessibilityVerbositySettingId.EmptyEditorHint)
+				) {
+					status(this.ariaLabel);
+				}
+			})
+		);
 		this.editor.addContentWidget(this);
 	}
 
@@ -160,18 +195,21 @@ class EmptyTextEditorHintContentWidget extends Disposable implements IContentWid
 		}
 
 		this.contextMenuService.showContextMenu({
-			getAnchor: () => { return new StandardMouseEvent(getActiveWindow(), e); },
+			getAnchor: () => {
+				return new StandardMouseEvent(getActiveWindow(), e);
+			},
 			getActions: () => {
-				return [{
-					id: 'workench.action.disableEmptyEditorHint',
-					label: localize('disableEditorEmptyHint', "Disable Empty Editor Hint"),
-					tooltip: localize('disableEditorEmptyHint', "Disable Empty Editor Hint"),
-					enabled: true,
-					class: undefined,
-					run: () => {
-						disableHint();
+				return [
+					{
+						id: 'workench.action.disableEmptyEditorHint',
+						label: localize('disableEditorEmptyHint', 'Disable Empty Editor Hint'),
+						tooltip: localize('disableEditorEmptyHint', 'Disable Empty Editor Hint'),
+						enabled: true,
+						class: undefined,
+						run: () => {
+							disableHint();
+						}
 					}
-				}
 				];
 			}
 		});
@@ -195,30 +233,38 @@ class EmptyTextEditorHintContentWidget extends Disposable implements IContentWid
 		const languageOnClickOrTap = async (e: UIEvent) => {
 			e.stopPropagation();
 			this.editor.focus();
-			this.telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', {
-				id: ChangeLanguageAction.ID,
-				from: 'hint'
-			});
+			this.telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>(
+				'workbenchActionExecuted',
+				{
+					id: ChangeLanguageAction.ID,
+					from: 'hint'
+				}
+			);
 			await this.commandService.executeCommand(ChangeLanguageAction.ID);
 			this.editor.focus();
 		};
 
 		const keybindingLabel = this.keybindingService.lookupKeybinding(ChangeLanguageAction.ID)?.getLabel();
 
-		const hintMsg = localize({
-			key: 'emptyTextEditorHintWithoutInlineChat',
-			comment: [
-				'Preserve double-square brackets and their order',
-				'language refers to a programming language'
-			]
-		}, '[[Select a language]] ({0}) to get started. Start typing to dismiss or [[don\'t show]] this again.', keybindingLabel ?? '').replaceAll(' ()', '');
+		const hintMsg = localize(
+			{
+				key: 'emptyTextEditorHintWithoutInlineChat',
+				comment: ['Preserve double-square brackets and their order', 'language refers to a programming language']
+			},
+			"[[Select a language]] ({0}) to get started. Start typing to dismiss or [[don't show]] this again.",
+			keybindingLabel ?? ''
+		).replaceAll(' ()', '');
 		const hintElement = renderFormattedText(hintMsg, {
 			actionHandler: hintHandler,
-			renderCodeSegments: false,
+			renderCodeSegments: false
 		});
 		hintElement.style.fontStyle = 'italic';
 
-		const ariaLabel = localize('defaultHintAriaLabelWithoutInlineChat', 'Execute {0} to select a language and get started. Start typing to dismiss.', keybindingLabel);
+		const ariaLabel = localize(
+			'defaultHintAriaLabelWithoutInlineChat',
+			'Execute {0} to select a language and get started. Start typing to dismiss.',
+			keybindingLabel
+		);
 		// eslint-disable-next-line no-restricted-syntax
 		for (const anchor of hintElement.querySelectorAll('a')) {
 			anchor.style.cursor = 'pointer';
@@ -235,11 +281,19 @@ class EmptyTextEditorHintContentWidget extends Disposable implements IContentWid
 
 			const { hintElement, ariaLabel } = this.getHint();
 			this.domNode.append(hintElement);
-			this.ariaLabel = ariaLabel.concat(localize('disableHint', ' Toggle {0} in settings to disable this hint.', AccessibilityVerbositySettingId.EmptyEditorHint));
+			this.ariaLabel = ariaLabel.concat(
+				localize(
+					'disableHint',
+					' Toggle {0} in settings to disable this hint.',
+					AccessibilityVerbositySettingId.EmptyEditorHint
+				)
+			);
 
-			this._register(addDisposableListener(this.domNode, 'click', () => {
-				this.editor.focus();
-			}));
+			this._register(
+				addDisposableListener(this.domNode, 'click', () => {
+					this.editor.focus();
+				})
+			);
 
 			this.editor.applyFontInfo(this.domNode);
 			const lineHeight = this.editor.getLineHeightForPosition(new Position(1, 1));
@@ -263,4 +317,8 @@ class EmptyTextEditorHintContentWidget extends Disposable implements IContentWid
 	}
 }
 
-registerEditorContribution(EmptyTextEditorHintContribution.ID, EmptyTextEditorHintContribution, EditorContributionInstantiation.Eager); // eager because it needs to render a help message
+registerEditorContribution(
+	EmptyTextEditorHintContribution.ID,
+	EmptyTextEditorHintContribution,
+	EditorContributionInstantiation.Eager
+); // eager because it needs to render a help message

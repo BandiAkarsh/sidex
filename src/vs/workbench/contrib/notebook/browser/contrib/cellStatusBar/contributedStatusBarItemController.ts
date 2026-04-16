@@ -7,7 +7,12 @@ import { Throttler } from '../../../../../../base/common/async.js';
 import { CancellationTokenSource } from '../../../../../../base/common/cancellation.js';
 import { Disposable, toDisposable } from '../../../../../../base/common/lifecycle.js';
 import { NotebookVisibleCellObserver } from './notebookVisibleCellObserver.js';
-import { ICellViewModel, INotebookEditor, INotebookEditorContribution, INotebookViewModel } from '../../notebookBrowser.js';
+import {
+	ICellViewModel,
+	INotebookEditor,
+	INotebookEditorContribution,
+	INotebookViewModel
+} from '../../notebookBrowser.js';
 import { registerNotebookContribution } from '../../notebookEditorExtensions.js';
 import { INotebookCellStatusBarService } from '../../../common/notebookCellStatusBarService.js';
 import { INotebookCellStatusBarItemList } from '../../../common/notebookCommon.js';
@@ -43,10 +48,7 @@ export class ContributedStatusBarItemController extends Disposable implements IN
 		itemsToUpdate.forEach(handle => this._visibleCells.get(handle)?.update());
 	}
 
-	private _updateVisibleCells(e: {
-		added: ICellViewModel[];
-		removed: { handle: number }[];
-	}): void {
+	private _updateVisibleCells(e: { added: ICellViewModel[]; removed: { handle: number }[] }): void {
 		const vm = this._notebookEditor.getViewModel();
 		if (!vm) {
 			return;
@@ -114,15 +116,22 @@ class CellStatusBarHelper extends Disposable {
 		const viewType = this._notebookViewModel.notebookDocument.viewType;
 
 		this._activeToken?.dispose(true);
-		const tokenSource = this._activeToken = new CancellationTokenSource();
-		const itemLists = await this._notebookCellStatusBarService.getStatusBarItemsForCell(docUri, cellIndex, viewType, tokenSource.token);
+		const tokenSource = (this._activeToken = new CancellationTokenSource());
+		const itemLists = await this._notebookCellStatusBarService.getStatusBarItemsForCell(
+			docUri,
+			cellIndex,
+			viewType,
+			tokenSource.token
+		);
 		if (tokenSource.token.isCancellationRequested) {
 			itemLists.forEach(itemList => itemList.dispose && itemList.dispose());
 			return;
 		}
 
 		const items = itemLists.map(itemList => itemList.items).flat();
-		const newIds = this._notebookViewModel.deltaCellStatusBarItems(this._currentItemIds, [{ handle: this._cell.handle, items }]);
+		const newIds = this._notebookViewModel.deltaCellStatusBarItems(this._currentItemIds, [
+			{ handle: this._cell.handle, items }
+		]);
 
 		this._currentItemLists.forEach(itemList => itemList.dispose && itemList.dispose());
 		this._currentItemLists = itemLists;

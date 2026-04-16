@@ -7,7 +7,11 @@ import type * as vscode from 'vscode';
 import { TerminalShellExecutionCommandLineConfidence } from './extHostTypes.js';
 import { Disposable, DisposableStore, toDisposable } from '../../../base/common/lifecycle.js';
 import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
-import { MainContext, type ExtHostTerminalShellIntegrationShape, type MainThreadTerminalShellIntegrationShape } from './extHost.protocol.js';
+import {
+	MainContext,
+	type ExtHostTerminalShellIntegrationShape,
+	type MainThreadTerminalShellIntegrationShape
+} from './extHost.protocol.js';
 import { IExtHostRpcService } from './extHostRpcService.js';
 import { IExtHostTerminalService } from './extHostTerminalService.js';
 import { Emitter, type Event } from '../../../base/common/event.js';
@@ -21,38 +25,47 @@ export interface IExtHostTerminalShellIntegration extends ExtHostTerminalShellIn
 	readonly onDidStartTerminalShellExecution: Event<vscode.TerminalShellExecutionStartEvent>;
 	readonly onDidEndTerminalShellExecution: Event<vscode.TerminalShellExecutionEndEvent>;
 }
-export const IExtHostTerminalShellIntegration = createDecorator<IExtHostTerminalShellIntegration>('IExtHostTerminalShellIntegration');
+export const IExtHostTerminalShellIntegration = createDecorator<IExtHostTerminalShellIntegration>(
+	'IExtHostTerminalShellIntegration'
+);
 
 export class ExtHostTerminalShellIntegration extends Disposable implements IExtHostTerminalShellIntegration {
-
 	readonly _serviceBrand: undefined;
 
 	protected _proxy: MainThreadTerminalShellIntegrationShape;
 
-	private _activeShellIntegrations: Map</*instanceId*/number, InternalTerminalShellIntegration> = new Map();
+	private _activeShellIntegrations: Map</*instanceId*/ number, InternalTerminalShellIntegration> = new Map();
 
-	protected readonly _onDidChangeTerminalShellIntegration = this._register(new Emitter<vscode.TerminalShellIntegrationChangeEvent>());
+	protected readonly _onDidChangeTerminalShellIntegration = this._register(
+		new Emitter<vscode.TerminalShellIntegrationChangeEvent>()
+	);
 	readonly onDidChangeTerminalShellIntegration = this._onDidChangeTerminalShellIntegration.event;
-	protected readonly _onDidStartTerminalShellExecution = this._register(new Emitter<vscode.TerminalShellExecutionStartEvent>());
+	protected readonly _onDidStartTerminalShellExecution = this._register(
+		new Emitter<vscode.TerminalShellExecutionStartEvent>()
+	);
 	readonly onDidStartTerminalShellExecution = this._onDidStartTerminalShellExecution.event;
-	protected readonly _onDidEndTerminalShellExecution = this._register(new Emitter<vscode.TerminalShellExecutionEndEvent>());
+	protected readonly _onDidEndTerminalShellExecution = this._register(
+		new Emitter<vscode.TerminalShellExecutionEndEvent>()
+	);
 	readonly onDidEndTerminalShellExecution = this._onDidEndTerminalShellExecution.event;
 
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
-		@IExtHostTerminalService private readonly _extHostTerminalService: IExtHostTerminalService,
+		@IExtHostTerminalService private readonly _extHostTerminalService: IExtHostTerminalService
 	) {
 		super();
 
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadTerminalShellIntegration);
 
 		// Clean up listeners
-		this._register(toDisposable(() => {
-			for (const [_, integration] of this._activeShellIntegrations) {
-				integration.dispose();
-			}
-			this._activeShellIntegrations.clear();
-		}));
+		this._register(
+			toDisposable(() => {
+				for (const [_, integration] of this._activeShellIntegrations) {
+					integration.dispose();
+				}
+				this._activeShellIntegrations.clear();
+			})
+		);
 
 		// Convenient test code:
 		// this.onDidChangeTerminalShellIntegration(e => {
@@ -90,12 +103,24 @@ export class ExtHostTerminalShellIntegration extends Disposable implements IExtH
 		const apiTerminal = terminal.value;
 		let shellIntegration = this._activeShellIntegrations.get(instanceId);
 		if (!shellIntegration) {
-			shellIntegration = new InternalTerminalShellIntegration(terminal.value, supportsExecuteCommandApi, this._onDidStartTerminalShellExecution);
+			shellIntegration = new InternalTerminalShellIntegration(
+				terminal.value,
+				supportsExecuteCommandApi,
+				this._onDidStartTerminalShellExecution
+			);
 			this._activeShellIntegrations.set(instanceId, shellIntegration);
-			shellIntegration.store.add(terminal.onWillDispose(() => this._activeShellIntegrations.get(instanceId)?.dispose()));
-			shellIntegration.store.add(shellIntegration.onDidRequestShellExecution(commandLine => this._proxy.$executeCommand(instanceId, commandLine)));
-			shellIntegration.store.add(shellIntegration.onDidRequestEndExecution(e => this._onDidEndTerminalShellExecution.fire(e)));
-			shellIntegration.store.add(shellIntegration.onDidRequestChangeShellIntegration(e => this._onDidChangeTerminalShellIntegration.fire(e)));
+			shellIntegration.store.add(
+				terminal.onWillDispose(() => this._activeShellIntegrations.get(instanceId)?.dispose())
+			);
+			shellIntegration.store.add(
+				shellIntegration.onDidRequestShellExecution(commandLine => this._proxy.$executeCommand(instanceId, commandLine))
+			);
+			shellIntegration.store.add(
+				shellIntegration.onDidRequestEndExecution(e => this._onDidEndTerminalShellExecution.fire(e))
+			);
+			shellIntegration.store.add(
+				shellIntegration.onDidRequestChangeShellIntegration(e => this._onDidChangeTerminalShellIntegration.fire(e))
+			);
 			terminal.shellIntegration = shellIntegration.value;
 		}
 		this._onDidChangeTerminalShellIntegration.fire({
@@ -104,7 +129,14 @@ export class ExtHostTerminalShellIntegration extends Disposable implements IExtH
 		});
 	}
 
-	public $shellExecutionStart(instanceId: number, supportsExecuteCommandApi: boolean, commandLineValue: string, commandLineConfidence: TerminalShellExecutionCommandLineConfidence, isTrusted: boolean, cwd: string | undefined): void {
+	public $shellExecutionStart(
+		instanceId: number,
+		supportsExecuteCommandApi: boolean,
+		commandLineValue: string,
+		commandLineConfidence: TerminalShellExecutionCommandLineConfidence,
+		isTrusted: boolean,
+		cwd: string | undefined
+	): void {
 		// Force shellIntegration creation if it hasn't been created yet, this could when events
 		// don't come through on startup
 		if (!this._activeShellIntegrations.has(instanceId)) {
@@ -118,7 +150,13 @@ export class ExtHostTerminalShellIntegration extends Disposable implements IExtH
 		this._activeShellIntegrations.get(instanceId)?.startShellExecution(commandLine, this._convertCwdToUri(cwd));
 	}
 
-	public $shellExecutionEnd(instanceId: number, commandLineValue: string, commandLineConfidence: TerminalShellExecutionCommandLineConfidence, isTrusted: boolean, exitCode: number | undefined): void {
+	public $shellExecutionEnd(
+		instanceId: number,
+		commandLineValue: string,
+		commandLineConfidence: TerminalShellExecutionCommandLineConfidence,
+		isTrusted: boolean,
+		exitCode: number | undefined
+	): void {
 		const commandLine: vscode.TerminalShellExecutionCommandLine = {
 			value: commandLineValue,
 			confidence: commandLineConfidence,
@@ -131,7 +169,12 @@ export class ExtHostTerminalShellIntegration extends Disposable implements IExtH
 		this._activeShellIntegrations.get(instanceId)?.emitData(data);
 	}
 
-	public $shellEnvChange(instanceId: number, shellEnvKeys: string[], shellEnvValues: string[], isTrusted: boolean): void {
+	public $shellEnvChange(
+		instanceId: number,
+		shellEnvKeys: string[],
+		shellEnvValues: string[],
+		isTrusted: boolean
+	): void {
 		this._activeShellIntegrations.get(instanceId)?.setEnv(shellEnvKeys, shellEnvValues, isTrusted);
 	}
 
@@ -164,8 +207,9 @@ export class InternalTerminalShellIntegration extends Disposable {
 
 	private _currentExecutionProperties: IExecutionProperties | undefined;
 	private _currentExecution: InternalTerminalShellExecution | undefined;
-	get currentExecution(): InternalTerminalShellExecution | undefined { return this._currentExecution; }
-
+	get currentExecution(): InternalTerminalShellExecution | undefined {
+		return this._currentExecution;
+	}
 
 	private _env: vscode.TerminalShellIntegrationEnvironment | undefined;
 	private _cwd: URI | undefined;
@@ -174,7 +218,9 @@ export class InternalTerminalShellIntegration extends Disposable {
 
 	readonly value: vscode.TerminalShellIntegration;
 
-	protected readonly _onDidRequestChangeShellIntegration = this._register(new Emitter<vscode.TerminalShellIntegrationChangeEvent>());
+	protected readonly _onDidRequestChangeShellIntegration = this._register(
+		new Emitter<vscode.TerminalShellIntegrationChangeEvent>()
+	);
 	readonly onDidRequestChangeShellIntegration = this._onDidRequestChangeShellIntegration.event;
 	protected readonly _onDidRequestShellExecution = this._register(new Emitter<string>());
 	readonly onDidRequestShellExecution = this._onDidRequestShellExecution.event;
@@ -242,7 +288,7 @@ export class InternalTerminalShellIntegration extends Disposable {
 		if (unresolvedCommandLines.length > 1) {
 			this._currentExecutionProperties = {
 				isMultiLine: true,
-				unresolvedCommandLines: splitAndSanitizeCommandLine(commandLine.value),
+				unresolvedCommandLines: splitAndSanitizeCommandLine(commandLine.value)
 			};
 		}
 		this._pendingExecutions.push(execution);
@@ -255,7 +301,12 @@ export class InternalTerminalShellIntegration extends Disposable {
 		// end. When this happens it means that the data stream may not be flushed and therefore may
 		// fire events after the end event.
 		if (this._pendingEndingExecution) {
-			this._onDidRequestEndExecution.fire({ terminal: this._terminal, shellIntegration: this.value, execution: this._pendingEndingExecution.value, exitCode: undefined });
+			this._onDidRequestEndExecution.fire({
+				terminal: this._terminal,
+				shellIntegration: this.value,
+				execution: this._pendingEndingExecution.value,
+				exitCode: undefined
+			});
 			this._pendingEndingExecution = undefined;
 		}
 
@@ -270,7 +321,12 @@ export class InternalTerminalShellIntegration extends Disposable {
 			}
 			this._currentExecution.endExecution(undefined);
 			this._currentExecution.flush();
-			this._onDidRequestEndExecution.fire({ terminal: this._terminal, shellIntegration: this.value, execution: this._currentExecution.value, exitCode: undefined });
+			this._onDidRequestEndExecution.fire({
+				terminal: this._terminal,
+				shellIntegration: this.value,
+				execution: this._currentExecution.value,
+				exitCode: undefined
+			});
 		}
 
 		// Get the matching pending execution, how strict this is depends on the confidence of the
@@ -282,17 +338,20 @@ export class InternalTerminalShellIntegration extends Disposable {
 					currentExecution = execution;
 					this._currentExecutionProperties = {
 						isMultiLine: false,
-						unresolvedCommandLines: undefined,
+						unresolvedCommandLines: undefined
 					};
 					currentExecution = execution;
 					this._pendingExecutions.splice(i, 1);
 					break;
 				} else {
-					const subExecutionResult = isSubExecution(splitAndSanitizeCommandLine(execution.value.commandLine.value), commandLine);
+					const subExecutionResult = isSubExecution(
+						splitAndSanitizeCommandLine(execution.value.commandLine.value),
+						commandLine
+					);
 					if (subExecutionResult) {
 						this._currentExecutionProperties = {
 							isMultiLine: true,
-							unresolvedCommandLines: subExecutionResult.unresolvedCommandLines,
+							unresolvedCommandLines: subExecutionResult.unresolvedCommandLines
 						};
 						currentExecution = execution;
 						this._pendingExecutions.splice(i, 1);
@@ -311,24 +370,36 @@ export class InternalTerminalShellIntegration extends Disposable {
 		}
 
 		this._currentExecution = currentExecution;
-		this._onDidStartTerminalShellExecution.fire({ terminal: this._terminal, shellIntegration: this.value, execution: this._currentExecution.value });
+		this._onDidStartTerminalShellExecution.fire({
+			terminal: this._terminal,
+			shellIntegration: this.value,
+			execution: this._currentExecution.value
+		});
 	}
 
 	emitData(data: string): void {
 		this.currentExecution?.emitData(data);
 	}
 
-	endShellExecution(commandLine: vscode.TerminalShellExecutionCommandLine | undefined, exitCode: number | undefined): void {
+	endShellExecution(
+		commandLine: vscode.TerminalShellExecutionCommandLine | undefined,
+		exitCode: number | undefined
+	): void {
 		// If the current execution is multi-line, don't end it until the next command line is
 		// confirmed to not be a part of it.
 		if (this._currentExecutionProperties?.isMultiLine) {
-			if (this._currentExecutionProperties.unresolvedCommandLines && this._currentExecutionProperties.unresolvedCommandLines.length > 0) {
+			if (
+				this._currentExecutionProperties.unresolvedCommandLines &&
+				this._currentExecutionProperties.unresolvedCommandLines.length > 0
+			) {
 				return;
 			}
 		}
 
 		if (this._currentExecution) {
-			const commandLineForEvent = this._currentExecutionProperties?.isMultiLine ? this._currentExecution.value.commandLine : commandLine;
+			const commandLineForEvent = this._currentExecutionProperties?.isMultiLine
+				? this._currentExecution.value.commandLine
+				: commandLine;
 			this._currentExecution.endExecution(commandLineForEvent);
 			const currentExecution = this._currentExecution;
 			this._pendingEndingExecution = currentExecution;
@@ -339,7 +410,12 @@ export class InternalTerminalShellIntegration extends Disposable {
 				// Only fire if it's still the same execution, if it's changed it would have already
 				// been fired.
 				if (this._pendingEndingExecution === currentExecution) {
-					this._onDidRequestEndExecution.fire({ terminal: this._terminal, shellIntegration: this.value, execution: currentExecution.value, exitCode });
+					this._onDidRequestEndExecution.fire({
+						terminal: this._terminal,
+						shellIntegration: this.value,
+						execution: currentExecution.value,
+						exitCode
+					});
 					this._pendingEndingExecution = undefined;
 				}
 			});
@@ -381,7 +457,7 @@ class InternalTerminalShellExecution {
 
 	constructor(
 		private _commandLine: vscode.TerminalShellExecutionCommandLine,
-		readonly cwd: URI | undefined,
+		readonly cwd: URI | undefined
 	) {
 		const that = this;
 		this.value = {
@@ -475,7 +551,10 @@ function splitAndSanitizeCommandLine(commandLine: string): string[] {
  * a comment followed by a command, this needs to all be tracked under a single
  * execution.
  */
-function isSubExecution(unresolvedCommandLines: string[], commandLine: vscode.TerminalShellExecutionCommandLine): { unresolvedCommandLines: string[] } | false {
+function isSubExecution(
+	unresolvedCommandLines: string[],
+	commandLine: vscode.TerminalShellExecutionCommandLine
+): { unresolvedCommandLines: string[] } | false {
 	if (unresolvedCommandLines.length === 0) {
 		return false;
 	}

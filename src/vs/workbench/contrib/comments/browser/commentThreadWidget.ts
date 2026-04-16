@@ -35,7 +35,10 @@ import { isCodeEditor } from '../../../../editor/browser/editorBrowser.js';
 
 export const COMMENTEDITOR_DECORATION_KEY = 'commenteditordecoration';
 
-export class CommentThreadWidget<T extends IRange | ICellRange = IRange> extends Disposable implements ICommentThreadWidget {
+export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
+	extends Disposable
+	implements ICommentThreadWidget
+{
 	private _header!: CommentThreadHeader<T>;
 	private _body: CommentThreadBody<T>;
 	private _commentReply?: CommentReply<T>;
@@ -81,15 +84,17 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange> extends
 
 		this._commentMenus = this.commentService.getCommentMenus(this._owner);
 
-		this._register(this._header = this._scopedInstantiationService.createInstance(
-			CommentThreadHeader,
-			container,
-			{
-				collapse: this._containerDelegate.collapse.bind(this)
-			},
-			this._commentMenus,
-			this._commentThread
-		));
+		this._register(
+			(this._header = this._scopedInstantiationService.createInstance(
+				CommentThreadHeader,
+				container,
+				{
+					collapse: this._containerDelegate.collapse.bind(this)
+				},
+				this._commentMenus,
+				this._commentThread
+			))
+		);
 
 		this._header.updateCommentThread(this._commentThread);
 
@@ -98,27 +103,31 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange> extends
 		this._register(toDisposable(() => bodyElement.remove()));
 
 		const tracker = this._register(dom.trackFocus(bodyElement));
-		this._register(registerNavigableContainer({
-			name: 'commentThreadWidget',
-			focusNotifiers: [tracker],
-			focusNextWidget: () => {
-				if (!this._commentReply?.isCommentEditorFocused()) {
-					this._commentReply?.expandReplyAreaAndFocusCommentEditor();
+		this._register(
+			registerNavigableContainer({
+				name: 'commentThreadWidget',
+				focusNotifiers: [tracker],
+				focusNextWidget: () => {
+					if (!this._commentReply?.isCommentEditorFocused()) {
+						this._commentReply?.expandReplyAreaAndFocusCommentEditor();
+					}
+				},
+				focusPreviousWidget: () => {
+					if (this._commentReply?.isCommentEditorFocused() && this._commentThread.comments?.length) {
+						this._body.focus();
+					}
 				}
-			},
-			focusPreviousWidget: () => {
-				if (this._commentReply?.isCommentEditorFocused() && this._commentThread.comments?.length) {
-					this._body.focus();
-				}
-			}
-		}));
+			})
+		);
 		this._register(tracker.onDidFocus(() => this._focusedContextKey.set(true)));
 		this._register(tracker.onDidBlur(() => this._focusedContextKey.reset()));
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(AccessibilityVerbositySettingId.Comments)) {
-				this._setAriaLabel();
-			}
-		}));
+		this._register(
+			this.configurationService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration(AccessibilityVerbositySettingId.Comments)) {
+					this._setAriaLabel();
+				}
+			})
+		);
 		this._body = this._scopedInstantiationService.createInstance(
 			CommentThreadBody,
 			this._parentEditor,
@@ -152,16 +161,28 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange> extends
 	}
 
 	private _setAriaLabel(): void {
-		let ariaLabel = localize('commentLabel', "Comment");
+		let ariaLabel = localize('commentLabel', 'Comment');
 		let keybinding: string | undefined;
 		const verbose = this.configurationService.getValue(AccessibilityVerbositySettingId.Comments);
 		if (verbose) {
-			keybinding = this._keybindingService.lookupKeybinding(AccessibilityCommandId.OpenAccessibilityHelp, this._contextKeyService)?.getLabel() ?? undefined;
+			keybinding =
+				this._keybindingService
+					.lookupKeybinding(AccessibilityCommandId.OpenAccessibilityHelp, this._contextKeyService)
+					?.getLabel() ?? undefined;
 		}
 		if (keybinding) {
-			ariaLabel = localize('commentLabelWithKeybinding', "{0}, use ({1}) for accessibility help", ariaLabel, keybinding);
+			ariaLabel = localize(
+				'commentLabelWithKeybinding',
+				'{0}, use ({1}) for accessibility help',
+				ariaLabel,
+				keybinding
+			);
 		} else if (verbose) {
-			ariaLabel = localize('commentLabelWithKeybindingNoKeybinding', "{0}, run the command Open Accessibility Help which is currently not triggerable via keybinding.", ariaLabel);
+			ariaLabel = localize(
+				'commentLabelWithKeybindingNoKeybinding',
+				'{0}, run the command Open Accessibility Help which is currently not triggerable via keybinding.',
+				ariaLabel
+			);
 		}
 		this._body.container.ariaLabel = ariaLabel;
 	}
@@ -177,31 +198,61 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange> extends
 	private currentThreadListeners() {
 		let hasMouse = false;
 		let hasFocus = false;
-		this._register(dom.addDisposableListener(this.container, dom.EventType.MOUSE_ENTER, (e) => {
-			if (e.relatedTarget === this.container) {
-				hasMouse = true;
-				this.updateCurrentThread(hasMouse, hasFocus);
-			}
-		}, true));
-		this._register(dom.addDisposableListener(this.container, dom.EventType.MOUSE_LEAVE, (e) => {
-			if (e.relatedTarget === this.container) {
-				hasMouse = false;
-				this.updateCurrentThread(hasMouse, hasFocus);
-			}
-		}, true));
-		this._register(dom.addDisposableListener(this.container, dom.EventType.FOCUS_IN, () => {
-			hasFocus = true;
-			this.updateCurrentThread(hasMouse, hasFocus);
-		}, true));
-		this._register(dom.addDisposableListener(this.container, dom.EventType.FOCUS_OUT, () => {
-			hasFocus = false;
-			this.updateCurrentThread(hasMouse, hasFocus);
-		}, true));
+		this._register(
+			dom.addDisposableListener(
+				this.container,
+				dom.EventType.MOUSE_ENTER,
+				e => {
+					if (e.relatedTarget === this.container) {
+						hasMouse = true;
+						this.updateCurrentThread(hasMouse, hasFocus);
+					}
+				},
+				true
+			)
+		);
+		this._register(
+			dom.addDisposableListener(
+				this.container,
+				dom.EventType.MOUSE_LEAVE,
+				e => {
+					if (e.relatedTarget === this.container) {
+						hasMouse = false;
+						this.updateCurrentThread(hasMouse, hasFocus);
+					}
+				},
+				true
+			)
+		);
+		this._register(
+			dom.addDisposableListener(
+				this.container,
+				dom.EventType.FOCUS_IN,
+				() => {
+					hasFocus = true;
+					this.updateCurrentThread(hasMouse, hasFocus);
+				},
+				true
+			)
+		);
+		this._register(
+			dom.addDisposableListener(
+				this.container,
+				dom.EventType.FOCUS_OUT,
+				() => {
+					hasFocus = false;
+					this.updateCurrentThread(hasMouse, hasFocus);
+				},
+				true
+			)
+		);
 	}
 
 	async updateCommentThread(commentThread: languages.CommentThread<T>) {
-		const shouldCollapse = (this._commentThread.collapsibleState === languages.CommentThreadCollapsibleState.Expanded) && (this._commentThreadState === languages.CommentThreadState.Unresolved)
-			&& (commentThread.state === languages.CommentThreadState.Resolved);
+		const shouldCollapse =
+			this._commentThread.collapsibleState === languages.CommentThreadCollapsibleState.Expanded &&
+			this._commentThreadState === languages.CommentThreadState.Unresolved &&
+			commentThread.state === languages.CommentThreadState.Resolved;
 		this._commentThreadState = commentThread.state;
 		this._commentThread = commentThread;
 		dispose(this._commentThreadDisposables);
@@ -219,7 +270,10 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange> extends
 			this._commentThreadContextValue.reset();
 		}
 
-		if (shouldCollapse && this.configurationService.getValue<ICommentsConfiguration>(COMMENTS_SECTION).collapseOnResolve) {
+		if (
+			shouldCollapse &&
+			this.configurationService.getValue<ICommentsConfiguration>(COMMENTS_SECTION).collapseOnResolve
+		) {
 			this.collapse();
 		}
 	}
@@ -236,9 +290,11 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange> extends
 		}
 		this._createAdditionalActions();
 
-		this._register(this._body.onDidResize(dimension => {
-			this._refresh(dimension);
-		}));
+		this._register(
+			this._body.onDidResize(dimension => {
+				this._refresh(dimension);
+			})
+		);
 
 		// If there are no existing comments, place focus on the text area. This must be done after show, which also moves focus.
 		// if this._commentThread.comments is undefined, it doesn't finish initialization yet, so we don't focus the editor immediately.
@@ -261,23 +317,29 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange> extends
 	}
 
 	private _bindCommentThreadListeners() {
-		this._commentThreadDisposables.push(this._commentThread.onDidChangeCanReply(() => {
-			if (this._commentReply) {
-				this._commentReply.updateCanReply();
-			} else {
-				if (this._commentThread.canReply) {
-					this._createCommentForm(false);
+		this._commentThreadDisposables.push(
+			this._commentThread.onDidChangeCanReply(() => {
+				if (this._commentReply) {
+					this._commentReply.updateCanReply();
+				} else {
+					if (this._commentThread.canReply) {
+						this._createCommentForm(false);
+					}
 				}
-			}
-		}));
+			})
+		);
 
-		this._commentThreadDisposables.push(this._commentThread.onDidChangeComments(async _ => {
-			await this.updateCommentThread(this._commentThread);
-		}));
+		this._commentThreadDisposables.push(
+			this._commentThread.onDidChangeComments(async _ => {
+				await this.updateCommentThread(this._commentThread);
+			})
+		);
 
-		this._commentThreadDisposables.push(this._commentThread.onDidChangeLabel(_ => {
-			this._header.createThreadLabel();
-		}));
+		this._commentThreadDisposables.push(
+			this._commentThread.onDidChangeLabel(_ => {
+				this._header.createThreadLabel();
+			})
+		);
 	}
 
 	private _createCommentForm(focus: boolean) {
@@ -307,7 +369,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange> extends
 			this._commentThread,
 			this._contextKeyService,
 			this._commentMenus,
-			this._containerDelegate.actionRunner,
+			this._containerDelegate.actionRunner
 		);
 
 		this._register(this._additionalActions);
@@ -368,10 +430,13 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange> extends
 	}
 
 	async collapse() {
-		if ((await this._containerDelegate.collapse()) && Range.isIRange(this.commentThread.range) && isCodeEditor(this._parentEditor)) {
+		if (
+			(await this._containerDelegate.collapse()) &&
+			Range.isIRange(this.commentThread.range) &&
+			isCodeEditor(this._parentEditor)
+		) {
 			this._parentEditor.setSelection(this.commentThread.range);
 		}
-
 	}
 
 	applyTheme(fontInfo: FontInfo) {

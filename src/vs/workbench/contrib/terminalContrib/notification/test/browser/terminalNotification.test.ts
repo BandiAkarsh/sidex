@@ -6,14 +6,22 @@
 import { strictEqual } from 'assert';
 import { Emitter, Event } from '../../../../../../base/common/event.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
-import { NotificationPriority, Severity, type INotification, type INotificationActions, type INotificationHandle, type INotificationProgress, type NotificationMessage } from '../../../../../../platform/notification/common/notification.js';
+import {
+	NotificationPriority,
+	Severity,
+	type INotification,
+	type INotificationActions,
+	type INotificationHandle,
+	type INotificationProgress,
+	type NotificationMessage
+} from '../../../../../../platform/notification/common/notification.js';
 import { TerminalNotificationHandler, type IOsc99NotificationHost } from '../../browser/terminalNotificationHandler.js';
 
 class TestNotificationProgress implements INotificationProgress {
-	infinite(): void { }
-	total(_value: number): void { }
-	worked(_value: number): void { }
-	done(): void { }
+	infinite(): void {}
+	total(_value: number): void {}
+	worked(_value: number): void {}
+	done(): void {}
 }
 
 class TestNotificationHandle implements INotificationHandle {
@@ -225,7 +233,10 @@ suite('Terminal OSC 99 notifications', () => {
 		handler.handleSequence('i=q:p=?;');
 		handler.handleSequence('i=q:p=alive;');
 
-		strictEqual(host.writes[0], '\x1b]99;i=q:p=?:a=report,focus:c=1:o=always,unfocused,invisible:p=title,body,buttons,close,alive,?:u=0,1,2:w=1;\x1b\\');
+		strictEqual(
+			host.writes[0],
+			'\x1b]99;i=q:p=?:a=report,focus:c=1:o=always,unfocused,invisible:p=title,body,buttons,close,alive,?:u=0,1,2:w=1;\x1b\\'
+		);
 		strictEqual(host.writes[1], '\x1b]99;i=q:p=alive;a,b\x1b\\');
 	});
 

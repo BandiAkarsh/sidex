@@ -4,9 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { URI } from '../../../../base/common/uri.js';
-import { ComponentFixtureContext, createEditorServices, defineThemedFixtureGroup, defineComponentFixture, createTextModel } from './fixtureUtils.js';
-import { ICodeEditorWidgetOptions, CodeEditorWidget } from '../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
-
+import {
+	ComponentFixtureContext,
+	createEditorServices,
+	defineThemedFixtureGroup,
+	defineComponentFixture,
+	createTextModel
+} from './fixtureUtils.js';
+import {
+	ICodeEditorWidgetOptions,
+	CodeEditorWidget
+} from '../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
 
 const SAMPLE_CODE = `// Welcome to VS Code
 function greet(name: string): string {
@@ -38,39 +46,41 @@ function renderCodeEditor({ container, disposableStore, theme }: ComponentFixtur
 
 	const instantiationService = createEditorServices(disposableStore, { colorTheme: theme });
 
-	const model = disposableStore.add(createTextModel(
-		instantiationService,
-		SAMPLE_CODE,
-		URI.parse('inmemory://sample.ts'),
-		'typescript'
-	));
+	const model = disposableStore.add(
+		createTextModel(instantiationService, SAMPLE_CODE, URI.parse('inmemory://sample.ts'), 'typescript')
+	);
 
 	const editorOptions: ICodeEditorWidgetOptions = {
 		contributions: []
 	};
 
-	const editor = disposableStore.add(instantiationService.createInstance(
-		CodeEditorWidget,
-		container,
-		{
-			automaticLayout: true,
-			minimap: { enabled: true },
-			lineNumbers: 'on',
-			scrollBeyondLastLine: false,
-			fontSize: 14,
-			fontFamily: 'Consolas, "Courier New", monospace',
-			renderWhitespace: 'selection',
-			bracketPairColorization: { enabled: true },
-		},
-		editorOptions
-	));
+	const editor = disposableStore.add(
+		instantiationService.createInstance(
+			CodeEditorWidget,
+			container,
+			{
+				automaticLayout: true,
+				minimap: { enabled: true },
+				lineNumbers: 'on',
+				scrollBeyondLastLine: false,
+				fontSize: 14,
+				fontFamily: 'Consolas, "Courier New", monospace',
+				renderWhitespace: 'selection',
+				bracketPairColorization: { enabled: true }
+			},
+			editorOptions
+		)
+	);
 
 	editor.setModel(model);
 }
 
-export default defineThemedFixtureGroup({ path: 'editor/' }, {
-	CodeEditor: defineComponentFixture({
-		labels: { kind: 'screenshot', blocksCi: true },
-		render: (context) => renderCodeEditor(context),
-	}),
-});
+export default defineThemedFixtureGroup(
+	{ path: 'editor/' },
+	{
+		CodeEditor: defineComponentFixture({
+			labels: { kind: 'screenshot', blocksCi: true },
+			render: context => renderCodeEditor(context)
+		})
+	}
+);

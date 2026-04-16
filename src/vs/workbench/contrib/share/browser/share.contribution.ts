@@ -30,7 +30,10 @@ import { LifecyclePhase } from '../../../services/lifecycle/common/lifecycle.js'
 import { IEditorService } from '../../../services/editor/common/editorService.js';
 import { IProgressService, ProgressLocation } from '../../../../platform/progress/common/progress.js';
 import { ICodeEditorService } from '../../../../editor/browser/services/codeEditorService.js';
-import { IConfigurationRegistry, Extensions as ConfigurationExtensions } from '../../../../platform/configuration/common/configurationRegistry.js';
+import {
+	IConfigurationRegistry,
+	Extensions as ConfigurationExtensions
+} from '../../../../platform/configuration/common/configurationRegistry.js';
 import { workbenchConfigurationNodeBase } from '../../../common/configuration.js';
 import { Disposable, DisposableStore } from '../../../../base/common/lifecycle.js';
 
@@ -58,17 +61,21 @@ class ShareWorkbenchContribution extends Disposable {
 		if (this.configurationService.getValue<boolean>(ShareWorkbenchContribution.SHARE_ENABLED_SETTING)) {
 			this.registerActions();
 		}
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(ShareWorkbenchContribution.SHARE_ENABLED_SETTING)) {
-				const settingValue = this.configurationService.getValue<boolean>(ShareWorkbenchContribution.SHARE_ENABLED_SETTING);
-				if (settingValue === true && this._disposables === undefined) {
-					this.registerActions();
-				} else if (settingValue === false && this._disposables !== undefined) {
-					this._disposables?.clear();
-					this._disposables = undefined;
+		this._register(
+			this.configurationService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration(ShareWorkbenchContribution.SHARE_ENABLED_SETTING)) {
+					const settingValue = this.configurationService.getValue<boolean>(
+						ShareWorkbenchContribution.SHARE_ENABLED_SETTING
+					);
+					if (settingValue === true && this._disposables === undefined) {
+						this.registerActions();
+					} else if (settingValue === false && this._disposables !== undefined) {
+						this._disposables?.clear();
+						this._disposables = undefined;
+					}
 				}
-			}
-		}));
+			})
+		);
 	}
 
 	override dispose(): void {
@@ -82,66 +89,87 @@ class ShareWorkbenchContribution extends Disposable {
 		}
 
 		this._disposables.add(
-			registerAction2(class ShareAction extends Action2 {
-				static readonly ID = 'workbench.action.share';
-				static readonly LABEL = localize2('share', 'Share...');
+			registerAction2(
+				class ShareAction extends Action2 {
+					static readonly ID = 'workbench.action.share';
+					static readonly LABEL = localize2('share', 'Share...');
 
-				constructor() {
-					super({
-						id: ShareAction.ID,
-						title: ShareAction.LABEL,
-						f1: true,
-						icon: Codicon.linkExternal,
-						precondition: ContextKeyExpr.and(ShareProviderCountContext.notEqualsTo(0), WorkspaceFolderCountContext.notEqualsTo(0)),
-						keybinding: {
-							weight: KeybindingWeight.WorkbenchContrib,
-							primary: KeyMod.Alt | KeyMod.CtrlCmd | KeyCode.KeyS,
-						},
-						menu: [
-							{ id: MenuId.CommandCenter, order: 3 }
-						]
-					});
-				}
+					constructor() {
+						super({
+							id: ShareAction.ID,
+							title: ShareAction.LABEL,
+							f1: true,
+							icon: Codicon.linkExternal,
+							precondition: ContextKeyExpr.and(
+								ShareProviderCountContext.notEqualsTo(0),
+								WorkspaceFolderCountContext.notEqualsTo(0)
+							),
+							keybinding: {
+								weight: KeybindingWeight.WorkbenchContrib,
+								primary: KeyMod.Alt | KeyMod.CtrlCmd | KeyCode.KeyS
+							},
+							menu: [{ id: MenuId.CommandCenter, order: 3 }]
+						});
+					}
 
-				override async run(accessor: ServicesAccessor, ...args: unknown[]): Promise<void> {
-					const shareService = accessor.get(IShareService);
-					const activeEditor = accessor.get(IEditorService)?.activeEditor;
-					const resourceUri = (activeEditor && EditorResourceAccessor.getOriginalUri(activeEditor, { supportSideBySide: SideBySideEditor.PRIMARY }))
-						?? accessor.get(IWorkspaceContextService).getWorkspace().folders[0].uri;
-					const clipboardService = accessor.get(IClipboardService);
-					const dialogService = accessor.get(IDialogService);
-					const urlService = accessor.get(IOpenerService);
-					const progressService = accessor.get(IProgressService);
-					const selection = accessor.get(ICodeEditorService).getActiveCodeEditor()?.getSelection() ?? undefined;
+					override async run(accessor: ServicesAccessor, ...args: unknown[]): Promise<void> {
+						const shareService = accessor.get(IShareService);
+						const activeEditor = accessor.get(IEditorService)?.activeEditor;
+						const resourceUri =
+							(activeEditor &&
+								EditorResourceAccessor.getOriginalUri(activeEditor, { supportSideBySide: SideBySideEditor.PRIMARY })) ??
+							accessor.get(IWorkspaceContextService).getWorkspace().folders[0].uri;
+						const clipboardService = accessor.get(IClipboardService);
+						const dialogService = accessor.get(IDialogService);
+						const urlService = accessor.get(IOpenerService);
+						const progressService = accessor.get(IProgressService);
+						const selection = accessor.get(ICodeEditorService).getActiveCodeEditor()?.getSelection() ?? undefined;
 
-					const result = await progressService.withProgress({
-						location: ProgressLocation.Window,
-						detail: localize('generating link', 'Generating link...')
-					}, async () => shareService.provideShare({ resourceUri, selection }, CancellationToken.None));
-
-					if (result) {
-						const uriText = result.toString();
-						const isResultText = typeof result === 'string';
-						await clipboardService.writeText(uriText);
-
-						dialogService.prompt(
+						const result = await progressService.withProgress(
 							{
+								location: ProgressLocation.Window,
+								detail: localize('generating link', 'Generating link...')
+							},
+							async () => shareService.provideShare({ resourceUri, selection }, CancellationToken.None)
+						);
+
+						if (result) {
+							const uriText = result.toString();
+							const isResultText = typeof result === 'string';
+							await clipboardService.writeText(uriText);
+
+							dialogService.prompt({
 								type: Severity.Info,
-								message: isResultText ? localize('shareTextSuccess', 'Copied text to clipboard!') : localize('shareSuccess', 'Copied link to clipboard!'),
+								message: isResultText
+									? localize('shareTextSuccess', 'Copied text to clipboard!')
+									: localize('shareSuccess', 'Copied link to clipboard!'),
 								custom: {
 									icon: Codicon.check,
-									markdownDetails: [{
-										markdown: new MarkdownString(`<div aria-label='${uriText}'>${uriText}</div>`, { supportHtml: true }),
-										classes: [isResultText ? 'share-dialog-input-text' : 'share-dialog-input-link']
-									}]
+									markdownDetails: [
+										{
+											markdown: new MarkdownString(`<div aria-label='${uriText}'>${uriText}</div>`, {
+												supportHtml: true
+											}),
+											classes: [isResultText ? 'share-dialog-input-text' : 'share-dialog-input-link']
+										}
+									]
 								},
 								cancelButton: localize('close', 'Close'),
-								buttons: isResultText ? [] : [{ label: localize('open link', 'Open Link'), run: () => { urlService.open(result, { openExternal: true }); } }]
-							}
-						);
+								buttons: isResultText
+									? []
+									: [
+											{
+												label: localize('open link', 'Open Link'),
+												run: () => {
+													urlService.open(result, { openExternal: true });
+												}
+											}
+										]
+							});
+						}
 					}
 				}
-			})
+			)
 		);
 
 		const actions = this.shareService.getShareActions();
@@ -165,8 +193,13 @@ Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration).regis
 			type: 'boolean',
 			default: false,
 			tags: ['experimental'],
-			markdownDescription: localize('experimental.share.enabled', "Controls whether to render the Share action next to the command center when {0} is {1}.", '`#window.commandCenter#`', '`true`'),
-			restricted: false,
+			markdownDescription: localize(
+				'experimental.share.enabled',
+				'Controls whether to render the Share action next to the command center when {0} is {1}.',
+				'`#window.commandCenter#`',
+				'`true`'
+			),
+			restricted: false
 		}
 	}
 });

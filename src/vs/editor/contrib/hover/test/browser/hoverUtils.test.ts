@@ -9,18 +9,16 @@ import { isMousePositionWithinElement, isTriggerModifierPressed, shouldShowHover
 import { IEditorMouseEvent } from '../../../../browser/editorBrowser.js';
 
 suite('Hover Utils', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	suite('shouldShowHover', () => {
-
 		function createMockMouseEvent(ctrlKey: boolean, altKey: boolean, metaKey: boolean): IEditorMouseEvent {
 			return {
 				event: {
 					ctrlKey,
 					altKey,
 					metaKey,
-					shiftKey: false,
+					shiftKey: false
 				}
 			} as IEditorMouseEvent;
 		}
@@ -87,7 +85,6 @@ suite('Hover Utils', () => {
 	});
 
 	suite('isMousePositionWithinElement', () => {
-
 		function createMockElement(left: number, top: number, width: number, height: number): HTMLElement {
 			const element = document.createElement('div');
 			// Mock getDomNodePagePosition by setting up the element's bounding rect
@@ -100,7 +97,7 @@ suite('Hover Utils', () => {
 				bottom: top + height,
 				x: left,
 				y: top,
-				toJSON: () => { }
+				toJSON: () => {}
 			});
 			return element;
 		}
@@ -161,7 +158,6 @@ suite('Hover Utils', () => {
 	});
 
 	suite('isTriggerModifierPressed', () => {
-
 		function createModifierEvent(ctrlKey: boolean, altKey: boolean, metaKey: boolean) {
 			return { ctrlKey, altKey, metaKey };
 		}

@@ -9,44 +9,63 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../base/test/comm
 import { DEFAULT_CUSTOM_TITLEBAR_HEIGHT } from '../../../platform/window/common/window.js';
 import { NotificationsPosition, NotificationsSettings } from '../../common/notifications.js';
 import { Codicon } from '../../../base/common/codicons.js';
-import { hideIcon, hideUpIcon, getNotificationExpandIcon, getNotificationCollapseIcon } from '../../browser/parts/notifications/notificationsActions.js';
+import {
+	hideIcon,
+	hideUpIcon,
+	getNotificationExpandIcon,
+	getNotificationCollapseIcon
+} from '../../browser/parts/notifications/notificationsActions.js';
 
 suite('Notifications Position', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	suite('Configuration', () => {
-
 		test('defaults to bottom-right when no configuration is set', () => {
 			const configurationService = new TestConfigurationService();
-			const position = configurationService.getValue<NotificationsPosition>(NotificationsSettings.NOTIFICATIONS_POSITION) ?? NotificationsPosition.BOTTOM_RIGHT;
+			const position =
+				configurationService.getValue<NotificationsPosition>(NotificationsSettings.NOTIFICATIONS_POSITION) ??
+				NotificationsPosition.BOTTOM_RIGHT;
 			assert.strictEqual(position, NotificationsPosition.BOTTOM_RIGHT);
 		});
 
 		test('returns bottom-left when configured', async () => {
 			const configurationService = new TestConfigurationService();
-			await configurationService.setUserConfiguration(NotificationsSettings.NOTIFICATIONS_POSITION, NotificationsPosition.BOTTOM_LEFT);
-			const position = configurationService.getValue<NotificationsPosition>(NotificationsSettings.NOTIFICATIONS_POSITION);
+			await configurationService.setUserConfiguration(
+				NotificationsSettings.NOTIFICATIONS_POSITION,
+				NotificationsPosition.BOTTOM_LEFT
+			);
+			const position = configurationService.getValue<NotificationsPosition>(
+				NotificationsSettings.NOTIFICATIONS_POSITION
+			);
 			assert.strictEqual(position, NotificationsPosition.BOTTOM_LEFT);
 		});
 
 		test('returns top-right when configured', async () => {
 			const configurationService = new TestConfigurationService();
-			await configurationService.setUserConfiguration(NotificationsSettings.NOTIFICATIONS_POSITION, NotificationsPosition.TOP_RIGHT);
-			const position = configurationService.getValue<NotificationsPosition>(NotificationsSettings.NOTIFICATIONS_POSITION);
+			await configurationService.setUserConfiguration(
+				NotificationsSettings.NOTIFICATIONS_POSITION,
+				NotificationsPosition.TOP_RIGHT
+			);
+			const position = configurationService.getValue<NotificationsPosition>(
+				NotificationsSettings.NOTIFICATIONS_POSITION
+			);
 			assert.strictEqual(position, NotificationsPosition.TOP_RIGHT);
 		});
 
 		test('returns bottom-right when configured', async () => {
 			const configurationService = new TestConfigurationService();
-			await configurationService.setUserConfiguration(NotificationsSettings.NOTIFICATIONS_POSITION, NotificationsPosition.BOTTOM_RIGHT);
-			const position = configurationService.getValue<NotificationsPosition>(NotificationsSettings.NOTIFICATIONS_POSITION);
+			await configurationService.setUserConfiguration(
+				NotificationsSettings.NOTIFICATIONS_POSITION,
+				NotificationsPosition.BOTTOM_RIGHT
+			);
+			const position = configurationService.getValue<NotificationsPosition>(
+				NotificationsSettings.NOTIFICATIONS_POSITION
+			);
 			assert.strictEqual(position, NotificationsPosition.BOTTOM_RIGHT);
 		});
 	});
 
 	suite('Status Bar Alignment', () => {
-
 		function getDesiredAlignment(position: NotificationsPosition): 'left' | 'right' | 'hidden' {
 			switch (position) {
 				case NotificationsPosition.BOTTOM_LEFT:
@@ -73,7 +92,6 @@ suite('Notifications Position', () => {
 	});
 
 	suite('Top Offset for Top-Right', () => {
-
 		function computeTopOffset(position: NotificationsPosition, titleBarVisible: boolean): number | undefined {
 			if (position !== NotificationsPosition.TOP_RIGHT) {
 				return undefined;
@@ -103,7 +121,6 @@ suite('Notifications Position', () => {
 	});
 
 	suite('NotificationsPosition Enum Values', () => {
-
 		test('enum values match expected strings', () => {
 			assert.strictEqual(NotificationsPosition.BOTTOM_RIGHT, 'bottom-right');
 			assert.strictEqual(NotificationsPosition.BOTTOM_LEFT, 'bottom-left');
@@ -120,7 +137,6 @@ suite('Notifications Position', () => {
 	});
 
 	suite('Hide Notifications Icon', () => {
-
 		function getHideIcon(position: NotificationsPosition) {
 			return position === NotificationsPosition.TOP_RIGHT ? hideUpIcon : hideIcon;
 		}
@@ -144,7 +160,6 @@ suite('Notifications Position', () => {
 	});
 
 	suite('Expand/Collapse Notification Icons', () => {
-
 		test('bottom-right expand uses notifications-expand icon', () => {
 			assert.strictEqual(getNotificationExpandIcon(NotificationsPosition.BOTTOM_RIGHT).id, 'notifications-expand');
 		});

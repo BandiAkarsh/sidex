@@ -32,12 +32,14 @@ export class ArcTelemetryReporter extends Disposable {
 
 		this._arcTracker = new ArcTracker(this._documentValueBeforeTrackedEdit, this._trackedEdit);
 
-		this._store.add(runOnChange(this._document.value, (_val, _prevVal, changes) => {
-			const edit = BaseStringEdit.composeOrUndefined(changes.map(c => c.edit));
-			if (edit) {
-				this._arcTracker.handleEdits(edit);
-			}
-		}));
+		this._store.add(
+			runOnChange(this._document.value, (_val, _prevVal, changes) => {
+				const edit = BaseStringEdit.composeOrUndefined(changes.map(c => c.edit));
+				if (edit) {
+					this._arcTracker.handleEdits(edit);
+				}
+			})
+		);
 
 		this._initialLineCounts = this._arcTracker.getLineCountInfo();
 
@@ -49,9 +51,14 @@ export class ArcTelemetryReporter extends Disposable {
 			if (timeMs <= 0) {
 				this._report(timeMs);
 			} else {
-				this._reportAfter(timeMs, i === this._timesMs.length - 1 ? () => {
-					this._dispose();
-				} : undefined);
+				this._reportAfter(
+					timeMs,
+					i === this._timesMs.length - 1
+						? () => {
+								this._dispose();
+							}
+						: undefined
+				);
 			}
 		}
 	}
@@ -82,7 +89,7 @@ export class ArcTelemetryReporter extends Disposable {
 			currentLineCount: currentLineCounts.insertedLineCounts,
 			currentDeletedLineCount: currentLineCounts.deletedLineCounts,
 			originalLineCount: this._initialLineCounts.insertedLineCounts,
-			originalDeletedLineCount: this._initialLineCounts.deletedLineCounts,
+			originalDeletedLineCount: this._initialLineCounts.deletedLineCounts
 		});
 	}
 }

@@ -15,16 +15,28 @@ suite('Notebook Undo/Redo', () => {
 		await withTestNotebook(
 			[
 				['# header 1', 'markdown', CellKind.Markup, [], {}],
-				['body', 'markdown', CellKind.Markup, [], {}],
+				['body', 'markdown', CellKind.Markup, [], {}]
 			],
 			async (editor, viewModel, _ds, _accessor) => {
 				assert.strictEqual(viewModel.length, 2);
 				assert.strictEqual(viewModel.getVersionId(), 0);
 				assert.strictEqual(viewModel.getAlternativeId(), '0_0,1;1,1');
 
-				editor.textModel.applyEdits([{
-					editType: CellEditType.Replace, index: 0, count: 2, cells: []
-				}], true, undefined, () => undefined, undefined, true);
+				editor.textModel.applyEdits(
+					[
+						{
+							editType: CellEditType.Replace,
+							index: 0,
+							count: 2,
+							cells: []
+						}
+					],
+					true,
+					undefined,
+					() => undefined,
+					undefined,
+					true
+				);
 				assert.strictEqual(viewModel.length, 0);
 				assert.strictEqual(viewModel.getVersionId(), 1);
 				assert.strictEqual(viewModel.getAlternativeId(), '1_');
@@ -39,11 +51,23 @@ suite('Notebook Undo/Redo', () => {
 				assert.strictEqual(viewModel.getVersionId(), 3);
 				assert.strictEqual(viewModel.getAlternativeId(), '1_');
 
-				editor.textModel.applyEdits([{
-					editType: CellEditType.Replace, index: 0, count: 0, cells: [
-						{ source: '# header 3', language: 'markdown', cellKind: CellKind.Markup, outputs: [], mime: undefined }
-					]
-				}], true, undefined, () => undefined, undefined, true);
+				editor.textModel.applyEdits(
+					[
+						{
+							editType: CellEditType.Replace,
+							index: 0,
+							count: 0,
+							cells: [
+								{ source: '# header 3', language: 'markdown', cellKind: CellKind.Markup, outputs: [], mime: undefined }
+							]
+						}
+					],
+					true,
+					undefined,
+					() => undefined,
+					undefined,
+					true
+				);
 				assert.strictEqual(viewModel.getVersionId(), 4);
 				assert.strictEqual(viewModel.getAlternativeId(), '4_2,1');
 
@@ -58,19 +82,49 @@ suite('Notebook Undo/Redo', () => {
 		await withTestNotebook(
 			[
 				['# header 1', 'markdown', CellKind.Markup, [], {}],
-				['body', 'markdown', CellKind.Markup, [], {}],
+				['body', 'markdown', CellKind.Markup, [], {}]
 			],
 			async (editor, _viewModel, _ds, _accessor) => {
-				editor.textModel.applyEdits([{
-					editType: CellEditType.Replace, index: 0, count: 2, cells: []
-				}], true, undefined, () => undefined, undefined, true);
+				editor.textModel.applyEdits(
+					[
+						{
+							editType: CellEditType.Replace,
+							index: 0,
+							count: 2,
+							cells: []
+						}
+					],
+					true,
+					undefined,
+					() => undefined,
+					undefined,
+					true
+				);
 
 				assert.doesNotThrow(() => {
-					editor.textModel.applyEdits([{
-						editType: CellEditType.Replace, index: 0, count: 2, cells: [
-							{ source: '# header 2', language: 'markdown', cellKind: CellKind.Markup, outputs: [], mime: undefined }
-						]
-					}], true, undefined, () => undefined, undefined, true);
+					editor.textModel.applyEdits(
+						[
+							{
+								editType: CellEditType.Replace,
+								index: 0,
+								count: 2,
+								cells: [
+									{
+										source: '# header 2',
+										language: 'markdown',
+										cellKind: CellKind.Markup,
+										outputs: [],
+										mime: undefined
+									}
+								]
+							}
+						],
+						true,
+						undefined,
+						() => undefined,
+						undefined,
+						true
+					);
 				});
 			}
 		);
@@ -80,12 +134,24 @@ suite('Notebook Undo/Redo', () => {
 		await withTestNotebook(
 			[
 				['# header 1', 'markdown', CellKind.Markup, [], {}],
-				['body', 'markdown', CellKind.Markup, [], {}],
+				['body', 'markdown', CellKind.Markup, [], {}]
 			],
 			async (editor, viewModel) => {
-				editor.textModel.applyEdits([{
-					editType: CellEditType.Replace, index: 1, count: 2, cells: []
-				}], true, undefined, () => undefined, undefined, true);
+				editor.textModel.applyEdits(
+					[
+						{
+							editType: CellEditType.Replace,
+							index: 1,
+							count: 2,
+							cells: []
+						}
+					],
+					true,
+					undefined,
+					() => undefined,
+					undefined,
+					true
+				);
 
 				assert.deepStrictEqual(viewModel.length, 1);
 				await viewModel.undo();
@@ -98,18 +164,42 @@ suite('Notebook Undo/Redo', () => {
 		await withTestNotebook(
 			[
 				['# header 1', 'markdown', CellKind.Markup, [], {}],
-				['body', 'markdown', CellKind.Markup, [], {}],
+				['body', 'markdown', CellKind.Markup, [], {}]
 			],
 			async (editor, viewModel, _ds, _accessor) => {
-				editor.textModel.applyEdits([{
-					editType: CellEditType.Replace, index: 0, count: 2, cells: []
-				}], true, undefined, () => undefined, undefined, true);
+				editor.textModel.applyEdits(
+					[
+						{
+							editType: CellEditType.Replace,
+							index: 0,
+							count: 2,
+							cells: []
+						}
+					],
+					true,
+					undefined,
+					() => undefined,
+					undefined,
+					true
+				);
 
-				editor.textModel.applyEdits([{
-					editType: CellEditType.Replace, index: 0, count: 2, cells: [
-						{ source: '# header 2', language: 'markdown', cellKind: CellKind.Markup, outputs: [], mime: undefined }
-					]
-				}], true, undefined, () => undefined, undefined, true);
+				editor.textModel.applyEdits(
+					[
+						{
+							editType: CellEditType.Replace,
+							index: 0,
+							count: 2,
+							cells: [
+								{ source: '# header 2', language: 'markdown', cellKind: CellKind.Markup, outputs: [], mime: undefined }
+							]
+						}
+					],
+					true,
+					undefined,
+					() => undefined,
+					undefined,
+					true
+				);
 
 				assert.deepStrictEqual(viewModel.length, 1);
 
@@ -117,9 +207,21 @@ suite('Notebook Undo/Redo', () => {
 				await viewModel.undo();
 
 				assert.deepStrictEqual(viewModel.length, 2);
-				editor.textModel.applyEdits([{
-					editType: CellEditType.Replace, index: 1, count: 2, cells: []
-				}], true, undefined, () => undefined, undefined, true);
+				editor.textModel.applyEdits(
+					[
+						{
+							editType: CellEditType.Replace,
+							index: 1,
+							count: 2,
+							cells: []
+						}
+					],
+					true,
+					undefined,
+					() => undefined,
+					undefined,
+					true
+				);
 				assert.deepStrictEqual(viewModel.length, 1);
 			}
 		);
@@ -129,22 +231,36 @@ suite('Notebook Undo/Redo', () => {
 		await withTestNotebook(
 			[
 				['# header 1', 'markdown', CellKind.Markup, [], {}],
-				['body', 'markdown', CellKind.Markup, [], {}],
+				['body', 'markdown', CellKind.Markup, [], {}]
 			],
 			async (editor, viewModel, _ds, accessor) => {
 				const cellList = createNotebookCellList(accessor, disposables);
 				cellList.attachViewModel(viewModel);
 				cellList.setFocus([1]);
 
-				editor.textModel.applyEdits([{
-					editType: CellEditType.Replace, index: 2, count: 0, cells: [
-						{ source: '# header 2', language: 'markdown', cellKind: CellKind.Markup, outputs: [], mime: undefined }
-					]
-				}], true, { focus: { start: 1, end: 2 }, selections: [{ start: 1, end: 2 }], kind: SelectionStateType.Index }, () => {
-					return {
-						focus: { start: 2, end: 3 }, selections: [{ start: 2, end: 3 }], kind: SelectionStateType.Index
-					};
-				}, undefined, true);
+				editor.textModel.applyEdits(
+					[
+						{
+							editType: CellEditType.Replace,
+							index: 2,
+							count: 0,
+							cells: [
+								{ source: '# header 2', language: 'markdown', cellKind: CellKind.Markup, outputs: [], mime: undefined }
+							]
+						}
+					],
+					true,
+					{ focus: { start: 1, end: 2 }, selections: [{ start: 1, end: 2 }], kind: SelectionStateType.Index },
+					() => {
+						return {
+							focus: { start: 2, end: 3 },
+							selections: [{ start: 2, end: 3 }],
+							kind: SelectionStateType.Index
+						};
+					},
+					undefined,
+					true
+				);
 				assert.strictEqual(viewModel.length, 3);
 				assert.strictEqual(viewModel.getVersionId(), 1);
 				assert.deepStrictEqual(cellList.getFocus(), [2]);
@@ -169,16 +285,31 @@ suite('Notebook Undo/Redo', () => {
 		await withTestNotebook(
 			[
 				['# header 1', 'markdown', CellKind.Markup, [], {}],
-				['body', 'markdown', CellKind.Markup, [], {}],
+				['body', 'markdown', CellKind.Markup, [], {}]
 			],
 			async (editor, viewModel, _ds, accessor) => {
-				editor.textModel.applyEdits([{
-					editType: CellEditType.Replace, index: 2, count: 0, cells: [
-						{ source: '# header 2', language: 'markdown', cellKind: CellKind.Markup, outputs: [], mime: undefined }
-					]
-				}, {
-					editType: CellEditType.Metadata, index: 0, metadata: { inputCollapsed: false }
-				}], true, undefined, () => undefined, undefined, true);
+				editor.textModel.applyEdits(
+					[
+						{
+							editType: CellEditType.Replace,
+							index: 2,
+							count: 0,
+							cells: [
+								{ source: '# header 2', language: 'markdown', cellKind: CellKind.Markup, outputs: [], mime: undefined }
+							]
+						},
+						{
+							editType: CellEditType.Metadata,
+							index: 0,
+							metadata: { inputCollapsed: false }
+						}
+					],
+					true,
+					undefined,
+					() => undefined,
+					undefined,
+					true
+				);
 				assert.strictEqual(viewModel.getVersionId(), 1);
 				assert.deepStrictEqual(viewModel.cellAt(0)?.metadata, { inputCollapsed: false });
 
@@ -191,7 +322,6 @@ suite('Notebook Undo/Redo', () => {
 				assert.strictEqual(viewModel.length, 3);
 				assert.strictEqual(viewModel.getVersionId(), 3);
 				assert.deepStrictEqual(viewModel.cellAt(0)?.metadata, { inputCollapsed: false });
-
 			}
 		);
 	});

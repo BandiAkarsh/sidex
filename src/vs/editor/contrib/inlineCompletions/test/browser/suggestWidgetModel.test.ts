@@ -16,7 +16,11 @@ import { GhostTextContext } from './utils.js';
 import { SnippetController2 } from '../../../snippet/browser/snippetController2.js';
 import { SuggestController } from '../../../suggest/browser/suggestController.js';
 import { ISuggestMemoryService } from '../../../suggest/browser/suggestMemory.js';
-import { ITestCodeEditor, TestCodeEditorInstantiationOptions, withAsyncTestCodeEditor } from '../../../../test/browser/testCodeEditor.js';
+import {
+	ITestCodeEditor,
+	TestCodeEditorInstantiationOptions,
+	withAsyncTestCodeEditor
+} from '../../../../test/browser/testCodeEditor.js';
 import { IMenu, IMenuService } from '../../../../../platform/actions/common/actions.js';
 import { ServiceCollection } from '../../../../../platform/instantiation/common/serviceCollection.js';
 import { IKeybindingService } from '../../../../../platform/keybinding/common/keybinding.js';
@@ -51,8 +55,9 @@ suite('Suggest Widget Model', () => {
 
 	// This test is skipped because the fix for this causes https://github.com/microsoft/vscode/issues/166023
 	test.skip('Active', async () => {
-		await withAsyncTestCodeEditorAndInlineCompletionsModel('',
-			{ fakeClock: true, provider, },
+		await withAsyncTestCodeEditorAndInlineCompletionsModel(
+			'',
+			{ fakeClock: true, provider },
 			async ({ editor, editorViewModel, context, model }) => {
 				let last: boolean | undefined = undefined;
 				const history = new Array<boolean>();
@@ -66,7 +71,7 @@ suite('Suggest Widget Model', () => {
 				});
 
 				context.keyboardType('h');
-				const suggestController = (editor.getContribution(SuggestController.ID) as SuggestController);
+				const suggestController = editor.getContribution(SuggestController.ID) as SuggestController;
 				suggestController.triggerSuggest();
 				await timeout(1000);
 				assert.deepStrictEqual(history.splice(0), [false, true]);
@@ -87,11 +92,12 @@ suite('Suggest Widget Model', () => {
 	});
 
 	test('Ghost Text', async () => {
-		await withAsyncTestCodeEditorAndInlineCompletionsModel('',
+		await withAsyncTestCodeEditorAndInlineCompletionsModel(
+			'',
 			{ fakeClock: true, provider, suggest: { preview: true } },
 			async ({ editor, editorViewModel, context, model }) => {
 				context.keyboardType('h');
-				const suggestController = (editor.getContribution(SuggestController.ID) as SuggestController);
+				const suggestController = editor.getContribution(SuggestController.ID) as SuggestController;
 				suggestController.triggerSuggest();
 				await timeout(1000);
 				assert.deepStrictEqual(context.getAndClearViewStates(), ['', 'h[ello]']);
@@ -119,21 +125,32 @@ const provider: CompletionItemProvider = {
 			: Range.fromPositions(pos);
 
 		return {
-			suggestions: [{
-				insertText: 'hello',
-				kind: CompletionItemKind.Text,
-				label: 'hello',
-				range,
-				commitCharacters: ['.'],
-			}]
+			suggestions: [
+				{
+					insertText: 'hello',
+					kind: CompletionItemKind.Text,
+					label: 'hello',
+					range,
+					commitCharacters: ['.']
+				}
+			]
 		};
-	},
+	}
 };
 
 async function withAsyncTestCodeEditorAndInlineCompletionsModel(
 	text: string,
-	options: TestCodeEditorInstantiationOptions & { provider?: CompletionItemProvider; fakeClock?: boolean; serviceCollection?: never },
-	callback: (args: { editor: ITestCodeEditor; editorViewModel: ViewModel; model: InlineCompletionsModel; context: GhostTextContext }) => Promise<void>
+	options: TestCodeEditorInstantiationOptions & {
+		provider?: CompletionItemProvider;
+		fakeClock?: boolean;
+		serviceCollection?: never;
+	},
+	callback: (args: {
+		editor: ITestCodeEditor;
+		editorViewModel: ViewModel;
+		model: InlineCompletionsModel;
+		context: GhostTextContext;
+	}) => Promise<void>
 ): Promise<void> {
 	await runWithFakedTimers({ useFakeTimers: options.fakeClock }, async () => {
 		const disposableStore = new DisposableStore();
@@ -144,35 +161,54 @@ async function withAsyncTestCodeEditorAndInlineCompletionsModel(
 				[ILogService, new NullLogService()],
 				[IStorageService, disposableStore.add(new InMemoryStorageService())],
 				[IKeybindingService, new MockKeybindingService()],
-				[IEditorWorkerService, new class extends mock<IEditorWorkerService>() {
-					override computeWordRanges() {
-						return Promise.resolve({});
-					}
-				}],
-				[ISuggestMemoryService, new class extends mock<ISuggestMemoryService>() {
-					override memorize(): void { }
-					override select(): number { return 0; }
-				}],
-				[IMenuService, new class extends mock<IMenuService>() {
-					override createMenu() {
-						return new class extends mock<IMenu>() {
-							override onDidChange = Event.None;
-							override dispose() { }
-						};
-					}
-				}],
-				[ILabelService, new class extends mock<ILabelService>() { }],
-				[IWorkspaceContextService, new class extends mock<IWorkspaceContextService>() { }],
+				[
+					IEditorWorkerService,
+					new (class extends mock<IEditorWorkerService>() {
+						override computeWordRanges() {
+							return Promise.resolve({});
+						}
+					})()
+				],
+				[
+					ISuggestMemoryService,
+					new (class extends mock<ISuggestMemoryService>() {
+						override memorize(): void {}
+						override select(): number {
+							return 0;
+						}
+					})()
+				],
+				[
+					IMenuService,
+					new (class extends mock<IMenuService>() {
+						override createMenu() {
+							return new (class extends mock<IMenu>() {
+								override onDidChange = Event.None;
+								override dispose() {}
+							})();
+						}
+					})()
+				],
+				[ILabelService, new (class extends mock<ILabelService>() {})()],
+				[IWorkspaceContextService, new (class extends mock<IWorkspaceContextService>() {})()],
 				// eslint-disable-next-line local/code-no-any-casts
-				[IAccessibilitySignalService, {
-					playSignal: async () => { },
-					isSoundEnabled(signal: unknown) { return false; },
-				} as any],
-				[IDefaultAccountService, new class extends mock<IDefaultAccountService>() {
-					override onDidChangeDefaultAccount = Event.None;
-					override getDefaultAccount = async () => null;
-					override setDefaultAccountProvider = () => { };
-				}],
+				[
+					IAccessibilitySignalService,
+					{
+						playSignal: async () => {},
+						isSoundEnabled(signal: unknown) {
+							return false;
+						}
+					} as any
+				],
+				[
+					IDefaultAccountService,
+					new (class extends mock<IDefaultAccountService>() {
+						override onDidChangeDefaultAccount = Event.None;
+						override getDefaultAccount = async () => null;
+						override setDefaultAccountProvider = () => {};
+					})()
+				]
 			);
 
 			if (options.provider) {
@@ -181,19 +217,23 @@ async function withAsyncTestCodeEditorAndInlineCompletionsModel(
 				disposableStore.add(languageFeaturesService.completionProvider.register({ pattern: '**' }, options.provider));
 			}
 
-			await withAsyncTestCodeEditor(text, { ...options, serviceCollection }, async (editor, editorViewModel, instantiationService) => {
-				instantiationService.stubInstance(InlineSuggestionsView, {
-					dispose: () => { }
-				});
-				editor.registerAndInstantiateContribution(SnippetController2.ID, SnippetController2);
-				editor.registerAndInstantiateContribution(SuggestController.ID, SuggestController);
-				editor.registerAndInstantiateContribution(InlineCompletionsController.ID, InlineCompletionsController);
-				const model = InlineCompletionsController.get(editor)?.model.get()!;
+			await withAsyncTestCodeEditor(
+				text,
+				{ ...options, serviceCollection },
+				async (editor, editorViewModel, instantiationService) => {
+					instantiationService.stubInstance(InlineSuggestionsView, {
+						dispose: () => {}
+					});
+					editor.registerAndInstantiateContribution(SnippetController2.ID, SnippetController2);
+					editor.registerAndInstantiateContribution(SuggestController.ID, SuggestController);
+					editor.registerAndInstantiateContribution(InlineCompletionsController.ID, InlineCompletionsController);
+					const model = InlineCompletionsController.get(editor)?.model.get()!;
 
-				const context = new GhostTextContext(model, editor);
-				await callback({ editor, editorViewModel, model, context });
-				context.dispose();
-			});
+					const context = new GhostTextContext(model, editor);
+					await callback({ editor, editorViewModel, model, context });
+					context.dispose();
+				}
+			);
 		} finally {
 			disposableStore.dispose();
 			ModifierKeyEmitter.disposeInstance();

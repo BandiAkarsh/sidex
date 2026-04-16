@@ -26,6 +26,10 @@ export interface IWorkspaceTagsService {
 	getHashedRemotesFromUri(workspaceUri: URI, stripEndingDotGit?: boolean): Promise<string[]>;
 }
 
-export async function getHashedRemotesFromConfig(text: string, stripEndingDotGit: boolean = false, sha1Hex: (str: string) => Promise<string>): Promise<string[]> {
+export async function getHashedRemotesFromConfig(
+	text: string,
+	stripEndingDotGit: boolean = false,
+	sha1Hex: (str: string) => Promise<string>
+): Promise<string[]> {
 	return Promise.all(getRemotes(text, stripEndingDotGit).map(remote => sha1Hex(remote)));
 }

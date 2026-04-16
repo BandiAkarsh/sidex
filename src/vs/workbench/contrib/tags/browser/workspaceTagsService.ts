@@ -9,7 +9,6 @@ import { InstantiationType, registerSingleton } from '../../../../platform/insta
 import { IWorkspaceTagsService, Tags } from '../common/workspaceTags.js';
 
 export class NoOpWorkspaceTagsService implements IWorkspaceTagsService {
-
 	declare readonly _serviceBrand: undefined;
 
 	getTags(): Promise<Tags> {

@@ -5,8 +5,17 @@
 
 import { deepStrictEqual, strictEqual } from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
-import { TerminalCapability, type ICommandDetectionCapability, type ICwdDetectionCapability, type INaiveCwdDetectionCapability, type ITerminalCapabilityStore } from '../../../../../../platform/terminal/common/capabilities/capabilities.js';
-import { TerminalCapabilityStore, TerminalCapabilityStoreMultiplexer } from '../../../../../../platform/terminal/common/capabilities/terminalCapabilityStore.js';
+import {
+	TerminalCapability,
+	type ICommandDetectionCapability,
+	type ICwdDetectionCapability,
+	type INaiveCwdDetectionCapability,
+	type ITerminalCapabilityStore
+} from '../../../../../../platform/terminal/common/capabilities/capabilities.js';
+import {
+	TerminalCapabilityStore,
+	TerminalCapabilityStoreMultiplexer
+} from '../../../../../../platform/terminal/common/capabilities/terminalCapabilityStore.js';
 
 suite('TerminalCapabilityStore', () => {
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
@@ -47,7 +56,10 @@ suite('TerminalCapabilityStore', () => {
 		capabilityStore.add(TerminalCapability.CwdDetection, {} as unknown as ICwdDetectionCapability);
 		deepStrictEqual(Array.from(capabilityStore.items), [TerminalCapability.CwdDetection]);
 		capabilityStore.add(TerminalCapability.NaiveCwdDetection, {} as unknown as INaiveCwdDetectionCapability);
-		deepStrictEqual(Array.from(capabilityStore.items), [TerminalCapability.CwdDetection, TerminalCapability.NaiveCwdDetection]);
+		deepStrictEqual(Array.from(capabilityStore.items), [
+			TerminalCapability.CwdDetection,
+			TerminalCapability.NaiveCwdDetection
+		]);
 		capabilityStore.remove(TerminalCapability.CwdDetection);
 		deepStrictEqual(Array.from(capabilityStore.items), [TerminalCapability.NaiveCwdDetection]);
 	});
@@ -58,7 +70,7 @@ suite('TerminalCapabilityStore', () => {
 	});
 	test('ensure events are cleaned up', () => {
 		for (const getEvent of getDerivedEventGetters(capabilityStore)) {
-			store.add(getEvent()(() => { }));
+			store.add(getEvent()(() => {}));
 		}
 	});
 });
@@ -120,9 +132,19 @@ suite('TerminalCapabilityStoreMultiplexer', () => {
 		deepStrictEqual(Array.from(multiplexer.items).sort(), [TerminalCapability.CwdDetection].sort());
 		store1.add(TerminalCapability.CommandDetection, {} as unknown as ICommandDetectionCapability);
 		store2.add(TerminalCapability.NaiveCwdDetection, {} as unknown as INaiveCwdDetectionCapability);
-		deepStrictEqual(Array.from(multiplexer.items).sort(), [TerminalCapability.CwdDetection, TerminalCapability.CommandDetection, TerminalCapability.NaiveCwdDetection].sort());
+		deepStrictEqual(
+			Array.from(multiplexer.items).sort(),
+			[
+				TerminalCapability.CwdDetection,
+				TerminalCapability.CommandDetection,
+				TerminalCapability.NaiveCwdDetection
+			].sort()
+		);
 		store2.remove(TerminalCapability.NaiveCwdDetection);
-		deepStrictEqual(Array.from(multiplexer.items).sort(), [TerminalCapability.CwdDetection, TerminalCapability.CommandDetection].sort());
+		deepStrictEqual(
+			Array.from(multiplexer.items).sort(),
+			[TerminalCapability.CwdDetection, TerminalCapability.CommandDetection].sort()
+		);
 	});
 	test('has should return whether a capability is present', () => {
 		deepStrictEqual(multiplexer.has(TerminalCapability.CwdDetection), false);
@@ -139,7 +161,7 @@ suite('TerminalCapabilityStoreMultiplexer', () => {
 	});
 	test('ensure events are cleaned up', () => {
 		for (const getEvent of getDerivedEventGetters(multiplexer)) {
-			store.add(getEvent()(() => { }));
+			store.add(getEvent()(() => {}));
 		}
 	});
 });
@@ -155,6 +177,6 @@ function getDerivedEventGetters(capabilityStore: ITerminalCapabilityStore) {
 		() => capabilityStore.onDidAddCommandDetectionCapability,
 		() => capabilityStore.onDidRemoveCommandDetectionCapability,
 		() => capabilityStore.onDidAddCwdDetectionCapability,
-		() => capabilityStore.onDidRemoveCwdDetectionCapability,
+		() => capabilityStore.onDidRemoveCwdDetectionCapability
 	];
 }

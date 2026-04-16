@@ -11,7 +11,7 @@ suite('Terminal Mouse Wheel Zoom', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('clamps font size to minimum value when below bounds', () => {
-		const result = clampTerminalFontSize(3 + (-2)); // 3 - 2 = 1, clamped to 6
+		const result = clampTerminalFontSize(3 + -2); // 3 - 2 = 1, clamped to 6
 		strictEqual(result, 6, 'Font size should be clamped to minimum value of 6');
 	});
 
@@ -26,7 +26,7 @@ suite('Terminal Mouse Wheel Zoom', () => {
 	});
 
 	test('clamps font size when going below minimum', () => {
-		const result = clampTerminalFontSize(6 + (-1)); // 6 - 1 = 5, clamped to 6
+		const result = clampTerminalFontSize(6 + -1); // 6 - 1 = 5, clamped to 6
 		strictEqual(result, 6, 'Font size should be clamped when going below minimum');
 	});
 

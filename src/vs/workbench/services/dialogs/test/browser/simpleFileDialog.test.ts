@@ -6,7 +6,11 @@
 import assert from 'assert';
 import { URI } from '../../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { AGENT_HOST_SCHEME, AGENT_HOST_LABEL_FORMATTER, agentHostAuthority } from '../../../../../platform/agentHost/common/agentHostUri.js';
+import {
+	AGENT_HOST_SCHEME,
+	AGENT_HOST_LABEL_FORMATTER,
+	agentHostAuthority
+} from '../../../../../platform/agentHost/common/agentHostUri.js';
 import { agentHostUri } from '../../../../../platform/agentHost/common/agentHostFileSystemProvider.js';
 
 /**
@@ -22,7 +26,6 @@ import { agentHostUri } from '../../../../../platform/agentHost/common/agentHost
  * 3. remoteUriFrom - re-adding the prefix to user input.
  */
 suite('SimpleFileDialog - scoped path prefix', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	/**
@@ -95,7 +98,7 @@ suite('SimpleFileDialog - scoped path prefix', () => {
 		const uri = URI.from({
 			scheme: AGENT_HOST_SCHEME,
 			authority,
-			path: `/${originalUri.scheme}/${originalUri.authority}${originalUri.path}`,
+			path: `/${originalUri.scheme}/${originalUri.authority}${originalUri.path}`
 		});
 
 		const displayPath = labelFormatterDisplay(uri.path, AGENT_HOST_LABEL_FORMATTER.formatting.stripPathSegments!);

@@ -19,8 +19,7 @@ type RequestResponse = [
 ];
 
 export class RequestChannel implements IServerChannel {
-
-	constructor(private readonly service: IRequestService) { }
+	constructor(private readonly service: IRequestService) {}
 
 	listen(context: any, event: string): Event<any> {
 		throw new Error('Invalid listen');
@@ -28,27 +27,30 @@ export class RequestChannel implements IServerChannel {
 
 	call(context: any, command: string, args?: any, token: CancellationToken = CancellationToken.None): Promise<any> {
 		switch (command) {
-			case 'request': return this.service.request(args[0], token)
-				.then(async ({ res, stream }) => {
+			case 'request':
+				return this.service.request(args[0], token).then(async ({ res, stream }) => {
 					const buffer = await streamToBuffer(stream);
 					return <RequestResponse>[{ statusCode: res.statusCode, headers: res.headers }, buffer];
 				});
-			case 'resolveProxy': return this.service.resolveProxy(args[0]);
-			case 'lookupAuthorization': return this.service.lookupAuthorization(args[0]);
-			case 'lookupKerberosAuthorization': return this.service.lookupKerberosAuthorization(args[0]);
-			case 'loadCertificates': return this.service.loadCertificates();
+			case 'resolveProxy':
+				return this.service.resolveProxy(args[0]);
+			case 'lookupAuthorization':
+				return this.service.lookupAuthorization(args[0]);
+			case 'lookupKerberosAuthorization':
+				return this.service.lookupKerberosAuthorization(args[0]);
+			case 'loadCertificates':
+				return this.service.loadCertificates();
 		}
 		throw new Error('Invalid call');
 	}
 }
 
 export class RequestChannelClient implements IRequestService {
-
 	declare readonly _serviceBrand: undefined;
 
 	readonly onDidCompleteRequest = Event.None as Event<IRequestCompleteEvent>;
 
-	constructor(private readonly channel: IChannel) { }
+	constructor(private readonly channel: IChannel) {}
 
 	async request(options: IRequestOptions, token: CancellationToken): Promise<IRequestContext> {
 		const [res, buffer] = await this.channel.call<RequestResponse>('request', [options], token);

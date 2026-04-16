@@ -25,11 +25,17 @@ import { StandardMouseEvent } from '../../../../base/browser/mouseEvent.js';
 import { MarshalledCommentThread } from '../../../common/comments.js';
 import { CommentCommandId } from '../common/commentCommandIds.js';
 
-const collapseIcon = registerIcon('review-comment-collapse', Codicon.chevronUp, nls.localize('collapseIcon', 'Icon to collapse a review comment.'));
+const collapseIcon = registerIcon(
+	'review-comment-collapse',
+	Codicon.chevronUp,
+	nls.localize('collapseIcon', 'Icon to collapse a review comment.')
+);
 const COLLAPSE_ACTION_CLASS = 'expand-review-action ' + ThemeIcon.asClassName(collapseIcon);
 const DELETE_ACTION_CLASS = 'expand-review-action ' + ThemeIcon.asClassName(Codicon.trashcan);
 
-function threadHasComments(comments: ReadonlyArray<languages.Comment> | undefined): comments is ReadonlyArray<languages.Comment> {
+function threadHasComments(
+	comments: ReadonlyArray<languages.Comment> | undefined
+): comments is ReadonlyArray<languages.Comment> {
 	return !!comments && comments.length > 0;
 }
 
@@ -70,7 +76,13 @@ export class CommentThreadHeader<T = IRange> extends Disposable {
 		this._register(this._actionbarWidget);
 
 		const collapseClass = threadHasComments(this._commentThread.comments) ? COLLAPSE_ACTION_CLASS : DELETE_ACTION_CLASS;
-		this._collapseAction = new Action(CommentCommandId.Hide, nls.localize('label.collapse', "Collapse"), collapseClass, true, () => this._delegate.collapse());
+		this._collapseAction = new Action(
+			CommentCommandId.Hide,
+			nls.localize('label.collapse', 'Collapse'),
+			collapseClass,
+			true,
+			() => this._delegate.collapse()
+		);
 		if (!threadHasComments(this._commentThread.comments)) {
 			const commentsChanged: MutableDisposable<IDisposable> = this._register(new MutableDisposable());
 			commentsChanged.value = this._commentThread.onDidChangeComments(() => {
@@ -86,19 +98,25 @@ export class CommentThreadHeader<T = IRange> extends Disposable {
 		this.setActionBarActions(menu);
 
 		this._register(menu);
-		this._register(menu.onDidChange(e => {
-			this.setActionBarActions(menu);
-		}));
+		this._register(
+			menu.onDidChange(e => {
+				this.setActionBarActions(menu);
+			})
+		);
 
-		this._register(dom.addDisposableListener(this._headElement, dom.EventType.CONTEXT_MENU, e => {
-			return this.onContextMenu(e);
-		}));
+		this._register(
+			dom.addDisposableListener(this._headElement, dom.EventType.CONTEXT_MENU, e => {
+				return this.onContextMenu(e);
+			})
+		);
 
 		this._actionbarWidget.context = this._commentThread;
 	}
 
 	private setActionBarActions(menu: IMenu): void {
-		const groups = menu.getActions({ shouldForwardArgs: true }).reduce((r, [, actions]) => [...r, ...actions], <(MenuItemAction | SubmenuItemAction)[]>[]);
+		const groups = menu
+			.getActions({ shouldForwardArgs: true })
+			.reduce((r, [, actions]) => [...r, ...actions], <(MenuItemAction | SubmenuItemAction)[]>[]);
 		this._actionbarWidget.clear();
 		this._actionbarWidget.push([...groups, this._collapseAction], { label: false, icon: true });
 	}
@@ -116,7 +134,7 @@ export class CommentThreadHeader<T = IRange> extends Disposable {
 
 		if (label === undefined) {
 			if (!(this._commentThread.comments && this._commentThread.comments.length)) {
-				label = nls.localize('startThread', "Start discussion");
+				label = nls.localize('startThread', 'Start discussion');
 			}
 		}
 
@@ -150,7 +168,7 @@ export class CommentThreadHeader<T = IRange> extends Disposable {
 					commentThreadHandle: this._commentThread.commentThreadHandle,
 					$mid: MarshalledId.CommentThread
 				};
-			},
+			}
 		});
 	}
 }

@@ -16,10 +16,13 @@ suite('Terminal Suggest Dynamic Configuration', () => {
 
 		// Test with some providers
 		const providers = new Map([
-			['terminal-suggest', { id: 'terminal-suggest', description: 'Provides intelligent completions for terminal commands' }],
+			[
+				'terminal-suggest',
+				{ id: 'terminal-suggest', description: 'Provides intelligent completions for terminal commands' }
+			],
 			['builtinPwsh', { id: 'builtinPwsh', description: 'PowerShell completion provider' }],
 			['lsp', { id: 'lsp' }],
-			['custom-provider', { id: 'custom-provider' }],
+			['custom-provider', { id: 'custom-provider' }]
 		]);
 		registerTerminalSuggestProvidersConfiguration(providers);
 

@@ -11,7 +11,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite, toResource } from '../../../..
 import { FileChangesEvent, FileChangeType, IFileChange, isParent } from '../../common/files.js';
 
 suite('Files', () => {
-
 	test('FileChangesEvent - basics', function () {
 		const changes = [
 			{ resource: toResource.call(this, '/foo/updated.txt'), type: FileChangeType.UPDATED },
@@ -31,7 +30,14 @@ suite('Files', () => {
 			assert(event.affects(toResource.call(this, '/foo/updated.txt'), FileChangeType.UPDATED));
 			assert(event.contains(toResource.call(this, '/foo/updated.txt'), FileChangeType.UPDATED, FileChangeType.ADDED));
 			assert(event.affects(toResource.call(this, '/foo/updated.txt'), FileChangeType.UPDATED, FileChangeType.ADDED));
-			assert(event.contains(toResource.call(this, '/foo/updated.txt'), FileChangeType.UPDATED, FileChangeType.ADDED, FileChangeType.DELETED));
+			assert(
+				event.contains(
+					toResource.call(this, '/foo/updated.txt'),
+					FileChangeType.UPDATED,
+					FileChangeType.ADDED,
+					FileChangeType.DELETED
+				)
+			);
 			assert(!event.contains(toResource.call(this, '/foo/updated.txt'), FileChangeType.ADDED, FileChangeType.DELETED));
 			assert(!event.contains(toResource.call(this, '/foo/updated.txt'), FileChangeType.ADDED));
 			assert(!event.contains(toResource.call(this, '/foo/updated.txt'), FileChangeType.DELETED));
@@ -113,7 +119,7 @@ suite('Files', () => {
 		let changes: IFileChange[] = [
 			{ resource: toResource.call(this, '/foo/updated.txt'), type: FileChangeType.UPDATED },
 			{ resource: toResource.call(this, '/foo/otherupdated.txt'), type: FileChangeType.UPDATED },
-			{ resource: toResource.call(this, '/added.txt'), type: FileChangeType.ADDED },
+			{ resource: toResource.call(this, '/added.txt'), type: FileChangeType.ADDED }
 		];
 
 		let event: FileChangesEvent = new FileChangesEvent(changes, true);
@@ -123,7 +129,7 @@ suite('Files', () => {
 		changes = [
 			{ resource: toResource.call(this, '/foo/updated.txt'), type: FileChangeType.UPDATED, cId: 100 },
 			{ resource: toResource.call(this, '/foo/otherupdated.txt'), type: FileChangeType.UPDATED, cId: 100 },
-			{ resource: toResource.call(this, '/added.txt'), type: FileChangeType.ADDED, cId: 100 },
+			{ resource: toResource.call(this, '/added.txt'), type: FileChangeType.ADDED, cId: 100 }
 		];
 
 		event = new FileChangesEvent(changes, true);
@@ -134,7 +140,7 @@ suite('Files', () => {
 		changes = [
 			{ resource: toResource.call(this, '/foo/updated.txt'), type: FileChangeType.UPDATED, cId: 100 },
 			{ resource: toResource.call(this, '/foo/otherupdated.txt'), type: FileChangeType.UPDATED },
-			{ resource: toResource.call(this, '/added.txt'), type: FileChangeType.ADDED, cId: 100 },
+			{ resource: toResource.call(this, '/added.txt'), type: FileChangeType.ADDED, cId: 100 }
 		];
 
 		event = new FileChangesEvent(changes, true);
@@ -145,7 +151,7 @@ suite('Files', () => {
 		changes = [
 			{ resource: toResource.call(this, '/foo/updated.txt'), type: FileChangeType.UPDATED, cId: 100 },
 			{ resource: toResource.call(this, '/foo/otherupdated.txt'), type: FileChangeType.UPDATED, cId: 120 },
-			{ resource: toResource.call(this, '/added.txt'), type: FileChangeType.ADDED, cId: 100 },
+			{ resource: toResource.call(this, '/added.txt'), type: FileChangeType.ADDED, cId: 100 }
 		];
 
 		event = new FileChangesEvent(changes, true);
@@ -155,7 +161,6 @@ suite('Files', () => {
 	});
 
 	function testIsEqual(testMethod: (pA: string, pB: string, ignoreCase: boolean) => boolean): void {
-
 		// corner cases
 		assert(testMethod('', '', true));
 		assert(!testMethod(null!, '', true));
@@ -246,7 +251,6 @@ suite('Files', () => {
 	});
 
 	test('isEqualOrParent (ignorecase)', function () {
-
 		// same assertions apply as with isEqual()
 		testIsEqual(isEqualOrParent); //
 

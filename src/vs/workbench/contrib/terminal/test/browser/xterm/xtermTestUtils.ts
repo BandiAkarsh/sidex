@@ -19,8 +19,7 @@ export class TestWebglAddon implements WebglAddon {
 	readonly onAddTextureAtlasCanvas = this._onAddTextureAtlasCanvas.event as IEvent<HTMLCanvasElement>;
 	readonly onRemoveTextureAtlasCanvas = this._onRemoveTextureAtlasCanvas.event as IEvent<HTMLCanvasElement, void>;
 	readonly onContextLoss = this._onContextLoss.event as IEvent<void>;
-	constructor(preserveDrawingBuffer?: boolean) {
-	}
+	constructor(preserveDrawingBuffer?: boolean) {}
 	activate(): void {
 		TestWebglAddon.isEnabled = !TestWebglAddon.shouldThrow;
 		if (TestWebglAddon.shouldThrow) {
@@ -34,7 +33,7 @@ export class TestWebglAddon implements WebglAddon {
 		this._onRemoveTextureAtlasCanvas.dispose();
 		this._onContextLoss.dispose();
 	}
-	clearTextureAtlas(): void { }
+	clearTextureAtlas(): void {}
 }
 
 export class TestXtermAddonImporter extends XtermAddonImporter {
@@ -45,4 +44,3 @@ export class TestXtermAddonImporter extends XtermAddonImporter {
 		return super.importAddon(name);
 	}
 }
-

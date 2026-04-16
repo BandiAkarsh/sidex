@@ -36,38 +36,93 @@ const mockWorkspaceContextService = upcastDeepPartial<IWorkspaceContextService>(
 	}
 });
 
-export function createTestSession(model: DebugModel, name = 'mockSession', options?: IDebugSessionOptions): DebugSession {
-	return new DebugSession(generateUuid(), { resolved: { name, type: 'node', request: 'launch' }, unresolved: undefined }, undefined, model, options, {
-		getViewModel(): any {
-			return {
-				updateViews(): void {
-					// noop
-				}
-			};
-		}
-	} as IDebugService, undefined!, undefined!, new TestConfigurationService({ debug: { console: { collapseIdenticalLines: true } } }), undefined!, mockWorkspaceContextService, undefined!, undefined!, undefined!, mockUriIdentityService, new TestInstantiationService(), undefined!, undefined!, new NullLogService(), undefined!, undefined!, new TestAccessibilityService());
+export function createTestSession(
+	model: DebugModel,
+	name = 'mockSession',
+	options?: IDebugSessionOptions
+): DebugSession {
+	return new DebugSession(
+		generateUuid(),
+		{ resolved: { name, type: 'node', request: 'launch' }, unresolved: undefined },
+		undefined,
+		model,
+		options,
+		{
+			getViewModel(): any {
+				return {
+					updateViews(): void {
+						// noop
+					}
+				};
+			}
+		} as IDebugService,
+		undefined!,
+		undefined!,
+		new TestConfigurationService({ debug: { console: { collapseIdenticalLines: true } } }),
+		undefined!,
+		mockWorkspaceContextService,
+		undefined!,
+		undefined!,
+		undefined!,
+		mockUriIdentityService,
+		new TestInstantiationService(),
+		undefined!,
+		undefined!,
+		new NullLogService(),
+		undefined!,
+		undefined!,
+		new TestAccessibilityService()
+	);
 }
 
 function createTwoStackFrames(session: DebugSession): { firstStackFrame: StackFrame; secondStackFrame: StackFrame } {
-	const thread = new class extends Thread {
+	const thread = new (class extends Thread {
 		public override getCallStack(): StackFrame[] {
 			return [firstStackFrame, secondStackFrame];
 		}
-	}(session, 'mockthread', 1);
+	})(session, 'mockthread', 1);
 
-	const firstSource = new Source({
-		name: 'internalModule.js',
-		path: 'a/b/c/d/internalModule.js',
-		sourceReference: 10,
-	}, 'aDebugSessionId', mockUriIdentityService, new NullLogService());
-	const secondSource = new Source({
-		name: 'internalModule.js',
-		path: 'z/x/c/d/internalModule.js',
-		sourceReference: 11,
-	}, 'aDebugSessionId', mockUriIdentityService, new NullLogService());
+	const firstSource = new Source(
+		{
+			name: 'internalModule.js',
+			path: 'a/b/c/d/internalModule.js',
+			sourceReference: 10
+		},
+		'aDebugSessionId',
+		mockUriIdentityService,
+		new NullLogService()
+	);
+	const secondSource = new Source(
+		{
+			name: 'internalModule.js',
+			path: 'z/x/c/d/internalModule.js',
+			sourceReference: 11
+		},
+		'aDebugSessionId',
+		mockUriIdentityService,
+		new NullLogService()
+	);
 
-	const firstStackFrame = new StackFrame(thread, 0, firstSource, 'app.js', 'normal', { startLineNumber: 1, startColumn: 2, endLineNumber: 1, endColumn: 10 }, 0, true);
-	const secondStackFrame = new StackFrame(thread, 1, secondSource, 'app2.js', 'normal', { startLineNumber: 1, startColumn: 2, endLineNumber: 1, endColumn: 10 }, 1, true);
+	const firstStackFrame = new StackFrame(
+		thread,
+		0,
+		firstSource,
+		'app.js',
+		'normal',
+		{ startLineNumber: 1, startColumn: 2, endLineNumber: 1, endColumn: 10 },
+		0,
+		true
+	);
+	const secondStackFrame = new StackFrame(
+		thread,
+		1,
+		secondSource,
+		'app2.js',
+		'normal',
+		{ startLineNumber: 1, startColumn: 2, endLineNumber: 1, endColumn: 10 },
+		1,
+		true
+	);
 
 	return { firstStackFrame, secondStackFrame };
 }
@@ -98,10 +153,12 @@ suite('Debug - CallStack', () => {
 		assert.strictEqual(model.getSessions(true).length, 1);
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: threadId,
-				name: threadName
-			}]
+			threads: [
+				{
+					id: threadId,
+					name: threadName
+				}
+			]
 		});
 
 		assert.strictEqual(session.getThread(threadId)!.name, threadName);
@@ -127,27 +184,32 @@ suite('Debug - CallStack', () => {
 
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: threadId1,
-				name: threadName1
-			}]
+			threads: [
+				{
+					id: threadId1,
+					name: threadName1
+				}
+			]
 		});
 
 		// Stopped event with all threads stopped
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: threadId1,
-				name: threadName1
-			}, {
-				id: threadId2,
-				name: threadName2
-			}],
+			threads: [
+				{
+					id: threadId1,
+					name: threadName1
+				},
+				{
+					id: threadId2,
+					name: threadName2
+				}
+			],
 			stoppedDetails: {
 				reason: stoppedReason,
 				threadId: 1,
 				allThreadsStopped: true
-			},
+			}
 		});
 
 		const thread1 = session.getThread(threadId1)!;
@@ -209,34 +271,40 @@ suite('Debug - CallStack', () => {
 		// Stopped event with all threads stopped
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: threadId1,
-				name: threadName1
-			}, {
-				id: threadId2,
-				name: threadName2
-			}],
+			threads: [
+				{
+					id: threadId1,
+					name: threadName1
+				},
+				{
+					id: threadId2,
+					name: threadName2
+				}
+			],
 			stoppedDetails: {
 				reason: stoppedReason,
 				threadId: threadId1,
 				allThreadsStopped: true
-			},
+			}
 		});
 
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: threadId1,
-				name: threadName1
-			}, {
-				id: threadId2,
-				name: threadName2
-			}],
+			threads: [
+				{
+					id: threadId1,
+					name: threadName1
+				},
+				{
+					id: threadId2,
+					name: threadName2
+				}
+			],
 			stoppedDetails: {
 				reason: stoppedReason,
 				threadId: threadId2,
 				allThreadsStopped: true
-			},
+			}
 		});
 
 		const thread1 = session.getThread(threadId1)!;
@@ -263,22 +331,27 @@ suite('Debug - CallStack', () => {
 		// Add the threads
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: stoppedThreadId,
-				name: stoppedThreadName
-			}]
+			threads: [
+				{
+					id: stoppedThreadId,
+					name: stoppedThreadName
+				}
+			]
 		});
 
 		// Stopped event with only one thread stopped
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: 1,
-				name: stoppedThreadName
-			}, {
-				id: runningThreadId,
-				name: runningThreadName
-			}],
+			threads: [
+				{
+					id: 1,
+					name: stoppedThreadName
+				},
+				{
+					id: runningThreadId,
+					name: runningThreadName
+				}
+			],
 			stoppedDetails: {
 				reason: stoppedReason,
 				threadId: 1,
@@ -340,16 +413,39 @@ suite('Debug - CallStack', () => {
 		const session = createTestSession(model);
 		disposables.add(session);
 		const thread = new Thread(session, 'mockthread', 1);
-		const firstSource = new Source({
-			name: 'internalModule.js',
-			path: 'a/b/c/d/internalModule.js',
-			sourceReference: 10,
-		}, 'aDebugSessionId', mockUriIdentityService, new NullLogService());
-		const stackFrame = new StackFrame(thread, 1, firstSource, 'app', 'normal', { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 10 }, 1, true);
+		const firstSource = new Source(
+			{
+				name: 'internalModule.js',
+				path: 'a/b/c/d/internalModule.js',
+				sourceReference: 10
+			},
+			'aDebugSessionId',
+			mockUriIdentityService,
+			new NullLogService()
+		);
+		const stackFrame = new StackFrame(
+			thread,
+			1,
+			firstSource,
+			'app',
+			'normal',
+			{ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 10 },
+			1,
+			true
+		);
 		assert.strictEqual(stackFrame.toString(), 'app (internalModule.js:1)');
 
 		const secondSource = new Source(undefined, 'aDebugSessionId', mockUriIdentityService, new NullLogService());
-		const stackFrame2 = new StackFrame(thread, 2, secondSource, 'module', 'normal', { startLineNumber: undefined!, startColumn: undefined!, endLineNumber: undefined!, endColumn: undefined! }, 2, true);
+		const stackFrame2 = new StackFrame(
+			thread,
+			2,
+			secondSource,
+			'module',
+			'normal',
+			{ startLineNumber: undefined!, startColumn: undefined!, endLineNumber: undefined!, endColumn: undefined! },
+			2,
+			true
+		);
 		assert.strictEqual(stackFrame2.toString(), 'module');
 	});
 
@@ -445,11 +541,34 @@ suite('Debug - CallStack', () => {
 		const stoppedReason = 'breakpoint';
 
 		// Add the threads
-		const session = new class extends DebugSession {
+		const session = new (class extends DebugSession {
 			override get state(): State {
 				return State.Stopped;
 			}
-		}(generateUuid(), { resolved: { name: 'stoppedSession', type: 'node', request: 'launch' }, unresolved: undefined }, undefined, model, undefined, undefined!, undefined!, undefined!, undefined!, undefined!, mockWorkspaceContextService, undefined!, undefined!, undefined!, mockUriIdentityService, new TestInstantiationService(), undefined!, undefined!, new NullLogService(), undefined!, undefined!, new TestAccessibilityService());
+		})(
+			generateUuid(),
+			{ resolved: { name: 'stoppedSession', type: 'node', request: 'launch' }, unresolved: undefined },
+			undefined,
+			model,
+			undefined,
+			undefined!,
+			undefined!,
+			undefined!,
+			undefined!,
+			undefined!,
+			mockWorkspaceContextService,
+			undefined!,
+			undefined!,
+			undefined!,
+			mockUriIdentityService,
+			new TestInstantiationService(),
+			undefined!,
+			undefined!,
+			new NullLogService(),
+			undefined!,
+			undefined!,
+			new TestAccessibilityService()
+		);
 		disposables.add(session);
 
 		const runningSession = createTestSession(model);
@@ -461,27 +580,32 @@ suite('Debug - CallStack', () => {
 
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: threadId1,
-				name: threadName1
-			}]
+			threads: [
+				{
+					id: threadId1,
+					name: threadName1
+				}
+			]
 		});
 
 		// Stopped event with all threads stopped
 		model.rawUpdate({
 			sessionId: session.getId(),
-			threads: [{
-				id: threadId1,
-				name: threadName1
-			}, {
-				id: threadId2,
-				name: threadName2
-			}],
+			threads: [
+				{
+					id: threadId1,
+					name: threadName1
+				},
+				{
+					id: threadId2,
+					name: threadName2
+				}
+			],
 			stoppedDetails: {
 				reason: stoppedReason,
 				threadId: 1,
 				allThreadsStopped: true
-			},
+			}
 		});
 
 		const thread = session.getThread(threadId1)!;

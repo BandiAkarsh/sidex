@@ -12,13 +12,21 @@ import { IBrowserElementsService } from './browserElementsService.js';
 class WebBrowserElementsService implements IBrowserElementsService {
 	_serviceBrand: undefined;
 
-	constructor() { }
+	constructor() {}
 
-	async getElementData(rect: IRectangle, token: CancellationToken, locator: IBrowserTargetLocator | undefined): Promise<IElementData | undefined> {
+	async getElementData(
+		rect: IRectangle,
+		token: CancellationToken,
+		locator: IBrowserTargetLocator | undefined
+	): Promise<IElementData | undefined> {
 		throw new Error('Not implemented');
 	}
 
-	async getFocusedElementData(rect: IRectangle, token: CancellationToken, locator: IBrowserTargetLocator | undefined): Promise<IElementData | undefined> {
+	async getFocusedElementData(
+		rect: IRectangle,
+		token: CancellationToken,
+		locator: IBrowserTargetLocator | undefined
+	): Promise<IElementData | undefined> {
 		throw new Error('Not implemented');
 	}
 

@@ -24,8 +24,8 @@ class CommentThreadRangeDecoration implements IModelDeltaDecoration {
 
 	constructor(
 		public readonly range: IRange,
-		public readonly options: ModelDecorationOptions) {
-	}
+		public readonly options: ModelDecorationOptions
+	) {}
 }
 
 export class CommentThreadRangeDecorator extends Disposable {
@@ -59,23 +59,27 @@ export class CommentThreadRangeDecorator extends Disposable {
 		};
 
 		this.activeDecorationOptions = ModelDecorationOptions.createDynamic(activeDecorationOptions);
-		this._register(commentService.onDidChangeCurrentCommentThread(thread => {
-			this.updateCurrent(thread);
-		}));
-		this._register(commentService.onDidUpdateCommentThreads(() => {
-			this.updateCurrent(undefined);
-		}));
+		this._register(
+			commentService.onDidChangeCurrentCommentThread(thread => {
+				this.updateCurrent(thread);
+			})
+		);
+		this._register(
+			commentService.onDidUpdateCommentThreads(() => {
+				this.updateCurrent(undefined);
+			})
+		);
 	}
 
 	private updateCurrent(thread: CommentThread<IRange> | undefined) {
-		if (!this.editor || (thread?.resource && (thread.resource?.toString() !== this.editor.getModel()?.uri.toString()))) {
+		if (!this.editor || (thread?.resource && thread.resource?.toString() !== this.editor.getModel()?.uri.toString())) {
 			return;
 		}
 		this.currentThreadCollapseStateListener?.dispose();
 		const newDecoration: CommentThreadRangeDecoration[] = [];
 		if (thread) {
 			const range = thread.range;
-			if (range && !((range.startLineNumber === range.endLineNumber) && (range.startColumn === range.endColumn))) {
+			if (range && !(range.startLineNumber === range.endLineNumber && range.startColumn === range.endColumn)) {
 				if (thread.collapsibleState === CommentThreadCollapsibleState.Expanded) {
 					this.currentThreadCollapseStateListener = thread.onDidChangeCollapsibleState(state => {
 						if (state === CommentThreadCollapsibleState.Collapsed) {
@@ -86,9 +90,9 @@ export class CommentThreadRangeDecorator extends Disposable {
 				}
 			}
 		}
-		this.editor.changeDecorations((changeAccessor) => {
+		this.editor.changeDecorations(changeAccessor => {
 			this.activeDecorationIds = changeAccessor.deltaDecorations(this.activeDecorationIds, newDecoration);
-			newDecoration.forEach((decoration, index) => decoration.id = this.decorationIds[index]);
+			newDecoration.forEach((decoration, index) => (decoration.id = this.decorationIds[index]));
 		});
 	}
 
@@ -110,13 +114,15 @@ export class CommentThreadRangeDecorator extends Disposable {
 				const range = thread.range;
 				// We only want to show a range decoration when there's the range spans either multiple lines
 				// or, when is spans multiple characters on the sample line
-				if (!range || (range.startLineNumber === range.endLineNumber) && (range.startColumn === range.endColumn)) {
+				if (!range || (range.startLineNumber === range.endLineNumber && range.startColumn === range.endColumn)) {
 					return;
 				}
 
-				this.threadCollapseStateListeners.push(thread.onDidChangeCollapsibleState(() => {
-					this.update(editor, commentInfos);
-				}));
+				this.threadCollapseStateListeners.push(
+					thread.onDidChangeCollapsibleState(() => {
+						this.update(editor, commentInfos);
+					})
+				);
 
 				if (thread.collapsibleState === CommentThreadCollapsibleState.Collapsed) {
 					return;
@@ -126,9 +132,9 @@ export class CommentThreadRangeDecorator extends Disposable {
 			});
 		}
 
-		editor.changeDecorations((changeAccessor) => {
+		editor.changeDecorations(changeAccessor => {
 			this.decorationIds = changeAccessor.deltaDecorations(this.decorationIds, commentThreadRangeDecorations);
-			commentThreadRangeDecorations.forEach((decoration, index) => decoration.id = this.decorationIds[index]);
+			commentThreadRangeDecorations.forEach((decoration, index) => (decoration.id = this.decorationIds[index]));
 		});
 	}
 

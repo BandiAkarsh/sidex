@@ -4,7 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Disposable } from '../../../base/common/lifecycle.js';
-import { ExtHostContext, ExtHostNotebookRenderersShape, MainContext, MainThreadNotebookRenderersShape } from '../common/extHost.protocol.js';
+import {
+	ExtHostContext,
+	ExtHostNotebookRenderersShape,
+	MainContext,
+	MainThreadNotebookRenderersShape
+} from '../common/extHost.protocol.js';
 import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
 import { INotebookRendererMessagingService } from '../../contrib/notebook/common/notebookRendererMessagingService.js';
 
@@ -14,13 +19,15 @@ export class MainThreadNotebookRenderers extends Disposable implements MainThrea
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@INotebookRendererMessagingService private readonly messaging: INotebookRendererMessagingService,
+		@INotebookRendererMessagingService private readonly messaging: INotebookRendererMessagingService
 	) {
 		super();
 		this.proxy = extHostContext.getProxy(ExtHostContext.ExtHostNotebookRenderers);
-		this._register(messaging.onShouldPostMessage(e => {
-			this.proxy.$postRendererMessage(e.editorId, e.rendererId, e.message);
-		}));
+		this._register(
+			messaging.onShouldPostMessage(e => {
+				this.proxy.$postRendererMessage(e.editorId, e.rendererId, e.message);
+			})
+		);
 	}
 
 	$postMessage(editorId: string | undefined, rendererId: string, message: unknown): Promise<boolean> {

@@ -20,7 +20,6 @@ import { ILanguageService } from '../../../../editor/common/languages/language.j
 import { IExtensionService } from '../../../services/extensions/common/extensions.js';
 import { gettingStartedContentRegistry } from '../common/gettingStartedContent.js';
 
-
 export class GettingStartedDetailsRenderer {
 	private mdCache = new ResourceMap<TrustedHTML>();
 	private svgCache = new ResourceMap<string>();
@@ -29,8 +28,8 @@ export class GettingStartedDetailsRenderer {
 		@IFileService private readonly fileService: IFileService,
 		@INotificationService private readonly notificationService: INotificationService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@ILanguageService private readonly languageService: ILanguageService,
-	) { }
+		@ILanguageService private readonly languageService: ILanguageService
+	) {}
 
 	async renderMarkdown(path: URI, base: URI): Promise<string> {
 		const content = await this.readAndCacheStepMarkdown(path, base);
@@ -41,7 +40,11 @@ export class GettingStartedDetailsRenderer {
 
 		const inDev = document.location.protocol === 'http:';
 		const isTauri = document.location.protocol === 'tauri:';
-		const imgSrcCsp = inDev ? 'img-src https: data: http:' : isTauri ? 'img-src https: data: tauri:' : 'img-src https: data:';
+		const imgSrcCsp = inDev
+			? 'img-src https: data: http:'
+			: isTauri
+				? 'img-src https: data: tauri:'
+				: 'img-src https: data:';
 
 		return `<!DOCTYPE html>
 		<html>
@@ -238,29 +241,24 @@ export class GettingStartedDetailsRenderer {
 	private async readAndCacheStepMarkdown(path: URI, base: URI): Promise<TrustedHTML> {
 		if (!this.mdCache.has(path)) {
 			const contents = await this.readContentsOfPath(path);
-			const markdownContents = await renderMarkdownDocument(transformUris(contents, base), this.extensionService, this.languageService, {
-				sanitizerConfig: {
-					allowedLinkProtocols: {
-						override: '*'
-					},
-					allowedTags: {
-						augment: [
-							'select',
-							'checkbox',
-							'checklist',
-						]
-					},
-					allowedAttributes: {
-						augment: [
-							'x-dispatch',
-							'data-command',
-							'when-checked',
-							'checked-on',
-							'checked',
-						]
-					},
+			const markdownContents = await renderMarkdownDocument(
+				transformUris(contents, base),
+				this.extensionService,
+				this.languageService,
+				{
+					sanitizerConfig: {
+						allowedLinkProtocols: {
+							override: '*'
+						},
+						allowedTags: {
+							augment: ['select', 'checkbox', 'checklist']
+						},
+						allowedAttributes: {
+							augment: ['x-dispatch', 'data-command', 'when-checked', 'checked-on', 'checked']
+						}
+					}
 				}
-			});
+			);
 			this.mdCache.set(path, markdownContents);
 		}
 		return assertReturnsDefined(this.mdCache.get(path));
@@ -280,7 +278,7 @@ export class GettingStartedDetailsRenderer {
 				});
 				return contents;
 			}
-		} catch { }
+		} catch {}
 
 		if (path.scheme === Schemas.tauri) {
 			try {
@@ -300,22 +298,20 @@ export class GettingStartedDetailsRenderer {
 			const generalizedLocale = language?.replace(/-.*$/, '');
 			const generalizedLocalizedPath = path.with({ path: path.path.replace(/\.md$/, `.nls.${generalizedLocale}.md`) });
 
-			const fileExists = (file: URI) => this.fileService
-				.stat(file)
-				.then((stat) => !!stat.size) // Double check the file actually has content for fileSystemProviders that fake `stat`. #131809
-				.catch(() => false);
+			const fileExists = (file: URI) =>
+				this.fileService
+					.stat(file)
+					.then(stat => !!stat.size) // Double check the file actually has content for fileSystemProviders that fake `stat`. #131809
+					.catch(() => false);
 
 			const [localizedFileExists, generalizedLocalizedFileExists] = await Promise.all([
 				fileExists(localizedPath),
-				fileExists(generalizedLocalizedPath),
+				fileExists(generalizedLocalizedPath)
 			]);
 
 			const bytes = await this.fileService.readFile(
-				localizedFileExists
-					? localizedPath
-					: generalizedLocalizedFileExists
-						? generalizedLocalizedPath
-						: path);
+				localizedFileExists ? localizedPath : generalizedLocalizedFileExists ? generalizedLocalizedPath : path
+			);
 
 			return bytes.value.toString();
 		} catch (e) {
@@ -330,12 +326,17 @@ const transformUri = (src: string, base: URI) => {
 	return asWebviewUri(path).toString(true);
 };
 
-const transformUris = (content: string, base: URI): string => content
-	.replace(/src="([^"]*)"/g, (_, src: string) => {
-		if (src.startsWith('https://')) { return `src="${src}"`; }
-		return `src="${transformUri(src, base)}"`;
-	})
-	.replace(/!\[([^\]]*)\]\(([^)]*)\)/g, (_, title: string, src: string) => {
-		if (src.startsWith('https://')) { return `![${title}](${src})`; }
-		return `![${title}](${transformUri(src, base)})`;
-	});
+const transformUris = (content: string, base: URI): string =>
+	content
+		.replace(/src="([^"]*)"/g, (_, src: string) => {
+			if (src.startsWith('https://')) {
+				return `src="${src}"`;
+			}
+			return `src="${transformUri(src, base)}"`;
+		})
+		.replace(/!\[([^\]]*)\]\(([^)]*)\)/g, (_, title: string, src: string) => {
+			if (src.startsWith('https://')) {
+				return `![${title}](${src})`;
+			}
+			return `![${title}](${transformUri(src, base)})`;
+		});

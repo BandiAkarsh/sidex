@@ -4,7 +4,7 @@ use crate::commands::extension_platform::{
 };
 use serde::Serialize;
 use std::fs::{self, File};
-use std::io::{Read, Cursor};
+use std::io::{Cursor, Read};
 use std::path::Path;
 use tauri::AppHandle;
 
@@ -94,16 +94,24 @@ fn extract_vsix_bytes(data: &[u8]) -> Result<InstalledExtension, String> {
     for i in 0..archive.len() {
         let mut entry = archive.by_index(i).map_err(|e| format!("entry: {e}"))?;
         let raw_name = entry.name().to_string();
-        if !raw_name.starts_with(prefix) { continue; }
+        if !raw_name.starts_with(prefix) {
+            continue;
+        }
         let rel = &raw_name[prefix.len()..];
-        if rel.is_empty() || rel.contains("..") { continue; }
+        if rel.is_empty() || rel.contains("..") {
+            continue;
+        }
         let target = ext_dir.join(rel);
         if entry.is_dir() {
             fs::create_dir_all(&target).map_err(|e| format!("mkdir {rel}: {e}"))?;
         } else {
-            if let Some(parent) = target.parent() { fs::create_dir_all(parent).ok(); }
+            if let Some(parent) = target.parent() {
+                fs::create_dir_all(parent).ok();
+            }
             let mut buf = Vec::with_capacity(entry.size() as usize);
-            entry.read_to_end(&mut buf).map_err(|e| format!("read {rel}: {e}"))?;
+            entry
+                .read_to_end(&mut buf)
+                .map_err(|e| format!("read {rel}: {e}"))?;
             fs::write(&target, &buf).map_err(|e| format!("write {rel}: {e}"))?;
             #[cfg(unix)]
             if entry.unix_mode().map_or(false, |m| m & 0o111 != 0) || rel.starts_with("bin/") {
@@ -124,7 +132,9 @@ fn extract_vsix_bytes(data: &[u8]) -> Result<InstalledExtension, String> {
 #[tauri::command]
 pub async fn install_extension_from_url(url: String) -> Result<InstalledExtension, String> {
     log::info!("downloading extension from {url}");
-    let resp = reqwest::get(&url).await.map_err(|e| format!("download: {e}"))?;
+    let resp = reqwest::get(&url)
+        .await
+        .map_err(|e| format!("download: {e}"))?;
     if !resp.status().is_success() {
         return Err(format!("download failed: HTTP {}", resp.status()));
     }

@@ -3,7 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { workbenchCalculateActions, workbenchDynamicCalculateActions } from '../../browser/viewParts/notebookEditorToolbar.js';
+import {
+	workbenchCalculateActions,
+	workbenchDynamicCalculateActions
+} from '../../browser/viewParts/notebookEditorToolbar.js';
 import { Action, IAction, Separator } from '../../../../../base/common/actions.js';
 import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
@@ -31,7 +34,7 @@ suite('Workbench Toolbar calculateActions (strategy always + never)', () => {
 	const defaultSecondaryActionModels: IActionModel[] = [
 		{ action: new Action('secondaryAction0', 'Secondary Action 0'), size: 50, visible: true, renderLabel: true },
 		{ action: new Action('secondaryAction1', 'Secondary Action 1'), size: 50, visible: true, renderLabel: true },
-		{ action: new Action('secondaryAction2', 'Secondary Action 2'), size: 50, visible: true, renderLabel: true },
+		{ action: new Action('secondaryAction2', 'Secondary Action 2'), size: 50, visible: true, renderLabel: true }
 	];
 	const defaultSecondaryActions: IAction[] = defaultSecondaryActionModels.map(action => action.action);
 	const separator: IActionModel = { action: new Separator(), size: 1, visible: true, renderLabel: true };
@@ -50,7 +53,7 @@ suite('Workbench Toolbar calculateActions (strategy always + never)', () => {
 		const actions: IActionModel[] = [
 			{ action: disposables.add(new Action('action0', 'Action 0')), size: 50, visible: true, renderLabel: true },
 			{ action: disposables.add(new Action('action1', 'Action 1')), size: 50, visible: true, renderLabel: true },
-			{ action: disposables.add(new Action('action2', 'Action 2')), size: 50, visible: true, renderLabel: true },
+			{ action: disposables.add(new Action('action2', 'Action 2')), size: 50, visible: true, renderLabel: true }
 		];
 		const result = workbenchCalculateActions(actions, defaultSecondaryActions, 200);
 		assert.deepEqual(result.primaryActions, actions);
@@ -61,11 +64,14 @@ suite('Workbench Toolbar calculateActions (strategy always + never)', () => {
 		const actions: IActionModel[] = [
 			{ action: disposables.add(new Action('action0', 'Action 0')), size: 50, visible: true, renderLabel: true },
 			{ action: disposables.add(new Action('action1', 'Action 1')), size: 50, visible: true, renderLabel: true },
-			{ action: disposables.add(new Action('action2', 'Action 2')), size: 50, visible: true, renderLabel: true },
+			{ action: disposables.add(new Action('action2', 'Action 2')), size: 50, visible: true, renderLabel: true }
 		];
 		const result = workbenchCalculateActions(actions, defaultSecondaryActions, 100);
 		assert.deepEqual(result.primaryActions, [actions[0]]);
-		assert.deepEqual(result.secondaryActions, [actions[1], actions[2], separator, ...defaultSecondaryActionModels].map(action => action.action));
+		assert.deepEqual(
+			result.secondaryActions,
+			[actions[1], actions[2], separator, ...defaultSecondaryActionModels].map(action => action.action)
+		);
 	});
 
 	test('should ignore second separator when two separators are in a row', () => {
@@ -73,7 +79,7 @@ suite('Workbench Toolbar calculateActions (strategy always + never)', () => {
 			{ action: disposables.add(new Action('action0', 'Action 0')), size: 50, visible: true, renderLabel: true },
 			{ action: new Separator(), size: 1, visible: true, renderLabel: true },
 			{ action: new Separator(), size: 1, visible: true, renderLabel: true },
-			{ action: disposables.add(new Action('action1', 'Action 1')), size: 50, visible: true, renderLabel: true },
+			{ action: disposables.add(new Action('action1', 'Action 1')), size: 50, visible: true, renderLabel: true }
 		];
 		const result = workbenchCalculateActions(actions, defaultSecondaryActions, 125);
 		assert.deepEqual(result.primaryActions, [actions[0], actions[1], actions[3]]);
@@ -85,7 +91,7 @@ suite('Workbench Toolbar calculateActions (strategy always + never)', () => {
 			{ action: disposables.add(new Action('action0', 'Action 0')), size: 50, visible: true, renderLabel: true },
 			{ action: new Separator(), size: 1, visible: true, renderLabel: true },
 			{ action: disposables.add(new Action('action1', 'Action 1')), size: 50, visible: true, renderLabel: true },
-			{ action: new Separator(), size: 1, visible: true, renderLabel: true },
+			{ action: new Separator(), size: 1, visible: true, renderLabel: true }
 		];
 		const result = workbenchCalculateActions(actions, defaultSecondaryActions, 200);
 		assert.deepEqual(result.primaryActions, [actions[0], actions[1], actions[2]]);
@@ -97,18 +103,21 @@ suite('Workbench Toolbar calculateActions (strategy always + never)', () => {
 			{ action: disposables.add(new Action('action0', 'Action 0')), size: 50, visible: true, renderLabel: true },
 			{ action: disposables.add(new Action('action1', 'Action 1')), size: 50, visible: true, renderLabel: true },
 			{ action: disposables.add(new Action('action2', 'Action 2')), size: 50, visible: true, renderLabel: true },
-			{ action: disposables.add(new Action('action3', 'Action 3')), size: 0, visible: true, renderLabel: true },
+			{ action: disposables.add(new Action('action3', 'Action 3')), size: 0, visible: true, renderLabel: true }
 		];
 		const result = workbenchCalculateActions(actions, defaultSecondaryActions, 116);
 		assert.deepEqual(result.primaryActions, [actions[0], actions[1], actions[3]]);
-		assert.deepEqual(result.secondaryActions, [actions[2], separator, ...defaultSecondaryActionModels].map(action => action.action));
+		assert.deepEqual(
+			result.secondaryActions,
+			[actions[2], separator, ...defaultSecondaryActionModels].map(action => action.action)
+		);
 	});
 
 	test('should not render separator if preceeded by size 0 action(s).', () => {
 		const actions: IActionModel[] = [
 			{ action: disposables.add(new Action('action0', 'Action 0')), size: 0, visible: true, renderLabel: true },
 			{ action: new Separator(), size: 1, visible: true, renderLabel: true },
-			{ action: disposables.add(new Action('action1', 'Action 1')), size: 50, visible: true, renderLabel: true },
+			{ action: disposables.add(new Action('action1', 'Action 1')), size: 50, visible: true, renderLabel: true }
 		];
 		const result = workbenchCalculateActions(actions, defaultSecondaryActions, 116);
 		assert.deepEqual(result.primaryActions, [actions[0], actions[2]]);
@@ -122,7 +131,7 @@ suite('Workbench Toolbar calculateActions (strategy always + never)', () => {
 			{ action: disposables.add(new Action('action1', 'Action 1')), size: 0, visible: true, renderLabel: true },
 			{ action: disposables.add(new Action('action2', 'Action 2')), size: 0, visible: true, renderLabel: true },
 			{ action: new Separator(), size: 1, visible: true, renderLabel: true },
-			{ action: disposables.add(new Action('action3', 'Action 3')), size: 50, visible: true, renderLabel: true },
+			{ action: disposables.add(new Action('action3', 'Action 3')), size: 50, visible: true, renderLabel: true }
 		];
 		const result = workbenchCalculateActions(actions, defaultSecondaryActions, 300);
 		assert.deepEqual(result.primaryActions, [actions[0], actions[1], actions[2], actions[3], actions[5]]);
@@ -143,7 +152,7 @@ suite('Workbench Toolbar Dynamic calculateActions (strategy dynamic)', () => {
 	const defaultSecondaryActionModels: IActionModel[] = [
 		{ action: new Action('secondaryAction0', 'Secondary Action 0'), size: 50, visible: true, renderLabel: true },
 		{ action: new Action('secondaryAction1', 'Secondary Action 1'), size: 50, visible: true, renderLabel: true },
-		{ action: new Action('secondaryAction2', 'Secondary Action 2'), size: 50, visible: true, renderLabel: true },
+		{ action: new Action('secondaryAction2', 'Secondary Action 2'), size: 50, visible: true, renderLabel: true }
 	];
 	const defaultSecondaryActions: IAction[] = defaultSecondaryActionModels.map(action => action.action);
 
@@ -162,12 +171,12 @@ suite('Workbench Toolbar Dynamic calculateActions (strategy dynamic)', () => {
 		const input: IActionModel[] = [
 			{ action: actionTemplate[0], size: 50, visible: true, renderLabel: true },
 			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: true },
-			{ action: actionTemplate[2], size: 50, visible: true, renderLabel: true },
+			{ action: actionTemplate[2], size: 50, visible: true, renderLabel: true }
 		];
 		const expected: IActionModel[] = [
 			{ action: actionTemplate[0], size: 50, visible: true, renderLabel: true },
 			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: true },
-			{ action: actionTemplate[2], size: 50, visible: true, renderLabel: true },
+			{ action: actionTemplate[2], size: 50, visible: true, renderLabel: true }
 		];
 		const result = workbenchDynamicCalculateActions(input, defaultSecondaryActions, constainerSize);
 		assert.deepEqual(result.primaryActions, expected);
@@ -179,18 +188,20 @@ suite('Workbench Toolbar Dynamic calculateActions (strategy dynamic)', () => {
 		const input: IActionModel[] = [
 			{ action: actionTemplate[0], size: 50, visible: true, renderLabel: true },
 			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: true },
-			{ action: actionTemplate[2], size: 50, visible: true, renderLabel: true },
+			{ action: actionTemplate[2], size: 50, visible: true, renderLabel: true }
 		];
 		const expected: IActionModel[] = [
 			{ action: actionTemplate[0], size: 50, visible: true, renderLabel: false },
 			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: false },
-			{ action: actionTemplate[2], size: 50, visible: true, renderLabel: false },
+			{ action: actionTemplate[2], size: 50, visible: true, renderLabel: false }
 		];
-
 
 		const result = workbenchDynamicCalculateActions(input, defaultSecondaryActions, containerSize);
 		assert.deepEqual(result.primaryActions, expected);
-		assert.deepEqual(result.secondaryActions, [...defaultSecondaryActionModels].map(action => action.action));
+		assert.deepEqual(
+			result.secondaryActions,
+			[...defaultSecondaryActionModels].map(action => action.action)
+		);
 	});
 
 	test('should ignore second separator when two separators are in a row', () => {
@@ -199,12 +210,12 @@ suite('Workbench Toolbar Dynamic calculateActions (strategy dynamic)', () => {
 			{ action: actionTemplate[0], size: 50, visible: true, renderLabel: true },
 			{ action: new Separator(), size: 1, visible: true, renderLabel: true },
 			{ action: new Separator(), size: 1, visible: true, renderLabel: true },
-			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: true },
+			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: true }
 		];
 		const expected: IActionModel[] = [
 			{ action: actionTemplate[0], size: 50, visible: true, renderLabel: true },
 			{ action: new Separator(), size: 1, visible: true, renderLabel: true },
-			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: true },
+			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: true }
 		];
 		const result = workbenchDynamicCalculateActions(input, defaultSecondaryActions, containerSize);
 		assert.deepEqual(result.primaryActions, expected);
@@ -217,15 +228,14 @@ suite('Workbench Toolbar Dynamic calculateActions (strategy dynamic)', () => {
 			{ action: actionTemplate[0], size: 50, visible: true, renderLabel: true },
 			{ action: new Separator(), size: 1, visible: true, renderLabel: true },
 			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: true },
-			{ action: actionTemplate[2], size: 50, visible: true, renderLabel: true },
+			{ action: actionTemplate[2], size: 50, visible: true, renderLabel: true }
 		];
 		const expectedOutputActions: IActionModel[] = [
 			{ action: actionTemplate[0], size: 50, visible: true, renderLabel: true },
 			{ action: new Separator(), size: 1, visible: true, renderLabel: true },
 			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: false },
-			{ action: actionTemplate[2], size: 50, visible: true, renderLabel: false },
+			{ action: actionTemplate[2], size: 50, visible: true, renderLabel: false }
 		];
-
 
 		const result = workbenchDynamicCalculateActions(actions, defaultSecondaryActions, containerSize);
 		assert.deepEqual(result.primaryActions, expectedOutputActions);
@@ -238,12 +248,12 @@ suite('Workbench Toolbar Dynamic calculateActions (strategy dynamic)', () => {
 			{ action: actionTemplate[0], size: 50, visible: true, renderLabel: true },
 			{ action: new Separator(), size: 1, visible: true, renderLabel: true },
 			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: true },
-			{ action: new Separator(), size: 1, visible: true, renderLabel: true },
+			{ action: new Separator(), size: 1, visible: true, renderLabel: true }
 		];
 		const expected: IActionModel[] = [
 			{ action: actionTemplate[0], size: 50, visible: true, renderLabel: true },
 			{ action: new Separator(), size: 1, visible: true, renderLabel: true },
-			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: true },
+			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: true }
 		];
 		const result = workbenchDynamicCalculateActions(input, defaultSecondaryActions, containerSize);
 		assert.deepEqual(result.primaryActions, expected);
@@ -257,14 +267,14 @@ suite('Workbench Toolbar Dynamic calculateActions (strategy dynamic)', () => {
 			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: true },
 			{ action: new Separator(), size: 1, visible: true, renderLabel: true },
 			{ action: actionTemplate[2], size: 50, visible: true, renderLabel: true },
-			{ action: actionTemplate[3], size: 0, visible: true, renderLabel: true },
+			{ action: actionTemplate[3], size: 0, visible: true, renderLabel: true }
 		];
 		const expected: IActionModel[] = [
 			{ action: actionTemplate[0], size: 50, visible: true, renderLabel: true },
 			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: true },
 			{ action: new Separator(), size: 1, visible: true, renderLabel: true },
 			{ action: actionTemplate[2], size: 50, visible: true, renderLabel: false },
-			{ action: actionTemplate[3], size: 0, visible: true, renderLabel: false },
+			{ action: actionTemplate[3], size: 0, visible: true, renderLabel: false }
 		];
 		const result = workbenchDynamicCalculateActions(input, defaultSecondaryActions, containerSize);
 		assert.deepEqual(result.primaryActions, expected);
@@ -274,13 +284,13 @@ suite('Workbench Toolbar Dynamic calculateActions (strategy dynamic)', () => {
 	test('should not render separator if preceeded by size 0 action(s), but keep size 0 action in primary.', () => {
 		const containerSize = 116;
 		const input: IActionModel[] = [
-			{ action: actionTemplate[0], size: 0, visible: true, renderLabel: true }, 	// hidden
-			{ action: new Separator(), size: 1, visible: true, renderLabel: true },		// sep
-			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: true },	// visible
+			{ action: actionTemplate[0], size: 0, visible: true, renderLabel: true }, // hidden
+			{ action: new Separator(), size: 1, visible: true, renderLabel: true }, // sep
+			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: true } // visible
 		];
 		const expected: IActionModel[] = [
-			{ action: actionTemplate[0], size: 0, visible: true, renderLabel: true }, 	// hidden
-			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: true } 	// visible
+			{ action: actionTemplate[0], size: 0, visible: true, renderLabel: true }, // hidden
+			{ action: actionTemplate[1], size: 50, visible: true, renderLabel: true } // visible
 		];
 		const result = workbenchDynamicCalculateActions(input, defaultSecondaryActions, containerSize);
 		assert.deepEqual(result.primaryActions, expected);
@@ -295,7 +305,7 @@ suite('Workbench Toolbar Dynamic calculateActions (strategy dynamic)', () => {
 			{ action: actionTemplate[1], size: 0, visible: true, renderLabel: true },
 			{ action: actionTemplate[2], size: 0, visible: true, renderLabel: true },
 			{ action: new Separator(), size: 1, visible: true, renderLabel: true },
-			{ action: actionTemplate[3], size: 50, visible: true, renderLabel: true },
+			{ action: actionTemplate[3], size: 50, visible: true, renderLabel: true }
 		];
 		const expected: IActionModel[] = [
 			{ action: actionTemplate[0], size: 50, visible: true, renderLabel: true },
@@ -303,7 +313,7 @@ suite('Workbench Toolbar Dynamic calculateActions (strategy dynamic)', () => {
 			{ action: actionTemplate[1], size: 0, visible: true, renderLabel: true },
 			{ action: actionTemplate[2], size: 0, visible: true, renderLabel: true },
 			// remove separator here
-			{ action: actionTemplate[3], size: 50, visible: true, renderLabel: true },
+			{ action: actionTemplate[3], size: 50, visible: true, renderLabel: true }
 		];
 		const result = workbenchDynamicCalculateActions(input, defaultSecondaryActions, containerSize);
 		assert.deepEqual(result.primaryActions, expected);

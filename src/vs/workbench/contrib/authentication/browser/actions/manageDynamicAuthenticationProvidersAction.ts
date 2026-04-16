@@ -7,7 +7,10 @@ import { localize, localize2 } from '../../../../../nls.js';
 import { Action2 } from '../../../../../platform/actions/common/actions.js';
 import { ServicesAccessor } from '../../../../../platform/instantiation/common/instantiation.js';
 import { IQuickInputService, IQuickPickItem } from '../../../../../platform/quickinput/common/quickInput.js';
-import { IDynamicAuthenticationProviderStorageService, DynamicAuthenticationProviderInfo } from '../../../../services/authentication/common/dynamicAuthenticationProviderStorage.js';
+import {
+	IDynamicAuthenticationProviderStorageService,
+	DynamicAuthenticationProviderInfo
+} from '../../../../services/authentication/common/dynamicAuthenticationProviderStorage.js';
 import { IAuthenticationService } from '../../../../services/authentication/common/authentication.js';
 import { IDialogService } from '../../../../../platform/dialogs/common/dialogs.js';
 
@@ -16,7 +19,6 @@ interface IDynamicProviderQuickPickItem extends IQuickPickItem {
 }
 
 export class RemoveDynamicAuthenticationProvidersAction extends Action2 {
-
 	static readonly ID = 'workbench.action.removeDynamicAuthenticationProviders';
 
 	constructor() {
@@ -61,13 +63,26 @@ export class RemoveDynamicAuthenticationProvidersAction extends Action2 {
 
 		// Confirm deletion
 		const providerNames = selected.map(item => item.provider.label).join(', ');
-		const message = selected.length === 1
-			? localize('confirmDeleteSingleProvider', 'Are you sure you want to remove the dynamic authentication provider "{0}"?', providerNames)
-			: localize('confirmDeleteMultipleProviders', 'Are you sure you want to remove {0} dynamic authentication providers: {1}?', selected.length, providerNames);
+		const message =
+			selected.length === 1
+				? localize(
+						'confirmDeleteSingleProvider',
+						'Are you sure you want to remove the dynamic authentication provider "{0}"?',
+						providerNames
+					)
+				: localize(
+						'confirmDeleteMultipleProviders',
+						'Are you sure you want to remove {0} dynamic authentication providers: {1}?',
+						selected.length,
+						providerNames
+					);
 
 		const result = await dialogService.confirm({
 			message,
-			detail: localize('confirmDeleteDetail', 'This will remove all stored authentication data for the selected provider(s). You will need to re-authenticate if you use these providers again.'),
+			detail: localize(
+				'confirmDeleteDetail',
+				'This will remove all stored authentication data for the selected provider(s). You will need to re-authenticate if you use these providers again.'
+			),
 			primaryButton: localize('remove', 'Remove'),
 			type: 'warning'
 		});

@@ -4,7 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Barrier } from '../../../../base/common/async.js';
-import { ITerminalLaunchResult, IProcessPropertyMap, ITerminalChildProcess, ITerminalLaunchError, ITerminalLogService, ProcessPropertyType } from '../../../../platform/terminal/common/terminal.js';
+import {
+	ITerminalLaunchResult,
+	IProcessPropertyMap,
+	ITerminalChildProcess,
+	ITerminalLaunchError,
+	ITerminalLogService,
+	ProcessPropertyType
+} from '../../../../platform/terminal/common/terminal.js';
 import { BasePty } from '../common/basePty.js';
 import { RemoteTerminalChannelClient } from '../common/remote/remoteTerminalChannel.js';
 import { IRemoteAgentService } from '../../../services/remote/common/remoteAgentService.js';
@@ -81,7 +88,7 @@ export class RemotePty extends BasePty implements ITerminalChildProcess {
 	}
 
 	resize(cols: number, rows: number, pixelWidth?: number, pixelHeight?: number): void {
-		if (this._inReplay || this._lastDimensions.cols === cols && this._lastDimensions.rows === rows) {
+		if (this._inReplay || (this._lastDimensions.cols === cols && this._lastDimensions.rows === rows)) {
 			return;
 		}
 		this._startBarrier.wait().then(_ => {

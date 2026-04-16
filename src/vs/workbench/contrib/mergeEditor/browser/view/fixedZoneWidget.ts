@@ -25,7 +25,7 @@ export abstract class FixedZoneWidget extends Disposable {
 		viewZoneAccessor: IViewZoneChangeAccessor,
 		afterLineNumber: number,
 		height: number,
-		viewZoneIdsToCleanUp: string[],
+		viewZoneIdsToCleanUp: string[]
 	) {
 		super();
 
@@ -34,25 +34,27 @@ export abstract class FixedZoneWidget extends Disposable {
 			afterLineNumber: afterLineNumber,
 			heightInPx: height,
 			ordinal: 50000 + 1,
-			onComputedHeight: (height) => {
+			onComputedHeight: height => {
 				this.widgetDomNode.style.height = `${height}px`;
 			},
-			onDomNodeTop: (top) => {
+			onDomNodeTop: top => {
 				this.widgetDomNode.style.top = `${top}px`;
 			}
 		});
 		viewZoneIdsToCleanUp.push(this.viewZoneId);
 
-		this._register(Event.runAndSubscribe(this.editor.onDidLayoutChange, () => {
-			this.widgetDomNode.style.left = this.editor.getLayoutInfo().contentLeft + 'px';
-		}));
+		this._register(
+			Event.runAndSubscribe(this.editor.onDidLayoutChange, () => {
+				this.widgetDomNode.style.left = this.editor.getLayoutInfo().contentLeft + 'px';
+			})
+		);
 
 		this.editor.addOverlayWidget(this.overlayWidget);
 
 		this._register({
 			dispose: () => {
 				this.editor.removeOverlayWidget(this.overlayWidget);
-			},
+			}
 		});
 	}
 }

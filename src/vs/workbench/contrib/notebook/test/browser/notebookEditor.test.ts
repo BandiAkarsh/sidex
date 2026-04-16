@@ -67,18 +67,41 @@ suite('ListViewInfoAccessor', () => {
 
 				assert.deepStrictEqual(listViewInfoAccessor.getCellRangeFromViewRange(0, 1), { start: 0, end: 2 });
 				assert.deepStrictEqual(listViewInfoAccessor.getCellRangeFromViewRange(1, 2), { start: 2, end: 5 });
-				assert.deepStrictEqual(listViewInfoAccessor.getCellsFromViewRange(0, 1), viewModel.getCellsInRange({ start: 0, end: 2 }));
-				assert.deepStrictEqual(listViewInfoAccessor.getCellsFromViewRange(1, 2), viewModel.getCellsInRange({ start: 2, end: 5 }));
+				assert.deepStrictEqual(
+					listViewInfoAccessor.getCellsFromViewRange(0, 1),
+					viewModel.getCellsInRange({ start: 0, end: 2 })
+				);
+				assert.deepStrictEqual(
+					listViewInfoAccessor.getCellsFromViewRange(1, 2),
+					viewModel.getCellsInRange({ start: 2, end: 5 })
+				);
 
-				const notebookEditor = new class extends mock<INotebookEditor>() {
-					override getViewIndexByModelIndex(index: number) { return listViewInfoAccessor.getViewIndex(viewModel.viewCells[index]!); }
-					override getCellRangeFromViewRange(startIndex: number, endIndex: number) { return listViewInfoAccessor.getCellRangeFromViewRange(startIndex, endIndex); }
-					override cellAt(index: number) { return viewModel.cellAt(index); }
-				};
+				const notebookEditor = new (class extends mock<INotebookEditor>() {
+					override getViewIndexByModelIndex(index: number) {
+						return listViewInfoAccessor.getViewIndex(viewModel.viewCells[index]!);
+					}
+					override getCellRangeFromViewRange(startIndex: number, endIndex: number) {
+						return listViewInfoAccessor.getCellRangeFromViewRange(startIndex, endIndex);
+					}
+					override cellAt(index: number) {
+						return viewModel.cellAt(index);
+					}
+				})();
 
-				assert.deepStrictEqual(expandCellRangesWithHiddenCells(notebookEditor, [{ start: 0, end: 1 }]), [{ start: 0, end: 2 }]);
-				assert.deepStrictEqual(expandCellRangesWithHiddenCells(notebookEditor, [{ start: 2, end: 3 }]), [{ start: 2, end: 5 }]);
-				assert.deepStrictEqual(expandCellRangesWithHiddenCells(notebookEditor, [{ start: 0, end: 1 }, { start: 2, end: 3 }]), [{ start: 0, end: 5 }]);
-			});
+				assert.deepStrictEqual(expandCellRangesWithHiddenCells(notebookEditor, [{ start: 0, end: 1 }]), [
+					{ start: 0, end: 2 }
+				]);
+				assert.deepStrictEqual(expandCellRangesWithHiddenCells(notebookEditor, [{ start: 2, end: 3 }]), [
+					{ start: 2, end: 5 }
+				]);
+				assert.deepStrictEqual(
+					expandCellRangesWithHiddenCells(notebookEditor, [
+						{ start: 0, end: 1 },
+						{ start: 2, end: 3 }
+					]),
+					[{ start: 0, end: 5 }]
+				);
+			}
+		);
 	});
 });

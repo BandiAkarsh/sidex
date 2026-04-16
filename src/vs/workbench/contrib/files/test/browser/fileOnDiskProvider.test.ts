@@ -13,7 +13,6 @@ import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('Files - FileOnDiskContentProvider', () => {
-
 	const disposables = new DisposableStore();
 	let instantiationService: IInstantiationService;
 	let accessor: TestServiceAccessor;
@@ -31,7 +30,9 @@ suite('Files - FileOnDiskContentProvider', () => {
 		const provider = disposables.add(instantiationService.createInstance(TextFileContentProvider));
 		const uri = URI.parse('testFileOnDiskContentProvider://foo');
 
-		const content = await provider.provideTextContent(uri.with({ scheme: 'conflictResolution', query: JSON.stringify({ scheme: uri.scheme }) }));
+		const content = await provider.provideTextContent(
+			uri.with({ scheme: 'conflictResolution', query: JSON.stringify({ scheme: uri.scheme }) })
+		);
 
 		assert.ok(content);
 		assert.strictEqual(snapshotToString(content.createSnapshot()), 'Hello Html');

@@ -51,17 +51,21 @@ export interface IRemoteAgentEnvironmentDTO {
 }
 
 export class RemoteExtensionEnvironmentChannelClient {
-
-	static async getEnvironmentData(channel: IChannel, remoteAuthority: string, profile: string | undefined): Promise<IRemoteAgentEnvironment> {
+	static async getEnvironmentData(
+		channel: IChannel,
+		remoteAuthority: string,
+		profile: string | undefined
+	): Promise<IRemoteAgentEnvironment> {
 		const args: IGetEnvironmentDataArguments = {
 			remoteAuthority,
 			profile
 		};
 
 		const data = await channel.call<IRemoteAgentEnvironmentDTO>('getEnvironmentData', args);
-		const reconnectionGraceTime = (typeof data.reconnectionGraceTime === 'number' && data.reconnectionGraceTime >= 0)
-			? data.reconnectionGraceTime
-			: ProtocolConstants.ReconnectionGraceTime;
+		const reconnectionGraceTime =
+			typeof data.reconnectionGraceTime === 'number' && data.reconnectionGraceTime >= 0
+				? data.reconnectionGraceTime
+				: ProtocolConstants.ReconnectionGraceTime;
 
 		return {
 			pid: data.pid,
@@ -86,7 +90,11 @@ export class RemoteExtensionEnvironmentChannelClient {
 		};
 	}
 
-	static async getExtensionHostExitInfo(channel: IChannel, remoteAuthority: string, reconnectionToken: string): Promise<IExtensionHostExitInfo | null> {
+	static async getExtensionHostExitInfo(
+		channel: IChannel,
+		remoteAuthority: string,
+		reconnectionToken: string
+	): Promise<IExtensionHostExitInfo | null> {
 		const args: IGetExtensionHostExitInfoArguments = {
 			remoteAuthority,
 			reconnectionToken

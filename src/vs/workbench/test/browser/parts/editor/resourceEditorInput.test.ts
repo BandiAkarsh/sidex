@@ -15,17 +15,21 @@ import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { IFilesConfigurationService } from '../../../../services/filesConfiguration/common/filesConfigurationService.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { ITextResourceConfigurationService } from '../../../../../editor/common/services/textResourceConfiguration.js';
-import { ConfigurationTarget, IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
-import { CustomEditorLabelService, ICustomEditorLabelService } from '../../../../services/editor/common/customEditorLabelService.js';
+import {
+	ConfigurationTarget,
+	IConfigurationService
+} from '../../../../../platform/configuration/common/configuration.js';
+import {
+	CustomEditorLabelService,
+	ICustomEditorLabelService
+} from '../../../../services/editor/common/customEditorLabelService.js';
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { IWorkspaceContextService } from '../../../../../platform/workspace/common/workspace.js';
 
 suite('ResourceEditorInput', () => {
-
 	const disposables = new DisposableStore();
 
 	class TestResourceEditorInput extends AbstractResourceEditorInput {
-
 		readonly typeId = 'test.typeId';
 
 		constructor(
@@ -36,17 +40,29 @@ suite('ResourceEditorInput', () => {
 			@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
 			@ICustomEditorLabelService customEditorLabelService: ICustomEditorLabelService
 		) {
-			super(resource, resource, labelService, fileService, filesConfigurationService, textResourceConfigurationService, customEditorLabelService);
+			super(
+				resource,
+				resource,
+				labelService,
+				fileService,
+				filesConfigurationService,
+				textResourceConfigurationService,
+				customEditorLabelService
+			);
 		}
 	}
 
-	async function createServices(): Promise<[IInstantiationService, TestConfigurationService, CustomEditorLabelService]> {
+	async function createServices(): Promise<
+		[IInstantiationService, TestConfigurationService, CustomEditorLabelService]
+	> {
 		const instantiationService = workbenchInstantiationService(undefined, disposables);
 
 		const testConfigurationService = new TestConfigurationService();
 		instantiationService.stub(IConfigurationService, testConfigurationService);
 
-		const customEditorLabelService = disposables.add(new CustomEditorLabelService(testConfigurationService, instantiationService.get(IWorkspaceContextService)));
+		const customEditorLabelService = disposables.add(
+			new CustomEditorLabelService(testConfigurationService, instantiationService.get(IWorkspaceContextService))
+		);
 		instantiationService.stub(ICustomEditorLabelService, customEditorLabelService);
 
 		return [instantiationService, testConfigurationService, customEditorLabelService];
@@ -90,45 +106,72 @@ suite('ResourceEditorInput', () => {
 		await testConfigurationService.setUserConfiguration(CustomEditorLabelService.SETTING_ID_PATTERNS, {
 			'**/theOtherPath/**': 'Label 1',
 			'**/*.txt': 'Label 2',
-			'**/resource.txt': 'Label 3',
+			'**/resource.txt': 'Label 3'
 		});
 		// eslint-disable-next-line local/code-no-any-casts
-		testConfigurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration(configuration: string) { return configuration === CustomEditorLabelService.SETTING_ID_PATTERNS; }, source: ConfigurationTarget.USER } as any);
+		testConfigurationService.onDidChangeConfigurationEmitter.fire({
+			affectsConfiguration(configuration: string) {
+				return configuration === CustomEditorLabelService.SETTING_ID_PATTERNS;
+			},
+			source: ConfigurationTarget.USER
+		} as any);
 
 		let label1Name: string = '';
 		let label2Name = '';
-		disposables.add(customEditorLabelService.onDidChange(() => {
-			label1Name = input1.getName();
-			label2Name = input2.getName();
-		}));
+		disposables.add(
+			customEditorLabelService.onDidChange(() => {
+				label1Name = input1.getName();
+				label2Name = input2.getName();
+			})
+		);
 
 		await testConfigurationService.setUserConfiguration(CustomEditorLabelService.SETTING_ID_ENABLED, true);
 		// eslint-disable-next-line local/code-no-any-casts
-		testConfigurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration(configuration: string) { return configuration === CustomEditorLabelService.SETTING_ID_ENABLED; }, source: ConfigurationTarget.USER } as any);
+		testConfigurationService.onDidChangeConfigurationEmitter.fire({
+			affectsConfiguration(configuration: string) {
+				return configuration === CustomEditorLabelService.SETTING_ID_ENABLED;
+			},
+			source: ConfigurationTarget.USER
+		} as any);
 
 		assert.ok(label1Name === 'Label 3');
 		assert.ok(label2Name === 'Label 1');
 
 		await testConfigurationService.setUserConfiguration(CustomEditorLabelService.SETTING_ID_ENABLED, false);
 		// eslint-disable-next-line local/code-no-any-casts
-		testConfigurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration(configuration: string) { return configuration === CustomEditorLabelService.SETTING_ID_ENABLED; }, source: ConfigurationTarget.USER } as any);
+		testConfigurationService.onDidChangeConfigurationEmitter.fire({
+			affectsConfiguration(configuration: string) {
+				return configuration === CustomEditorLabelService.SETTING_ID_ENABLED;
+			},
+			source: ConfigurationTarget.USER
+		} as any);
 
-		assert.ok(label1Name === 'resource.txt' as string);
-		assert.ok(label2Name === 'resource.md' as string);
+		assert.ok(label1Name === ('resource.txt' as string));
+		assert.ok(label2Name === ('resource.md' as string));
 
 		await testConfigurationService.setUserConfiguration(CustomEditorLabelService.SETTING_ID_ENABLED, true);
 		// eslint-disable-next-line local/code-no-any-casts
-		testConfigurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration(configuration: string) { return configuration === CustomEditorLabelService.SETTING_ID_ENABLED; }, source: ConfigurationTarget.USER } as any);
+		testConfigurationService.onDidChangeConfigurationEmitter.fire({
+			affectsConfiguration(configuration: string) {
+				return configuration === CustomEditorLabelService.SETTING_ID_ENABLED;
+			},
+			source: ConfigurationTarget.USER
+		} as any);
 
 		await testConfigurationService.setUserConfiguration(CustomEditorLabelService.SETTING_ID_PATTERNS, {
 			'thePath/**/resource.txt': 'Label 4',
-			'thePath/of/*/resource.txt': 'Label 5',
+			'thePath/of/*/resource.txt': 'Label 5'
 		});
 		// eslint-disable-next-line local/code-no-any-casts
-		testConfigurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration(configuration: string) { return configuration === CustomEditorLabelService.SETTING_ID_PATTERNS; }, source: ConfigurationTarget.USER } as any);
+		testConfigurationService.onDidChangeConfigurationEmitter.fire({
+			affectsConfiguration(configuration: string) {
+				return configuration === CustomEditorLabelService.SETTING_ID_PATTERNS;
+			},
+			source: ConfigurationTarget.USER
+		} as any);
 
-		assert.ok(label1Name === 'Label 5' as string);
-		assert.ok(label2Name === 'resource.md' as string);
+		assert.ok(label1Name === ('Label 5' as string));
+		assert.ok(label2Name === ('resource.md' as string));
 	});
 
 	ensureNoDisposablesAreLeakedInTestSuite();

@@ -54,7 +54,6 @@ enum IssueSource {
 	Unknown = 'unknown'
 }
 
-
 export class BaseIssueReporterService extends Disposable {
 	public issueReporterModel: IssueReporterModel;
 	public receivedSystemInfo = false;
@@ -95,7 +94,11 @@ export class BaseIssueReporterService extends Disposable {
 		@IOpenerService public readonly openerService: IOpenerService
 	) {
 		super();
-		const targetExtension = data.extensionId ? data.enabledExtensions.find(extension => extension.id.toLocaleLowerCase() === data.extensionId?.toLocaleLowerCase()) : undefined;
+		const targetExtension = data.extensionId
+			? data.enabledExtensions.find(
+					extension => extension.id.toLocaleLowerCase() === data.extensionId?.toLocaleLowerCase()
+				)
+			: undefined;
 		this.issueReporterModel = new IssueReporterModel({
 			...data,
 			issueType: data.issueType || IssueType.Bug,
@@ -108,45 +111,59 @@ export class BaseIssueReporterService extends Disposable {
 			selectedExtension: targetExtension
 		});
 
-		this._register(this.authenticationService.onDidChangeSessions(async () => {
-			const previousAuthState = !!this.data.githubAccessToken;
+		this._register(
+			this.authenticationService.onDidChangeSessions(async () => {
+				const previousAuthState = !!this.data.githubAccessToken;
 
-			let githubAccessToken = '';
-			try {
-				const githubSessions = await this.authenticationService.getSessions('github');
-				const potentialSessions = githubSessions.filter(session => session.scopes.includes('repo'));
-				githubAccessToken = potentialSessions[0]?.accessToken;
-			} catch (e) {
-				// Ignore
-			}
+				let githubAccessToken = '';
+				try {
+					const githubSessions = await this.authenticationService.getSessions('github');
+					const potentialSessions = githubSessions.filter(session => session.scopes.includes('repo'));
+					githubAccessToken = potentialSessions[0]?.accessToken;
+				} catch (e) {
+					// Ignore
+				}
 
-			this.data.githubAccessToken = githubAccessToken;
+				this.data.githubAccessToken = githubAccessToken;
 
-			const currentAuthState = !!githubAccessToken;
-			if (previousAuthState !== currentAuthState) {
-				this.updateButtonStates();
-			}
-		}));
+				const currentAuthState = !!githubAccessToken;
+				if (previousAuthState !== currentAuthState) {
+					this.updateButtonStates();
+				}
+			})
+		);
 
 		const fileOnMarketplace = data.issueSource === IssueSource.Marketplace;
 		const fileOnProduct = data.issueSource === IssueSource.VSCode;
 		this.issueReporterModel.update({ fileOnMarketplace, fileOnProduct });
 
-		this.createAction = this._register(new Action('issueReporter.create', localize('create', "Create on GitHub"), undefined, true, async () => {
-			this.delayedSubmit.trigger(async () => {
-				this.createIssue(true); // create issue
-			});
-		}));
-		this.previewAction = this._register(new Action('issueReporter.preview', localize('preview', "Preview on GitHub"), undefined, true, async () => {
-			this.delayedSubmit.trigger(async () => {
-				this.createIssue(false); // preview issue
-			});
-		}));
-		this.privateAction = this._register(new Action('issueReporter.privateCreate', localize('privateCreate', "Create Internally"), undefined, true, async () => {
-			this.delayedSubmit.trigger(async () => {
-				this.createIssue(true, true); // create private issue
-			});
-		}));
+		this.createAction = this._register(
+			new Action('issueReporter.create', localize('create', 'Create on GitHub'), undefined, true, async () => {
+				this.delayedSubmit.trigger(async () => {
+					this.createIssue(true); // create issue
+				});
+			})
+		);
+		this.previewAction = this._register(
+			new Action('issueReporter.preview', localize('preview', 'Preview on GitHub'), undefined, true, async () => {
+				this.delayedSubmit.trigger(async () => {
+					this.createIssue(false); // preview issue
+				});
+			})
+		);
+		this.privateAction = this._register(
+			new Action(
+				'issueReporter.privateCreate',
+				localize('privateCreate', 'Create Internally'),
+				undefined,
+				true,
+				async () => {
+					this.delayedSubmit.trigger(async () => {
+						this.createIssue(true, true); // create private issue
+					});
+				}
+			)
+		);
 
 		const issueTitle = data.issueTitle;
 		if (issueTitle) {
@@ -225,7 +242,6 @@ export class BaseIssueReporterService extends Disposable {
 			return;
 		}
 
-
 		// public elements section
 		// eslint-disable-next-line no-restricted-syntax
 		let publicElements = this.getElementById('public-elements');
@@ -237,7 +253,6 @@ export class BaseIssueReporterService extends Disposable {
 		}
 		this.updatePublicGithubButton(publicElements);
 		this.updatePublicRepoLink(publicElements);
-
 
 		// private filing section
 		// eslint-disable-next-line no-restricted-syntax
@@ -272,7 +287,9 @@ export class BaseIssueReporterService extends Disposable {
 			container.appendChild(filingNote);
 		}
 
-		filingNote.textContent = escape(localize('internalPreviewMessage', 'If your copilot debug logs contain private information:'));
+		filingNote.textContent = escape(
+			localize('internalPreviewMessage', 'If your copilot debug logs contain private information:')
+		);
 	}
 
 	private updatePublicGithubButton(container: HTMLElement): void {
@@ -288,35 +305,47 @@ export class BaseIssueReporterService extends Disposable {
 		}
 
 		// setup button + dropdown if applicable
-		if (!this.acknowledged && this.needsUpdate) { // * old version and hasn't ack'd
+		if (!this.acknowledged && this.needsUpdate) {
+			// * old version and hasn't ack'd
 			this.publicGithubButton = this._register(new Button(container, unthemedButtonStyles));
-			this.publicGithubButton.label = localize('acknowledge', "Confirm Version Acknowledgement");
+			this.publicGithubButton.label = localize('acknowledge', 'Confirm Version Acknowledgement');
 			this.publicGithubButton.enabled = false;
-		} else if (this.data.githubAccessToken && this.isPreviewEnabled()) { // * has access token, create by default, preview dropdown
-			this.publicGithubButton = this._register(new ButtonWithDropdown(container, {
-				contextMenuProvider: this.contextMenuService,
-				actions: [this.previewAction],
-				addPrimaryActionToDropdown: false,
-				...unthemedButtonStyles
-			}));
-			this._register(this.publicGithubButton.onDidClick(() => {
-				this.createAction.run();
-			}));
-			this.publicGithubButton.label = localize('createOnGitHub', "Create on GitHub");
+		} else if (this.data.githubAccessToken && this.isPreviewEnabled()) {
+			// * has access token, create by default, preview dropdown
+			this.publicGithubButton = this._register(
+				new ButtonWithDropdown(container, {
+					contextMenuProvider: this.contextMenuService,
+					actions: [this.previewAction],
+					addPrimaryActionToDropdown: false,
+					...unthemedButtonStyles
+				})
+			);
+			this._register(
+				this.publicGithubButton.onDidClick(() => {
+					this.createAction.run();
+				})
+			);
+			this.publicGithubButton.label = localize('createOnGitHub', 'Create on GitHub');
 			this.publicGithubButton.enabled = true;
-		} else if (this.data.githubAccessToken && !this.isPreviewEnabled()) { // * Access token but invalid preview state: simple Button (create only)
+		} else if (this.data.githubAccessToken && !this.isPreviewEnabled()) {
+			// * Access token but invalid preview state: simple Button (create only)
 			this.publicGithubButton = this._register(new Button(container, unthemedButtonStyles));
-			this._register(this.publicGithubButton.onDidClick(() => {
-				this.createAction.run();
-			}));
-			this.publicGithubButton.label = localize('createOnGitHub', "Create on GitHub");
+			this._register(
+				this.publicGithubButton.onDidClick(() => {
+					this.createAction.run();
+				})
+			);
+			this.publicGithubButton.label = localize('createOnGitHub', 'Create on GitHub');
 			this.publicGithubButton.enabled = true;
-		} else { // * No access token: simple Button (preview only)
+		} else {
+			// * No access token: simple Button (preview only)
 			this.publicGithubButton = this._register(new Button(container, unthemedButtonStyles));
-			this._register(this.publicGithubButton.onDidClick(() => {
-				this.previewAction.run();
-			}));
-			this.publicGithubButton.label = localize('previewOnGitHub', "Preview on GitHub");
+			this._register(
+				this.publicGithubButton.onDidClick(() => {
+					this.previewAction.run();
+				})
+			);
+			this.publicGithubButton.label = localize('previewOnGitHub', 'Preview on GitHub');
 			this.publicGithubButton.enabled = true;
 		}
 
@@ -338,13 +367,12 @@ export class BaseIssueReporterService extends Disposable {
 			container.appendChild(issueRepoName);
 		}
 
-
 		const selectedExtension = this.issueReporterModel.getData().selectedExtension;
 		if (selectedExtension && selectedExtension.uri) {
 			const urlString = URI.revive(selectedExtension.uri).toString();
 			issueRepoName.href = urlString;
-			issueRepoName.addEventListener('click', (e) => this.openLink(e));
-			issueRepoName.addEventListener('auxclick', (e) => this.openLink(<MouseEvent>e));
+			issueRepoName.addEventListener('click', e => this.openLink(e));
+			issueRepoName.addEventListener('auxclick', e => this.openLink(<MouseEvent>e));
 			const gitHubInfo = this.parseGitHubUrl(urlString);
 			issueRepoName.textContent = gitHubInfo ? gitHubInfo.owner + '/' + gitHubInfo.repositoryName : urlString;
 			Object.assign(issueRepoName.style, {
@@ -377,13 +405,15 @@ export class BaseIssueReporterService extends Disposable {
 
 		if (this.data.githubAccessToken && this.data.privateUri) {
 			this.internalGithubButton = this._register(new Button(container, unthemedButtonStyles));
-			this._register(this.internalGithubButton.onDidClick(() => {
-				this.privateAction.run();
-			}));
+			this._register(
+				this.internalGithubButton.onDidClick(() => {
+					this.privateAction.run();
+				})
+			);
 
 			this.internalGithubButton.element.id = 'internal-create-btn';
 			this.internalGithubButton.element.classList.add('internal-create-subtle');
-			this.internalGithubButton.label = localize('createInternally', "Create Internally");
+			this.internalGithubButton.label = localize('createInternally', 'Create Internally');
 			this.internalGithubButton.enabled = true;
 			this.internalGithubButton.setTitle(this.data.privateUri.path!.slice(1));
 		}
@@ -427,7 +457,11 @@ export class BaseIssueReporterService extends Disposable {
 		});
 
 		const numberOfThemeExtesions = (themes && themes.length) ?? 0;
-		this.issueReporterModel.update({ numberOfThemeExtesions, enabledNonThemeExtesions: nonThemes, allExtensions: installedExtensions });
+		this.issueReporterModel.update({
+			numberOfThemeExtesions,
+			enabledNonThemeExtesions: nonThemes,
+			allExtensions: installedExtensions
+		});
 		this.updateExtensionTable(nonThemes ?? [], numberOfThemeExtesions);
 		if (this.disableExtensions || installedExtensions.length === 0) {
 			// eslint-disable-next-line no-restricted-syntax
@@ -467,17 +501,25 @@ export class BaseIssueReporterService extends Disposable {
 
 		const makeOption = (extension: IOption, selectedExtension?: IssueReporterExtensionData): HTMLOptionElement => {
 			const selected = selectedExtension && extension.id === selectedExtension.id;
-			return $<HTMLOptionElement>('option', {
-				'value': extension.id,
-				'selected': selected || ''
-			}, extension.name);
+			return $<HTMLOptionElement>(
+				'option',
+				{
+					value: extension.id,
+					selected: selected || ''
+				},
+				extension.name
+			);
 		};
 
 		// eslint-disable-next-line no-restricted-syntax
 		const extensionsSelector = this.getElementById<HTMLSelectElement>('extension-selector');
 		if (extensionsSelector) {
 			const { selectedExtension } = this.issueReporterModel.getData();
-			reset(extensionsSelector, this.makeOption('', localize('selectExtension', "Select extension"), true), ...extensionOptions.map(extension => makeOption(extension, selectedExtension)));
+			reset(
+				extensionsSelector,
+				this.makeOption('', localize('selectExtension', 'Select extension'), true),
+				...extensionOptions.map(extension => makeOption(extension, selectedExtension))
+			);
 
 			if (!selectedExtension) {
 				extensionsSelector.selectedIndex = 0;
@@ -502,8 +544,7 @@ export class BaseIssueReporterService extends Disposable {
 								this.removeLoading(iconElement, true);
 								this.data = openReporterData;
 							}
-						}
-						else {
+						} else {
 							if (!this.loadingExtensionData) {
 								iconElement.classList.remove(...ThemeIcon.asClassNameArray(Codicon.loading), 'codicon-modifier-spin');
 							}
@@ -534,7 +575,7 @@ export class BaseIssueReporterService extends Disposable {
 			});
 		}
 
-		this.addEventListener('problem-source', 'change', (_) => {
+		this.addEventListener('problem-source', 'change', _ => {
 			this.clearExtensionData();
 			this.validateSelectedExtension();
 		});
@@ -545,10 +586,7 @@ export class BaseIssueReporterService extends Disposable {
 			const timeoutPromise = new Promise<undefined>((_, reject) =>
 				setTimeout(() => reject(new Error('sendReporterMenu timed out')), 10000)
 			);
-			const data = await Promise.race([
-				this.issueFormService.sendReporterMenu(extension.id),
-				timeoutPromise
-			]);
+			const data = await Promise.race([this.issueFormService.sendReporterMenu(extension.id), timeoutPromise]);
 			return data;
 		} catch (e) {
 			console.error(e);
@@ -566,7 +604,16 @@ export class BaseIssueReporterService extends Disposable {
 	}
 
 	public setEventHandlers(): void {
-		(['includeSystemInfo', 'includeProcessInfo', 'includeWorkspaceInfo', 'includeExtensions', 'includeExperiments', 'includeExtensionData'] as const).forEach(elementId => {
+		(
+			[
+				'includeSystemInfo',
+				'includeProcessInfo',
+				'includeWorkspaceInfo',
+				'includeExtensions',
+				'includeExperiments',
+				'includeExtensionData'
+			] as const
+		).forEach(elementId => {
 			this.addEventListener(elementId, 'click', (event: Event) => {
 				event.stopPropagation();
 				this.issueReporterModel.update({ [elementId]: !this.issueReporterModel.getData()[elementId] });
@@ -584,16 +631,16 @@ export class BaseIssueReporterService extends Disposable {
 			const showInfo = showInfoElements.item(i)!;
 			(showInfo as HTMLAnchorElement).addEventListener('click', (e: MouseEvent) => {
 				e.preventDefault();
-				const label = (<HTMLDivElement>e.target);
+				const label = <HTMLDivElement>e.target;
 				if (label) {
 					const containingElement = label.parentElement && label.parentElement.parentElement;
 					const info = containingElement && containingElement.lastElementChild;
 					if (info && info.classList.contains('hidden')) {
 						show(info);
-						label.textContent = localize('hide', "hide");
+						label.textContent = localize('hide', 'hide');
 					} else {
 						hide(info);
-						label.textContent = localize('show', "show");
+						label.textContent = localize('show', 'show');
 					}
 				}
 			});
@@ -616,16 +663,21 @@ export class BaseIssueReporterService extends Disposable {
 			// eslint-disable-next-line no-restricted-syntax
 			const descriptionTextArea = <HTMLInputElement>this.getElementById('issue-title');
 			if (value === IssueSource.VSCode) {
-				descriptionTextArea.placeholder = localize('vscodePlaceholder', "E.g Workbench is missing problems panel");
+				descriptionTextArea.placeholder = localize('vscodePlaceholder', 'E.g Workbench is missing problems panel');
 			} else if (value === IssueSource.Extension) {
-				descriptionTextArea.placeholder = localize('extensionPlaceholder', "E.g. Missing alt text on extension readme image");
+				descriptionTextArea.placeholder = localize(
+					'extensionPlaceholder',
+					'E.g. Missing alt text on extension readme image'
+				);
 			} else if (value === IssueSource.Marketplace) {
-				descriptionTextArea.placeholder = localize('marketplacePlaceholder', "E.g Cannot disable installed extension");
+				descriptionTextArea.placeholder = localize('marketplacePlaceholder', 'E.g Cannot disable installed extension');
 			} else {
-				descriptionTextArea.placeholder = localize('undefinedPlaceholder', "Please enter a title");
+				descriptionTextArea.placeholder = localize('undefinedPlaceholder', 'Please enter a title');
 			}
 
-			let fileOnExtension, fileOnMarketplace, fileOnProduct = false;
+			let fileOnExtension,
+				fileOnMarketplace,
+				fileOnProduct = false;
 			if (value === IssueSource.Extension) {
 				fileOnExtension = true;
 			} else if (value === IssueSource.Marketplace) {
@@ -766,7 +818,11 @@ export class BaseIssueReporterService extends Disposable {
 		}
 
 		if (this.isWeb) {
-			if (issueType === IssueType.FeatureRequest || issueType === IssueType.PerformanceIssue || issueType === IssueType.Bug) {
+			if (
+				issueType === IssueType.FeatureRequest ||
+				issueType === IssueType.PerformanceIssue ||
+				issueType === IssueType.Bug
+			) {
 				return true;
 			}
 		} else {
@@ -804,7 +860,11 @@ export class BaseIssueReporterService extends Disposable {
 		}
 	}
 
-	public searchIssues(title: string, fileOnExtension: boolean | undefined, fileOnMarketplace: boolean | undefined): void {
+	public searchIssues(
+		title: string,
+		fileOnExtension: boolean | undefined,
+		fileOnMarketplace: boolean | undefined
+	): void {
 		if (fileOnExtension) {
 			return this.searchExtensionIssues(title);
 		}
@@ -830,7 +890,6 @@ export class BaseIssueReporterService extends Disposable {
 			if (this.issueReporterModel.getData().selectedExtension) {
 				this.clearSearchResults();
 				return this.displaySearchResults([]);
-
 			}
 		}
 
@@ -863,18 +922,23 @@ export class BaseIssueReporterService extends Disposable {
 		// eslint-disable-next-line no-restricted-syntax
 		const similarIssues = this.getElementById('similar-issues')!;
 
-		fetch(`https://api.github.com/search/issues?q=${query}`).then((response) => {
-			response.json().then(result => {
-				similarIssues.innerText = '';
-				if (result && result.items) {
-					this.displaySearchResults(result.items);
-				}
-			}).catch(_ => {
-				console.warn('Timeout or query limit exceeded');
+		fetch(`https://api.github.com/search/issues?q=${query}`)
+			.then(response => {
+				response
+					.json()
+					.then(result => {
+						similarIssues.innerText = '';
+						if (result && result.items) {
+							this.displaySearchResults(result.items);
+						}
+					})
+					.catch(_ => {
+						console.warn('Timeout or query limit exceeded');
+					});
+			})
+			.catch(_ => {
+				console.warn('Error fetching GitHub issues');
 			});
-		}).catch(_ => {
-			console.warn('Error fetching GitHub issues');
-		});
 	}
 
 	@debounce(300)
@@ -891,21 +955,26 @@ export class BaseIssueReporterService extends Disposable {
 			})
 		};
 
-		fetch(url, init).then((response) => {
-			response.json().then(result => {
-				this.clearSearchResults();
+		fetch(url, init)
+			.then(response => {
+				response
+					.json()
+					.then(result => {
+						this.clearSearchResults();
 
-				if (result && result.candidates) {
-					this.displaySearchResults(result.candidates);
-				} else {
-					throw new Error('Unexpected response, no candidates property');
-				}
-			}).catch(_ => {
+						if (result && result.candidates) {
+							this.displaySearchResults(result.candidates);
+						} else {
+							throw new Error('Unexpected response, no candidates property');
+						}
+					})
+					.catch(_ => {
+						// Ignore
+					});
+			})
+			.catch(_ => {
 				// Ignore
 			});
-		}).catch(_ => {
-			// Ignore
-		});
 	}
 
 	private displaySearchResults(results: SearchResult[]) {
@@ -914,7 +983,7 @@ export class BaseIssueReporterService extends Disposable {
 		if (results.length) {
 			const issues = $('div.issues-container');
 			const issuesText = $('div.list-title');
-			issuesText.textContent = localize('similarIssues', "Similar issues");
+			issuesText.textContent = localize('similarIssues', 'Similar issues');
 
 			this.numberOfSearchResultsDisplayed = results.length < 5 ? results.length : 5;
 			for (let i = 0; i < this.numberOfSearchResultsDisplayed; i++) {
@@ -922,8 +991,8 @@ export class BaseIssueReporterService extends Disposable {
 				const link = $('a.issue-link', { href: issue.html_url });
 				link.textContent = issue.title;
 				link.title = issue.title;
-				link.addEventListener('click', (e) => this.openLink(e));
-				link.addEventListener('auxclick', (e) => this.openLink(<MouseEvent>e));
+				link.addEventListener('click', e => this.openLink(e));
+				link.addEventListener('auxclick', e => this.openLink(<MouseEvent>e));
 
 				let issueState: HTMLElement;
 				let item: HTMLElement;
@@ -934,9 +1003,10 @@ export class BaseIssueReporterService extends Disposable {
 					issueIcon.appendChild(renderIcon(issue.state === 'open' ? Codicon.issueOpened : Codicon.issueClosed));
 
 					const issueStateLabel = $('span.issue-state.label');
-					issueStateLabel.textContent = issue.state === 'open' ? localize('open', "Open") : localize('closed', "Closed");
+					issueStateLabel.textContent =
+						issue.state === 'open' ? localize('open', 'Open') : localize('closed', 'Closed');
 
-					issueState.title = issue.state === 'open' ? localize('open', "Open") : localize('closed', "Closed");
+					issueState.title = issue.state === 'open' ? localize('open', 'Open') : localize('closed', 'Closed');
 					issueState.appendChild(issueIcon);
 					issueState.appendChild(issueStateLabel);
 
@@ -954,15 +1024,17 @@ export class BaseIssueReporterService extends Disposable {
 	}
 
 	private setUpTypes(): void {
-		const makeOption = (issueType: IssueType, description: string) => $('option', { 'value': issueType.valueOf() }, escape(description));
+		const makeOption = (issueType: IssueType, description: string) =>
+			$('option', { value: issueType.valueOf() }, escape(description));
 
 		// eslint-disable-next-line no-restricted-syntax
 		const typeSelect = this.getElementById('issue-type')! as HTMLSelectElement;
 		const { issueType } = this.issueReporterModel.getData();
-		reset(typeSelect,
-			makeOption(IssueType.Bug, localize('bugReporter', "Bug Report")),
-			makeOption(IssueType.FeatureRequest, localize('featureRequest', "Feature Request")),
-			makeOption(IssueType.PerformanceIssue, localize('performanceIssue', "Performance Issue (freeze, slow, crash)"))
+		reset(
+			typeSelect,
+			makeOption(IssueType.Bug, localize('bugReporter', 'Bug Report')),
+			makeOption(IssueType.FeatureRequest, localize('featureRequest', 'Feature Request')),
+			makeOption(IssueType.PerformanceIssue, localize('performanceIssue', 'Performance Issue (freeze, slow, crash)'))
 		);
 
 		typeSelect.value = issueType.toString();
@@ -982,7 +1054,8 @@ export class BaseIssueReporterService extends Disposable {
 	public setSourceOptions(): void {
 		// eslint-disable-next-line no-restricted-syntax
 		const sourceSelect = this.getElementById('issue-source')! as HTMLSelectElement;
-		const { issueType, fileOnExtension, selectedExtension, fileOnMarketplace, fileOnProduct } = this.issueReporterModel.getData();
+		const { issueType, fileOnExtension, selectedExtension, fileOnMarketplace, fileOnProduct } =
+			this.issueReporterModel.getData();
 		let selected = sourceSelect.selectedIndex;
 		if (selected === -1) {
 			if (fileOnExtension !== undefined) {
@@ -997,11 +1070,13 @@ export class BaseIssueReporterService extends Disposable {
 		}
 
 		sourceSelect.innerText = '';
-		sourceSelect.append(this.makeOption('', localize('selectSource', "Select source"), true));
-		sourceSelect.append(this.makeOption(IssueSource.VSCode, localize('vscode', "Visual Studio Code"), false));
-		sourceSelect.append(this.makeOption(IssueSource.Extension, localize('extension', "A VS Code extension"), false));
+		sourceSelect.append(this.makeOption('', localize('selectSource', 'Select source'), true));
+		sourceSelect.append(this.makeOption(IssueSource.VSCode, localize('vscode', 'Visual Studio Code'), false));
+		sourceSelect.append(this.makeOption(IssueSource.Extension, localize('extension', 'A VS Code extension'), false));
 		if (this.product.reportMarketplaceIssueUrl) {
-			sourceSelect.append(this.makeOption(IssueSource.Marketplace, localize('marketplace', "Extensions Marketplace"), false));
+			sourceSelect.append(
+				this.makeOption(IssueSource.Marketplace, localize('marketplace', 'Extensions Marketplace'), false)
+			);
 		}
 
 		if (issueType !== IssueType.FeatureRequest) {
@@ -1082,9 +1157,9 @@ export class BaseIssueReporterService extends Disposable {
 			const fileName = `extensionData_${formattedDate}_${formattedTime}.md`;
 			const handleLinkClick = async () => {
 				const downloadPath = await this.fileDialogService.showSaveDialog({
-					title: localize('saveExtensionData', "Save Extension Data"),
+					title: localize('saveExtensionData', 'Save Extension Data'),
 					availableFileSystems: [Schemas.file],
-					defaultUri: joinPath(await this.fileDialogService.defaultFilePath(Schemas.file), fileName),
+					defaultUri: joinPath(await this.fileDialogService.defaultFilePath(Schemas.file), fileName)
 				});
 
 				if (downloadPath) {
@@ -1102,9 +1177,16 @@ export class BaseIssueReporterService extends Disposable {
 		if (selectedExtension && this.nonGitHubIssueUrl) {
 			hide(titleTextArea);
 			hide(descriptionTextArea);
-			reset(descriptionTitle, localize('handlesIssuesElsewhere', "This extension handles issues outside of VS Code"));
-			reset(descriptionSubtitle, localize('elsewhereDescription', "The '{0}' extension prefers to use an external issue reporter. To be taken to that issue reporting experience, click the button below.", selectedExtension.displayName));
-			this.publicGithubButton.label = localize('openIssueReporter', "Open External Issue Reporter");
+			reset(descriptionTitle, localize('handlesIssuesElsewhere', 'This extension handles issues outside of VS Code'));
+			reset(
+				descriptionSubtitle,
+				localize(
+					'elsewhereDescription',
+					"The '{0}' extension prefers to use an external issue reporter. To be taken to that issue reporting experience, click the button below.",
+					selectedExtension.displayName
+				)
+			);
+			this.publicGithubButton.label = localize('openIssueReporter', 'Open External Issue Reporter');
 			return;
 		}
 
@@ -1137,8 +1219,18 @@ export class BaseIssueReporterService extends Disposable {
 				}
 			}
 
-			reset(descriptionTitle, localize('stepsToReproduce', "Steps to Reproduce") + ' ', $('span.required-input', undefined, '*'));
-			reset(descriptionSubtitle, localize('bugDescription', "Share the steps needed to reliably reproduce the problem. Please include actual and expected results. We support GitHub-flavored Markdown. You will be able to edit your issue and add screenshots when we preview it on GitHub."));
+			reset(
+				descriptionTitle,
+				localize('stepsToReproduce', 'Steps to Reproduce') + ' ',
+				$('span.required-input', undefined, '*')
+			);
+			reset(
+				descriptionSubtitle,
+				localize(
+					'bugDescription',
+					'Share the steps needed to reliably reproduce the problem. Please include actual and expected results. We support GitHub-flavored Markdown. You will be able to edit your issue and add screenshots when we preview it on GitHub.'
+				)
+			);
 		} else if (issueType === IssueType.PerformanceIssue) {
 			if (!fileOnMarketplace) {
 				show(blockContainer);
@@ -1154,17 +1246,33 @@ export class BaseIssueReporterService extends Disposable {
 				show(extensionsBlock);
 			}
 
-			reset(descriptionTitle, localize('stepsToReproduce', "Steps to Reproduce") + ' ', $('span.required-input', undefined, '*'));
-			reset(descriptionSubtitle, localize('performanceIssueDesciption', "When did this performance issue happen? Does it occur on startup or after a specific series of actions? We support GitHub-flavored Markdown. You will be able to edit your issue and add screenshots when we preview it on GitHub."));
+			reset(
+				descriptionTitle,
+				localize('stepsToReproduce', 'Steps to Reproduce') + ' ',
+				$('span.required-input', undefined, '*')
+			);
+			reset(
+				descriptionSubtitle,
+				localize(
+					'performanceIssueDesciption',
+					'When did this performance issue happen? Does it occur on startup or after a specific series of actions? We support GitHub-flavored Markdown. You will be able to edit your issue and add screenshots when we preview it on GitHub.'
+				)
+			);
 		} else if (issueType === IssueType.FeatureRequest) {
-			reset(descriptionTitle, localize('description', "Description") + ' ', $('span.required-input', undefined, '*'));
-			reset(descriptionSubtitle, localize('featureRequestDescription', "Please describe the feature you would like to see. We support GitHub-flavored Markdown. You will be able to edit your issue and add screenshots when we preview it on GitHub."));
+			reset(descriptionTitle, localize('description', 'Description') + ' ', $('span.required-input', undefined, '*'));
+			reset(
+				descriptionSubtitle,
+				localize(
+					'featureRequestDescription',
+					'Please describe the feature you would like to see. We support GitHub-flavored Markdown. You will be able to edit your issue and add screenshots when we preview it on GitHub.'
+				)
+			);
 		}
 	}
 
 	public validateInput(inputId: string): boolean {
 		// eslint-disable-next-line no-restricted-syntax
-		const inputElement = (<HTMLInputElement>this.getElementById(inputId));
+		const inputElement = <HTMLInputElement>this.getElementById(inputId);
 		// eslint-disable-next-line no-restricted-syntax
 		const inputValidationMessage = this.getElementById(`${inputId}-empty-error`);
 		// eslint-disable-next-line no-restricted-syntax
@@ -1204,7 +1312,11 @@ export class BaseIssueReporterService extends Disposable {
 		return isValid;
 	}
 
-	public async submitToGitHub(issueTitle: string, issueBody: string, gitHubDetails: { owner: string; repositoryName: string }): Promise<boolean> {
+	public async submitToGitHub(
+		issueTitle: string,
+		issueBody: string,
+		gitHubDetails: { owner: string; repositoryName: string }
+	): Promise<boolean> {
 		const url = `https://api.github.com/repos/${gitHubDetails.owner}/${gitHubDetails.repositoryName}/issues`;
 		const init = {
 			method: 'POST',
@@ -1214,7 +1326,7 @@ export class BaseIssueReporterService extends Disposable {
 			}),
 			headers: new Headers({
 				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${this.data.githubAccessToken}`,
+				Authorization: `Bearer ${this.data.githubAccessToken}`,
 				'User-Agent': 'request'
 			})
 		};
@@ -1319,13 +1431,17 @@ export class BaseIssueReporterService extends Disposable {
 			throw new CancellationError();
 		}
 
-		return baseUrl + `&body=${encodeURIComponent(localize('pasteData', "We have written the needed data into your clipboard because it was too large to send. Please paste."))}`;
+		return (
+			baseUrl +
+			`&body=${encodeURIComponent(localize('pasteData', 'We have written the needed data into your clipboard because it was too large to send. Please paste.'))}`
+		);
 	}
 
 	public addTemplateToUrl(baseUrl: string, owner?: string, repositoryName?: string): string {
 		const isVscode = this.issueReporterModel.getData().fileOnProduct;
 		const isMicrosoft = owner?.toLowerCase() === 'microsoft';
-		const needsTemplate = isVscode || (isMicrosoft && (repositoryName === 'vscode' || repositoryName === 'vscode-python'));
+		const needsTemplate =
+			isVscode || (isMicrosoft && (repositoryName === 'vscode' || repositoryName === 'vscode-python'));
 
 		if (needsTemplate) {
 			try {
@@ -1566,7 +1682,7 @@ export class BaseIssueReporterService extends Disposable {
 		const target = this.window.document.querySelector<HTMLElement>('.block-extensions .block-info');
 		if (target) {
 			if (this.disableExtensions) {
-				reset(target, localize('disabledExtensions', "Extensions are disabled"));
+				reset(target, localize('disabledExtensions', 'Extensions are disabled'));
 				return;
 			}
 
@@ -1583,17 +1699,25 @@ export class BaseIssueReporterService extends Disposable {
 	}
 
 	private getExtensionTableHtml(extensions: IssueReporterExtensionData[]): HTMLTableElement {
-		return $('table', undefined,
-			$('tr', undefined,
+		return $(
+			'table',
+			undefined,
+			$(
+				'tr',
+				undefined,
 				$('th', undefined, 'Extension'),
 				$('th', undefined, 'Author (truncated)' as string),
 				$('th', undefined, 'Version')
 			),
-			...extensions.map(extension => $('tr', undefined,
-				$('td', undefined, extension.name),
-				$('td', undefined, extension.publisher?.substr(0, 3) ?? 'N/A'),
-				$('td', undefined, extension.version)
-			))
+			...extensions.map(extension =>
+				$(
+					'tr',
+					undefined,
+					$('td', undefined, extension.name),
+					$('td', undefined, extension.publisher?.substr(0, 3) ?? 'N/A'),
+					$('td', undefined, extension.version)
+				)
+			)
 		);
 	}
 

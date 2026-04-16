@@ -20,9 +20,11 @@ export async function assertLinkHelper(
 	// Write the text and wait for the parser to finish
 	await new Promise<void>(r => detector.xterm.write(text, r));
 	const textSplit = text.split('\r\n');
-	const lastLineIndex = textSplit.filter((e, i) => i !== textSplit.length - 1).reduce((p, c) => {
-		return p + Math.max(Math.ceil(c.length / 80), 1);
-	}, 0);
+	const lastLineIndex = textSplit
+		.filter((e, i) => i !== textSplit.length - 1)
+		.reduce((p, c) => {
+			return p + Math.max(Math.ceil(c.length / 80), 1);
+		}, 0);
 
 	// Ensure all links are provided
 	const lines: IBufferLine[] = [];
@@ -44,7 +46,7 @@ export async function assertLinkHelper(
 			link: hasKey(e, { uri: true }) ? e.uri.toString() : e.text,
 			bufferRange: {
 				start: { x: e.range[0][0], y: e.range[0][1] },
-				end: { x: e.range[1][0], y: e.range[1][1] },
+				end: { x: e.range[1][0], y: e.range[1][1] }
 			}
 		};
 	});

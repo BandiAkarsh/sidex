@@ -39,7 +39,7 @@ suite('QuickInputUtils', () => {
 				tooltip: 'Test'
 			};
 
-			const action = quickInputButtonToAction(button, 'test-id', () => { });
+			const action = quickInputButtonToAction(button, 'test-id', () => {});
 
 			assert.ok(action.class?.includes('custom-icon-class'));
 		});
@@ -51,7 +51,7 @@ suite('QuickInputUtils', () => {
 				alwaysVisible: true
 			};
 
-			const action = quickInputButtonToAction(button, 'test-id', () => { });
+			const action = quickInputButtonToAction(button, 'test-id', () => {});
 
 			assert.ok(action.class?.includes('always-visible'));
 			assert.ok(action.class?.includes('icon-class'));
@@ -63,7 +63,7 @@ suite('QuickInputUtils', () => {
 				alwaysVisible: true
 			};
 
-			const action = quickInputButtonToAction(button, 'test-id', () => { });
+			const action = quickInputButtonToAction(button, 'test-id', () => {});
 
 			assert.strictEqual(action.class, 'always-visible');
 		});
@@ -112,7 +112,7 @@ suite('QuickInputUtils', () => {
 				toggle
 			};
 
-			const action = quickInputButtonToAction(button, 'toggle-id', () => { });
+			const action = quickInputButtonToAction(button, 'toggle-id', () => {});
 
 			assert.strictEqual(action.checked, true);
 			assert.strictEqual(toggle.checked, true);
@@ -129,7 +129,7 @@ suite('QuickInputUtils', () => {
 				iconClass: 'icon'
 			};
 
-			const action = quickInputButtonToAction(button, 'test-id', () => { });
+			const action = quickInputButtonToAction(button, 'test-id', () => {});
 
 			assert.strictEqual(action.tooltip, '');
 		});
@@ -141,7 +141,7 @@ suite('QuickInputUtils', () => {
 				label: 'Button Label'
 			};
 
-			const action = quickInputButtonToAction(button, 'test-id', () => { });
+			const action = quickInputButtonToAction(button, 'test-id', () => {});
 
 			// The label property exists on the button but the action's label is initially empty
 			assert.strictEqual(action.label, '');
@@ -152,7 +152,7 @@ suite('QuickInputUtils', () => {
 		test('should convert empty array', () => {
 			const buttons: IQuickInputButton[] = [];
 
-			const result = quickInputButtonsToActionArrays(buttons, 'prefix', () => { });
+			const result = quickInputButtonsToActionArrays(buttons, 'prefix', () => {});
 
 			assert.strictEqual(result.primary.length, 0);
 			assert.strictEqual(result.secondary.length, 0);
@@ -164,7 +164,7 @@ suite('QuickInputUtils', () => {
 				{ iconClass: 'icon2', tooltip: 'Button 2' }
 			];
 
-			const result = quickInputButtonsToActionArrays(buttons, 'test', () => { });
+			const result = quickInputButtonsToActionArrays(buttons, 'test', () => {});
 
 			assert.strictEqual(result.primary.length, 2);
 			assert.strictEqual(result.secondary.length, 0);
@@ -178,7 +178,7 @@ suite('QuickInputUtils', () => {
 				{ iconClass: 'icon2', tooltip: 'Button 2', secondary: true }
 			];
 
-			const result = quickInputButtonsToActionArrays(buttons, 'test', () => { });
+			const result = quickInputButtonsToActionArrays(buttons, 'test', () => {});
 
 			assert.strictEqual(result.primary.length, 0);
 			assert.strictEqual(result.secondary.length, 2);
@@ -194,7 +194,7 @@ suite('QuickInputUtils', () => {
 				{ iconClass: 'icon4', tooltip: 'Secondary 2', secondary: true }
 			];
 
-			const result = quickInputButtonsToActionArrays(buttons, 'test', () => { });
+			const result = quickInputButtonsToActionArrays(buttons, 'test', () => {});
 
 			assert.strictEqual(result.primary.length, 2);
 			assert.strictEqual(result.secondary.length, 2);
@@ -210,7 +210,7 @@ suite('QuickInputUtils', () => {
 				{ iconClass: 'icon2', tooltip: 'Button 2' }
 			];
 
-			const result = quickInputButtonsToActionArrays(buttons, 'test', () => { });
+			const result = quickInputButtonsToActionArrays(buttons, 'test', () => {});
 
 			assert.strictEqual(result.primary[0].label, 'Label 1');
 			assert.strictEqual(result.primary[1].label, '');
@@ -222,7 +222,7 @@ suite('QuickInputUtils', () => {
 			const buttons = [button1, button2];
 
 			const triggeredButtons: IQuickInputButton[] = [];
-			const result = quickInputButtonsToActionArrays(buttons, 'test', (button) => {
+			const result = quickInputButtonsToActionArrays(buttons, 'test', button => {
 				triggeredButtons.push(button);
 			});
 
@@ -242,7 +242,7 @@ suite('QuickInputUtils', () => {
 				{ iconClass: 'icon2', tooltip: 'Regular' }
 			];
 
-			const result = quickInputButtonsToActionArrays(buttons, 'test', () => { });
+			const result = quickInputButtonsToActionArrays(buttons, 'test', () => {});
 
 			const toggleAction = result.primary[0];
 			assert.strictEqual(toggleAction.checked, false);
@@ -252,14 +252,12 @@ suite('QuickInputUtils', () => {
 		});
 
 		test('should use correct id prefix', () => {
-			const buttons: IQuickInputButton[] = [
-				{ iconClass: 'icon1', tooltip: 'Button 1' }
-			];
+			const buttons: IQuickInputButton[] = [{ iconClass: 'icon1', tooltip: 'Button 1' }];
 
-			const result1 = quickInputButtonsToActionArrays(buttons, 'custom-prefix', () => { });
+			const result1 = quickInputButtonsToActionArrays(buttons, 'custom-prefix', () => {});
 			assert.strictEqual(result1.primary[0].id, 'custom-prefix-0');
 
-			const result2 = quickInputButtonsToActionArrays(buttons, 'another', () => { });
+			const result2 = quickInputButtonsToActionArrays(buttons, 'another', () => {});
 			assert.strictEqual(result2.primary[0].id, 'another-0');
 		});
 	});

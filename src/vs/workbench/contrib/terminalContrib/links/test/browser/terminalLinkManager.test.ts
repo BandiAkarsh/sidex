@@ -17,7 +17,11 @@ import { IThemeService } from '../../../../../../platform/theme/common/themeServ
 import { TestThemeService } from '../../../../../../platform/theme/test/common/testThemeService.js';
 import { IViewDescriptorService } from '../../../../../common/views.js';
 import { IDetectedLinks, TerminalLinkManager } from '../../browser/terminalLinkManager.js';
-import { ITerminalCapabilityImplMap, ITerminalCapabilityStore, TerminalCapability } from '../../../../../../platform/terminal/common/capabilities/capabilities.js';
+import {
+	ITerminalCapabilityImplMap,
+	ITerminalCapabilityStore,
+	TerminalCapability
+} from '../../../../../../platform/terminal/common/capabilities/capabilities.js';
 import { ITerminalConfiguration, ITerminalProcessManager } from '../../../../terminal/common/terminal.js';
 import { TestViewDescriptorService } from '../../../../terminal/test/browser/xterm/xtermTerminal.test.js';
 import { TestStorageService } from '../../../../../test/common/workbenchTestServices.js';
@@ -41,7 +45,10 @@ const defaultTerminalConfig: Partial<ITerminalConfiguration> = {
 
 class TestLinkManager extends TerminalLinkManager {
 	private _links: IDetectedLinks | undefined;
-	protected override async _getLinksForType(y: number, type: 'word' | 'url' | 'localFile'): Promise<ILink[] | undefined> {
+	protected override async _getLinksForType(
+		y: number,
+		type: 'word' | 'url' | 'localFile'
+	): Promise<ILink[] | undefined> {
 		switch (type) {
 			case 'word':
 				return this._links?.wordLinks?.[y] ? [this._links?.wordLinks?.[y]] : undefined;
@@ -87,18 +94,27 @@ suite('TerminalLinkManager', () => {
 		instantiationService.stub(IThemeService, themeService);
 		instantiationService.stub(IViewDescriptorService, viewDescriptorService);
 
-		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
+		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js'))
+			.Terminal;
 		xterm = store.add(new TerminalCtor({ allowProposedApi: true, cols: 80, rows: 30, logger: TestXtermLogger }));
-		linkManager = store.add(instantiationService.createInstance(TestLinkManager, xterm, upcastPartial<ITerminalProcessManager>({
-			get initialCwd() {
-				return '';
-			}
-			// eslint-disable-next-line local/code-no-any-casts
-		}), {
-			get<T extends TerminalCapability>(capability: T): ITerminalCapabilityImplMap[T] | undefined {
-				return undefined;
-			}
-		} as Partial<ITerminalCapabilityStore> as any, instantiationService.createInstance(TerminalLinkResolver)));
+		linkManager = store.add(
+			instantiationService.createInstance(
+				TestLinkManager,
+				xterm,
+				upcastPartial<ITerminalProcessManager>({
+					get initialCwd() {
+						return '';
+					}
+					// eslint-disable-next-line local/code-no-any-casts
+				}),
+				{
+					get<T extends TerminalCapability>(capability: T): ITerminalCapabilityImplMap[T] | undefined {
+						return undefined;
+					}
+				} as Partial<ITerminalCapabilityStore> as any,
+				instantiationService.createInstance(TerminalLinkResolver)
+			)
+		);
 	});
 
 	suite('registerExternalLinkProvider', () => {
@@ -123,14 +139,16 @@ suite('TerminalLinkManager', () => {
 		test('should return word links in order', async () => {
 			const link1 = {
 				range: {
-					start: { x: 1, y: 1 }, end: { x: 14, y: 1 }
+					start: { x: 1, y: 1 },
+					end: { x: 14, y: 1 }
 				},
 				text: '1_我是学生.txt',
 				activate: () => Promise.resolve('')
 			};
 			const link2 = {
 				range: {
-					start: { x: 1, y: 1 }, end: { x: 14, y: 1 }
+					start: { x: 1, y: 1 },
+					end: { x: 14, y: 1 }
 				},
 				text: '2_我是学生.txt',
 				activate: () => Promise.resolve('')

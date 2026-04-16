@@ -3,7 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IPickAndOpenOptions, ISaveDialogOptions, IOpenDialogOptions, IFileDialogService, FileFilter, IPromptButton } from '../../../../platform/dialogs/common/dialogs.js';
+import {
+	IPickAndOpenOptions,
+	ISaveDialogOptions,
+	IOpenDialogOptions,
+	IFileDialogService,
+	FileFilter,
+	IPromptButton
+} from '../../../../platform/dialogs/common/dialogs.js';
 import { URI } from '../../../../base/common/uri.js';
 import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
 import { AbstractFileDialogService } from './abstractFileDialogService.js';
@@ -22,7 +29,6 @@ import { WebFileSystemAccess } from '../../../../platform/files/browser/webFileS
 import { EmbeddedCodeEditorWidget } from '../../../../editor/browser/widget/codeEditor/embeddedCodeEditorWidget.js';
 
 export class FileDialogService extends AbstractFileDialogService implements IFileDialogService {
-
 	@memoize
 	private get fileSystemProvider(): HTMLFileSystemProvider {
 		return this.fileService.getProvider(Schemas.file) as HTMLFileSystemProvider;
@@ -51,8 +57,11 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 	}
 
 	protected override addFileSchemaIfNeeded(schema: string, isFolder: boolean): string[] {
-		return (schema === Schemas.untitled) ? [Schemas.file]
-			: (((schema !== Schemas.file) && (!isFolder || (schema !== Schemas.vscodeRemote))) ? [schema, Schemas.file] : [schema]);
+		return schema === Schemas.untitled
+			? [Schemas.file]
+			: schema !== Schemas.file && (!isFolder || schema !== Schemas.vscodeRemote)
+				? [schema, Schemas.file]
+				: [schema];
 	}
 
 	async pickFileAndOpen(options: IPickAndOpenOptions): Promise<void> {
@@ -77,7 +86,7 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 
 		let fileHandle: FileSystemHandle | undefined = undefined;
 		try {
-			([fileHandle] = await activeWindow.showOpenFilePicker({ multiple: false }));
+			[fileHandle] = await activeWindow.showOpenFilePicker({ multiple: false });
 		} catch (error) {
 			return; // `showOpenFilePicker` will throw an error when the user cancels
 		}
@@ -119,7 +128,10 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 			console.log('[SideX] Folder selected:', selected);
 			if (selected && typeof selected === 'string') {
 				const folderUri = URI.file(selected);
-				await this.hostService.openWindow([{ folderUri }], { forceNewWindow: _options.forceNewWindow, remoteAuthority: _options.remoteAuthority });
+				await this.hostService.openWindow([{ folderUri }], {
+					forceNewWindow: _options.forceNewWindow,
+					remoteAuthority: _options.remoteAuthority
+				});
 			}
 		} catch (e) {
 			console.error('[SideX] Failed to open folder dialog:', e);
@@ -151,7 +163,9 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 			return super.pickWorkspaceAndOpenSimplified(schema, options);
 		}
 
-		throw new Error(localize('pickWorkspaceAndOpen', "Can't open workspaces, try adding a folder to the workspace instead."));
+		throw new Error(
+			localize('pickWorkspaceAndOpen', "Can't open workspaces, try adding a folder to the workspace instead.")
+		);
 	}
 
 	async pickFileToSave(defaultUri: URI, availableFileSystems?: string[]): Promise<URI | undefined> {
@@ -175,7 +189,10 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 		const startIn = Iterable.first(this.fileSystemProvider.directories);
 
 		try {
-			fileHandle = await activeWindow.showSaveFilePicker({ types: this.getFilePickerTypes(options.filters), ...{ suggestedName: basename(defaultUri), startIn } });
+			fileHandle = await activeWindow.showSaveFilePicker({
+				types: this.getFilePickerTypes(options.filters),
+				...{ suggestedName: basename(defaultUri), startIn }
+			});
 		} catch (error) {
 			return;
 		}
@@ -191,15 +208,17 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 		try {
 			const { save } = await import('@tauri-apps/plugin-dialog');
 			const options = this.getPickFileToSaveDialogOptions(defaultUri, availableFileSystems);
-			const tauriFilters = (options.filters || []).map(f => ({
-				name: f.name,
-				extensions: f.extensions.filter(e => e !== '*' && e !== ''),
-			})).filter(f => f.extensions.length > 0);
+			const tauriFilters = (options.filters || [])
+				.map(f => ({
+					name: f.name,
+					extensions: f.extensions.filter(e => e !== '*' && e !== '')
+				}))
+				.filter(f => f.extensions.length > 0);
 
 			const result = await save({
 				title: options.title,
 				defaultPath: defaultUri.fsPath || undefined,
-				filters: tauriFilters.length ? tauriFilters : undefined,
+				filters: tauriFilters.length ? tauriFilters : undefined
 			});
 			if (result) {
 				return URI.file(result);
@@ -211,17 +230,23 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 	}
 
 	private getFilePickerTypes(filters?: FileFilter[]): FilePickerAcceptType[] | undefined {
-		return filters?.filter(filter => {
-			return !((filter.extensions.length === 1) && ((filter.extensions[0] === '*') || filter.extensions[0] === ''));
-		}).map((filter): FilePickerAcceptType => {
-			const accept: Record<MIMEType, FileExtension[]> = {};
-			const extensions = filter.extensions.filter(ext => (ext.indexOf('-') < 0) && (ext.indexOf('*') < 0) && (ext.indexOf('_') < 0));
-			accept[(getMediaOrTextMime(`fileName.${filter.extensions[0]}`) ?? 'text/plain') as MIMEType] = extensions.map(ext => ext.startsWith('.') ? ext : `.${ext}`) as FileExtension[];
-			return {
-				description: filter.name,
-				accept
-			};
-		});
+		return filters
+			?.filter(filter => {
+				return !(filter.extensions.length === 1 && (filter.extensions[0] === '*' || filter.extensions[0] === ''));
+			})
+			.map((filter): FilePickerAcceptType => {
+				const accept: Record<MIMEType, FileExtension[]> = {};
+				const extensions = filter.extensions.filter(
+					ext => ext.indexOf('-') < 0 && ext.indexOf('*') < 0 && ext.indexOf('_') < 0
+				);
+				accept[(getMediaOrTextMime(`fileName.${filter.extensions[0]}`) ?? 'text/plain') as MIMEType] = extensions.map(
+					ext => (ext.startsWith('.') ? ext : `.${ext}`)
+				) as FileExtension[];
+				return {
+					description: filter.name,
+					accept
+				};
+			});
 	}
 
 	async showSaveDialog(options: ISaveDialogOptions): Promise<URI | undefined> {
@@ -244,7 +269,11 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 		const startIn = Iterable.first(this.fileSystemProvider.directories);
 
 		try {
-			fileHandle = await activeWindow.showSaveFilePicker({ types: this.getFilePickerTypes(options.filters), ...options.defaultUri ? { suggestedName: basename(options.defaultUri) } : undefined, ...{ startIn } });
+			fileHandle = await activeWindow.showSaveFilePicker({
+				types: this.getFilePickerTypes(options.filters),
+				...(options.defaultUri ? { suggestedName: basename(options.defaultUri) } : undefined),
+				...{ startIn }
+			});
 		} catch (error) {
 			return undefined;
 		}
@@ -259,15 +288,17 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 	private async _tauriShowSaveDialog(options: ISaveDialogOptions): Promise<URI | undefined> {
 		try {
 			const { save } = await import('@tauri-apps/plugin-dialog');
-			const tauriFilters = (options.filters || []).map(f => ({
-				name: f.name,
-				extensions: f.extensions.filter(e => e !== '*' && e !== ''),
-			})).filter(f => f.extensions.length > 0);
+			const tauriFilters = (options.filters || [])
+				.map(f => ({
+					name: f.name,
+					extensions: f.extensions.filter(e => e !== '*' && e !== '')
+				}))
+				.filter(f => f.extensions.length > 0);
 
 			const result = await save({
 				title: options.title,
 				defaultPath: options.defaultUri?.fsPath || undefined,
-				filters: tauriFilters.length ? tauriFilters : undefined,
+				filters: tauriFilters.length ? tauriFilters : undefined
 			});
 			if (result) {
 				return URI.file(result);
@@ -299,7 +330,11 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 
 		try {
 			if (options.canSelectFiles) {
-				const handle = await activeWindow.showOpenFilePicker({ multiple: false, types: this.getFilePickerTypes(options.filters), ...{ startIn } });
+				const handle = await activeWindow.showOpenFilePicker({
+					multiple: false,
+					types: this.getFilePickerTypes(options.filters),
+					...{ startIn }
+				});
 				if (handle.length === 1 && WebFileSystemAccess.isFileSystemFileHandle(handle[0])) {
 					uri = await this.fileSystemProvider.registerFileHandle(handle[0]);
 				}
@@ -318,17 +353,19 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 		try {
 			const { open } = await import('@tauri-apps/plugin-dialog');
 			const isDir = options.canSelectFolders && !options.canSelectFiles;
-			const tauriFilters = (options.filters || []).map(f => ({
-				name: f.name,
-				extensions: f.extensions.filter(e => e !== '*' && e !== ''),
-			})).filter(f => f.extensions.length > 0);
+			const tauriFilters = (options.filters || [])
+				.map(f => ({
+					name: f.name,
+					extensions: f.extensions.filter(e => e !== '*' && e !== '')
+				}))
+				.filter(f => f.extensions.length > 0);
 
 			const result = await open({
 				directory: isDir,
 				multiple: options.canSelectMany ?? false,
 				title: options.title,
 				defaultPath: options.defaultUri?.fsPath || undefined,
-				filters: tauriFilters.length ? tauriFilters : undefined,
+				filters: tauriFilters.length ? tauriFilters : undefined
 			});
 
 			if (!result) {
@@ -343,7 +380,6 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 	}
 
 	private async showUnsupportedBrowserWarning(context: 'save' | 'open'): Promise<undefined> {
-
 		// When saving, try to just download the contents
 		// of the active text editor if any as a workaround
 		if (context === 'save') {
@@ -361,29 +397,37 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 
 		const buttons: IPromptButton<void>[] = [
 			{
-				label: localize({ key: 'openRemote', comment: ['&& denotes a mnemonic'] }, "&&Open Remote..."),
-				run: async () => { await this.commandService.executeCommand('workbench.action.remote.showMenu'); }
+				label: localize({ key: 'openRemote', comment: ['&& denotes a mnemonic'] }, '&&Open Remote...'),
+				run: async () => {
+					await this.commandService.executeCommand('workbench.action.remote.showMenu');
+				}
 			},
 			{
-				label: localize({ key: 'learnMore', comment: ['&& denotes a mnemonic'] }, "&&Learn More"),
-				run: async () => { await this.openerService.open('https://aka.ms/VSCodeWebLocalFileSystemAccess'); }
+				label: localize({ key: 'learnMore', comment: ['&& denotes a mnemonic'] }, '&&Learn More'),
+				run: async () => {
+					await this.openerService.open('https://aka.ms/VSCodeWebLocalFileSystemAccess');
+				}
 			}
 		];
 		if (context === 'open') {
 			buttons.push({
-				label: localize({ key: 'openFiles', comment: ['&& denotes a mnemonic'] }, "Open &&Files..."),
+				label: localize({ key: 'openFiles', comment: ['&& denotes a mnemonic'] }, 'Open &&Files...'),
 				run: async () => {
 					const files = await triggerUpload();
 					if (files) {
-						const filesData = (await this.instantiationService.invokeFunction(accessor => extractFileListData(accessor, files))).filter(fileData => !fileData.isDirectory);
+						const filesData = (
+							await this.instantiationService.invokeFunction(accessor => extractFileListData(accessor, files))
+						).filter(fileData => !fileData.isDirectory);
 						if (filesData.length > 0) {
-							this.editorService.openEditors(filesData.map(fileData => {
-								return {
-									resource: fileData.resource,
-									contents: fileData.contents?.toString(),
-									options: { pinned: true }
-								};
-							}));
+							this.editorService.openEditors(
+								filesData.map(fileData => {
+									return {
+										resource: fileData.resource,
+										contents: fileData.contents?.toString(),
+										options: { pinned: true }
+									};
+								})
+							);
 						}
 					}
 				}
@@ -392,8 +436,11 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
 
 		await this.dialogService.prompt({
 			type: Severity.Warning,
-			message: localize('unsupportedBrowserMessage', "Opening Local Folders is Unsupported"),
-			detail: localize('unsupportedBrowserDetail', "Your browser doesn't support opening local folders.\nYou can either open single files or open a remote repository."),
+			message: localize('unsupportedBrowserMessage', 'Opening Local Folders is Unsupported'),
+			detail: localize(
+				'unsupportedBrowserDetail',
+				"Your browser doesn't support opening local folders.\nYou can either open single files or open a remote repository."
+			),
 			buttons
 		});
 

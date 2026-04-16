@@ -16,7 +16,6 @@ import { processConditionalBlocks, renderReleaseNotesMarkdown } from '../../brow
 import { URI } from '../../../../../base/common/uri.js';
 import { Emitter } from '../../../../../base/common/event.js';
 
-
 suite('Release notes renderer', () => {
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 
@@ -56,7 +55,12 @@ Navigation End -->
 
 ## Test`;
 
-		const result = await renderReleaseNotesMarkdown(content, extensionService, languageService, instantiationService.createInstance(SimpleSettingRenderer));
+		const result = await renderReleaseNotesMarkdown(
+			content,
+			extensionService,
+			languageService,
+			instantiationService.createInstance(SimpleSettingRenderer)
+		);
 		await assertSnapshot(result.toString());
 	});
 
@@ -72,7 +76,9 @@ Navigation End -->
 			createPreferencesEditorModel: async () => null,
 			getDefaultSettingsContent: () => undefined,
 			hasDefaultSettingsContent: () => false,
-			createSettings2EditorModel: () => { throw new Error('not needed'); },
+			createSettings2EditorModel: () => {
+				throw new Error('not needed');
+			},
 			openPreferences: async () => undefined,
 			openRawDefaultSettings: async () => undefined,
 			openSettings: async () => undefined,
@@ -96,17 +102,23 @@ Navigation End -->
 				}
 				return undefined;
 			},
-			createSplitJsonEditorInput: () => { throw new Error('not needed'); }
+			createSplitJsonEditorInput: () => {
+				throw new Error('not needed');
+			}
 		});
 
 		const content = `Here is a setting: \`setting(${testSettingId}:on)\` and another \`setting(${testSettingId}:off)\``;
-		const result = await renderReleaseNotesMarkdown(content, extensionService, languageService, instantiationService.createInstance(SimpleSettingRenderer));
+		const result = await renderReleaseNotesMarkdown(
+			content,
+			extensionService,
+			languageService,
+			instantiationService.createInstance(SimpleSettingRenderer)
+		);
 		await assertSnapshot(result.toString());
 	});
 });
 
 suite('Conditional blocks', () => {
-
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('IN_PRODUCT block is revealed when IN_PRODUCT is active', () => {
@@ -176,7 +188,7 @@ suite('Conditional blocks', () => {
 			'<!-- %IF INSIDERS %',
 			'insiders only',
 			'%ENDIF % -->',
-			'more shared content',
+			'more shared content'
 		].join('\n');
 		const result = processConditionalBlocks(text, new Set(['IN_PRODUCT', 'STABLE']));
 		assert.ok(result.includes('shared content'));
@@ -200,9 +212,15 @@ suite('Conditional blocks', () => {
 			'%ENDIF % -->',
 			'<!-- %IF INSIDERS %',
 			'insiders content',
-			'%ENDIF % -->',
+			'%ENDIF % -->'
 		].join('\n');
-		const result = await renderReleaseNotesMarkdown(content, extensionService, languageService, instantiationService.createInstance(SimpleSettingRenderer), 'stable');
+		const result = await renderReleaseNotesMarkdown(
+			content,
+			extensionService,
+			languageService,
+			instantiationService.createInstance(SimpleSettingRenderer),
+			'stable'
+		);
 		const html = result.toString();
 		assert.ok(html.includes('stable content'));
 		assert.ok(!html.includes('insiders content'));
@@ -221,9 +239,15 @@ suite('Conditional blocks', () => {
 			'%ENDIF % -->',
 			'<!-- %IF INSIDERS %',
 			'insiders content',
-			'%ENDIF % -->',
+			'%ENDIF % -->'
 		].join('\n');
-		const result = await renderReleaseNotesMarkdown(content, extensionService, languageService, instantiationService.createInstance(SimpleSettingRenderer), 'insider');
+		const result = await renderReleaseNotesMarkdown(
+			content,
+			extensionService,
+			languageService,
+			instantiationService.createInstance(SimpleSettingRenderer),
+			'insider'
+		);
 		const html = result.toString();
 		assert.ok(!html.includes('stable content'));
 		assert.ok(html.includes('insiders content'));

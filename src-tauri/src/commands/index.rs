@@ -159,9 +159,10 @@ impl InvertedIndex {
 
     /// Get or create file ID for a path
     fn get_or_create_file_id(&self, path: &str) -> u32 {
-        *self.path_to_id.entry(path.to_string()).or_insert_with(|| {
-            self.next_file_id.fetch_add(1, Ordering::SeqCst)
-        })
+        *self
+            .path_to_id
+            .entry(path.to_string())
+            .or_insert_with(|| self.next_file_id.fetch_add(1, Ordering::SeqCst))
     }
 
     /// Add a word to the trigram index

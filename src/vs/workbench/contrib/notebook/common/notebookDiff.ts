@@ -6,19 +6,20 @@
 import { IDiffChange } from '../../../../base/common/diff/diff.js';
 import { CellKind, INotebookDiffResult } from './notebookCommon.js';
 
-export type CellDiffInfo = {
-	originalCellIndex: number;
-	modifiedCellIndex: number;
-	type: 'unchanged' | 'modified';
-} |
-{
-	originalCellIndex: number;
-	type: 'delete';
-} |
-{
-	modifiedCellIndex: number;
-	type: 'insert';
-};
+export type CellDiffInfo =
+	| {
+			originalCellIndex: number;
+			modifiedCellIndex: number;
+			type: 'unchanged' | 'modified';
+	  }
+	| {
+			originalCellIndex: number;
+			type: 'delete';
+	  }
+	| {
+			modifiedCellIndex: number;
+			type: 'insert';
+	  };
 
 interface ICell {
 	cellKind: CellKind;
@@ -30,7 +31,11 @@ interface ICell {
 // 	metadataChanged: boolean;
 // }
 
-export function computeDiff(originalModel: { readonly cells: readonly ICell[] }, modifiedModel: { readonly cells: readonly ICell[] }, diffResult: INotebookDiffResult) {
+export function computeDiff(
+	originalModel: { readonly cells: readonly ICell[] },
+	modifiedModel: { readonly cells: readonly ICell[] },
+	diffResult: INotebookDiffResult
+) {
 	const cellChanges = diffResult.cellsDiff.changes;
 	const cellDiffInfo: CellDiffInfo[] = [];
 	let originalCellIndex = 0;
@@ -87,7 +92,11 @@ export function computeDiff(originalModel: { readonly cells: readonly ICell[] },
 	};
 }
 
-function computeModifiedLCS(change: IDiffChange, originalModel: { readonly cells: readonly ICell[] }, modifiedModel: { readonly cells: readonly ICell[] }) {
+function computeModifiedLCS(
+	change: IDiffChange,
+	originalModel: { readonly cells: readonly ICell[] },
+	modifiedModel: { readonly cells: readonly ICell[] }
+) {
 	const result: CellDiffInfo[] = [];
 	// modified cells
 	const modifiedLen = Math.min(change.originalLength, change.modifiedLength);

@@ -46,7 +46,7 @@ export interface IBrowserEditorInputData extends IBrowserEditorViewState {
 export class BrowserEditorInput extends EditorInput {
 	static readonly ID = 'workbench.editorinputs.browser';
 	static readonly EDITOR_ID = 'workbench.editor.browser';
-	private static readonly DEFAULT_LABEL = localize('browser.editorLabel', "Browser");
+	private static readonly DEFAULT_LABEL = localize('browser.editorLabel', 'Browser');
 
 	private readonly _id: string;
 	private _initialData: IBrowserEditorInputData;
@@ -65,17 +65,19 @@ export class BrowserEditorInput extends EditorInput {
 		this._id = options.id;
 		this._initialData = options;
 
-		this._register(this.lifecycleService.onWillShutdown((e) => {
-			if (this._model) {
-				// For reloads, we simply hide / re-show the view.
-				if (e.reason === ShutdownReason.RELOAD) {
-					void this._model.setVisible(false);
-				} else {
-					this._model.dispose();
-					this._model = undefined;
+		this._register(
+			this.lifecycleService.onWillShutdown(e => {
+				if (this._model) {
+					// For reloads, we simply hide / re-show the view.
+					if (e.reason === ShutdownReason.RELOAD) {
+						void this._model.setVisible(false);
+					} else {
+						this._model.dispose();
+						this._model = undefined;
+					}
 				}
-			}
-		}));
+			})
+		);
 	}
 
 	get id() {
@@ -117,14 +119,18 @@ export class BrowserEditorInput extends EditorInput {
 				this._modelPromise = undefined;
 
 				// Set up cleanup when the model is disposed
-				this._register(this._model.onWillDispose(() => {
-					this._model = undefined;
-				}));
+				this._register(
+					this._model.onWillDispose(() => {
+						this._model = undefined;
+					})
+				);
 
 				// Auto-close editor when webcontents closes
-				this._register(this._model.onDidClose(() => {
-					this.dispose();
-				}));
+				this._register(
+					this._model.onDidClose(() => {
+						this.dispose();
+					})
+				);
 
 				// Listen for label-relevant changes to fire onDidChangeLabel
 				this._register(this._model.onDidChangeTitle(() => this._onDidChangeLabel.fire()));

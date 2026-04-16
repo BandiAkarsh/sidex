@@ -8,7 +8,10 @@ import { Disposable, MutableDisposable } from '../../../../../../base/common/lif
 import { INotebookEditor, INotebookEditorContribution } from '../../notebookBrowser.js';
 import { registerNotebookContribution } from '../../notebookEditorExtensions.js';
 import { NotebookCellExecutionState } from '../../../common/notebookCommon.js';
-import { INotebookCellExecution, INotebookExecutionStateService } from '../../../common/notebookExecutionStateService.js';
+import {
+	INotebookCellExecution,
+	INotebookExecutionStateService
+} from '../../../common/notebookExecutionStateService.js';
 import { IUserActivityService } from '../../../../../services/userActivity/common/userActivityService.js';
 
 export class ExecutionEditorProgressController extends Disposable implements INotebookEditorContribution {
@@ -19,19 +22,21 @@ export class ExecutionEditorProgressController extends Disposable implements INo
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
 		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService,
-		@IUserActivityService private readonly _userActivity: IUserActivityService,
+		@IUserActivityService private readonly _userActivity: IUserActivityService
 	) {
 		super();
 
 		this._register(_notebookEditor.onDidScroll(() => this._update()));
 
-		this._register(_notebookExecutionStateService.onDidChangeExecution(e => {
-			if (e.notebook.toString() !== this._notebookEditor.textModel?.uri.toString()) {
-				return;
-			}
+		this._register(
+			_notebookExecutionStateService.onDidChangeExecution(e => {
+				if (e.notebook.toString() !== this._notebookEditor.textModel?.uri.toString()) {
+					return;
+				}
 
-			this._update();
-		}));
+				this._update();
+			})
+		);
 
 		this._register(_notebookEditor.onDidChangeModel(() => this._update()));
 	}
@@ -42,7 +47,8 @@ export class ExecutionEditorProgressController extends Disposable implements INo
 			return;
 		}
 
-		const cellExecutions = this._notebookExecutionStateService.getCellExecutionsForNotebook(this._notebookEditor.textModel?.uri)
+		const cellExecutions = this._notebookExecutionStateService
+			.getCellExecutionsForNotebook(this._notebookEditor.textModel?.uri)
 			.filter(exe => exe.state === NotebookCellExecutionState.Executing);
 		const notebookExecution = this._notebookExecutionStateService.getExecution(this._notebookEditor.textModel?.uri);
 		const executionIsVisible = (exe: INotebookCellExecution) => {
@@ -67,7 +73,8 @@ export class ExecutionEditorProgressController extends Disposable implements INo
 			this._activityMutex.clear();
 		}
 
-		const shouldShowEditorProgressbarForCellExecutions = cellExecutions.length && !cellExecutions.some(executionIsVisible) && !cellExecutions.some(e => e.isPaused);
+		const shouldShowEditorProgressbarForCellExecutions =
+			cellExecutions.length && !cellExecutions.some(executionIsVisible) && !cellExecutions.some(e => e.isPaused);
 		const showEditorProgressBar = !!notebookExecution || shouldShowEditorProgressbarForCellExecutions;
 		if (showEditorProgressBar) {
 			this._notebookEditor.showProgress();
@@ -76,6 +83,5 @@ export class ExecutionEditorProgressController extends Disposable implements INo
 		}
 	}
 }
-
 
 registerNotebookContribution(ExecutionEditorProgressController.id, ExecutionEditorProgressController);

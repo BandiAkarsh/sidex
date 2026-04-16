@@ -33,7 +33,12 @@ suite('Emmet', () => {
 			disposables.add(languageService.registerLanguage({ id: 'nunjucks' }));
 			disposables.add(languageService.registerLanguage({ id: 'laravel-blade' }));
 
-			function testIsEnabled(mode: string, scopeName: string, expectedLanguage?: string, expectedParentLanguage?: string) {
+			function testIsEnabled(
+				mode: string,
+				scopeName: string,
+				expectedLanguage?: string,
+				expectedParentLanguage?: string
+			) {
 				const model = editor.getModel();
 				if (!model) {
 					assert.fail('Editor model not found');
@@ -60,7 +65,6 @@ suite('Emmet', () => {
 			// testIsEnabled('HTML (Eex)', 'text.html.elixir', 'boo', 'html');
 
 			disposables.dispose();
-
 		});
 	});
 

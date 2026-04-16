@@ -18,32 +18,39 @@ import { applyTextEditorOptions } from '../../../common/editor/editorOptions.js'
 import { SimpleCommentEditor } from './simpleCommentEditor.js';
 
 export class CommentsInputContentProvider extends Disposable implements ITextModelContentProvider, IEditorContribution {
-
 	public static readonly ID = 'comments.input.contentProvider';
 
 	constructor(
 		@ITextModelService textModelService: ITextModelService,
 		@ICodeEditorService codeEditorService: ICodeEditorService,
 		@IModelService private readonly _modelService: IModelService,
-		@ILanguageService private readonly _languageService: ILanguageService,
+		@ILanguageService private readonly _languageService: ILanguageService
 	) {
 		super();
 		this._register(textModelService.registerTextModelContentProvider(Schemas.commentsInput, this));
 
-		this._register(codeEditorService.registerCodeEditorOpenHandler(async (input: ITextResourceEditorInput, editor: ICodeEditor | null, _sideBySide?: boolean): Promise<ICodeEditor | null> => {
-			if (!(editor instanceof SimpleCommentEditor)) {
-				return null;
-			}
+		this._register(
+			codeEditorService.registerCodeEditorOpenHandler(
+				async (
+					input: ITextResourceEditorInput,
+					editor: ICodeEditor | null,
+					_sideBySide?: boolean
+				): Promise<ICodeEditor | null> => {
+					if (!(editor instanceof SimpleCommentEditor)) {
+						return null;
+					}
 
-			if (editor.getModel()?.uri.toString() !== input.resource.toString()) {
-				return null;
-			}
+					if (editor.getModel()?.uri.toString() !== input.resource.toString()) {
+						return null;
+					}
 
-			if (input.options) {
-				applyTextEditorOptions(input.options, editor, ScrollType.Immediate);
-			}
-			return editor;
-		}));
+					if (input.options) {
+						applyTextEditorOptions(input.options, editor, ScrollType.Immediate);
+					}
+					return editor;
+				}
+			)
+		);
 	}
 
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {

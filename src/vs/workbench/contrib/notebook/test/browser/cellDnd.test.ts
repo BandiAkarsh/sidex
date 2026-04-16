@@ -34,7 +34,12 @@ async function testCellDnd(beginning: IBeginningState, dragAction: IDragAction, 
 		(editor, viewModel) => {
 			editor.setSelections(beginning.selections);
 			editor.setFocus({ start: beginning.focus, end: beginning.focus + 1 });
-			performCellDropEdits(editor, viewModel.cellAt(dragAction.dragIdx)!, dragAction.direction, viewModel.cellAt(dragAction.dragOverIdx)!);
+			performCellDropEdits(
+				editor,
+				viewModel.cellAt(dragAction.dragIdx)!,
+				dragAction.direction,
+				viewModel.cellAt(dragAction.dragOverIdx)!
+			);
 
 			for (const i in end.endOrder) {
 				assert.equal(viewModel.viewCells[i].getText(), end.endOrder[i]);
@@ -43,7 +48,8 @@ async function testCellDnd(beginning: IBeginningState, dragAction: IDragAction, 
 			assert.equal(editor.getSelections().length, 1);
 			assert.deepStrictEqual(editor.getSelections()[0], end.selection);
 			assert.deepStrictEqual(editor.getFocus(), { start: end.focus, end: end.focus + 1 });
-		});
+		}
+	);
 }
 
 suite('cellDND', () => {
@@ -113,7 +119,10 @@ suite('cellDND', () => {
 		await testCellDnd(
 			{
 				startOrder: ['0', '1', '2', '3'],
-				selections: [{ start: 0, end: 1 }, { start: 2, end: 3 }],
+				selections: [
+					{ start: 0, end: 1 },
+					{ start: 2, end: 3 }
+				],
 				focus: 0
 			},
 			{
@@ -133,7 +142,10 @@ suite('cellDND', () => {
 		await testCellDnd(
 			{
 				startOrder: ['0', '1', '2', '3'],
-				selections: [{ start: 1, end: 2 }, { start: 3, end: 4 }],
+				selections: [
+					{ start: 1, end: 2 },
+					{ start: 3, end: 4 }
+				],
 				focus: 1
 			},
 			{
@@ -153,7 +165,10 @@ suite('cellDND', () => {
 		await testCellDnd(
 			{
 				startOrder: ['0', '1', '2', '3'],
-				selections: [{ start: 0, end: 1 }, { start: 3, end: 4 }],
+				selections: [
+					{ start: 0, end: 1 },
+					{ start: 3, end: 4 }
+				],
 				focus: 0
 			},
 			{
@@ -173,7 +188,10 @@ suite('cellDND', () => {
 		await testCellDnd(
 			{
 				startOrder: ['0', '1', '2', '3'],
-				selections: [{ start: 1, end: 2 }, { start: 3, end: 4 }],
+				selections: [
+					{ start: 1, end: 2 },
+					{ start: 3, end: 4 }
+				],
 				focus: 1
 			},
 			{
@@ -193,7 +211,10 @@ suite('cellDND', () => {
 		await testCellDnd(
 			{
 				startOrder: ['0', '1', '2', '3'],
-				selections: [{ start: 0, end: 2 }, { start: 3, end: 4 }],
+				selections: [
+					{ start: 0, end: 2 },
+					{ start: 3, end: 4 }
+				],
 				focus: 0
 			},
 			{

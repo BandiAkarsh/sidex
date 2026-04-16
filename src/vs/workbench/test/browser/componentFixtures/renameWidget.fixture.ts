@@ -5,8 +5,17 @@
 
 import { CancellationTokenSource } from '../../../../base/common/cancellation.js';
 import { URI } from '../../../../base/common/uri.js';
-import { ComponentFixtureContext, createEditorServices, createTextModel, defineComponentFixture, defineThemedFixtureGroup } from './fixtureUtils.js';
-import { CodeEditorWidget, ICodeEditorWidgetOptions } from '../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
+import {
+	ComponentFixtureContext,
+	createEditorServices,
+	createTextModel,
+	defineComponentFixture,
+	defineThemedFixtureGroup
+} from './fixtureUtils.js';
+import {
+	CodeEditorWidget,
+	ICodeEditorWidgetOptions
+} from '../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
 import { RenameWidget } from '../../../../editor/contrib/rename/browser/renameWidget.js';
 
 import '../../../../editor/contrib/rename/browser/renameWidget.css';
@@ -41,39 +50,37 @@ function renderRenameWidget(options: RenameFixtureOptions): void {
 
 	const instantiationService = createEditorServices(disposableStore, { colorTheme: theme });
 
-	const textModel = disposableStore.add(createTextModel(
-		instantiationService,
-		SAMPLE_CODE,
-		URI.parse('inmemory://rename-fixture.ts'),
-		'typescript'
-	));
+	const textModel = disposableStore.add(
+		createTextModel(instantiationService, SAMPLE_CODE, URI.parse('inmemory://rename-fixture.ts'), 'typescript')
+	);
 
 	const editorWidgetOptions: ICodeEditorWidgetOptions = {
 		contributions: []
 	};
 
-	const editor = disposableStore.add(instantiationService.createInstance(
-		CodeEditorWidget,
-		container,
-		{
-			automaticLayout: true,
-			minimap: { enabled: false },
-			lineNumbers: 'on',
-			scrollBeyondLastLine: false,
-			fontSize: 14,
-			cursorBlinking: 'solid',
-		},
-		editorWidgetOptions
-	));
+	const editor = disposableStore.add(
+		instantiationService.createInstance(
+			CodeEditorWidget,
+			container,
+			{
+				automaticLayout: true,
+				minimap: { enabled: false },
+				lineNumbers: 'on',
+				scrollBeyondLastLine: false,
+				fontSize: 14,
+				cursorBlinking: 'solid'
+			},
+			editorWidgetOptions
+		)
+	);
 
 	editor.setModel(textModel);
 	editor.setPosition({ lineNumber: options.cursorLine, column: options.cursorColumn });
 
-	const renameWidget = instantiationService.createInstance(
-		RenameWidget,
-		editor,
-		['editor.action.rename', 'editor.action.rename'],
-	);
+	const renameWidget = instantiationService.createInstance(RenameWidget, editor, [
+		'editor.action.rename',
+		'editor.action.rename'
+	]);
 	disposableStore.add(renameWidget);
 
 	const cts = new CancellationTokenSource();
@@ -84,7 +91,7 @@ function renderRenameWidget(options: RenameFixtureOptions): void {
 			startLineNumber: options.cursorLine,
 			startColumn: options.rangeStartColumn,
 			endLineNumber: options.cursorLine,
-			endColumn: options.rangeEndColumn,
+			endColumn: options.rangeEndColumn
 		},
 		options.currentName,
 		false,
@@ -93,27 +100,32 @@ function renderRenameWidget(options: RenameFixtureOptions): void {
 	);
 }
 
-export default defineThemedFixtureGroup({ path: 'editor/' }, {
-	RenameVariable: defineComponentFixture({
-		labels: { kind: 'animated' },
-		render: (context) => renderRenameWidget({
-			...context,
-			cursorLine: 4,
-			cursorColumn: 2,
-			currentName: 'getUser',
-			rangeStartColumn: 2,
-			rangeEndColumn: 9,
+export default defineThemedFixtureGroup(
+	{ path: 'editor/' },
+	{
+		RenameVariable: defineComponentFixture({
+			labels: { kind: 'animated' },
+			render: context =>
+				renderRenameWidget({
+					...context,
+					cursorLine: 4,
+					cursorColumn: 2,
+					currentName: 'getUser',
+					rangeStartColumn: 2,
+					rangeEndColumn: 9
+				})
 		}),
-	}),
-	RenameClass: defineComponentFixture({
-		labels: { kind: 'animated' },
-		render: (context) => renderRenameWidget({
-			...context,
-			cursorLine: 1,
-			cursorColumn: 7,
-			currentName: 'UserService',
-			rangeStartColumn: 7,
-			rangeEndColumn: 18,
-		}),
-	}),
-});
+		RenameClass: defineComponentFixture({
+			labels: { kind: 'animated' },
+			render: context =>
+				renderRenameWidget({
+					...context,
+					cursorLine: 1,
+					cursorColumn: 7,
+					currentName: 'UserService',
+					rangeStartColumn: 7,
+					rangeEndColumn: 18
+				})
+		})
+	}
+);

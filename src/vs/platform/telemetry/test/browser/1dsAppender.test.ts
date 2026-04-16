@@ -28,7 +28,6 @@ suite('AIAdapter', () => {
 	let adapter: OneDataSystemWebAppender;
 	const prefix = 'prefix';
 
-
 	teardown(() => {
 		adapter.flush();
 	});
@@ -40,7 +39,6 @@ suite('AIAdapter', () => {
 		adapter = new OneDataSystemWebAppender(false, prefix, undefined!, () => appInsightsMock);
 	});
 
-
 	test('Simple event', () => {
 		adapter.log('testEvent');
 
@@ -49,7 +47,12 @@ suite('AIAdapter', () => {
 	});
 
 	test('addional data', () => {
-		adapter = new OneDataSystemWebAppender(false, prefix, { first: '1st', second: 2, third: true }, () => appInsightsMock);
+		adapter = new OneDataSystemWebAppender(
+			false,
+			prefix,
+			{ first: '1st', second: 2, third: true },
+			() => appInsightsMock
+		);
 		adapter.log('testEvent');
 
 		assert.strictEqual(appInsightsMock.events.length, 1);
@@ -88,7 +91,14 @@ suite('AIAdapter', () => {
 
 	test('Different data types', () => {
 		const date = new Date();
-		adapter.log('testEvent', { favoriteDate: date, likeRed: false, likeBlue: true, favoriteNumber: 1, favoriteColor: 'blue', favoriteCars: ['bmw', 'audi', 'ford'] });
+		adapter.log('testEvent', {
+			favoriteDate: date,
+			likeRed: false,
+			likeBlue: true,
+			favoriteNumber: 1,
+			favoriteColor: 'blue',
+			favoriteCars: ['bmw', 'audi', 'ford']
+		});
 
 		assert.strictEqual(appInsightsMock.events.length, 1);
 		assert.strictEqual(appInsightsMock.events[0].name, `${prefix}/testEvent`);
@@ -112,7 +122,7 @@ suite('AIAdapter', () => {
 			nestedObj: {
 				nestedObj2: {
 					nestedObj3: {
-						testProperty: 'test',
+						testProperty: 'test'
 					}
 				},
 				testMeasurement: 1
@@ -126,8 +136,10 @@ suite('AIAdapter', () => {
 		assert.strictEqual(appInsightsMock.events[0].measurements!['window.measurements.width'], 100);
 		assert.strictEqual(appInsightsMock.events[0].measurements!['window.measurements.height'], 200);
 
-		assert.strictEqual(appInsightsMock.events[0].properties!['nestedObj.nestedObj2.nestedObj3'], JSON.stringify({ 'testProperty': 'test' }));
+		assert.strictEqual(
+			appInsightsMock.events[0].properties!['nestedObj.nestedObj2.nestedObj3'],
+			JSON.stringify({ testProperty: 'test' })
+		);
 		assert.strictEqual(appInsightsMock.events[0].measurements!['nestedObj.testMeasurement'], 1);
 	});
-
 });

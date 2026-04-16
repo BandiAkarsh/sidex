@@ -9,7 +9,10 @@ import { TestInstantiationService } from '../../../../../platform/instantiation/
 import { IStorageService, StorageScope, StorageTarget } from '../../../../../platform/storage/common/storage.js';
 import { IProductService } from '../../../../../platform/product/common/productService.js';
 import { TestStorageService, TestProductService } from '../../../../test/common/workbenchTestServices.js';
-import { AuthenticationAccessService, IAuthenticationAccessService } from '../../browser/authenticationAccessService.js';
+import {
+	AuthenticationAccessService,
+	IAuthenticationAccessService
+} from '../../browser/authenticationAccessService.js';
 import { AllowedExtension } from '../../common/authentication.js';
 
 suite('AuthenticationAccessService', () => {
@@ -57,14 +60,18 @@ suite('AuthenticationAccessService', () => {
 
 		test('returns true for trusted extension from product.json (object format)', () => {
 			productService.trustedExtensionAuthAccess = {
-				'github': ['github-extension'],
-				'microsoft': ['microsoft-extension']
+				github: ['github-extension'],
+				microsoft: ['microsoft-extension']
 			};
 
 			const result1 = authenticationAccessService.isAccessAllowed('github', 'user@example.com', 'github-extension');
 			assert.strictEqual(result1, true);
 
-			const result2 = authenticationAccessService.isAccessAllowed('microsoft', 'user@microsoft.com', 'microsoft-extension');
+			const result2 = authenticationAccessService.isAccessAllowed(
+				'microsoft',
+				'user@microsoft.com',
+				'microsoft-extension'
+			);
 			assert.strictEqual(result2, true);
 		});
 
@@ -77,22 +84,26 @@ suite('AuthenticationAccessService', () => {
 
 		test('returns stored allowed state when extension is in storage', () => {
 			// Add extension to storage
-			authenticationAccessService.updateAllowedExtensions('github', 'user@example.com', [{
-				id: 'stored-extension',
-				name: 'Stored Extension',
-				allowed: false
-			}]);
+			authenticationAccessService.updateAllowedExtensions('github', 'user@example.com', [
+				{
+					id: 'stored-extension',
+					name: 'Stored Extension',
+					allowed: false
+				}
+			]);
 
 			const result = authenticationAccessService.isAccessAllowed('github', 'user@example.com', 'stored-extension');
 			assert.strictEqual(result, false);
 		});
 
 		test('returns true for extension in storage with allowed=true', () => {
-			authenticationAccessService.updateAllowedExtensions('github', 'user@example.com', [{
-				id: 'allowed-extension',
-				name: 'Allowed Extension',
-				allowed: true
-			}]);
+			authenticationAccessService.updateAllowedExtensions('github', 'user@example.com', [
+				{
+					id: 'allowed-extension',
+					name: 'Allowed Extension',
+					allowed: true
+				}
+			]);
 
 			const result = authenticationAccessService.isAccessAllowed('github', 'user@example.com', 'allowed-extension');
 			assert.strictEqual(result, true);
@@ -116,14 +127,20 @@ suite('AuthenticationAccessService', () => {
 			productService.trustedExtensionAuthAccess = ['product-trusted-extension'];
 
 			// Try to store the same extension as not allowed
-			authenticationAccessService.updateAllowedExtensions('github', 'user@example.com', [{
-				id: 'product-trusted-extension',
-				name: 'Product Trusted Extension',
-				allowed: false
-			}]);
+			authenticationAccessService.updateAllowedExtensions('github', 'user@example.com', [
+				{
+					id: 'product-trusted-extension',
+					name: 'Product Trusted Extension',
+					allowed: false
+				}
+			]);
 
 			// Product.json should take precedence
-			const result = authenticationAccessService.isAccessAllowed('github', 'user@example.com', 'product-trusted-extension');
+			const result = authenticationAccessService.isAccessAllowed(
+				'github',
+				'user@example.com',
+				'product-trusted-extension'
+			);
 			assert.strictEqual(result, true);
 		});
 	});
@@ -170,8 +187,8 @@ suite('AuthenticationAccessService', () => {
 
 		test('includes trusted extensions from product.json (object format)', () => {
 			productService.trustedExtensionAuthAccess = {
-				'github': ['github-extension'],
-				'microsoft': ['microsoft-extension']
+				github: ['github-extension'],
+				microsoft: ['microsoft-extension']
 			};
 
 			const githubResult = authenticationAccessService.readAllowedExtensions('github', 'user@example.com');
@@ -451,8 +468,8 @@ suite('AuthenticationAccessService', () => {
 
 			// Switch to object format
 			productService.trustedExtensionAuthAccess = {
-				'github': ['ext1', 'ext3'],
-				'microsoft': ['ext4']
+				github: ['ext1', 'ext3'],
+				microsoft: ['ext4']
 			};
 			result = authenticationAccessService.readAllowedExtensions('github', 'user@example.com');
 			assert.strictEqual(result.length, 2); // ext1 and ext3 for github

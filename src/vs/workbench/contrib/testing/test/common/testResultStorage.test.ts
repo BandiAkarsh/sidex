@@ -21,13 +21,9 @@ suite('Workbench - Test Result Storage', () => {
 	let ds: DisposableStore;
 
 	const makeResult = (taskName = 't') => {
-		const t = ds.add(new LiveTestResult(
-			'',
-			true,
-			{ targets: [], group: TestRunProfileBitset.Run },
-			1,
-			NullTelemetryService,
-		));
+		const t = ds.add(
+			new LiveTestResult('', true, { targets: [], group: TestRunProfileBitset.Run }, 1, NullTelemetryService)
+		);
 
 		t.addTask({ id: taskName, name: 'n', running: true, ctrlId: 'ctrlId' });
 		const tests = ds.add(testStubs.nested());
@@ -35,7 +31,7 @@ suite('Workbench - Test Result Storage', () => {
 		t.addTestChainToRun('ctrlId', [
 			tests.root.toTestItem(),
 			tests.root.children.get('id-a')!.toTestItem(),
-			tests.root.children.get('id-a')!.children.get('id-aa')!.toTestItem(),
+			tests.root.children.get('id-a')!.children.get('id-aa')!.toTestItem()
 		]);
 
 		t.markComplete();
@@ -43,15 +39,24 @@ suite('Workbench - Test Result Storage', () => {
 	};
 
 	const assertStored = async (stored: ITestResult[]) =>
-		assert.deepStrictEqual((await storage.read()).map(r => r.id), stored.map(s => s.id));
+		assert.deepStrictEqual(
+			(await storage.read()).map(r => r.id),
+			stored.map(s => s.id)
+		);
 
 	setup(async () => {
 		ds = new DisposableStore();
-		storage = ds.add(new InMemoryResultStorage({
-			asCanonicalUri(uri) {
-				return uri;
-			},
-		} as IUriIdentityService, ds.add(new TestStorageService()), new NullLogService()));
+		storage = ds.add(
+			new InMemoryResultStorage(
+				{
+					asCanonicalUri(uri) {
+						return uri;
+					}
+				} as IUriIdentityService,
+				ds.add(new TestStorageService()),
+				new NullLogService()
+			)
+		);
 	});
 
 	teardown(() => ds.dispose());

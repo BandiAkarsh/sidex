@@ -14,12 +14,13 @@ import { IModalEditorNavigation, IModalEditorPartOptions } from '../../../../../
  * without requiring the full editor part infrastructure.
  */
 class TestModalEditorNavigationHost {
-
 	private readonly _onDidChangeNavigation = new Emitter<IModalEditorNavigation | undefined>();
 	readonly onDidChangeNavigation = this._onDidChangeNavigation.event;
 
 	private _navigation: IModalEditorNavigation | undefined;
-	get navigation(): IModalEditorNavigation | undefined { return this._navigation; }
+	get navigation(): IModalEditorNavigation | undefined {
+		return this._navigation;
+	}
 
 	updateOptions(options: IModalEditorPartOptions): void {
 		this._navigation = options.navigation;
@@ -32,7 +33,6 @@ class TestModalEditorNavigationHost {
 }
 
 suite('Modal Editor Navigation', () => {
-
 	const disposables = new DisposableStore();
 
 	teardown(() => disposables.clear());
@@ -49,7 +49,7 @@ suite('Modal Editor Navigation', () => {
 		const nav: IModalEditorNavigation = {
 			total: 10,
 			current: 3,
-			navigate: () => { }
+			navigate: () => {}
 		};
 
 		host.updateOptions({ navigation: nav });
@@ -68,7 +68,7 @@ suite('Modal Editor Navigation', () => {
 		const nav: IModalEditorNavigation = {
 			total: 5,
 			current: 0,
-			navigate: () => { }
+			navigate: () => {}
 		};
 
 		host.updateOptions({ navigation: nav });

@@ -4,14 +4,25 @@
  *--------------------------------------------------------------------------------------------*/
 import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { Choice, FormatString, Marker, Placeholder, Scanner, SnippetParser, Text, TextmateSnippet, TokenType, Transform, Variable, VariableResolver } from '../../browser/snippetParser.js';
+import {
+	Choice,
+	FormatString,
+	Marker,
+	Placeholder,
+	Scanner,
+	SnippetParser,
+	Text,
+	TextmateSnippet,
+	TokenType,
+	Transform,
+	Variable,
+	VariableResolver
+} from '../../browser/snippetParser.js';
 
 suite('SnippetParser', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('Scanner', () => {
-
 		const scanner = new Scanner();
 		assert.strictEqual(scanner.next().type, TokenType.EOF);
 
@@ -159,7 +170,6 @@ suite('SnippetParser', () => {
 		assertText('far{{id:bern {{id2:basel}}}}boo', 'far{{id:bern {{id2:basel}}}}boo');
 	});
 
-
 	test('Parser, TM text', () => {
 		assertTextAndMarker('foo${1:bar}}', 'foobar}', Text, Placeholder, Text);
 		assertTextAndMarker('foo${1:bar}${2:foo}}', 'foobarfoo}', Text, Placeholder, Placeholder, Text);
@@ -167,7 +177,7 @@ suite('SnippetParser', () => {
 		assertTextAndMarker('foo${1:bar\\}${2:foo}}', 'foobar}foo', Text, Placeholder);
 
 		const [, placeholder] = new SnippetParser().parse('foo${1:bar\\}${2:foo}}').children;
-		const { children } = (<Placeholder>placeholder);
+		const { children } = <Placeholder>placeholder;
 
 		assert.strictEqual((<Placeholder>placeholder).index, 1);
 		assert.ok(children[0] instanceof Text);
@@ -237,7 +247,6 @@ suite('SnippetParser', () => {
 		assertMarker('${foo/.*/complex${1:+if}/i}', Variable);
 		assertMarker('${foo/.*/complex${1:?if:else}/i}', Variable);
 		assertMarker('${foo/.*/complex${1:/upcase}/i}', Variable);
-
 	});
 
 	test('Parser, placeholder transforms', function () {
@@ -265,7 +274,6 @@ suite('SnippetParser', () => {
 	});
 
 	test('Parser, placeholder with choice', () => {
-
 		assertTextAndMarker('${1|one,two,three|}', 'one', Placeholder);
 		assertTextAndMarker('${1|one|}', 'one', Placeholder);
 		assertTextAndMarker('${1|one1,two2|}', 'one1', Placeholder);
@@ -278,7 +286,7 @@ suite('SnippetParser', () => {
 		const snippet = new SnippetParser().parse('${1|one,two,three|}');
 		const expected: ((m: Marker) => boolean)[] = [
 			m => m instanceof Placeholder,
-			m => m instanceof Choice && m.options.length === 3 && m.options.every(x => x instanceof Text),
+			m => m instanceof Choice && m.options.length === 3 && m.options.every(x => x instanceof Text)
 		];
 		snippet.walk(marker => {
 			assert.ok(expected.shift()!(marker));
@@ -287,11 +295,16 @@ suite('SnippetParser', () => {
 	});
 
 	test('Snippet choices: unable to escape comma and pipe, #31521', function () {
-		assertTextAndMarker('console.log(${1|not\\, not, five, 5, 1   23|});', 'console.log(not, not);', Text, Placeholder, Text);
+		assertTextAndMarker(
+			'console.log(${1|not\\, not, five, 5, 1   23|});',
+			'console.log(not, not);',
+			Text,
+			Placeholder,
+			Text
+		);
 	});
 
 	test('Marker, toTextmateString()', function () {
-
 		function assertTextsnippetString(input: string, expected: string): void {
 			const snippet = new SnippetParser().parse(input);
 			const actual = snippet.toTextmateString();
@@ -300,16 +313,24 @@ suite('SnippetParser', () => {
 
 		assertTextsnippetString('$1', '$1');
 		assertTextsnippetString('\\$1', '\\$1');
-		assertTextsnippetString('console.log(${1|not\\, not, five, 5, 1   23|});', 'console.log(${1|not\\, not, five, 5, 1   23|});');
-		assertTextsnippetString('console.log(${1|not\\, not, \\| five, 5, 1   23|});', 'console.log(${1|not\\, not, \\| five, 5, 1   23|});');
-		assertTextsnippetString('${1|cho\\,ices,wi\\|th,esc\\\\aping,chall\\\\\\,enges|}', '${1|cho\\,ices,wi\\|th,esc\\\\aping,chall\\\\\\,enges|}');
+		assertTextsnippetString(
+			'console.log(${1|not\\, not, five, 5, 1   23|});',
+			'console.log(${1|not\\, not, five, 5, 1   23|});'
+		);
+		assertTextsnippetString(
+			'console.log(${1|not\\, not, \\| five, 5, 1   23|});',
+			'console.log(${1|not\\, not, \\| five, 5, 1   23|});'
+		);
+		assertTextsnippetString(
+			'${1|cho\\,ices,wi\\|th,esc\\\\aping,chall\\\\\\,enges|}',
+			'${1|cho\\,ices,wi\\|th,esc\\\\aping,chall\\\\\\,enges|}'
+		);
 		assertTextsnippetString('this is text', 'this is text');
 		assertTextsnippetString('this ${1:is ${2:nested with $var}}', 'this ${1:is ${2:nested with ${var}}}');
 		assertTextsnippetString('this ${1:is ${2:nested with $var}}}', 'this ${1:is ${2:nested with ${var}}}\\}');
 	});
 
 	test('Marker, toTextmateString() <-> identity', function () {
-
 		function assertIdent(input: string): void {
 			// full loop: (1) parse input, (2) generate textmate string, (3) parse, (4) ensure both trees are equal
 			const snippet = new SnippetParser().parse(input);
@@ -355,8 +376,7 @@ suite('SnippetParser', () => {
 		assertText('${1||}', '${1||}');
 	});
 
-	test('Backslash character escape in choice tabstop doesn\'t work #58494', function () {
-
+	test("Backslash character escape in choice tabstop doesn't work #58494", function () {
 		const { placeholders } = new SnippetParser().parse('${1|\\,,},$,\\|,\\\\|}');
 		assert.strictEqual(placeholders.length, 1);
 		assert.ok(placeholders[0].choice instanceof Choice);
@@ -431,12 +451,10 @@ suite('SnippetParser', () => {
 		assert.strictEqual((<FormatString>transform.children[1]).index, 1);
 		assert.ok(children[4] instanceof Text);
 		assert.strictEqual(children[4].toString(), ';\n');
-
 	});
 
 	// TODO @jrieken making this strictEqul causes circular json conversion errors
 	test('Parser, default placeholder values', () => {
-
 		assertMarker('errorContext: `${1:err}`, error: $1', Text, Placeholder, Text, Placeholder);
 
 		const [, p1, , p2] = new SnippetParser().parse('errorContext: `${1:err}`, error:$1').children;
@@ -452,7 +470,6 @@ suite('SnippetParser', () => {
 
 	// TODO @jrieken making this strictEqul causes circular json conversion errors
 	test('Parser, default placeholder values and one transform', () => {
-
 		assertMarker('errorContext: `${1:err}`, error: ${1/err/ok/}', Text, Placeholder, Text, Placeholder);
 
 		const [, p3, , p4] = new SnippetParser().parse('errorContext: `${1:err}`, error:${1/err/ok/}').children;
@@ -493,7 +510,6 @@ suite('SnippetParser', () => {
 	});
 
 	test('marker#len', () => {
-
 		function assertLen(template: string, ...lengths: number[]): void {
 			const snippet = new SnippetParser().parse(template, true);
 			snippet.walk(m => {
@@ -563,7 +579,6 @@ suite('SnippetParser', () => {
 		placeholders = snippet.placeholders;
 		assert.strictEqual(placeholders.length, 3);
 
-
 		snippet = new SnippetParser().parse('te$1xt$2$0', true);
 		placeholders = snippet.placeholders;
 		assert.strictEqual(placeholders.length, 3);
@@ -615,7 +630,6 @@ suite('SnippetParser', () => {
 	});
 
 	test('Snippet order for placeholders, #28185', function () {
-
 		const _10 = new Placeholder(10);
 		const _2 = new Placeholder(2);
 
@@ -627,15 +641,18 @@ suite('SnippetParser', () => {
 	});
 
 	test('Snippet can freeze the editor, #30407', function () {
-
 		const seen = new Set<Marker>();
 
 		seen.clear();
-		new SnippetParser().parse('class ${1:${TM_FILENAME/(?:\\A|_)([A-Za-z0-9]+)(?:\\.rb)?/(?2::\\u$1)/g}} < ${2:Application}Controller\n  $3\nend').walk(marker => {
-			assert.ok(!seen.has(marker));
-			seen.add(marker);
-			return true;
-		});
+		new SnippetParser()
+			.parse(
+				'class ${1:${TM_FILENAME/(?:\\A|_)([A-Za-z0-9]+)(?:\\.rb)?/(?2::\\u$1)/g}} < ${2:Application}Controller\n  $3\nend'
+			)
+			.walk(marker => {
+				assert.ok(!seen.has(marker));
+				seen.add(marker);
+				return true;
+			});
 
 		seen.clear();
 		new SnippetParser().parse('${1:${FOO:abc$1def}}').walk(marker => {
@@ -650,9 +667,7 @@ suite('SnippetParser', () => {
 		assertTextAndMarker('${1|foo,bar|}', 'foo', Placeholder);
 	});
 
-
 	test('Transform -> FormatString#resolve', function () {
-
 		// shorthand functions
 		assert.strictEqual(new FormatString(1, 'upcase').resolve('foo'), 'FOO');
 		assert.strictEqual(new FormatString(1, 'downcase').resolve('FOO'), 'foo');
@@ -701,17 +716,17 @@ suite('SnippetParser', () => {
 	});
 
 	test('Unicode Variable Transformations', () => {
-		const resolver = new class implements VariableResolver {
+		const resolver = new (class implements VariableResolver {
 			resolve(variable: Variable): string | undefined {
 				const values: { [key: string]: string } = {
-					'RUSSIAN': 'одинДва',
-					'GREEK': 'έναςΔύο',
-					'TURKISH': 'istanbulLı',
-					'JAPANESE': 'こんにちは'
+					RUSSIAN: 'одинДва',
+					GREEK: 'έναςΔύο',
+					TURKISH: 'istanbulLı',
+					JAPANESE: 'こんにちは'
 				};
 				return values[variable.name];
 			}
-		};
+		})();
 
 		function assertTransform(transformName: string, varName: string, expected: string) {
 			const p = new SnippetParser();
@@ -738,24 +753,21 @@ suite('SnippetParser', () => {
 		assertTransform('kebabcase', 'JAPANESE', 'こんにちは');
 	});
 
-	test('Snippet variable transformation doesn\'t work if regex is complicated and snippet body contains \'$$\' #55627', function () {
+	test("Snippet variable transformation doesn't work if regex is complicated and snippet body contains '$$' #55627", function () {
 		const snippet = new SnippetParser().parse('const fileName = "${TM_FILENAME/(.*)\\..+$/$1/}"');
 		assert.strictEqual(snippet.toTextmateString(), 'const fileName = "${TM_FILENAME/(.*)\\..+$/${1}/}"');
 	});
 
 	test('[BUG] HTML attribute suggestions: Snippet session does not have end-position set, #33147', function () {
-
 		const { placeholders } = new SnippetParser().parse('src="$1"', true);
 		const [first, second] = placeholders;
 
 		assert.strictEqual(placeholders.length, 2);
 		assert.strictEqual(first.index, 1);
 		assert.strictEqual(second.index, 0);
-
 	});
 
 	test('Snippet optional transforms are not applied correctly when reusing the same variable, #37702', function () {
-
 		const transform = new Transform();
 		transform.appendChild(new FormatString(1, 'upcase'));
 		transform.appendChild(new FormatString(2, 'upcase'));
@@ -768,12 +780,11 @@ suite('SnippetParser', () => {
 	});
 
 	test('problem with snippets regex #40570', function () {
-
 		const snippet = new SnippetParser().parse('${TM_DIRECTORY/.*src[\\/](.*)/$1/}');
 		assertMarker(snippet, Variable);
 	});
 
-	test('Variable transformation doesn\'t work if undefined variables are used in the same snippet #51769', function () {
+	test("Variable transformation doesn't work if undefined variables are used in the same snippet #51769", function () {
 		const transform = new Transform();
 		transform.appendChild(new Text('bar'));
 		transform.regexp = new RegExp('foo', 'gi');
@@ -815,14 +826,12 @@ suite('SnippetParser', () => {
 		assertParent(clone);
 	});
 
-	test('Backspace can\'t be escaped in snippet variable transforms #65412', function () {
-
+	test("Backspace can't be escaped in snippet variable transforms #65412", function () {
 		const snippet = new SnippetParser().parse('namespace ${TM_DIRECTORY/[\\/]/\\\\/g};');
 		assertMarker(snippet, Text, Variable, Text);
 	});
 
 	test('Snippet cannot escape closing bracket inside conditional insertion variable replacement #78883', function () {
-
 		const snippet = new SnippetParser().parse('${TM_DIRECTORY/(.+)/${1:+import { hello \\} from world}/}');
 		const variable = <Variable>snippet.children[0];
 		assert.strictEqual(snippet.children.length, 1);
@@ -835,7 +844,6 @@ suite('SnippetParser', () => {
 	});
 
 	test('Snippet escape backslashes inside conditional insertion variable replacement #80394', function () {
-
 		const snippet = new SnippetParser().parse('${CURRENT_YEAR/(.+)/${1:+\\\\}/}');
 		const variable = <Variable>snippet.children[0];
 		assert.strictEqual(snippet.children.length, 1);
@@ -848,7 +856,6 @@ suite('SnippetParser', () => {
 	});
 
 	test('Snippet placeholder empty right after expansion #152553', function () {
-
 		const snippet = new SnippetParser().parse('${1:prog}: ${2:$1.cc} - $2');
 		const actual = snippet.toString();
 		assert.strictEqual(actual, 'prog: prog.cc - prog.cc');

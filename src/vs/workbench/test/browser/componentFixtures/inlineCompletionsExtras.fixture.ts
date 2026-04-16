@@ -5,9 +5,19 @@
 
 import { constObservable, IObservableWithChange } from '../../../../base/common/observable.js';
 import { URI } from '../../../../base/common/uri.js';
-import { ComponentFixtureContext, createEditorServices, createTextModel, defineComponentFixture, defineThemedFixtureGroup, registerWorkbenchServices } from './fixtureUtils.js';
+import {
+	ComponentFixtureContext,
+	createEditorServices,
+	createTextModel,
+	defineComponentFixture,
+	defineThemedFixtureGroup,
+	registerWorkbenchServices
+} from './fixtureUtils.js';
 import { EditorExtensionsRegistry } from '../../../../editor/browser/editorExtensions.js';
-import { CodeEditorWidget, ICodeEditorWidgetOptions } from '../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
+import {
+	CodeEditorWidget,
+	ICodeEditorWidgetOptions
+} from '../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
 import { observableCodeEditor } from '../../../../editor/browser/observableCodeEditor.js';
 import { IEditorOptions } from '../../../../editor/common/config/editorOptions.js';
 import { Position } from '../../../../editor/common/core/position.js';
@@ -15,13 +25,19 @@ import { Range } from '../../../../editor/common/core/range.js';
 import { ILanguageFeaturesService } from '../../../../editor/common/services/languageFeatures.js';
 import { InlineCompletionsController } from '../../../../editor/contrib/inlineCompletions/browser/controller/inlineCompletionsController.js';
 import '../../../../editor/contrib/inlineCompletions/browser/inlineCompletions.contribution.js';
-import { InlineCompletionsSource, InlineCompletionsState } from '../../../../editor/contrib/inlineCompletions/browser/model/inlineCompletionsSource.js';
+import {
+	InlineCompletionsSource,
+	InlineCompletionsState
+} from '../../../../editor/contrib/inlineCompletions/browser/model/inlineCompletionsSource.js';
 import { InlineEditItem } from '../../../../editor/contrib/inlineCompletions/browser/model/inlineSuggestionItem.js';
 import { TextModelValueReference } from '../../../../editor/contrib/inlineCompletions/browser/model/textModelValueReference.js';
 import { JumpToView } from '../../../../editor/contrib/inlineCompletions/browser/view/inlineEdits/inlineEditsViews/jumpToView.js';
 import { GutterIndicatorMenuContent } from '../../../../editor/contrib/inlineCompletions/browser/view/inlineEdits/components/gutterIndicatorMenu.js';
 import { InlineSuggestionGutterMenuData } from '../../../../editor/contrib/inlineCompletions/browser/view/inlineEdits/components/gutterIndicatorView.js';
-import { IUserInteractionService, MockUserInteractionService } from '../../../../platform/userInteraction/browser/userInteractionService.js';
+import {
+	IUserInteractionService,
+	MockUserInteractionService
+} from '../../../../platform/userInteraction/browser/userInteractionService.js';
 
 import '../../../../editor/contrib/inlineCompletions/browser/hintsWidget/inlineCompletionsHintsWidget.css';
 import '../../../../editor/contrib/inlineCompletions/browser/view/inlineEdits/view.css';
@@ -106,47 +122,53 @@ async function renderHintsToolbar(options: HintsToolbarOptions): Promise<void> {
 
 	const instantiationService = createEditorServices(disposableStore, {
 		colorTheme: theme,
-		additionalServices: (reg) => {
+		additionalServices: reg => {
 			registerWorkbenchServices(reg);
 			if (options.simulateHover) {
 				reg.defineInstance(IUserInteractionService, new MockUserInteractionService(true, true));
 			}
-		},
+		}
 	});
 
-	const textModel = disposableStore.add(createTextModel(
-		instantiationService,
-		HINTS_CODE,
-		URI.parse('inmemory://hints-toolbar.ts'),
-		'typescript'
-	));
+	const textModel = disposableStore.add(
+		createTextModel(instantiationService, HINTS_CODE, URI.parse('inmemory://hints-toolbar.ts'), 'typescript')
+	);
 
 	// Register an inline completion provider (not an inline edit) so the result is ghost text
 	const languageFeaturesService = instantiationService.get(ILanguageFeaturesService);
-	disposableStore.add(languageFeaturesService.inlineCompletionsProvider.register({ pattern: '**' }, {
-		provideInlineCompletions: () => ({
-			items: [{
-				insertText: ' + "!";',
-				range: new Range(2, 28, 2, 28),
-			}],
-		}),
-		disposeInlineCompletions: () => { },
-	}));
+	disposableStore.add(
+		languageFeaturesService.inlineCompletionsProvider.register(
+			{ pattern: '**' },
+			{
+				provideInlineCompletions: () => ({
+					items: [
+						{
+							insertText: ' + "!";',
+							range: new Range(2, 28, 2, 28)
+						}
+					]
+				}),
+				disposeInlineCompletions: () => {}
+			}
+		)
+	);
 
-	const editor = disposableStore.add(instantiationService.createInstance(
-		CodeEditorWidget,
-		container,
-		{
-			automaticLayout: true,
-			minimap: { enabled: false },
-			lineNumbers: 'on',
-			scrollBeyondLastLine: false,
-			fontSize: 14,
-			cursorBlinking: 'solid',
-			inlineSuggest: { showToolbar: 'always' },
-		},
-		{ contributions: EditorExtensionsRegistry.getEditorContributions() } satisfies ICodeEditorWidgetOptions
-	));
+	const editor = disposableStore.add(
+		instantiationService.createInstance(
+			CodeEditorWidget,
+			container,
+			{
+				automaticLayout: true,
+				minimap: { enabled: false },
+				lineNumbers: 'on',
+				scrollBeyondLastLine: false,
+				fontSize: 14,
+				cursorBlinking: 'solid',
+				inlineSuggest: { showToolbar: 'always' }
+			},
+			{ contributions: EditorExtensionsRegistry.getEditorContributions() } satisfies ICodeEditorWidgetOptions
+		)
+	);
 
 	editor.setModel(textModel);
 	editor.setPosition({ lineNumber: 2, column: 28 });
@@ -165,38 +187,39 @@ function renderJumpToHint({ container, disposableStore, theme }: ComponentFixtur
 
 	const instantiationService = createEditorServices(disposableStore, { colorTheme: theme });
 
-	const textModel = disposableStore.add(createTextModel(
-		instantiationService,
-		SAMPLE_CODE,
-		URI.parse('inmemory://jump-to-hint.ts'),
-		'typescript'
-	));
+	const textModel = disposableStore.add(
+		createTextModel(instantiationService, SAMPLE_CODE, URI.parse('inmemory://jump-to-hint.ts'), 'typescript')
+	);
 
-	const editor = disposableStore.add(instantiationService.createInstance(
-		CodeEditorWidget,
-		container,
-		{
-			automaticLayout: true,
-			minimap: { enabled: false },
-			lineNumbers: 'on',
-			scrollBeyondLastLine: false,
-			fontSize: 14,
-			cursorBlinking: 'solid',
-		},
-		{ contributions: [] } satisfies ICodeEditorWidgetOptions
-	));
+	const editor = disposableStore.add(
+		instantiationService.createInstance(
+			CodeEditorWidget,
+			container,
+			{
+				automaticLayout: true,
+				minimap: { enabled: false },
+				lineNumbers: 'on',
+				scrollBeyondLastLine: false,
+				fontSize: 14,
+				cursorBlinking: 'solid'
+			},
+			{ contributions: [] } satisfies ICodeEditorWidgetOptions
+		)
+	);
 
 	editor.setModel(textModel);
 	editor.setPosition({ lineNumber: 1, column: 1 });
 	editor.focus();
 
 	const editorObs = observableCodeEditor(editor);
-	disposableStore.add(instantiationService.createInstance(
-		JumpToView,
-		editorObs,
-		{ style: 'label' },
-		constObservable({ jumpToPosition: new Position(6, 18) }),
-	));
+	disposableStore.add(
+		instantiationService.createInstance(
+			JumpToView,
+			editorObs,
+			{ style: 'label' },
+			constObservable({ jumpToPosition: new Position(6, 18) })
+		)
+	);
 }
 
 function createLongDistanceEditor(options: {
@@ -216,59 +239,63 @@ function createLongDistanceEditor(options: {
 
 	const instantiationService = createEditorServices(disposableStore, { colorTheme: theme });
 
-	const textModel = disposableStore.add(createTextModel(
-		instantiationService,
-		options.code,
-		URI.parse('inmemory://long-distance.ts'),
-		'typescript'
-	));
+	const textModel = disposableStore.add(
+		createTextModel(instantiationService, options.code, URI.parse('inmemory://long-distance.ts'), 'typescript')
+	);
 
 	instantiationService.stubInstance(InlineCompletionsSource, {
-		cancelUpdate: () => { },
-		clear: () => { },
+		cancelUpdate: () => {},
+		clear: () => {},
 		clearOperationOnTextModelChange: constObservable(undefined) as IObservableWithChange<undefined, void>,
-		clearSuggestWidgetInlineCompletions: () => { },
-		dispose: () => { },
+		clearSuggestWidgetInlineCompletions: () => {},
+		dispose: () => {},
 		fetch: async () => true,
-		inlineCompletions: constObservable(new InlineCompletionsState([
-			InlineEditItem.createForTest(
-				TextModelValueReference.snapshot(textModel),
-				new Range(
-					options.editRange.startLineNumber,
-					options.editRange.startColumn,
-					options.editRange.endLineNumber,
-					options.editRange.endColumn
-				),
-				options.newText
+		inlineCompletions: constObservable(
+			new InlineCompletionsState(
+				[
+					InlineEditItem.createForTest(
+						TextModelValueReference.snapshot(textModel),
+						new Range(
+							options.editRange.startLineNumber,
+							options.editRange.startColumn,
+							options.editRange.endLineNumber,
+							options.editRange.endColumn
+						),
+						options.newText
+					)
+				],
+				undefined
 			)
-		], undefined)),
+		),
 		loading: constObservable(false),
-		seedInlineCompletionsWithSuggestWidget: () => { },
-		seedWithCompletion: () => { },
-		suggestWidgetInlineCompletions: constObservable(InlineCompletionsState.createEmpty()),
+		seedInlineCompletionsWithSuggestWidget: () => {},
+		seedWithCompletion: () => {},
+		suggestWidgetInlineCompletions: constObservable(InlineCompletionsState.createEmpty())
 	});
 
 	const editorWidgetOptions: ICodeEditorWidgetOptions = {
 		contributions: EditorExtensionsRegistry.getEditorContributions()
 	};
 
-	const editor = disposableStore.add(instantiationService.createInstance(
-		CodeEditorWidget,
-		container,
-		{
-			automaticLayout: true,
-			minimap: { enabled: false },
-			lineNumbers: 'on',
-			scrollBeyondLastLine: false,
-			fontSize: 14,
-			cursorBlinking: 'solid',
-			inlineSuggest: {
-				edits: { showLongDistanceHint: true },
+	const editor = disposableStore.add(
+		instantiationService.createInstance(
+			CodeEditorWidget,
+			container,
+			{
+				automaticLayout: true,
+				minimap: { enabled: false },
+				lineNumbers: 'on',
+				scrollBeyondLastLine: false,
+				fontSize: 14,
+				cursorBlinking: 'solid',
+				inlineSuggest: {
+					edits: { showLongDistanceHint: true }
+				},
+				...options.editorOptions
 			},
-			...options.editorOptions,
-		},
-		editorWidgetOptions
-	));
+			editorWidgetOptions
+		)
+	);
 
 	editor.setModel(textModel);
 	editor.setPosition({ lineNumber: options.cursorLine, column: 1 });
@@ -284,43 +311,32 @@ function renderGutterMenu({ container, disposableStore, theme }: ComponentFixtur
 
 	const instantiationService = createEditorServices(disposableStore, {
 		colorTheme: theme,
-		additionalServices: (reg) => {
+		additionalServices: reg => {
 			registerWorkbenchServices(reg);
-		},
+		}
 	});
 
-	const textModel = disposableStore.add(createTextModel(
-		instantiationService,
-		'const x = 1;',
-		URI.parse('inmemory://gutter-menu.ts'),
-		'typescript'
-	));
+	const textModel = disposableStore.add(
+		createTextModel(instantiationService, 'const x = 1;', URI.parse('inmemory://gutter-menu.ts'), 'typescript')
+	);
 
-	const editor = disposableStore.add(instantiationService.createInstance(
-		CodeEditorWidget,
-		document.createElement('div'),
-		{ minimap: { enabled: false } },
-		{ contributions: [] } satisfies ICodeEditorWidgetOptions
-	));
+	const editor = disposableStore.add(
+		instantiationService.createInstance(
+			CodeEditorWidget,
+			document.createElement('div'),
+			{ minimap: { enabled: false } },
+			{ contributions: [] } satisfies ICodeEditorWidgetOptions
+		)
+	);
 	editor.setModel(textModel);
 
 	const editorObs = observableCodeEditor(editor);
-	const menuData = new InlineSuggestionGutterMenuData(
-		undefined,
-		'Copilot',
-		[],
-		undefined,
-		undefined,
-		undefined,
-	);
+	const menuData = new InlineSuggestionGutterMenuData(undefined, 'Copilot', [], undefined, undefined, undefined);
 
 	const content = disposableStore.add(
-		instantiationService.createInstance(
-			GutterIndicatorMenuContent,
-			editorObs,
-			menuData,
-			() => { },
-		).toDisposableLiveElement()
+		instantiationService
+			.createInstance(GutterIndicatorMenuContent, editorObs, menuData, () => {})
+			.toDisposableLiveElement()
 	);
 
 	container.style.background = 'var(--vscode-editorHoverWidget-background)';
@@ -330,27 +346,30 @@ function renderGutterMenu({ container, disposableStore, theme }: ComponentFixtur
 	container.appendChild(content.element);
 }
 
-export default defineThemedFixtureGroup({ path: 'editor/' }, {
-	HintsToolbar: defineComponentFixture({
-		labels: { kind: 'screenshot' },
-		render: (context) => renderHintsToolbar(context),
-	}),
-	HintsToolbarHovered: defineComponentFixture({
-		labels: { kind: 'screenshot' },
-		render: (context) => renderHintsToolbar({ ...context, simulateHover: true }),
-	}),
-	JumpToHint: defineComponentFixture({
-		labels: { kind: 'screenshot' },
-		render: renderJumpToHint,
-	}),
-	LongDistanceHint: defineComponentFixture({
-		labels: { kind: 'animated' },
-		render: (context) => createLongDistanceEditor({
-			...context,
-			code: LONG_DISTANCE_CODE,
-			cursorLine: 1,
-			editRange: { startLineNumber: 28, startColumn: 1, endLineNumber: 35, endColumn: 100 },
-			newText: `async function processFile(config: Config, filename: string): Promise<void> {
+export default defineThemedFixtureGroup(
+	{ path: 'editor/' },
+	{
+		HintsToolbar: defineComponentFixture({
+			labels: { kind: 'screenshot' },
+			render: context => renderHintsToolbar(context)
+		}),
+		HintsToolbarHovered: defineComponentFixture({
+			labels: { kind: 'screenshot' },
+			render: context => renderHintsToolbar({ ...context, simulateHover: true })
+		}),
+		JumpToHint: defineComponentFixture({
+			labels: { kind: 'screenshot' },
+			render: renderJumpToHint
+		}),
+		LongDistanceHint: defineComponentFixture({
+			labels: { kind: 'animated' },
+			render: context =>
+				createLongDistanceEditor({
+					...context,
+					code: LONG_DISTANCE_CODE,
+					cursorLine: 1,
+					editRange: { startLineNumber: 28, startColumn: 1, endLineNumber: 35, endColumn: 100 },
+					newText: `async function processFile(config: Config, filename: string): Promise<void> {
 	const inputPath = join(config.inputDir, filename);
 	const outputPath = join(config.outputDir, filename);
 	const data = await readFile(inputPath, 'utf8');
@@ -358,11 +377,12 @@ export default defineThemedFixtureGroup({ path: 'editor/' }, {
 		throw new Error(\`Invalid input in \${filename}\`);
 	}
 	const processed = data.split('\\n').map(processLine).join('\\n');
-	await writeFile(outputPath, processed);`,
+	await writeFile(outputPath, processed);`
+				})
 		}),
-	}),
-	GutterMenu: defineComponentFixture({
-		labels: { kind: 'screenshot' },
-		render: renderGutterMenu,
-	}),
-});
+		GutterMenu: defineComponentFixture({
+			labels: { kind: 'screenshot' },
+			render: renderGutterMenu
+		})
+	}
+);

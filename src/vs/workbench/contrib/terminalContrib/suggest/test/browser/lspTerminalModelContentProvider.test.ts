@@ -7,7 +7,10 @@ import { TestInstantiationService } from '../../../../../../platform/instantiati
 import { ITextModelService } from '../../../../../../editor/common/services/resolverService.js';
 import { IModelService } from '../../../../../../editor/common/services/model.js';
 import { ITextModel } from '../../../../../../editor/common/model.js';
-import { createTerminalLanguageVirtualUri, LspTerminalModelContentProvider } from '../../browser/lspTerminalModelContentProvider.js';
+import {
+	createTerminalLanguageVirtualUri,
+	LspTerminalModelContentProvider
+} from '../../browser/lspTerminalModelContentProvider.js';
 import * as sinon from 'sinon';
 import assert from 'assert';
 import { URI } from '../../../../../../base/common/uri.js';
@@ -71,13 +74,15 @@ suite('LspTerminalModelContentProvider', () => {
 		instantiationService.stub(ILanguageService, languageService);
 
 		// Create the provider instance
-		lspTerminalModelContentProvider = store.add(instantiationService.createInstance(
-			LspTerminalModelContentProvider,
-			capabilityStore,
-			1,
-			virtualTerminalDocumentUri,
-			GeneralShellType.Python
-		));
+		lspTerminalModelContentProvider = store.add(
+			instantiationService.createInstance(
+				LspTerminalModelContentProvider,
+				capabilityStore,
+				1,
+				virtualTerminalDocumentUri,
+				GeneralShellType.Python
+			)
+		);
 	});
 
 	teardown(() => {
@@ -86,7 +91,6 @@ suite('LspTerminalModelContentProvider', () => {
 	});
 
 	suite('setContent', () => {
-
 		test('should add delimiter when setting content on empty document', () => {
 			getValueSpy.returns('');
 

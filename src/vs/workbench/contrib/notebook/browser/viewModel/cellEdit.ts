@@ -13,10 +13,16 @@ import { CellFocusMode } from '../notebookBrowser.js';
 import { NotebookCellTextModel } from '../../common/model/notebookCellTextModel.js';
 import { ITextCellEditingDelegate } from '../../common/model/cellEdit.js';
 
-
 export interface IViewCellEditingDelegate extends ITextCellEditingDelegate {
 	createCellViewModel?(cell: NotebookCellTextModel): BaseCellViewModel;
-	createCell?(index: number, source: string, language: string, type: CellKind, metadata: NotebookCellMetadata | undefined, outputs: IOutputDto[]): BaseCellViewModel;
+	createCell?(
+		index: number,
+		source: string,
+		language: string,
+		type: CellKind,
+		metadata: NotebookCellMetadata | undefined,
+		outputs: IOutputDto[]
+	): BaseCellViewModel;
 }
 
 export class JoinCellEdit implements IResourceUndoRedoElement {
@@ -33,7 +39,7 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
 		private inverseRange: Range,
 		private insertContent: string,
 		private removedCell: BaseCellViewModel,
-		private editingDelegate: IViewCellEditingDelegate,
+		private editingDelegate: IViewCellEditingDelegate
 	) {
 		this._deletedRawCell = this.removedCell.model;
 	}
@@ -45,18 +51,24 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
 
 		await this.cell.resolveTextModel();
 
-		this.cell.textModel?.applyEdits([
-			{ range: this.inverseRange, text: '' }
-		]);
+		this.cell.textModel?.applyEdits([{ range: this.inverseRange, text: '' }]);
 
 		this.cell.setSelections(this.selections);
 
 		const cell = this.editingDelegate.createCellViewModel(this._deletedRawCell);
 		if (this.direction === 'above') {
-			this.editingDelegate.insertCell(this.index, this._deletedRawCell, { kind: SelectionStateType.Handle, primary: cell.handle, selections: [cell.handle] });
+			this.editingDelegate.insertCell(this.index, this._deletedRawCell, {
+				kind: SelectionStateType.Handle,
+				primary: cell.handle,
+				selections: [cell.handle]
+			});
 			cell.focusMode = CellFocusMode.Editor;
 		} else {
-			this.editingDelegate.insertCell(this.index, cell.model, { kind: SelectionStateType.Handle, primary: this.cell.handle, selections: [this.cell.handle] });
+			this.editingDelegate.insertCell(this.index, cell.model, {
+				kind: SelectionStateType.Handle,
+				primary: this.cell.handle,
+				selections: [this.cell.handle]
+			});
 			this.cell.focusMode = CellFocusMode.Editor;
 		}
 	}
@@ -67,11 +79,13 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
 		}
 
 		await this.cell.resolveTextModel();
-		this.cell.textModel?.applyEdits([
-			{ range: this.inverseRange, text: this.insertContent }
-		]);
+		this.cell.textModel?.applyEdits([{ range: this.inverseRange, text: this.insertContent }]);
 
-		this.editingDelegate.deleteCell(this.index, { kind: SelectionStateType.Handle, primary: this.cell.handle, selections: [this.cell.handle] });
+		this.editingDelegate.deleteCell(this.index, {
+			kind: SelectionStateType.Handle,
+			primary: this.cell.handle,
+			selections: [this.cell.handle]
+		});
 		this.cell.focusMode = CellFocusMode.Editor;
 	}
 }

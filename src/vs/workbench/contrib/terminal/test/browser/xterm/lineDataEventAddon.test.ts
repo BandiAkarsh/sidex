@@ -22,7 +22,8 @@ suite('LineDataEventAddon', () => {
 		let events: string[];
 
 		setup(async () => {
-			const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
+			const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js'))
+				.Terminal;
 			xterm = store.add(new TerminalCtor({ allowProposedApi: true, cols: 4, logger: TestXtermLogger }));
 			lineDataEventAddon = store.add(new LineDataEventAddon());
 			xterm.loadAddon(lineDataEventAddon);

@@ -5,7 +5,10 @@
 
 import { IEditorService } from '../../../services/editor/common/editorService.js';
 import { WalkThroughPart, WALK_THROUGH_FOCUS } from './walkThroughPart.js';
-import { ICommandAndKeybindingRule, KeybindingWeight } from '../../../../platform/keybinding/common/keybindingsRegistry.js';
+import {
+	ICommandAndKeybindingRule,
+	KeybindingWeight
+} from '../../../../platform/keybinding/common/keybindingsRegistry.js';
 import { EditorContextKeys } from '../../../../editor/common/editorContextKeys.js';
 import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
 import { KeyCode } from '../../../../base/common/keyCodes.js';

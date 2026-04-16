@@ -11,15 +11,37 @@ import { URI } from '../../../../base/common/uri.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { IEnvironmentService } from '../../../../platform/environment/common/environment.js';
 import { IFileService } from '../../../../platform/files/common/files.js';
-import { IStorageEntry, IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import {
+	IStorageEntry,
+	IStorageService,
+	StorageScope,
+	StorageTarget
+} from '../../../../platform/storage/common/storage.js';
 import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
 import { IUriIdentityService } from '../../../../platform/uriIdentity/common/uriIdentity.js';
 import { IUserDataProfile } from '../../../../platform/userDataProfile/common/userDataProfile.js';
-import { AbstractSynchroniser, IAcceptResult, IMergeResult, IResourcePreview, ISyncResourcePreview } from '../../../../platform/userDataSync/common/abstractSynchronizer.js';
-import { IRemoteUserData, IResourceRefHandle, IUserDataSyncLocalStoreService, IUserDataSyncConfiguration, IUserDataSyncEnablementService, IUserDataSyncLogService, IUserDataSyncStoreService, IUserDataSynchroniser, IWorkspaceState, SyncResource, IUserDataSyncResourcePreview } from '../../../../platform/userDataSync/common/userDataSync.js';
+import {
+	AbstractSynchroniser,
+	IAcceptResult,
+	IMergeResult,
+	IResourcePreview,
+	ISyncResourcePreview
+} from '../../../../platform/userDataSync/common/abstractSynchronizer.js';
+import {
+	IRemoteUserData,
+	IResourceRefHandle,
+	IUserDataSyncLocalStoreService,
+	IUserDataSyncConfiguration,
+	IUserDataSyncEnablementService,
+	IUserDataSyncLogService,
+	IUserDataSyncStoreService,
+	IUserDataSynchroniser,
+	IWorkspaceState,
+	SyncResource,
+	IUserDataSyncResourcePreview
+} from '../../../../platform/userDataSync/common/userDataSync.js';
 import { EditSession, IEditSessionsStorageService } from './editSessions.js';
 import { IWorkspaceIdentityService } from '../../../services/workspaces/common/workspaceIdentityService.js';
-
 
 class NullBackupStoreService implements IUserDataSyncLocalStoreService {
 	_serviceBrand: undefined;
@@ -32,7 +54,6 @@ class NullBackupStoreService implements IUserDataSyncLocalStoreService {
 	async resolveResourceContent(): Promise<string | null> {
 		return null;
 	}
-
 }
 
 class NullEnablementService implements IUserDataSyncEnablementService {
@@ -44,14 +65,23 @@ class NullEnablementService implements IUserDataSyncEnablementService {
 	private _onDidChangeResourceEnablement = new Emitter<[SyncResource, boolean]>();
 	readonly onDidChangeResourceEnablement: Event<[SyncResource, boolean]> = this._onDidChangeResourceEnablement.event;
 
-	isEnabled(): boolean { return true; }
-	canToggleEnablement(): boolean { return true; }
-	setEnablement(_enabled: boolean): void { }
-	isResourceEnabled(_resource: SyncResource): boolean { return true; }
-	isResourceEnablementConfigured(_resource: SyncResource): boolean { return false; }
-	setResourceEnablement(_resource: SyncResource, _enabled: boolean): void { }
-	getResourceSyncStateVersion(_resource: SyncResource): string | undefined { return undefined; }
-
+	isEnabled(): boolean {
+		return true;
+	}
+	canToggleEnablement(): boolean {
+		return true;
+	}
+	setEnablement(_enabled: boolean): void {}
+	isResourceEnabled(_resource: SyncResource): boolean {
+		return true;
+	}
+	isResourceEnablementConfigured(_resource: SyncResource): boolean {
+		return false;
+	}
+	setResourceEnablement(_resource: SyncResource, _enabled: boolean): void {}
+	getResourceSyncStateVersion(_resource: SyncResource): string | undefined {
+		return undefined;
+	}
 }
 
 export class WorkspaceStateSynchroniser extends AbstractSynchroniser implements IUserDataSynchroniser {
@@ -69,11 +99,24 @@ export class WorkspaceStateSynchroniser extends AbstractSynchroniser implements 
 		@IStorageService storageService: IStorageService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@IWorkspaceIdentityService private readonly workspaceIdentityService: IWorkspaceIdentityService,
-		@IEditSessionsStorageService private readonly editSessionsStorageService: IEditSessionsStorageService,
+		@IEditSessionsStorageService private readonly editSessionsStorageService: IEditSessionsStorageService
 	) {
 		const userDataSyncLocalStoreService = new NullBackupStoreService();
 		const userDataSyncEnablementService = new NullEnablementService();
-		super({ syncResource: SyncResource.WorkspaceState, profile }, collection, fileService, environmentService, storageService, userDataSyncStoreService, userDataSyncLocalStoreService, userDataSyncEnablementService, telemetryService, logService, configurationService, uriIdentityService);
+		super(
+			{ syncResource: SyncResource.WorkspaceState, profile },
+			collection,
+			fileService,
+			environmentService,
+			storageService,
+			userDataSyncStoreService,
+			userDataSyncLocalStoreService,
+			userDataSyncEnablementService,
+			telemetryService,
+			logService,
+			configurationService,
+			uriIdentityService
+		);
 	}
 
 	override async sync(): Promise<IUserDataSyncResourcePreview | null> {
@@ -92,7 +135,7 @@ export class WorkspaceStateSynchroniser extends AbstractSynchroniser implements 
 		}
 
 		const contributedData: IStringDictionary<string> = {};
-		keys.forEach((key) => {
+		keys.forEach(key => {
 			const data = this.storageService.get(key, StorageScope.WORKSPACE);
 			if (data) {
 				contributedData[key] = data;
@@ -121,9 +164,14 @@ export class WorkspaceStateSynchroniser extends AbstractSynchroniser implements 
 
 		// Evaluate whether storage is applicable for current workspace
 		const cancellationTokenSource = new CancellationTokenSource();
-		const replaceUris = await this.workspaceIdentityService.matches(remoteWorkspaceState.folders, cancellationTokenSource.token);
+		const replaceUris = await this.workspaceIdentityService.matches(
+			remoteWorkspaceState.folders,
+			cancellationTokenSource.token
+		);
 		if (!replaceUris) {
-			this.logService.info('Skipping initializing workspace state because remote workspace state does not match current workspace.');
+			this.logService.info(
+				'Skipping initializing workspace state because remote workspace state does not match current workspace.'
+			);
 			return null;
 		}
 
@@ -154,16 +202,35 @@ export class WorkspaceStateSynchroniser extends AbstractSynchroniser implements 
 	}
 
 	// TODO@joyceerhl implement AbstractSynchronizer in full
-	protected override applyResult(remoteUserData: IRemoteUserData, lastSyncUserData: IRemoteUserData | null, result: [IResourcePreview, IAcceptResult][], force: boolean): Promise<void> {
+	protected override applyResult(
+		remoteUserData: IRemoteUserData,
+		lastSyncUserData: IRemoteUserData | null,
+		result: [IResourcePreview, IAcceptResult][],
+		force: boolean
+	): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
-	protected override async generateSyncPreview(remoteUserData: IRemoteUserData, lastSyncUserData: IRemoteUserData | null, isRemoteDataFromCurrentMachine: boolean, userDataSyncConfiguration: IUserDataSyncConfiguration, token: CancellationToken): Promise<IResourcePreview[]> {
+	protected override async generateSyncPreview(
+		remoteUserData: IRemoteUserData,
+		lastSyncUserData: IRemoteUserData | null,
+		isRemoteDataFromCurrentMachine: boolean,
+		userDataSyncConfiguration: IUserDataSyncConfiguration,
+		token: CancellationToken
+	): Promise<IResourcePreview[]> {
 		return [];
 	}
-	protected override getMergeResult(resourcePreview: IResourcePreview, token: CancellationToken): Promise<IMergeResult> {
+	protected override getMergeResult(
+		resourcePreview: IResourcePreview,
+		token: CancellationToken
+	): Promise<IMergeResult> {
 		throw new Error('Method not implemented.');
 	}
-	protected override getAcceptResult(resourcePreview: IResourcePreview, resource: URI, content: string | null | undefined, token: CancellationToken): Promise<IAcceptResult> {
+	protected override getAcceptResult(
+		resourcePreview: IResourcePreview,
+		resource: URI,
+		content: string | null | undefined,
+		token: CancellationToken
+	): Promise<IAcceptResult> {
 		throw new Error('Method not implemented.');
 	}
 	protected override async hasRemoteChanged(lastSyncUserData: IRemoteUserData): Promise<boolean> {

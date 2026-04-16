@@ -22,7 +22,6 @@ export interface INotebookCellOutlineDataSource {
 }
 
 export class NotebookCellOutlineDataSource implements INotebookCellOutlineDataSource {
-
 	private readonly _disposables = new DisposableStore();
 
 	private readonly _onDidChange = new Emitter<OutlineChangeEvent>();
@@ -58,7 +57,9 @@ export class NotebookCellOutlineDataSource implements INotebookCellOutlineDataSo
 		try {
 			const notebookEditorWidget = this._editor;
 
-			const notebookCells = notebookEditorWidget?.getViewModel()?.viewCells.filter((cell) => cell.cellKind === CellKind.Code);
+			const notebookCells = notebookEditorWidget
+				?.getViewModel()
+				?.viewCells.filter(cell => cell.cellKind === CellKind.Code);
 
 			if (notebookCells) {
 				const promises: Promise<void>[] = [];
@@ -116,7 +117,6 @@ export class NotebookCellOutlineDataSource implements INotebookCellOutlineDataSo
 						result.push(entry);
 						parentStack.push(entry);
 						break;
-
 					} else {
 						const parentCandidate = parentStack[len - 1];
 						if (parentCandidate.level < entry.level) {
@@ -175,12 +175,17 @@ export class NotebookCellOutlineDataSource implements INotebookCellOutlineDataSo
 			}
 		};
 		updateMarkerUpdater();
-		this._disposables.add(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('problems.visibility') || e.affectsConfiguration(OutlineConfigKeys.problemsEnabled)) {
-				updateMarkerUpdater();
-				this._onDidChange.fire({});
-			}
-		}));
+		this._disposables.add(
+			this._configurationService.onDidChangeConfiguration(e => {
+				if (
+					e.affectsConfiguration('problems.visibility') ||
+					e.affectsConfiguration(OutlineConfigKeys.problemsEnabled)
+				) {
+					updateMarkerUpdater();
+					this._onDidChange.fire({});
+				}
+			})
+		);
 
 		const { changeEventTriggered } = this.recomputeActive();
 		if (!changeEventTriggered) {
@@ -192,7 +197,8 @@ export class NotebookCellOutlineDataSource implements INotebookCellOutlineDataSo
 		let newActive: OutlineEntry | undefined;
 		const notebookEditorWidget = this._editor;
 
-		if (notebookEditorWidget) {//TODO don't check for widget, only here if we do have
+		if (notebookEditorWidget) {
+			//TODO don't check for widget, only here if we do have
 			if (notebookEditorWidget.hasModel() && notebookEditorWidget.getLength() > 0) {
 				const cell = notebookEditorWidget.cellAt(notebookEditorWidget.getFocus().start);
 				if (cell) {

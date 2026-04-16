@@ -62,12 +62,8 @@ export class NotebookVisibleCellObserver extends Disposable {
 		const oldVisibleHandles = new Set(this._visibleCells.map(cell => cell.handle));
 		const diff = diffSets(oldVisibleHandles, newVisibleHandles);
 
-		const added = diff.added
-			.map(handle => this._notebookEditor.getCellByHandle(handle))
-			.filter(isDefined);
-		const removed = diff.removed
-			.map(handle => this._notebookEditor.getCellByHandle(handle))
-			.filter(isDefined);
+		const added = diff.added.map(handle => this._notebookEditor.getCellByHandle(handle)).filter(isDefined);
+		const removed = diff.removed.map(handle => this._notebookEditor.getCellByHandle(handle)).filter(isDefined);
 
 		this._visibleCells = newVisibleCells;
 		this._onDidChangeVisibleCells.fire({

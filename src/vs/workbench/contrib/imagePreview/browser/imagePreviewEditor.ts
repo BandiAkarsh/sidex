@@ -33,11 +33,10 @@ const MIME_TYPES: Record<string, string> = {
 	'.bmp': 'image/bmp',
 	'.ico': 'image/x-icon',
 	'.webp': 'image/webp',
-	'.avif': 'image/avif',
+	'.avif': 'image/avif'
 };
 
 export class ImagePreviewEditor extends EditorPane {
-
 	static readonly ID = 'workbench.editor.imagePreview';
 
 	private container!: HTMLElement;
@@ -59,14 +58,16 @@ export class ImagePreviewEditor extends EditorPane {
 		@IThemeService themeService: IThemeService,
 		@IStorageService storageService: IStorageService,
 		@IFileService private readonly fileService: IFileService,
-		@IConfigurationService private readonly configService: IConfigurationService,
+		@IConfigurationService private readonly configService: IConfigurationService
 	) {
 		super(ImagePreviewEditor.ID, group, telemetryService, themeService, storageService);
-		this._register(this.configService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('mediaPreview.showInfo')) {
-				this.toggleInfoBar();
-			}
-		}));
+		this._register(
+			this.configService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration('mediaPreview.showInfo')) {
+					this.toggleInfoBar();
+				}
+			})
+		);
 	}
 
 	// --- Config helpers ---
@@ -87,7 +88,8 @@ export class ImagePreviewEditor extends EditorPane {
 
 	protected createEditor(parent: HTMLElement): void {
 		this.container = $('.image-preview-editor');
-		this.container.style.cssText = 'display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;outline:none';
+		this.container.style.cssText =
+			'display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;outline:none';
 		this.container.tabIndex = 0;
 
 		this.scrollContent = $('.image-preview-scroll-content');
@@ -97,27 +99,38 @@ export class ImagePreviewEditor extends EditorPane {
 		this.imageWrapper.style.cssText = 'display:flex;align-items:center;justify-content:center';
 		this.scrollContent.appendChild(this.imageWrapper);
 
-		this.scrollable = this._register(new DomScrollableElement(this.scrollContent, {
-			horizontal: ScrollbarVisibility.Auto,
-			vertical: ScrollbarVisibility.Auto,
-			useShadows: false,
-		}));
+		this.scrollable = this._register(
+			new DomScrollableElement(this.scrollContent, {
+				horizontal: ScrollbarVisibility.Auto,
+				vertical: ScrollbarVisibility.Auto,
+				useShadows: false
+			})
+		);
 		this.scrollable.getDomNode().style.flex = '1';
 		this.container.appendChild(this.scrollable.getDomNode());
 
-		this._register(addDisposableListener(this.container, EventType.WHEEL, (e: WheelEvent) => {
-			if (e.ctrlKey || e.metaKey) {
-				e.preventDefault();
-				e.deltaY < 0 ? this.zoomIn() : this.zoomOut();
-			}
-		}, { passive: false }));
+		this._register(
+			addDisposableListener(
+				this.container,
+				EventType.WHEEL,
+				(e: WheelEvent) => {
+					if (e.ctrlKey || e.metaKey) {
+						e.preventDefault();
+						e.deltaY < 0 ? this.zoomIn() : this.zoomOut();
+					}
+				},
+				{ passive: false }
+			)
+		);
 
-		this._register(addDisposableListener(this.container, EventType.KEY_DOWN, (e: KeyboardEvent) => {
-			if (this.handleKeyDown(e)) {
-				e.preventDefault();
-				e.stopPropagation();
-			}
-		}));
+		this._register(
+			addDisposableListener(this.container, EventType.KEY_DOWN, (e: KeyboardEvent) => {
+				if (this.handleKeyDown(e)) {
+					e.preventDefault();
+					e.stopPropagation();
+				}
+			})
+		);
 
 		parent.appendChild(this.container);
 	}
@@ -125,18 +138,52 @@ export class ImagePreviewEditor extends EditorPane {
 	private handleKeyDown(e: KeyboardEvent): boolean {
 		const mod = e.ctrlKey || e.metaKey;
 		switch (e.key) {
-			case 'ArrowUp': this.scrollBy(0, -SCROLL_STEP); return true;
-			case 'ArrowDown': this.scrollBy(0, SCROLL_STEP); return true;
-			case 'ArrowLeft': this.scrollBy(-SCROLL_STEP, 0); return true;
-			case 'ArrowRight': this.scrollBy(SCROLL_STEP, 0); return true;
-			case '+': case '=': if (mod) { this.zoomIn(); return true; } return false;
-			case '-': case '_': if (mod) { this.zoomOut(); return true; } return false;
-			case '0': if (mod) { this.resetZoom(); return true; } return false;
-			case 'Home': this.scrollable.setScrollPosition({ scrollTop: 0, scrollLeft: 0 }); return true;
-			case 'End': this.scrollable.setScrollPosition({ scrollTop: 999999, scrollLeft: 999999 }); return true;
-			case 'PageUp': this.scrollBy(0, -(this.currentDimension?.height ?? 300)); return true;
-			case 'PageDown': this.scrollBy(0, this.currentDimension?.height ?? 300); return true;
-			default: return false;
+			case 'ArrowUp':
+				this.scrollBy(0, -SCROLL_STEP);
+				return true;
+			case 'ArrowDown':
+				this.scrollBy(0, SCROLL_STEP);
+				return true;
+			case 'ArrowLeft':
+				this.scrollBy(-SCROLL_STEP, 0);
+				return true;
+			case 'ArrowRight':
+				this.scrollBy(SCROLL_STEP, 0);
+				return true;
+			case '+':
+			case '=':
+				if (mod) {
+					this.zoomIn();
+					return true;
+				}
+				return false;
+			case '-':
+			case '_':
+				if (mod) {
+					this.zoomOut();
+					return true;
+				}
+				return false;
+			case '0':
+				if (mod) {
+					this.resetZoom();
+					return true;
+				}
+				return false;
+			case 'Home':
+				this.scrollable.setScrollPosition({ scrollTop: 0, scrollLeft: 0 });
+				return true;
+			case 'End':
+				this.scrollable.setScrollPosition({ scrollTop: 999999, scrollLeft: 999999 });
+				return true;
+			case 'PageUp':
+				this.scrollBy(0, -(this.currentDimension?.height ?? 300));
+				return true;
+			case 'PageDown':
+				this.scrollBy(0, this.currentDimension?.height ?? 300);
+				return true;
+			default:
+				return false;
 		}
 	}
 
@@ -145,7 +192,12 @@ export class ImagePreviewEditor extends EditorPane {
 		this.scrollable.setScrollPosition({ scrollLeft: p.scrollLeft + dx, scrollTop: p.scrollTop + dy });
 	}
 
-	override async setInput(input: ImagePreviewEditorInput, options: IEditorOptions | undefined, context: IEditorOpenContext, token: CancellationToken): Promise<void> {
+	override async setInput(
+		input: ImagePreviewEditorInput,
+		options: IEditorOptions | undefined,
+		context: IEditorOpenContext,
+		token: CancellationToken
+	): Promise<void> {
 		await super.setInput(input, options, context, token);
 		await this.loadImage(input, token);
 	}
@@ -165,7 +217,9 @@ export class ImagePreviewEditor extends EditorPane {
 
 		try {
 			const file = await this.fileService.readFile(resource);
-			if (token.isCancellationRequested) { return; }
+			if (token.isCancellationRequested) {
+				return;
+			}
 
 			const ext = extname(resource.fsPath || resource.path).toLowerCase();
 			const blob = new Blob([file.value.buffer.slice(0)], { type: MIME_TYPES[ext] ?? 'application/octet-stream' });
@@ -184,7 +238,10 @@ export class ImagePreviewEditor extends EditorPane {
 			this.imgElement = img;
 
 			await loaded;
-			if (token.isCancellationRequested) { URL.revokeObjectURL(url); return; }
+			if (token.isCancellationRequested) {
+				URL.revokeObjectURL(url);
+				return;
+			}
 
 			this.imageWrapper.appendChild(img);
 			this.cachedByteLength = file.value.buffer.byteLength;
@@ -207,13 +264,17 @@ export class ImagePreviewEditor extends EditorPane {
 
 	private applyImageSize(center: boolean): void {
 		const img = this.imgElement;
-		if (!img || !this.currentDimension) { return; }
+		if (!img || !this.currentDimension) {
+			return;
+		}
 
 		const availW = this.currentDimension.width;
 		const availH = this.currentDimension.height - this.infoBarHeight;
 		const natW = img.naturalWidth;
 		const natH = img.naturalHeight;
-		if (natW === 0 || natH === 0) { return; }
+		if (natW === 0 || natH === 0) {
+			return;
+		}
 
 		let displayW: number, displayH: number, zoomPct: number;
 
@@ -231,7 +292,7 @@ export class ImagePreviewEditor extends EditorPane {
 
 		img.style.width = `${displayW}px`;
 		img.style.height = `${displayH}px`;
-		img.style.imageRendering = (displayW > natW || displayH > natH) ? 'pixelated' : 'auto';
+		img.style.imageRendering = displayW > natW || displayH > natH ? 'pixelated' : 'auto';
 
 		const atMax = !this.fitMode && Math.pow(ZOOM_FACTOR, this.zoomLevel) >= this.maxScale;
 		img.style.cursor = atMax ? 'default' : 'zoom-in';
@@ -246,7 +307,7 @@ export class ImagePreviewEditor extends EditorPane {
 		if (center) {
 			this.scrollable.setScrollPosition({
 				scrollLeft: Math.max(0, Math.round((wW - availW) / 2)),
-				scrollTop: Math.max(0, Math.round((wH - availH) / 2)),
+				scrollTop: Math.max(0, Math.round((wH - availH) / 2))
 			});
 		}
 
@@ -267,7 +328,9 @@ export class ImagePreviewEditor extends EditorPane {
 	}
 
 	private zoomOut(): void {
-		if (this.fitMode) { return; }
+		if (this.fitMode) {
+			return;
+		}
 		const fitLevel = Math.ceil(Math.log(this.getFitScale()) / Math.log(ZOOM_FACTOR));
 		if (this.zoomLevel - 1 <= fitLevel) {
 			this.fitMode = true;
@@ -285,7 +348,9 @@ export class ImagePreviewEditor extends EditorPane {
 	}
 
 	private getFitScale(): number {
-		if (!this.imgElement || !this.currentDimension) { return 1; }
+		if (!this.imgElement || !this.currentDimension) {
+			return 1;
+		}
 		const availW = this.currentDimension.width;
 		const availH = this.currentDimension.height - this.infoBarHeight;
 		return Math.min(1, availW / this.imgElement.naturalWidth, availH / this.imgElement.naturalHeight);
@@ -300,7 +365,9 @@ export class ImagePreviewEditor extends EditorPane {
 	}
 
 	private updateInfoBar(zoomPct: number): void {
-		if (!this.infoBar || !this.imgElement) { return; }
+		if (!this.infoBar || !this.imgElement) {
+			return;
+		}
 		const { naturalWidth: w, naturalHeight: h } = this.imgElement;
 		const b = this.cachedByteLength;
 		const size = b > 1048576 ? `${(b / 1048576).toFixed(2)} MB` : `${(b / 1024).toFixed(1)} KB`;

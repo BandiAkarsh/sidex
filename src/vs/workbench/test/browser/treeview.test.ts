@@ -12,7 +12,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../base/test/comm
 import { ViewDescriptorService } from '../../services/views/browser/viewDescriptorService.js';
 
 suite('TreeView', function () {
-
 	let treeView: TreeView;
 	let largestBatchSize: number = 0;
 
@@ -57,6 +56,4 @@ suite('TreeView', function () {
 		await treeView.refresh();
 		assert.strictEqual(largestBatchSize, 100);
 	});
-
-
 });

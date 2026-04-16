@@ -29,15 +29,20 @@ function toSize(value: number | string): string {
 	return typeof value === 'number' ? `${value}px` : value;
 }
 
-export function applyObservableDecorations(editor: CodeEditorWidget, decorations: IObservable<IModelDeltaDecoration[]>): IDisposable {
+export function applyObservableDecorations(
+	editor: CodeEditorWidget,
+	decorations: IObservable<IModelDeltaDecoration[]>
+): IDisposable {
 	const d = new DisposableStore();
 	let decorationIds: string[] = [];
-	d.add(autorunOpts({ debugName: () => `Apply decorations from ${decorations.debugName}` }, reader => {
-		const d = decorations.read(reader);
-		editor.changeDecorations(a => {
-			decorationIds = a.deltaDecorations(decorationIds, d);
-		});
-	}));
+	d.add(
+		autorunOpts({ debugName: () => `Apply decorations from ${decorations.debugName}` }, reader => {
+			const d = decorations.read(reader);
+			editor.changeDecorations(a => {
+				decorationIds = a.deltaDecorations(decorationIds, d);
+			});
+		})
+	);
 	d.add({
 		dispose: () => {
 			editor.changeDecorations(a => {
@@ -51,12 +56,14 @@ export function applyObservableDecorations(editor: CodeEditorWidget, decorations
 export function* leftJoin<TLeft, TRight>(
 	left: Iterable<TLeft>,
 	right: readonly TRight[],
-	compare: (left: TLeft, right: TRight) => CompareResult,
+	compare: (left: TLeft, right: TRight) => CompareResult
 ): IterableIterator<{ left: TLeft; rights: TRight[] }> {
 	const rightQueue = new ArrayQueue(right);
 	for (const leftElement of left) {
 		rightQueue.takeWhile(rightElement => CompareResult.isGreaterThan(compare(leftElement, rightElement)));
-		const equals = rightQueue.takeWhile(rightElement => CompareResult.isNeitherLessOrGreaterThan(compare(leftElement, rightElement)));
+		const equals = rightQueue.takeWhile(rightElement =>
+			CompareResult.isNeitherLessOrGreaterThan(compare(leftElement, rightElement))
+		);
 		yield { left: leftElement, rights: equals || [] };
 	}
 }
@@ -64,15 +71,19 @@ export function* leftJoin<TLeft, TRight>(
 export function* join<TLeft, TRight>(
 	left: Iterable<TLeft>,
 	right: readonly TRight[],
-	compare: (left: TLeft, right: TRight) => CompareResult,
+	compare: (left: TLeft, right: TRight) => CompareResult
 ): IterableIterator<{ left?: TLeft; rights: TRight[] }> {
 	const rightQueue = new ArrayQueue(right);
 	for (const leftElement of left) {
-		const skipped = rightQueue.takeWhile(rightElement => CompareResult.isGreaterThan(compare(leftElement, rightElement)));
+		const skipped = rightQueue.takeWhile(rightElement =>
+			CompareResult.isGreaterThan(compare(leftElement, rightElement))
+		);
 		if (skipped) {
 			yield { rights: skipped };
 		}
-		const equals = rightQueue.takeWhile(rightElement => CompareResult.isNeitherLessOrGreaterThan(compare(leftElement, rightElement)));
+		const equals = rightQueue.takeWhile(rightElement =>
+			CompareResult.isNeitherLessOrGreaterThan(compare(leftElement, rightElement))
+		);
 		yield { left: leftElement, rights: equals || [] };
 	}
 }
@@ -110,7 +121,7 @@ export class PersistentStore<T> {
 	constructor(
 		private readonly key: string,
 		@IStorageService private readonly storageService: IStorageService
-	) { }
+	) {}
 
 	public get(): Readonly<T> | undefined {
 		if (!this.hasValue) {
@@ -132,11 +143,6 @@ export class PersistentStore<T> {
 	public set(newValue: T | undefined): void {
 		this.value = newValue;
 
-		this.storageService.store(
-			this.key,
-			JSON.stringify(this.value),
-			StorageScope.PROFILE,
-			StorageTarget.USER
-		);
+		this.storageService.store(this.key, JSON.stringify(this.value), StorageScope.PROFILE, StorageTarget.USER);
 	}
 }

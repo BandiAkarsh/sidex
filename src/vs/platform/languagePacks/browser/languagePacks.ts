@@ -20,17 +20,19 @@ export class WebLanguagePacksService extends LanguagePackBaseService {
 	}
 
 	async getBuiltInExtensionTranslationsUri(id: string, language: string): Promise<URI | undefined> {
-
 		const queryTimeout = new CancellationTokenSource();
 		setTimeout(() => queryTimeout.cancel(), 1000);
 
 		// First get the extensions that supports the language (there should only be one but just in case let's include more results)
 		let result;
 		try {
-			result = await this.extensionGalleryService.query({
-				text: `tag:"lp-${language}"`,
-				pageSize: 5
-			}, queryTimeout.token);
+			result = await this.extensionGalleryService.query(
+				{
+					text: `tag:"lp-${language}"`,
+					pageSize: 5
+				},
+				queryTimeout.token
+			);
 		} catch (err) {
 			this.logService.error(err);
 			return undefined;

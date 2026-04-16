@@ -38,9 +38,9 @@ suite('UserAttentionService', () => {
 		hostAdapterMock = {
 			isVsCodeFocused,
 			isUserActive,
-			setFocus: (f) => isVsCodeFocused.set(f, undefined),
-			setActive: (a) => isUserActive.set(a, undefined),
-			dispose: () => { }
+			setFocus: f => isVsCodeFocused.set(f, undefined),
+			setActive: a => isUserActive.set(a, undefined),
+			dispose: () => {}
 		};
 
 		const originalCreateInstance = insta.createInstance;

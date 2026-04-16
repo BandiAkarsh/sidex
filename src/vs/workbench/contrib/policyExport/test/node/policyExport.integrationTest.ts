@@ -43,9 +43,7 @@ suite('PolicyExport Integration Tests', () => {
 
 		try {
 			// Launch VS Code with --export-policy-data flag
-			const scriptPath = isWindows
-				? join(rootPath, 'scripts', 'code.bat')
-				: join(rootPath, 'scripts', 'code.sh');
+			const scriptPath = isWindows ? join(rootPath, 'scripts', 'code.bat') : join(rootPath, 'scripts', 'code.sh');
 
 			// Skip prelaunch to avoid redownloading electron while the parent VS Code is using it
 			await exec(`"${scriptPath}" --export-policy-data="${tempFile}"`, {

@@ -12,15 +12,21 @@ import { IInstantiationService, ServicesAccessor } from '../../../../../platform
 import { IProductService } from '../../../../../platform/product/common/productService.js';
 import { IQuickInputService, IQuickPickItem } from '../../../../../platform/quickinput/common/quickInput.js';
 import { ISecretStorageService } from '../../../../../platform/secrets/common/secrets.js';
-import { AuthenticationSessionInfo, getCurrentAuthenticationSessionInfo } from '../../../../services/authentication/browser/authenticationService.js';
-import { IAuthenticationProvider, IAuthenticationService } from '../../../../services/authentication/common/authentication.js';
+import {
+	AuthenticationSessionInfo,
+	getCurrentAuthenticationSessionInfo
+} from '../../../../services/authentication/browser/authenticationService.js';
+import {
+	IAuthenticationProvider,
+	IAuthenticationService
+} from '../../../../services/authentication/common/authentication.js';
 
 export class ManageAccountsAction extends Action2 {
 	constructor() {
 		super({
 			id: 'workbench.action.manageAccounts',
-			title: localize2('manageAccounts', "Manage Accounts"),
-			category: localize2('accounts', "Accounts"),
+			title: localize2('manageAccounts', 'Manage Accounts'),
+			category: localize2('accounts', 'Accounts'),
 			f1: true
 		});
 	}
@@ -46,15 +52,17 @@ class ManageAccountsActionImpl {
 		@IAuthenticationService private readonly authenticationService: IAuthenticationService,
 		@ICommandService private readonly commandService: ICommandService,
 		@ISecretStorageService private readonly secretStorageService: ISecretStorageService,
-		@IProductService private readonly productService: IProductService,
-	) { }
+		@IProductService private readonly productService: IProductService
+	) {}
 
 	public async run() {
-		const placeHolder = localize('pickAccount', "Select an account to manage");
+		const placeHolder = localize('pickAccount', 'Select an account to manage');
 
 		const accounts = await this.listAccounts();
 		if (!accounts.length) {
-			await this.quickInputService.pick([{ label: localize('noActiveAccounts', "There are no active accounts.") }], { placeHolder });
+			await this.quickInputService.pick([{ label: localize('noActiveAccounts', 'There are no active accounts.') }], {
+				placeHolder
+			});
 			return;
 		}
 
@@ -67,7 +75,9 @@ class ManageAccountsActionImpl {
 	}
 
 	private async listAccounts(): Promise<AccountQuickPickItem[]> {
-		const activeSession = new Lazy(() => getCurrentAuthenticationSessionInfo(this.secretStorageService, this.productService));
+		const activeSession = new Lazy(() =>
+			getCurrentAuthenticationSessionInfo(this.secretStorageService, this.productService)
+		);
 		const accounts: AccountQuickPickItem[] = [];
 		for (const providerId of this.authenticationService.getProviderIds()) {
 			const provider = this.authenticationService.getProvider(providerId);
@@ -83,7 +93,11 @@ class ManageAccountsActionImpl {
 		return accounts;
 	}
 
-	private async canSignOut(provider: IAuthenticationProvider, accountId: string, session?: AuthenticationSessionInfo): Promise<boolean> {
+	private async canSignOut(
+		provider: IAuthenticationProvider,
+		accountId: string,
+		session?: AuthenticationSessionInfo
+	): Promise<boolean> {
 		if (session && !session.canSignOut && session.providerId === provider.id) {
 			const sessions = await this.authenticationService.getSessions(provider.id);
 			return !sessions.some(o => o.id === session.id && o.account.id === accountId);
@@ -98,36 +112,43 @@ class ManageAccountsActionImpl {
 		const quickPick = store.add(this.quickInputService.createQuickPick<AccountActionQuickPickItem>());
 
 		quickPick.title = localize('manageAccount', "Manage '{0}'", accountLabel);
-		quickPick.placeholder = localize('selectAction', "Select an action");
+		quickPick.placeholder = localize('selectAction', 'Select an action');
 		quickPick.buttons = [this.quickInputService.backButton];
 
-		const items: AccountActionQuickPickItem[] = [{
-			label: localize('manageTrustedExtensions', "Manage Trusted Extensions"),
-			action: () => this.commandService.executeCommand('_manageTrustedExtensionsForAccount', { providerId, accountLabel })
-		}];
+		const items: AccountActionQuickPickItem[] = [
+			{
+				label: localize('manageTrustedExtensions', 'Manage Trusted Extensions'),
+				action: () =>
+					this.commandService.executeCommand('_manageTrustedExtensionsForAccount', { providerId, accountLabel })
+			}
+		];
 
 		if (await canSignOut()) {
 			items.push({
-				label: localize('signOut', "Sign Out"),
+				label: localize('signOut', 'Sign Out'),
 				action: () => this.commandService.executeCommand('_signOutOfAccount', { providerId, accountLabel })
 			});
 		}
 
 		quickPick.items = items;
 
-		store.add(quickPick.onDidAccept(() => {
-			const selected = quickPick.selectedItems[0];
-			if (selected) {
-				quickPick.hide();
-				selected.action();
-			}
-		}));
+		store.add(
+			quickPick.onDidAccept(() => {
+				const selected = quickPick.selectedItems[0];
+				if (selected) {
+					quickPick.hide();
+					selected.action();
+				}
+			})
+		);
 
-		store.add(quickPick.onDidTriggerButton((button) => {
-			if (button === this.quickInputService.backButton) {
-				void this.run();
-			}
-		}));
+		store.add(
+			quickPick.onDidTriggerButton(button => {
+				if (button === this.quickInputService.backButton) {
+					void this.run();
+				}
+			})
+		);
 
 		store.add(quickPick.onDidHide(() => store.dispose()));
 

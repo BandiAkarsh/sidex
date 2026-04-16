@@ -26,7 +26,6 @@ suite('Notebook Folding', () => {
 		instantiationService.spy(IUndoRedoService, 'pushElement');
 	});
 
-
 	test('Folding based on markdown cells', async function () {
 		await withTestNotebook(
 			[
@@ -36,7 +35,7 @@ suite('Notebook Folding', () => {
 				['body 2', 'markdown', CellKind.Markup, [], {}],
 				['body 3', 'markdown', CellKind.Markup, [], {}],
 				['## header 2.2', 'markdown', CellKind.Markup, [], {}],
-				['var e = 7;', 'markdown', CellKind.Markup, [], {}],
+				['var e = 7;', 'markdown', CellKind.Markup, [], {}]
 			],
 			(editor, viewModel, ds) => {
 				const foldingController = ds.add(new FoldingModel());
@@ -63,7 +62,7 @@ suite('Notebook Folding', () => {
 				['body 3\n```\n## comment 2\n```', 'markdown', CellKind.Markup, [], {}],
 				['body 4', 'markdown', CellKind.Markup, [], {}],
 				['## header 2.1', 'markdown', CellKind.Markup, [], {}],
-				['var e = 7;', 'python', CellKind.Code, [], {}],
+				['var e = 7;', 'python', CellKind.Code, [], {}]
 			],
 			(editor, viewModel, ds) => {
 				const foldingController = ds.add(new FoldingModel());
@@ -90,7 +89,7 @@ suite('Notebook Folding', () => {
 				['body 2', 'markdown', CellKind.Markup, [], {}],
 				['body 3', 'markdown', CellKind.Markup, [], {}],
 				['## header 2.2', 'markdown', CellKind.Markup, [], {}],
-				['var e = 7;', 'markdown', CellKind.Markup, [], {}],
+				['var e = 7;', 'markdown', CellKind.Markup, [], {}]
 			],
 			(editor, viewModel, ds) => {
 				const foldingController = ds.add(new FoldingModel());
@@ -121,16 +120,14 @@ suite('Notebook Folding', () => {
 				['body 2', 'markdown', CellKind.Markup, [], {}],
 				['body 3', 'markdown', CellKind.Markup, [], {}],
 				['## header 2.2', 'markdown', CellKind.Markup, [], {}],
-				['var e = 7;', 'markdown', CellKind.Markup, [], {}],
+				['var e = 7;', 'markdown', CellKind.Markup, [], {}]
 			],
 			(editor, viewModel, ds) => {
 				const foldingModel = ds.add(new FoldingModel());
 				foldingModel.attachViewModel(viewModel);
 				updateFoldingStateAtIndex(foldingModel, 0, true);
 				viewModel.updateFoldingRanges(foldingModel.regions);
-				assert.deepStrictEqual(viewModel.getHiddenRanges(), [
-					{ start: 1, end: 6 }
-				]);
+				assert.deepStrictEqual(viewModel.getHiddenRanges(), [{ start: 1, end: 6 }]);
 			}
 		);
 
@@ -142,7 +139,7 @@ suite('Notebook Folding', () => {
 				['body 2', 'markdown', CellKind.Markup, [], {}],
 				['body 3', 'markdown', CellKind.Markup, [], {}],
 				['## header 2.2', 'markdown', CellKind.Markup, [], {}],
-				['var e = 7;', 'markdown', CellKind.Markup, [], {}],
+				['var e = 7;', 'markdown', CellKind.Markup, [], {}]
 			],
 			(editor, viewModel, ds) => {
 				const foldingModel = ds.add(new FoldingModel());
@@ -150,9 +147,7 @@ suite('Notebook Folding', () => {
 				updateFoldingStateAtIndex(foldingModel, 2, true);
 				viewModel.updateFoldingRanges(foldingModel.regions);
 
-				assert.deepStrictEqual(viewModel.getHiddenRanges(), [
-					{ start: 3, end: 4 }
-				]);
+				assert.deepStrictEqual(viewModel.getHiddenRanges(), [{ start: 3, end: 4 }]);
 			}
 		);
 
@@ -164,7 +159,7 @@ suite('Notebook Folding', () => {
 				['body 2', 'markdown', CellKind.Markup, [], {}],
 				['body 3', 'markdown', CellKind.Markup, [], {}],
 				['## header 2.2', 'markdown', CellKind.Markup, [], {}],
-				['var e = 7;', 'markdown', CellKind.Markup, [], {}],
+				['var e = 7;', 'markdown', CellKind.Markup, [], {}]
 			],
 			(editor, viewModel, ds) => {
 				const foldingModel = ds.add(new FoldingModel());
@@ -172,9 +167,7 @@ suite('Notebook Folding', () => {
 				updateFoldingStateAtIndex(foldingModel, 2, true);
 				viewModel.updateFoldingRanges(foldingModel.regions);
 
-				assert.deepStrictEqual(viewModel.getHiddenRanges(), [
-					{ start: 3, end: 6 }
-				]);
+				assert.deepStrictEqual(viewModel.getHiddenRanges(), [{ start: 3, end: 6 }]);
 			}
 		);
 	});
@@ -188,7 +181,7 @@ suite('Notebook Folding', () => {
 				['body 2', 'markdown', CellKind.Markup, [], {}],
 				['body 3', 'markdown', CellKind.Markup, [], {}],
 				['## header 2.2', 'markdown', CellKind.Markup, [], {}],
-				['var e = 7;', 'markdown', CellKind.Markup, [], {}],
+				['var e = 7;', 'markdown', CellKind.Markup, [], {}]
 			],
 			(editor, viewModel, ds) => {
 				const foldingModel = ds.add(new FoldingModel());
@@ -196,9 +189,7 @@ suite('Notebook Folding', () => {
 				updateFoldingStateAtIndex(foldingModel, 0, true);
 				viewModel.updateFoldingRanges(foldingModel.regions);
 
-				assert.deepStrictEqual(viewModel.getHiddenRanges(), [
-					{ start: 1, end: 1 }
-				]);
+				assert.deepStrictEqual(viewModel.getHiddenRanges(), [{ start: 1, end: 1 }]);
 
 				updateFoldingStateAtIndex(foldingModel, 5, true);
 				updateFoldingStateAtIndex(foldingModel, 2, true);
@@ -247,7 +238,7 @@ suite('Notebook Folding', () => {
 				['body 2', 'markdown', CellKind.Markup, [], {}],
 				['body 3', 'markdown', CellKind.Markup, [], {}],
 				['## header 2.2', 'markdown', CellKind.Markup, [], {}],
-				['var e = 7;', 'markdown', CellKind.Markup, [], {}],
+				['var e = 7;', 'markdown', CellKind.Markup, [], {}]
 			],
 			(editor, viewModel, ds) => {
 				const foldingModel = ds.add(new FoldingModel());
@@ -256,9 +247,7 @@ suite('Notebook Folding', () => {
 				viewModel.updateFoldingRanges(foldingModel.regions);
 
 				// Note that hidden ranges !== folding ranges
-				assert.deepStrictEqual(viewModel.getHiddenRanges(), [
-					{ start: 3, end: 6 }
-				]);
+				assert.deepStrictEqual(viewModel.getHiddenRanges(), [{ start: 3, end: 6 }]);
 			}
 		);
 
@@ -275,14 +264,14 @@ suite('Notebook Folding', () => {
 				['body 2', 'markdown', CellKind.Markup, [], {}],
 				['body 3', 'markdown', CellKind.Markup, [], {}],
 				['## header 2.2', 'markdown', CellKind.Markup, [], {}],
-				['var e = 7;', 'markdown', CellKind.Markup, [], {}],
+				['var e = 7;', 'markdown', CellKind.Markup, [], {}]
 			],
 			(editor, viewModel, ds) => {
 				const foldingModel = ds.add(new FoldingModel());
 				foldingModel.attachViewModel(viewModel);
 				foldingModel.applyMemento([
 					{ start: 5, end: 6 },
-					{ start: 10, end: 11 },
+					{ start: 10, end: 11 }
 				]);
 				viewModel.updateFoldingRanges(foldingModel.regions);
 
@@ -307,14 +296,14 @@ suite('Notebook Folding', () => {
 				['body 2', 'markdown', CellKind.Markup, [], {}],
 				['body 3', 'markdown', CellKind.Markup, [], {}],
 				['## header 2.2', 'markdown', CellKind.Markup, [], {}],
-				['var e = 7;', 'markdown', CellKind.Markup, [], {}],
+				['var e = 7;', 'markdown', CellKind.Markup, [], {}]
 			],
 			(editor, viewModel, ds) => {
 				const foldingModel = ds.add(new FoldingModel());
 				foldingModel.attachViewModel(viewModel);
 				foldingModel.applyMemento([
 					{ start: 5, end: 6 },
-					{ start: 7, end: 11 },
+					{ start: 7, end: 11 }
 				]);
 				viewModel.updateFoldingRanges(foldingModel.regions);
 
@@ -341,7 +330,7 @@ suite('Notebook Folding', () => {
 				['body 2', 'markdown', CellKind.Markup, [], {}],
 				['body 3', 'markdown', CellKind.Markup, [], {}],
 				['## header 2.2', 'markdown', CellKind.Markup, [], {}],
-				['var e = 7;', 'markdown', CellKind.Markup, [], {}],
+				['var e = 7;', 'markdown', CellKind.Markup, [], {}]
 			],
 			(editor, viewModel, ds) => {
 				const foldingModel = ds.add(new FoldingModel());
@@ -350,9 +339,7 @@ suite('Notebook Folding', () => {
 				viewModel.updateFoldingRanges(foldingModel.regions);
 
 				// Note that hidden ranges !== folding ranges
-				assert.deepStrictEqual(viewModel.getHiddenRanges(), [
-					{ start: 3, end: 6 }
-				]);
+				assert.deepStrictEqual(viewModel.getHiddenRanges(), [{ start: 3, end: 6 }]);
 
 				assert.strictEqual(viewModel.getNextVisibleCellIndex(1), 2);
 				assert.strictEqual(viewModel.getNextVisibleCellIndex(2), 7);
@@ -377,14 +364,14 @@ suite('Notebook Folding', () => {
 				['body 2', 'markdown', CellKind.Markup, [], {}],
 				['body 3', 'markdown', CellKind.Markup, [], {}],
 				['## header 2.2', 'markdown', CellKind.Markup, [], {}],
-				['var e = 7;', 'markdown', CellKind.Markup, [], {}],
+				['var e = 7;', 'markdown', CellKind.Markup, [], {}]
 			],
 			(editor, viewModel, ds) => {
 				const foldingModel = ds.add(new FoldingModel());
 				foldingModel.attachViewModel(viewModel);
 				foldingModel.applyMemento([
 					{ start: 5, end: 6 },
-					{ start: 10, end: 11 },
+					{ start: 10, end: 11 }
 				]);
 
 				viewModel.updateFoldingRanges(foldingModel.regions);

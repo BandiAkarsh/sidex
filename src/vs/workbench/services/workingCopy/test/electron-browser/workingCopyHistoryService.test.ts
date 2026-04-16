@@ -4,17 +4,31 @@
  *--------------------------------------------------------------------------------------------*/
 
 import assert from 'assert';
-import { TestContextService, TestStorageService, TestWorkingCopy } from '../../../../test/common/workbenchTestServices.js';
+import {
+	TestContextService,
+	TestStorageService,
+	TestWorkingCopy
+} from '../../../../test/common/workbenchTestServices.js';
 import { NullLogService } from '../../../../../platform/log/common/log.js';
 import { FileService } from '../../../../../platform/files/common/fileService.js';
 import { Schemas } from '../../../../../base/common/network.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { CancellationToken, CancellationTokenSource } from '../../../../../base/common/cancellation.js';
-import { IWorkingCopyHistoryEntry, IWorkingCopyHistoryEntryDescriptor, IWorkingCopyHistoryEvent } from '../../common/workingCopyHistory.js';
+import {
+	IWorkingCopyHistoryEntry,
+	IWorkingCopyHistoryEntryDescriptor,
+	IWorkingCopyHistoryEvent
+} from '../../common/workingCopyHistory.js';
 import { IFileService } from '../../../../../platform/files/common/files.js';
 import { UriIdentityService } from '../../../../../platform/uriIdentity/common/uriIdentityService.js';
 import { LabelService } from '../../../label/common/labelService.js';
-import { TestEnvironmentService, TestLifecycleService, TestPathService, TestRemoteAgentService, TestWillShutdownEvent } from '../../../../test/browser/workbenchTestServices.js';
+import {
+	TestEnvironmentService,
+	TestLifecycleService,
+	TestPathService,
+	TestRemoteAgentService,
+	TestWillShutdownEvent
+} from '../../../../test/browser/workbenchTestServices.js';
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { NativeWorkingCopyHistoryService } from '../../common/workingCopyHistoryService.js';
 import { joinPath, dirname, basename } from '../../../../../base/common/resources.js';
@@ -26,7 +40,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 
 export class TestWorkingCopyHistoryService extends NativeWorkingCopyHistoryService {
-
 	readonly _fileService: IFileService;
 	readonly _configurationService: TestConfigurationService;
 	readonly _lifecycleService: TestLifecycleService;
@@ -37,17 +50,39 @@ export class TestWorkingCopyHistoryService extends NativeWorkingCopyHistoryServi
 
 		if (!fileService) {
 			fileService = disposables.add(new FileService(logService));
-			disposables.add(fileService.registerProvider(Schemas.inMemory, disposables.add(new InMemoryFileSystemProvider())));
-			disposables.add(fileService.registerProvider(Schemas.vscodeUserData, disposables.add(new InMemoryFileSystemProvider())));
+			disposables.add(
+				fileService.registerProvider(Schemas.inMemory, disposables.add(new InMemoryFileSystemProvider()))
+			);
+			disposables.add(
+				fileService.registerProvider(Schemas.vscodeUserData, disposables.add(new InMemoryFileSystemProvider()))
+			);
 		}
 
 		const remoteAgentService = new TestRemoteAgentService();
 		const uriIdentityService = disposables.add(new UriIdentityService(fileService));
 		const lifecycleService = disposables.add(new TestLifecycleService());
-		const labelService = disposables.add(new LabelService(environmentService, new TestContextService(), new TestPathService(), new TestRemoteAgentService(), disposables.add(new TestStorageService()), lifecycleService));
+		const labelService = disposables.add(
+			new LabelService(
+				environmentService,
+				new TestContextService(),
+				new TestPathService(),
+				new TestRemoteAgentService(),
+				disposables.add(new TestStorageService()),
+				lifecycleService
+			)
+		);
 		const configurationService = new TestConfigurationService();
 
-		super(fileService, remoteAgentService, environmentService, uriIdentityService, labelService, lifecycleService, logService, configurationService);
+		super(
+			fileService,
+			remoteAgentService,
+			environmentService,
+			uriIdentityService,
+			labelService,
+			lifecycleService,
+			logService,
+			configurationService
+		);
 
 		this._fileService = fileService;
 		this._configurationService = configurationService;
@@ -56,7 +91,6 @@ export class TestWorkingCopyHistoryService extends NativeWorkingCopyHistoryServi
 }
 
 suite('WorkingCopyHistoryService', () => {
-
 	const disposables = new DisposableStore();
 
 	let testDir: URI;
@@ -70,16 +104,13 @@ suite('WorkingCopyHistoryService', () => {
 	let testFile3Path: URI;
 
 	const testFile1PathContents = 'Hello Foo';
-	const testFile2PathContents = [
-		'Lorem ipsum ',
-		'dolor öäü sit amet ',
-		'adipiscing ßß elit',
-		'consectetur '
-	].join('');
+	const testFile2PathContents = ['Lorem ipsum ', 'dolor öäü sit amet ', 'adipiscing ßß elit', 'consectetur '].join('');
 	const testFile3PathContents = 'Hello Bar';
 
 	setup(async () => {
-		testDir = URI.file(join(generateUuid(), 'vsctests', 'workingcopyhistoryservice')).with({ scheme: Schemas.inMemory });
+		testDir = URI.file(join(generateUuid(), 'vsctests', 'workingcopyhistoryservice')).with({
+			scheme: Schemas.inMemory
+		});
 		historyHome = joinPath(testDir, 'User', 'History');
 		workHome = joinPath(testDir, 'work');
 
@@ -100,17 +131,32 @@ suite('WorkingCopyHistoryService', () => {
 
 	let increasingTimestampCounter = 1;
 
-	async function addEntry(descriptor: IWorkingCopyHistoryEntryDescriptor, token: CancellationToken, expectEntryAdded?: boolean): Promise<IWorkingCopyHistoryEntry>;
-	async function addEntry(descriptor: IWorkingCopyHistoryEntryDescriptor, token: CancellationToken, expectEntryAdded: false): Promise<IWorkingCopyHistoryEntry | undefined>;
-	async function addEntry(descriptor: IWorkingCopyHistoryEntryDescriptor, token: CancellationToken, expectEntryAdded = true): Promise<IWorkingCopyHistoryEntry | undefined> {
-		const entry = await service.addEntry({
-			...descriptor,
-			timestamp: increasingTimestampCounter++ // very important to get tests to not be flaky with stable sort order
-		}, token);
+	async function addEntry(
+		descriptor: IWorkingCopyHistoryEntryDescriptor,
+		token: CancellationToken,
+		expectEntryAdded?: boolean
+	): Promise<IWorkingCopyHistoryEntry>;
+	async function addEntry(
+		descriptor: IWorkingCopyHistoryEntryDescriptor,
+		token: CancellationToken,
+		expectEntryAdded: false
+	): Promise<IWorkingCopyHistoryEntry | undefined>;
+	async function addEntry(
+		descriptor: IWorkingCopyHistoryEntryDescriptor,
+		token: CancellationToken,
+		expectEntryAdded = true
+	): Promise<IWorkingCopyHistoryEntry | undefined> {
+		const entry = await service.addEntry(
+			{
+				...descriptor,
+				timestamp: increasingTimestampCounter++ // very important to get tests to not be flaky with stable sort order
+			},
+			token
+		);
 
 		if (expectEntryAdded) {
 			assert.ok(entry, 'Unexpected undefined local history entry');
-			assert.strictEqual((await fileService.exists(entry.location)), true, 'Unexpected local history not stored');
+			assert.strictEqual(await fileService.exists(entry.location), true, 'Unexpected local history not stored');
 		}
 
 		return entry;
@@ -250,7 +296,10 @@ suite('WorkingCopyHistoryService', () => {
 	test('removeEntry - deletes history entries folder when last entry removed', async () => {
 		const workingCopy1 = disposables.add(new TestWorkingCopy(testFile1Path));
 
-		let entry: IWorkingCopyHistoryEntry | undefined = await addEntry({ resource: workingCopy1.resource }, CancellationToken.None);
+		let entry: IWorkingCopyHistoryEntry | undefined = await addEntry(
+			{ resource: workingCopy1.resource },
+			CancellationToken.None
+		);
 
 		// Simulate shutdown
 		let event = new TestWillShutdownEvent();
@@ -262,7 +311,7 @@ suite('WorkingCopyHistoryService', () => {
 		service.dispose();
 		service = disposables.add(new TestWorkingCopyHistoryService(disposables, fileService));
 
-		assert.strictEqual((await fileService.exists(dirname(entry.location))), true);
+		assert.strictEqual(await fileService.exists(dirname(entry.location)), true);
 
 		entry = (await service.getEntries(workingCopy1.resource, CancellationToken.None)).at(0);
 		assert.ok(entry);
@@ -279,12 +328,12 @@ suite('WorkingCopyHistoryService', () => {
 		service.dispose();
 		service = disposables.add(new TestWorkingCopyHistoryService(disposables, fileService));
 
-		assert.strictEqual((await fileService.exists(dirname(entry.location))), false);
+		assert.strictEqual(await fileService.exists(dirname(entry.location)), false);
 	});
 
 	test('removeAll', async () => {
 		let removed = false;
-		disposables.add(service.onDidRemoveEntries(() => removed = true));
+		disposables.add(service.onDidRemoveEntries(() => (removed = true)));
 
 		const workingCopy1 = disposables.add(new TestWorkingCopy(testFile1Path));
 		const workingCopy2 = disposables.add(new TestWorkingCopy(testFile2Path));
@@ -346,7 +395,10 @@ suite('WorkingCopyHistoryService', () => {
 		entries = await service.getEntries(workingCopy2.resource, CancellationToken.None);
 		assert.strictEqual(entries.length, 0);
 
-		const entry3 = await addEntry({ resource: workingCopy2.resource, source: 'other-test-source' }, CancellationToken.None);
+		const entry3 = await addEntry(
+			{ resource: workingCopy2.resource, source: 'other-test-source' },
+			CancellationToken.None
+		);
 
 		entries = await service.getEntries(workingCopy2.resource, CancellationToken.None);
 		assert.strictEqual(entries.length, 1);
@@ -397,7 +449,7 @@ suite('WorkingCopyHistoryService', () => {
 		service = disposables.add(new TestWorkingCopyHistoryService(disposables, fileService));
 
 		const metaFile = joinPath(dirname(entry1.location), 'entries.json');
-		assert.ok((await fileService.exists(metaFile)));
+		assert.ok(await fileService.exists(metaFile));
 		await fileService.del(metaFile);
 
 		const entries = await service.getEntries(workingCopy1.resource, CancellationToken.None);
@@ -496,7 +548,10 @@ suite('WorkingCopyHistoryService', () => {
 		resources = await service.getAll(CancellationToken.None);
 		assert.strictEqual(resources.length, 2);
 		for (const resource of resources) {
-			if (resource.toString() !== workingCopy1.resource.toString() && resource.toString() !== workingCopy2.resource.toString()) {
+			if (
+				resource.toString() !== workingCopy1.resource.toString() &&
+				resource.toString() !== workingCopy2.resource.toString()
+			) {
 				assert.fail(`Unexpected history resource: ${resource.toString()}`);
 			}
 		}
@@ -517,7 +572,11 @@ suite('WorkingCopyHistoryService', () => {
 		resources = await service.getAll(CancellationToken.None);
 		assert.strictEqual(resources.length, 3);
 		for (const resource of resources) {
-			if (resource.toString() !== workingCopy1.resource.toString() && resource.toString() !== workingCopy2.resource.toString() && resource.toString() !== workingCopy3.resource.toString()) {
+			if (
+				resource.toString() !== workingCopy1.resource.toString() &&
+				resource.toString() !== workingCopy2.resource.toString() &&
+				resource.toString() !== workingCopy3.resource.toString()
+			) {
 				assert.fail(`Unexpected history resource: ${resource.toString()}`);
 			}
 		}
@@ -550,7 +609,11 @@ suite('WorkingCopyHistoryService', () => {
 		assert.strictEqual(resources.length, 0);
 	});
 
-	function assertEntryEqual(entryA: IWorkingCopyHistoryEntry, entryB: IWorkingCopyHistoryEntry, assertTimestamp = true): void {
+	function assertEntryEqual(
+		entryA: IWorkingCopyHistoryEntry,
+		entryB: IWorkingCopyHistoryEntry,
+		assertTimestamp = true
+	): void {
 		assert.strictEqual(entryA.id, entryB.id);
 		assert.strictEqual(entryA.location.toString(), entryB.location.toString());
 		if (assertTimestamp) {
@@ -578,8 +641,8 @@ suite('WorkingCopyHistoryService', () => {
 
 		assert.ok(!(await fileService.exists(entry1.location)));
 		assert.ok(!(await fileService.exists(entry2.location)));
-		assert.ok((await fileService.exists(entry3.location)));
-		assert.ok((await fileService.exists(entry4.location)));
+		assert.ok(await fileService.exists(entry3.location));
+		assert.ok(await fileService.exists(entry4.location));
 
 		// Resolve from file service fresh and verify again
 
@@ -600,9 +663,9 @@ suite('WorkingCopyHistoryService', () => {
 		service._lifecycleService.fireWillShutdown(event);
 		await Promise.allSettled(event.value);
 
-		assert.ok((await fileService.exists(entry3.location)));
-		assert.ok((await fileService.exists(entry4.location)));
-		assert.ok((await fileService.exists(entry5.location)));
+		assert.ok(await fileService.exists(entry3.location));
+		assert.ok(await fileService.exists(entry4.location));
+		assert.ok(await fileService.exists(entry5.location));
 
 		// Resolve from file service fresh and verify again
 
@@ -618,7 +681,7 @@ suite('WorkingCopyHistoryService', () => {
 
 	test('entries are merged when source is same', async () => {
 		let replaced: IWorkingCopyHistoryEntry | undefined = undefined;
-		disposables.add(service.onDidReplaceEntry(e => replaced = e.entry));
+		disposables.add(service.onDidReplaceEntry(e => (replaced = e.entry)));
 
 		const workingCopy1 = disposables.add(new TestWorkingCopy(testFile1Path));
 
@@ -727,7 +790,10 @@ suite('WorkingCopyHistoryService', () => {
 
 		assert.strictEqual(resources.length, 2);
 		for (const resource of resources) {
-			if (resource.toString() !== renamedWorkingCopy1Resource.toString() && resource.toString() !== renamedWorkingCopy2Resource.toString()) {
+			if (
+				resource.toString() !== renamedWorkingCopy1Resource.toString() &&
+				resource.toString() !== renamedWorkingCopy2Resource.toString()
+			) {
 				assert.fail(`Unexpected history resource: ${resource.toString()}`);
 			}
 		}
@@ -785,7 +851,10 @@ suite('WorkingCopyHistoryService', () => {
 		const all = await service.getAll(CancellationToken.None);
 		assert.strictEqual(all.length, 2);
 		for (const resource of all) {
-			if (resource.toString() !== renamedWorkingCopy1Resource.toString() && resource.toString() !== renamedWorkingCopy2Resource.toString()) {
+			if (
+				resource.toString() !== renamedWorkingCopy1Resource.toString() &&
+				resource.toString() !== renamedWorkingCopy2Resource.toString()
+			) {
 				assert.fail(`Unexpected history resource: ${resource.toString()}`);
 			}
 		}
@@ -795,9 +864,18 @@ suite('WorkingCopyHistoryService', () => {
 		const workingCopyTarget = disposables.add(new TestWorkingCopy(testFile1Path));
 		const workingCopySource = disposables.add(new TestWorkingCopy(testFile2Path));
 
-		const entry1 = await addEntry({ resource: workingCopyTarget.resource, source: 'test-source1' }, CancellationToken.None);
-		const entry2 = await addEntry({ resource: workingCopyTarget.resource, source: 'test-source2' }, CancellationToken.None);
-		const entry3 = await addEntry({ resource: workingCopyTarget.resource, source: 'test-source3' }, CancellationToken.None);
+		const entry1 = await addEntry(
+			{ resource: workingCopyTarget.resource, source: 'test-source1' },
+			CancellationToken.None
+		);
+		const entry2 = await addEntry(
+			{ resource: workingCopyTarget.resource, source: 'test-source2' },
+			CancellationToken.None
+		);
+		const entry3 = await addEntry(
+			{ resource: workingCopyTarget.resource, source: 'test-source3' },
+			CancellationToken.None
+		);
 
 		let entries = await service.getEntries(workingCopyTarget.resource, CancellationToken.None);
 		assert.strictEqual(entries.length, 3);
@@ -848,13 +926,31 @@ suite('WorkingCopyHistoryService', () => {
 		const workingCopyTarget = disposables.add(new TestWorkingCopy(testFile1Path));
 		const workingCopySource = disposables.add(new TestWorkingCopy(testFile2Path));
 
-		const targetEntry1 = await addEntry({ resource: workingCopyTarget.resource, source: 'test-target1' }, CancellationToken.None);
-		const targetEntry2 = await addEntry({ resource: workingCopyTarget.resource, source: 'test-target2' }, CancellationToken.None);
-		const targetEntry3 = await addEntry({ resource: workingCopyTarget.resource, source: 'test-target3' }, CancellationToken.None);
+		const targetEntry1 = await addEntry(
+			{ resource: workingCopyTarget.resource, source: 'test-target1' },
+			CancellationToken.None
+		);
+		const targetEntry2 = await addEntry(
+			{ resource: workingCopyTarget.resource, source: 'test-target2' },
+			CancellationToken.None
+		);
+		const targetEntry3 = await addEntry(
+			{ resource: workingCopyTarget.resource, source: 'test-target3' },
+			CancellationToken.None
+		);
 
-		const sourceEntry1 = await addEntry({ resource: workingCopySource.resource, source: 'test-source1' }, CancellationToken.None);
-		const sourceEntry2 = await addEntry({ resource: workingCopySource.resource, source: 'test-source2' }, CancellationToken.None);
-		const sourceEntry3 = await addEntry({ resource: workingCopySource.resource, source: 'test-source3' }, CancellationToken.None);
+		const sourceEntry1 = await addEntry(
+			{ resource: workingCopySource.resource, source: 'test-source1' },
+			CancellationToken.None
+		);
+		const sourceEntry2 = await addEntry(
+			{ resource: workingCopySource.resource, source: 'test-source2' },
+			CancellationToken.None
+		);
+		const sourceEntry3 = await addEntry(
+			{ resource: workingCopySource.resource, source: 'test-source3' },
+			CancellationToken.None
+		);
 
 		let entries = await service.getEntries(workingCopyTarget.resource, CancellationToken.None);
 		assert.strictEqual(entries.length, 3);

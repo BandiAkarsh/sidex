@@ -14,40 +14,44 @@ import { IConfigurationService } from '../../../../../platform/configuration/com
 import { IContextKey, IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { SpeechTimeoutDefault } from '../../../accessibility/browser/accessibilityConfiguration.js';
-import { ISpeechService, AccessibilityVoiceSettingId, ISpeechToTextEvent, SpeechToTextStatus } from '../../../speech/common/speechService.js';
+import {
+	ISpeechService,
+	AccessibilityVoiceSettingId,
+	ISpeechToTextEvent,
+	SpeechToTextStatus
+} from '../../../speech/common/speechService.js';
 import type { IMarker, IDecoration } from '@xterm/xterm';
 import { alert } from '../../../../../base/browser/ui/aria/aria.js';
 import { ITerminalService } from '../../../terminal/browser/terminal.js';
 import { TerminalContextKeys } from '../../../terminal/common/terminalContextKey.js';
 
-
 const symbolMap: { [key: string]: string } = {
-	'Ampersand': '&',
-	'ampersand': '&',
-	'Dollar': '$',
-	'dollar': '$',
-	'Percent': '%',
-	'percent': '%',
-	'Asterisk': '*',
-	'asterisk': '*',
-	'Plus': '+',
-	'plus': '+',
-	'Equals': '=',
-	'equals': '=',
-	'Exclamation': '!',
-	'exclamation': '!',
-	'Slash': '/',
-	'slash': '/',
-	'Backslash': '\\',
-	'backslash': '\\',
-	'Dot': '.',
-	'dot': '.',
-	'Period': '.',
-	'period': '.',
-	'Quote': '\'',
-	'quote': '\'',
+	Ampersand: '&',
+	ampersand: '&',
+	Dollar: '$',
+	dollar: '$',
+	Percent: '%',
+	percent: '%',
+	Asterisk: '*',
+	asterisk: '*',
+	Plus: '+',
+	plus: '+',
+	Equals: '=',
+	equals: '=',
+	Exclamation: '!',
+	exclamation: '!',
+	Slash: '/',
+	slash: '/',
+	Backslash: '\\',
+	backslash: '\\',
+	Dot: '.',
+	dot: '.',
+	Period: '.',
+	period: '.',
+	Quote: "'",
+	quote: "'",
 	'double quote': '"',
-	'Double quote': '"',
+	'Double quote': '"'
 };
 
 export class TerminalVoiceSession extends Disposable {
@@ -72,7 +76,7 @@ export class TerminalVoiceSession extends Disposable {
 		@ISpeechService private readonly _speechService: ISpeechService,
 		@ITerminalService private readonly _terminalService: ITerminalService,
 		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IContextKeyService contextKeyService: IContextKeyService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
 		super();
 		this._register(this._terminalService.onDidChangeActiveInstance(() => this.stop()));
@@ -87,52 +91,59 @@ export class TerminalVoiceSession extends Disposable {
 		if (!isNumber(voiceTimeout) || voiceTimeout < 0) {
 			voiceTimeout = SpeechTimeoutDefault;
 		}
-		this._acceptTranscriptionScheduler = this._disposables.add(new RunOnceScheduler(() => {
-			this._sendText();
-			this.stop();
-		}, voiceTimeout));
+		this._acceptTranscriptionScheduler = this._disposables.add(
+			new RunOnceScheduler(() => {
+				this._sendText();
+				this.stop();
+			}, voiceTimeout)
+		);
 		this._cancellationTokenSource = new CancellationTokenSource();
 		this._register(toDisposable(() => this._cancellationTokenSource?.dispose(true)));
-		const session = await this._speechService.createSpeechToTextSession(this._cancellationTokenSource?.token, 'terminal');
+		const session = await this._speechService.createSpeechToTextSession(
+			this._cancellationTokenSource?.token,
+			'terminal'
+		);
 
-		this._disposables.add(session.onDidChange((e) => {
-			if (this._cancellationTokenSource?.token.isCancellationRequested) {
-				return;
-			}
-			switch (e.status) {
-				case SpeechToTextStatus.Started:
-					this._terminalDictationInProgress.set(true);
-					if (!this._decoration) {
-						this._createDecoration();
-					}
-					break;
-				case SpeechToTextStatus.Recognizing: {
-					this._updateInput(e);
-					this._renderGhostText(e);
-					this._updateDecoration();
-					if (voiceTimeout > 0) {
-						this._acceptTranscriptionScheduler!.cancel();
-					}
-					break;
+		this._disposables.add(
+			session.onDidChange(e => {
+				if (this._cancellationTokenSource?.token.isCancellationRequested) {
+					return;
 				}
-				case SpeechToTextStatus.Recognized:
-					this._updateInput(e);
-					// Send text immediately like editor dictation
-					this._sendText();
-					// Clear ghost text and input for next recognition
-					this._ghostText?.dispose();
-					this._ghostText = undefined;
-					this._ghostTextMarker?.dispose();
-					this._ghostTextMarker = undefined;
-					// Update decoration position for next recognition
-					this._updateDecoration();
-					this._input = '';
-					break;
-				case SpeechToTextStatus.Stopped:
-					this.stop();
-					break;
-			}
-		}));
+				switch (e.status) {
+					case SpeechToTextStatus.Started:
+						this._terminalDictationInProgress.set(true);
+						if (!this._decoration) {
+							this._createDecoration();
+						}
+						break;
+					case SpeechToTextStatus.Recognizing: {
+						this._updateInput(e);
+						this._renderGhostText(e);
+						this._updateDecoration();
+						if (voiceTimeout > 0) {
+							this._acceptTranscriptionScheduler!.cancel();
+						}
+						break;
+					}
+					case SpeechToTextStatus.Recognized:
+						this._updateInput(e);
+						// Send text immediately like editor dictation
+						this._sendText();
+						// Clear ghost text and input for next recognition
+						this._ghostText?.dispose();
+						this._ghostText = undefined;
+						this._ghostTextMarker?.dispose();
+						this._ghostTextMarker = undefined;
+						// Update decoration position for next recognition
+						this._updateDecoration();
+						this._input = '';
+						break;
+					case SpeechToTextStatus.Stopped:
+						this.stop();
+						break;
+				}
+			})
+		);
 	}
 	stop(send?: boolean): void {
 		this._setInactive();
@@ -186,7 +197,7 @@ export class TerminalVoiceSession extends Disposable {
 		this._decoration = xterm.registerDecoration({
 			marker: this._marker,
 			layer: 'top',
-			x: xPosition,
+			x: xPosition
 		});
 		if (!this._decoration) {
 			this._marker.dispose();
@@ -232,7 +243,7 @@ export class TerminalVoiceSession extends Disposable {
 		this._ghostText = xterm.registerDecoration({
 			marker: this._ghostTextMarker,
 			layer: 'top',
-			x: onFirstLine ? xterm.buffer.active.cursorX + 4 : xterm.buffer.active.cursorX + 1,
+			x: onFirstLine ? xterm.buffer.active.cursorX + 4 : xterm.buffer.active.cursorX + 1
 		});
 		if (this._ghostText) {
 			this._disposables.add(this._ghostText);
@@ -240,7 +251,7 @@ export class TerminalVoiceSession extends Disposable {
 		this._ghostText?.onRender((e: HTMLElement) => {
 			e.classList.add('terminal-voice-progress-text');
 			e.textContent = text;
-			e.style.width = (xterm.cols - xterm.buffer.active.cursorX) / xterm.cols * 100 + '%';
+			e.style.width = ((xterm.cols - xterm.buffer.active.cursorX) / xterm.cols) * 100 + '%';
 		});
 	}
 }

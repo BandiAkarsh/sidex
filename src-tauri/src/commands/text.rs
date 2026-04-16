@@ -13,8 +13,7 @@ pub struct FileSummary {
 
 #[tauri::command]
 pub fn count_lines(path: String) -> Result<usize, String> {
-    let mut file =
-        std::fs::File::open(&path).map_err(|e| format!("Failed to open file: {}", e))?;
+    let mut file = std::fs::File::open(&path).map_err(|e| format!("Failed to open file: {}", e))?;
     let mut buf = [0u8; 32768];
     let mut count = 0usize;
 

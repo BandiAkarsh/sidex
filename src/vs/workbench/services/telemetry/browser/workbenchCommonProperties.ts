@@ -8,7 +8,12 @@ import * as Platform from '../../../../base/common/platform.js';
 import * as uuid from '../../../../base/common/uuid.js';
 import { cleanRemoteAuthority } from '../../../../platform/telemetry/common/telemetryUtils.js';
 import { mixin } from '../../../../base/common/objects.js';
-import { ICommonProperties, firstSessionDateStorageKey, lastSessionDateStorageKey, machineIdKey } from '../../../../platform/telemetry/common/telemetry.js';
+import {
+	ICommonProperties,
+	firstSessionDateStorageKey,
+	lastSessionDateStorageKey,
+	machineIdKey
+} from '../../../../platform/telemetry/common/telemetry.js';
 import { Gesture } from '../../../../base/browser/touch.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
 
@@ -28,7 +33,12 @@ export function resolveWorkbenchCommonProperties(
 	remoteAuthority?: string,
 	resolveAdditionalProperties?: () => { [key: string]: unknown }
 ): ICommonProperties {
-	const { commit, version, embedderIdentifier: productIdentifier, removeTelemetryMachineId: removeMachineId } = productService ?? {};
+	const {
+		commit,
+		version,
+		embedderIdentifier: productIdentifier,
+		removeTelemetryMachineId: removeMachineId
+	} = productService ?? {};
 	const result: ICommonProperties = Object.create(null);
 	const firstSessionDate = storageService.get(firstSessionDateStorageKey, StorageScope.APPLICATION)!;
 	const lastSessionDate = storageService.get(lastSessionDateStorageKey, StorageScope.APPLICATION)!;
@@ -43,7 +53,6 @@ export function resolveWorkbenchCommonProperties(
 	} else {
 		machineId = `Redacted-${productIdentifier ?? 'web'}`;
 	}
-
 
 	/**
 	 * Note: In the web, session date information is fetched from browser storage, so these dates are tied to a specific
@@ -85,7 +94,7 @@ export function resolveWorkbenchCommonProperties(
 	const startTime = Date.now();
 	Object.defineProperties(result, {
 		// __GDPR__COMMON__ "timestamp" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
-		'timestamp': {
+		timestamp: {
 			get: () => new Date(),
 			enumerable: true
 		},
@@ -107,4 +116,3 @@ export function resolveWorkbenchCommonProperties(
 
 	return result;
 }
-

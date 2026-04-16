@@ -7,7 +7,10 @@ import { strictEqual } from 'assert';
 import { Emitter } from '../../../../../base/common/event.js';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { ICwdDetectionCapability, TerminalCapability } from '../../../../../platform/terminal/common/capabilities/capabilities.js';
+import {
+	ICwdDetectionCapability,
+	TerminalCapability
+} from '../../../../../platform/terminal/common/capabilities/capabilities.js';
 import { TerminalCapabilityStore } from '../../../../../platform/terminal/common/capabilities/terminalCapabilityStore.js';
 import { createInstanceCapabilityEventMultiplexer } from '../../browser/terminalEvents.js';
 import { ITerminalInstance } from '../../browser/terminal.js';
@@ -38,8 +41,6 @@ class MockCwdDetectionCapability implements ICwdDetectionCapability {
 	}
 }
 
-
-
 function createMockTerminalInstance(instanceId: number, capabilities: TerminalCapabilityStore): ITerminalInstance {
 	const instance = {
 		instanceId,
@@ -61,21 +62,25 @@ suite('Terminal Events', () => {
 			const onAddInstance = store.add(new Emitter<ITerminalInstance>());
 			const onRemoveInstance = store.add(new Emitter<ITerminalInstance>());
 
-			const multiplexer = store.add(createInstanceCapabilityEventMultiplexer(
-				[instance],
-				onAddInstance.event,
-				onRemoveInstance.event,
-				TerminalCapability.CwdDetection,
-				(cap) => cap.onDidChangeCwd
-			));
+			const multiplexer = store.add(
+				createInstanceCapabilityEventMultiplexer(
+					[instance],
+					onAddInstance.event,
+					onRemoveInstance.event,
+					TerminalCapability.CwdDetection,
+					cap => cap.onDidChangeCwd
+				)
+			);
 
 			let eventFired = false;
 			let capturedData: { instance: ITerminalInstance; data: string } | undefined;
 
-			store.add(multiplexer.event(e => {
-				eventFired = true;
-				capturedData = e;
-			}));
+			store.add(
+				multiplexer.event(e => {
+					eventFired = true;
+					capturedData = e;
+				})
+			);
 
 			capability.fireEvent('test-data');
 
@@ -90,18 +95,22 @@ suite('Terminal Events', () => {
 			const onAddInstance = store.add(new Emitter<ITerminalInstance>());
 			const onRemoveInstance = store.add(new Emitter<ITerminalInstance>());
 
-			const multiplexer = store.add(createInstanceCapabilityEventMultiplexer(
-				[instance],
-				onAddInstance.event,
-				onRemoveInstance.event,
-				TerminalCapability.CwdDetection,
-				(cap) => cap.onDidChangeCwd
-			));
+			const multiplexer = store.add(
+				createInstanceCapabilityEventMultiplexer(
+					[instance],
+					onAddInstance.event,
+					onRemoveInstance.event,
+					TerminalCapability.CwdDetection,
+					cap => cap.onDidChangeCwd
+				)
+			);
 
 			let eventFired = false;
-			store.add(multiplexer.event(() => {
-				eventFired = true;
-			}));
+			store.add(
+				multiplexer.event(() => {
+					eventFired = true;
+				})
+			);
 
 			strictEqual(eventFired, false, 'No event should be fired for instances without capabilities');
 		});
@@ -110,21 +119,25 @@ suite('Terminal Events', () => {
 			const onAddInstance = store.add(new Emitter<ITerminalInstance>());
 			const onRemoveInstance = store.add(new Emitter<ITerminalInstance>());
 
-			const multiplexer = store.add(createInstanceCapabilityEventMultiplexer(
-				[],
-				onAddInstance.event,
-				onRemoveInstance.event,
-				TerminalCapability.CwdDetection,
-				(cap) => cap.onDidChangeCwd
-			));
+			const multiplexer = store.add(
+				createInstanceCapabilityEventMultiplexer(
+					[],
+					onAddInstance.event,
+					onRemoveInstance.event,
+					TerminalCapability.CwdDetection,
+					cap => cap.onDidChangeCwd
+				)
+			);
 
 			let eventFired = false;
 			let capturedData: { instance: ITerminalInstance; data: string } | undefined;
 
-			store.add(multiplexer.event(e => {
-				eventFired = true;
-				capturedData = e;
-			}));
+			store.add(
+				multiplexer.event(e => {
+					eventFired = true;
+					capturedData = e;
+				})
+			);
 
 			// Add a new instance with capability
 			const capability = store.add(new MockCwdDetectionCapability());
@@ -153,18 +166,22 @@ suite('Terminal Events', () => {
 			const onAddInstance = store.add(new Emitter<ITerminalInstance>());
 			const onRemoveInstance = store.add(new Emitter<ITerminalInstance>());
 
-			const multiplexer = store.add(createInstanceCapabilityEventMultiplexer(
-				[instance],
-				onAddInstance.event,
-				onRemoveInstance.event,
-				TerminalCapability.CwdDetection,
-				(cap) => cap.onDidChangeCwd
-			));
+			const multiplexer = store.add(
+				createInstanceCapabilityEventMultiplexer(
+					[instance],
+					onAddInstance.event,
+					onRemoveInstance.event,
+					TerminalCapability.CwdDetection,
+					cap => cap.onDidChangeCwd
+				)
+			);
 
 			let eventCount = 0;
-			store.add(multiplexer.event(() => {
-				eventCount++;
-			}));
+			store.add(
+				multiplexer.event(() => {
+					eventCount++;
+				})
+			);
 
 			// Fire event before removal
 			capability.fireEvent('before-removal');
@@ -184,21 +201,25 @@ suite('Terminal Events', () => {
 			const onAddInstance = store.add(new Emitter<ITerminalInstance>());
 			const onRemoveInstance = store.add(new Emitter<ITerminalInstance>());
 
-			const multiplexer = store.add(createInstanceCapabilityEventMultiplexer(
-				[instance],
-				onAddInstance.event,
-				onRemoveInstance.event,
-				TerminalCapability.CwdDetection,
-				(cap) => cap.onDidChangeCwd
-			));
+			const multiplexer = store.add(
+				createInstanceCapabilityEventMultiplexer(
+					[instance],
+					onAddInstance.event,
+					onRemoveInstance.event,
+					TerminalCapability.CwdDetection,
+					cap => cap.onDidChangeCwd
+				)
+			);
 
 			let eventFired = false;
 			let capturedData: { instance: ITerminalInstance; data: string } | undefined;
 
-			store.add(multiplexer.event(e => {
-				eventFired = true;
-				capturedData = e;
-			}));
+			store.add(
+				multiplexer.event(e => {
+					eventFired = true;
+					capturedData = e;
+				})
+			);
 
 			// Add capability to existing instance
 			const capability = store.add(new MockCwdDetectionCapability());
@@ -221,25 +242,29 @@ suite('Terminal Events', () => {
 			const onAddInstance = store.add(new Emitter<ITerminalInstance>());
 			const onRemoveInstance = store.add(new Emitter<ITerminalInstance>());
 
-			const multiplexer = store.add(createInstanceCapabilityEventMultiplexer(
-				[instance],
-				onAddInstance.event,
-				onRemoveInstance.event,
-				TerminalCapability.CwdDetection,
-				(cap) => cap.onDidChangeCwd
-			));
+			const multiplexer = store.add(
+				createInstanceCapabilityEventMultiplexer(
+					[instance],
+					onAddInstance.event,
+					onRemoveInstance.event,
+					TerminalCapability.CwdDetection,
+					cap => cap.onDidChangeCwd
+				)
+			);
 
 			let eventCount = 0;
-			store.add(multiplexer.event(() => {
-				eventCount++;
-			}));
+			store.add(
+				multiplexer.event(() => {
+					eventCount++;
+				})
+			);
 
 			// Fire event before removing capability
 			capability.fireEvent('before-capability-removal');
 			strictEqual(eventCount, 1, 'Event should be fired before capability removal');
 
 			// Remove the capability
-			capabilities.remove(TerminalCapability.CwdDetection);			// Fire event after capability removal - should not be received
+			capabilities.remove(TerminalCapability.CwdDetection); // Fire event after capability removal - should not be received
 			capability.fireEvent('after-capability-removal');
 			strictEqual(eventCount, 1, 'Event should not be fired after capability removal');
 		});
@@ -257,18 +282,22 @@ suite('Terminal Events', () => {
 			const onAddInstance = store.add(new Emitter<ITerminalInstance>());
 			const onRemoveInstance = store.add(new Emitter<ITerminalInstance>());
 
-			const multiplexer = store.add(createInstanceCapabilityEventMultiplexer(
-				[instance1, instance2],
-				onAddInstance.event,
-				onRemoveInstance.event,
-				TerminalCapability.CwdDetection,
-				(cap) => cap.onDidChangeCwd
-			));
+			const multiplexer = store.add(
+				createInstanceCapabilityEventMultiplexer(
+					[instance1, instance2],
+					onAddInstance.event,
+					onRemoveInstance.event,
+					TerminalCapability.CwdDetection,
+					cap => cap.onDidChangeCwd
+				)
+			);
 
 			const events: Array<{ instance: ITerminalInstance; data: string }> = [];
-			store.add(multiplexer.event(e => {
-				events.push(e);
-			}));
+			store.add(
+				multiplexer.event(e => {
+					events.push(e);
+				})
+			);
 
 			// Fire events from both capabilities
 			capability1.fireEvent('data-from-instance1');
@@ -291,18 +320,22 @@ suite('Terminal Events', () => {
 			const onAddInstance = testStore.add(new Emitter<ITerminalInstance>());
 			const onRemoveInstance = testStore.add(new Emitter<ITerminalInstance>());
 
-			const multiplexer = testStore.add(createInstanceCapabilityEventMultiplexer(
-				[instance],
-				onAddInstance.event,
-				onRemoveInstance.event,
-				TerminalCapability.CwdDetection,
-				(cap) => cap.onDidChangeCwd
-			));
+			const multiplexer = testStore.add(
+				createInstanceCapabilityEventMultiplexer(
+					[instance],
+					onAddInstance.event,
+					onRemoveInstance.event,
+					TerminalCapability.CwdDetection,
+					cap => cap.onDidChangeCwd
+				)
+			);
 
 			let eventCount = 0;
-			testStore.add(multiplexer.event(() => {
-				eventCount++;
-			}));
+			testStore.add(
+				multiplexer.event(() => {
+					eventCount++;
+				})
+			);
 
 			// Fire event before disposal
 			capability.fireEvent('before-disposal');
@@ -320,18 +353,22 @@ suite('Terminal Events', () => {
 			const onAddInstance = store.add(new Emitter<ITerminalInstance>());
 			const onRemoveInstance = store.add(new Emitter<ITerminalInstance>());
 
-			const multiplexer = store.add(createInstanceCapabilityEventMultiplexer(
-				[],
-				onAddInstance.event,
-				onRemoveInstance.event,
-				TerminalCapability.CwdDetection,
-				(cap) => cap.onDidChangeCwd
-			));
+			const multiplexer = store.add(
+				createInstanceCapabilityEventMultiplexer(
+					[],
+					onAddInstance.event,
+					onRemoveInstance.event,
+					TerminalCapability.CwdDetection,
+					cap => cap.onDidChangeCwd
+				)
+			);
 
 			let eventFired = false;
-			store.add(multiplexer.event(() => {
-				eventFired = true;
-			}));
+			store.add(
+				multiplexer.event(() => {
+					eventFired = true;
+				})
+			);
 
 			// No instances, so no events should be fired initially
 			strictEqual(eventFired, false, 'No events should be fired with empty instances array');

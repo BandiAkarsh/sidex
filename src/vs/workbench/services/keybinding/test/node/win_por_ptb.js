@@ -357,7 +357,7 @@ define({
 	},
 	Backquote: {
 		vkey: 'VK_OEM_3',
-		value: '\'',
+		value: "'",
 		withShift: '"',
 		withAltGr: '',
 		withShiftAltGr: ''

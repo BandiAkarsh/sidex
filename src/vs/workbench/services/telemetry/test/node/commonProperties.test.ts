@@ -25,40 +25,76 @@ suite('Telemetry - common properties', function () {
 	});
 
 	test('default', function () {
-		const props = resolveWorkbenchCommonProperties(testStorageService, undefined!, release(), hostname(), 'someMachineId', 'someSqmId', 'somedevDeviceId', false, process);
-		assert.ok(hasKey(props, {
-			commitHash: true,
-			sessionID: true,
-			timestamp: true,
-			'common.platform': true,
-			'common.nodePlatform': true,
-			'common.nodeArch': true,
-			'common.timesincesessionstart': true,
-			'common.sequence': true,
-			// 'common.version.shell': true, // only when running on electron
-			// 'common.version.renderer': true,
-			'common.platformVersion': true,
-			version: true,
-			'common.releaseDate': true,
-			'common.firstSessionDate': true,
-			'common.lastSessionDate': true,
-			'common.isNewSession': true,
-			'common.machineId': true
-		}));
+		const props = resolveWorkbenchCommonProperties(
+			testStorageService,
+			undefined!,
+			release(),
+			hostname(),
+			'someMachineId',
+			'someSqmId',
+			'somedevDeviceId',
+			false,
+			process
+		);
+		assert.ok(
+			hasKey(props, {
+				commitHash: true,
+				sessionID: true,
+				timestamp: true,
+				'common.platform': true,
+				'common.nodePlatform': true,
+				'common.nodeArch': true,
+				'common.timesincesessionstart': true,
+				'common.sequence': true,
+				// 'common.version.shell': true, // only when running on electron
+				// 'common.version.renderer': true,
+				'common.platformVersion': true,
+				version: true,
+				'common.releaseDate': true,
+				'common.firstSessionDate': true,
+				'common.lastSessionDate': true,
+				'common.isNewSession': true,
+				'common.machineId': true
+			})
+		);
 	});
 
 	test('lastSessionDate when available', function () {
+		testStorageService.store(
+			'telemetry.lastSessionDate',
+			new Date().toUTCString(),
+			StorageScope.APPLICATION,
+			StorageTarget.MACHINE
+		);
 
-		testStorageService.store('telemetry.lastSessionDate', new Date().toUTCString(), StorageScope.APPLICATION, StorageTarget.MACHINE);
-
-		const props = resolveWorkbenchCommonProperties(testStorageService, undefined!, release(), hostname(), 'someMachineId', 'someSqmId', 'somedevDeviceId', false, process);
+		const props = resolveWorkbenchCommonProperties(
+			testStorageService,
+			undefined!,
+			release(),
+			hostname(),
+			'someMachineId',
+			'someSqmId',
+			'somedevDeviceId',
+			false,
+			process
+		);
 		assert.ok(props['common.lastSessionDate']); // conditional, see below
 		assert.ok(props['common.isNewSession']);
 		assert.strictEqual(props['common.isNewSession'], '0');
 	});
 
 	test('values chance on ask', async function () {
-		const props = resolveWorkbenchCommonProperties(testStorageService, undefined!, release(), hostname(), 'someMachineId', 'someSqmId', 'somedevDeviceId', false, process);
+		const props = resolveWorkbenchCommonProperties(
+			testStorageService,
+			undefined!,
+			release(),
+			hostname(),
+			'someMachineId',
+			'someSqmId',
+			'somedevDeviceId',
+			false,
+			process
+		);
 		let value1 = props['common.sequence'];
 		let value2 = props['common.sequence'];
 		assert.ok(value1 !== value2, 'seq');

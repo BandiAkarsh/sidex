@@ -21,7 +21,10 @@ export class MergeEditorLineRange extends LineRange {
 	}
 
 	public override join(other: MergeEditorLineRange): MergeEditorLineRange {
-		return MergeEditorLineRange.fromLineNumbers(Math.min(this.startLineNumber, other.startLineNumber), Math.max(this.endLineNumberExclusive, other.endLineNumberExclusive));
+		return MergeEditorLineRange.fromLineNumbers(
+			Math.min(this.startLineNumber, other.startLineNumber),
+			Math.max(this.endLineNumberExclusive, other.endLineNumberExclusive)
+		);
 	}
 
 	public isAfter(range: MergeEditorLineRange): boolean {

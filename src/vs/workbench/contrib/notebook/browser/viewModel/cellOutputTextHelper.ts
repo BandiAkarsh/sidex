@@ -16,7 +16,11 @@ interface Error {
 	stack?: string;
 }
 
-export function getAllOutputsText(notebook: NotebookTextModel, viewCell: ICellViewModel, shortErrors: boolean = false): string {
+export function getAllOutputsText(
+	notebook: NotebookTextModel,
+	viewCell: ICellViewModel,
+	shortErrors: boolean = false
+): string {
 	const outputText: string[] = [];
 	for (let i = 0; i < viewCell.outputsViewModels.length; i++) {
 		const outputViewModel = viewCell.outputsViewModels[i];
@@ -49,9 +53,11 @@ export function getAllOutputsText(notebook: NotebookTextModel, viewCell: ICellVi
 
 	let outputContent: string;
 	if (outputText.length > 1) {
-		outputContent = outputText.map((output, i) => {
-			return `Cell output ${i + 1} of ${outputText.length}\n${output}`;
-		}).join('\n');
+		outputContent = outputText
+			.map((output, i) => {
+				return `Cell output ${i + 1} of ${outputText.length}\n${output}`;
+			})
+			.join('\n');
 	} else {
 		outputContent = outputText[0] ?? '';
 	}
@@ -106,11 +112,17 @@ export function getOutputText(mimeType: string, buffer: IOutputItemDto, shortErr
 	return text.trim();
 }
 
-export async function copyCellOutput(mimeType: string | undefined, outputViewModel: ICellOutputViewModel, clipboardService: IClipboardService, logService: ILogService) {
+export async function copyCellOutput(
+	mimeType: string | undefined,
+	outputViewModel: ICellOutputViewModel,
+	clipboardService: IClipboardService,
+	logService: ILogService
+) {
 	const cellOutput = outputViewModel.model;
-	const output = mimeType && TEXT_BASED_MIMETYPES.includes(mimeType) ?
-		cellOutput.outputs.find(output => output.mime === mimeType) :
-		cellOutput.outputs.find(output => TEXT_BASED_MIMETYPES.includes(output.mime));
+	const output =
+		mimeType && TEXT_BASED_MIMETYPES.includes(mimeType)
+			? cellOutput.outputs.find(output => output.mime === mimeType)
+			: cellOutput.outputs.find(output => TEXT_BASED_MIMETYPES.includes(output.mime));
 
 	mimeType = output?.mime;
 
@@ -122,7 +134,6 @@ export async function copyCellOutput(mimeType: string | undefined, outputViewMod
 
 	try {
 		await clipboardService.writeText(text);
-
 	} catch (e) {
 		logService.error(`Failed to copy content: ${e}`);
 	}

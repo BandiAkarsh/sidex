@@ -4,7 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Position } from '../../../../common/core/position.js';
-import { ITestCodeEditor, TestCodeEditorInstantiationOptions, withTestCodeEditor } from '../../../../test/browser/testCodeEditor.js';
+import {
+	ITestCodeEditor,
+	TestCodeEditorInstantiationOptions,
+	withTestCodeEditor
+} from '../../../../test/browser/testCodeEditor.js';
 
 export function deserializePipePositions(text: string): [string, Position[]] {
 	let resultText = '';
@@ -58,9 +62,16 @@ export function serializePipePositions(text: string, positions: Position[]): str
 	return resultText;
 }
 
-export function testRepeatedActionAndExtractPositions(text: string, initialPosition: Position, action: (editor: ITestCodeEditor) => void, record: (editor: ITestCodeEditor) => Position, stopCondition: (editor: ITestCodeEditor) => boolean, options: TestCodeEditorInstantiationOptions = {}): Position[] {
+export function testRepeatedActionAndExtractPositions(
+	text: string,
+	initialPosition: Position,
+	action: (editor: ITestCodeEditor) => void,
+	record: (editor: ITestCodeEditor) => Position,
+	stopCondition: (editor: ITestCodeEditor) => boolean,
+	options: TestCodeEditorInstantiationOptions = {}
+): Position[] {
 	const actualStops: Position[] = [];
-	withTestCodeEditor(text, options, (editor) => {
+	withTestCodeEditor(text, options, editor => {
 		editor.setPosition(initialPosition);
 		while (true) {
 			action(editor);

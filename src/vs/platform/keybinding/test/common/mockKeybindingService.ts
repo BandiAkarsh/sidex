@@ -7,7 +7,15 @@ import { Event } from '../../../../base/common/event.js';
 import { KeyCodeChord, Keybinding, ResolvedKeybinding } from '../../../../base/common/keybindings.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
 import { OS } from '../../../../base/common/platform.js';
-import { ContextKeyExpression, ContextKeyValue, IContextKey, IContextKeyChangeEvent, IContextKeyService, IContextKeyServiceTarget, IScopedContextKeyService } from '../../../contextkey/common/contextkey.js';
+import {
+	ContextKeyExpression,
+	ContextKeyValue,
+	IContextKey,
+	IContextKeyChangeEvent,
+	IContextKeyService,
+	IContextKeyServiceTarget,
+	IScopedContextKeyService
+} from '../../../contextkey/common/contextkey.js';
 import { IKeybindingService, IKeyboardEvent } from '../../common/keybinding.js';
 import { NoMatchingKb, ResolutionResult } from '../../common/keybindingResolver.js';
 import { ResolvedKeybindingItem } from '../../common/resolvedKeybindingItem.js';
@@ -36,14 +44,16 @@ class MockKeybindingContextKey<T extends ContextKeyValue = ContextKeyValue> impl
 }
 
 export class MockContextKeyService implements IContextKeyService {
-
 	public _serviceBrand: undefined;
 	private _keys = new Map<string, IContextKey<any>>();
 
 	public dispose(): void {
 		//
 	}
-	public createKey<T extends ContextKeyValue = ContextKeyValue>(key: string, defaultValue: T | undefined): IContextKey<T> {
+	public createKey<T extends ContextKeyValue = ContextKeyValue>(
+		key: string,
+		defaultValue: T | undefined
+	): IContextKey<T> {
 		const ret = new MockKeybindingContextKey(defaultValue);
 		this._keys.set(key, ret);
 		return ret;
@@ -54,7 +64,9 @@ export class MockContextKeyService implements IContextKeyService {
 	public get onDidChangeContext(): Event<IContextKeyChangeEvent> {
 		return Event.None;
 	}
-	public bufferChangeEvents(callback: () => void) { callback(); }
+	public bufferChangeEvents(callback: () => void) {
+		callback();
+	}
 	public getContextKeyValue(key: string) {
 		const value = this._keys.get(key);
 		if (value) {
@@ -140,9 +152,7 @@ export class MockKeybindingService implements IKeybindingService {
 		return NoMatchingKb;
 	}
 
-	public dispatchByUserSettingsLabel(userSettingsLabel: string, target: IContextKeyServiceTarget): void {
-
-	}
+	public dispatchByUserSettingsLabel(userSettingsLabel: string, target: IContextKeyServiceTarget): void {}
 
 	public dispatchEvent(e: IKeyboardEvent, target: IContextKeyServiceTarget): boolean {
 		return false;
@@ -172,7 +182,12 @@ export class MockKeybindingService implements IKeybindingService {
 		return Disposable.None;
 	}
 
-	public appendKeybinding(label: string, _commandId: string, _context?: IContextKeyService, _enforceContextCheck?: boolean): string {
+	public appendKeybinding(
+		label: string,
+		_commandId: string,
+		_context?: IContextKeyService,
+		_enforceContextCheck?: boolean
+	): string {
 		return label;
 	}
 }

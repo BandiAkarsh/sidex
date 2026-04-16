@@ -25,13 +25,17 @@ import { TestConfigurationService } from '../../../../../platform/configuration/
 import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
 const $ = dom.$;
 
-
 suite('Debug - Base Debug View', () => {
 	const disposables = ensureNoDisposablesAreLeakedInTestSuite();
 	let renderer: DebugExpressionRenderer;
 	let configurationService: TestConfigurationService;
 
-	function assertVariable(session: MockSession, scope: Scope, disposables: Pick<DisposableStore, 'add'>, displayType: boolean) {
+	function assertVariable(
+		session: MockSession,
+		scope: Scope,
+		disposables: Pick<DisposableStore, 'add'>,
+		displayType: boolean
+	) {
 		let variable = new Variable(session, 1, scope, 2, 'foo', 'bar.foo', undefined, 0, 0, undefined, {}, 'string');
 		let expression = $('.');
 		let name = $('.');
@@ -40,7 +44,9 @@ suite('Debug - Base Debug View', () => {
 		const label = new HighlightedLabel(name);
 		const lazyButton = $('.');
 		const store = disposables.add(new DisposableStore());
-		store.add(renderer.renderVariable({ expression, name, type, value, label, lazyButton }, variable, { showChanged: false }));
+		store.add(
+			renderer.renderVariable({ expression, name, type, value, label, lazyButton }, variable, { showChanged: false })
+		);
 
 		assert.strictEqual(label.element.textContent, 'foo');
 		assert.strictEqual(value.textContent, '');
@@ -50,7 +56,9 @@ suite('Debug - Base Debug View', () => {
 		name = $('.');
 		type = $('.');
 		value = $('.');
-		store.add(renderer.renderVariable({ expression, name, type, value, label, lazyButton }, variable, { showChanged: false }));
+		store.add(
+			renderer.renderVariable({ expression, name, type, value, label, lazyButton }, variable, { showChanged: false })
+		);
 		assert.strictEqual(value.textContent, 'hey');
 		assert.strictEqual(label.element.textContent, displayType ? 'foo: ' : 'foo =');
 		assert.strictEqual(type.textContent, displayType ? 'string =' : '');
@@ -60,7 +68,9 @@ suite('Debug - Base Debug View', () => {
 		name = $('.');
 		type = $('.');
 		value = $('.');
-		store.add(renderer.renderVariable({ expression, name, type, value, label, lazyButton }, variable, { showChanged: false }));
+		store.add(
+			renderer.renderVariable({ expression, name, type, value, label, lazyButton }, variable, { showChanged: false })
+		);
 		assert.ok(value.querySelector('a'));
 		assert.strictEqual(value.querySelector('a')!.textContent, variable.value);
 
@@ -69,13 +79,17 @@ suite('Debug - Base Debug View', () => {
 		name = $('.');
 		type = $('.');
 		value = $('.');
-		store.add(renderer.renderVariable({ expression, name, type, value, label, lazyButton }, variable, { showChanged: false }));
+		store.add(
+			renderer.renderVariable({ expression, name, type, value, label, lazyButton }, variable, { showChanged: false })
+		);
 		assert.strictEqual(name.className, 'virtual');
 		assert.strictEqual(label.element.textContent, 'console =');
 		assert.strictEqual(value.className, 'value number');
 
 		variable = new Variable(session, 1, scope, 2, 'xpto', 'xpto.xpto', undefined, 0, 0, undefined, {}, 'custom-type');
-		store.add(renderer.renderVariable({ expression, name, type, value, label, lazyButton }, variable, { showChanged: false }));
+		store.add(
+			renderer.renderVariable({ expression, name, type, value, label, lazyButton }, variable, { showChanged: false })
+		);
 		assert.strictEqual(label.element.textContent, 'xpto');
 		assert.strictEqual(value.textContent, '');
 		variable.value = '2';
@@ -83,7 +97,9 @@ suite('Debug - Base Debug View', () => {
 		name = $('.');
 		type = $('.');
 		value = $('.');
-		store.add(renderer.renderVariable({ expression, name, type, value, label, lazyButton }, variable, { showChanged: false }));
+		store.add(
+			renderer.renderVariable({ expression, name, type, value, label, lazyButton }, variable, { showChanged: false })
+		);
 		assert.strictEqual(value.textContent, '2');
 		assert.strictEqual(label.element.textContent, displayType ? 'xpto: ' : 'xpto =');
 		assert.strictEqual(type.textContent, displayType ? 'custom-type =' : '');
@@ -164,7 +180,6 @@ suite('Debug - Base Debug View', () => {
 
 		configurationService.setUserConfiguration('debug.showVariableTypes', false);
 		assertVariable(session, scope, disposables, false);
-
 	});
 
 	test('render variable with display type setting', () => {

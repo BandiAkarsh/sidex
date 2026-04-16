@@ -21,7 +21,14 @@ export interface IBorrowValue<T> {
 export interface INotebookEditorService {
 	_serviceBrand: undefined;
 
-	retrieveWidget(accessor: ServicesAccessor, groupId: number, input: { resource: URI; typeId: string }, creationOptions?: INotebookEditorCreationOptions, dimension?: Dimension, codeWindow?: CodeWindow): IBorrowValue<INotebookEditor>;
+	retrieveWidget(
+		accessor: ServicesAccessor,
+		groupId: number,
+		input: { resource: URI; typeId: string },
+		creationOptions?: INotebookEditorCreationOptions,
+		dimension?: Dimension,
+		codeWindow?: CodeWindow
+	): IBorrowValue<INotebookEditor>;
 
 	retrieveExistingWidgetFromURI(resource: URI): IBorrowValue<NotebookEditorWidget> | undefined;
 	retrieveAllExistingWidgets(): IBorrowValue<NotebookEditorWidget>[];

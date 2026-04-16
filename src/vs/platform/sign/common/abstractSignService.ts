@@ -52,7 +52,7 @@ export abstract class AbstractSignService implements ISignService {
 		}
 		this.validators.delete(message.id);
 		try {
-			return (validator.validate(value) === 'ok');
+			return validator.validate(value) === 'ok';
 		} catch (e) {
 			// ignore errors silently
 			return false;

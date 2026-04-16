@@ -22,8 +22,7 @@ export class NotebookRange {
 		if (!thing) {
 			return false;
 		}
-		return typeof (<NotebookRange>thing).start === 'number'
-			&& typeof (<NotebookRange>thing).end === 'number';
+		return typeof (<NotebookRange>thing).start === 'number' && typeof (<NotebookRange>thing).end === 'number';
 	}
 
 	private _start: number;
@@ -75,16 +74,15 @@ export class NotebookRange {
 }
 
 export class NotebookCellData {
-
 	static validate(data: NotebookCellData): void {
 		if (typeof data.kind !== 'number') {
-			throw new Error('NotebookCellData MUST have \'kind\' property');
+			throw new Error("NotebookCellData MUST have 'kind' property");
 		}
 		if (typeof data.value !== 'string') {
-			throw new Error('NotebookCellData MUST have \'value\' property');
+			throw new Error("NotebookCellData MUST have 'value' property");
 		}
 		if (typeof data.languageId !== 'string') {
-			throw new Error('NotebookCellData MUST have \'languageId\' property');
+			throw new Error("NotebookCellData MUST have 'languageId' property");
 		}
 	}
 
@@ -105,7 +103,15 @@ export class NotebookCellData {
 	metadata?: Record<string, unknown>;
 	executionSummary?: vscode.NotebookCellExecutionSummary;
 
-	constructor(kind: NotebookCellKind, value: string, languageId: string, mime?: string, outputs?: vscode.NotebookCellOutput[], metadata?: Record<string, unknown>, executionSummary?: vscode.NotebookCellExecutionSummary) {
+	constructor(
+		kind: NotebookCellKind,
+		value: string,
+		languageId: string,
+		mime?: string,
+		outputs?: vscode.NotebookCellOutput[],
+		metadata?: Record<string, unknown>,
+		executionSummary?: vscode.NotebookCellExecutionSummary
+	) {
 		this.kind = kind;
 		this.value = value;
 		this.languageId = languageId;
@@ -119,7 +125,6 @@ export class NotebookCellData {
 }
 
 export class NotebookData {
-
 	cells: NotebookCellData[];
 	metadata?: { [key: string]: unknown };
 
@@ -130,7 +135,6 @@ export class NotebookData {
 
 @es5ClassCompat
 export class NotebookEdit implements vscode.NotebookEdit {
-
 	static isNotebookCellEdit(thing: unknown): thing is NotebookEdit {
 		if (thing instanceof NotebookEdit) {
 			return true;
@@ -138,8 +142,7 @@ export class NotebookEdit implements vscode.NotebookEdit {
 		if (!thing) {
 			return false;
 		}
-		return NotebookRange.isNotebookRange((<NotebookEdit>thing))
-			&& Array.isArray((<NotebookEdit>thing).newCells);
+		return NotebookRange.isNotebookRange(<NotebookEdit>thing) && Array.isArray((<NotebookEdit>thing).newCells);
 	}
 
 	static replaceCells(range: NotebookRange, newCells: NotebookCellData[]): NotebookEdit {
@@ -178,7 +181,6 @@ export class NotebookEdit implements vscode.NotebookEdit {
 }
 
 export class NotebookCellOutputItem {
-
 	static isNotebookCellOutputItem(obj: unknown): obj is vscode.NotebookCellOutputItem {
 		if (obj instanceof NotebookCellOutputItem) {
 			return true;
@@ -186,8 +188,10 @@ export class NotebookCellOutputItem {
 		if (!obj) {
 			return false;
 		}
-		return typeof (<vscode.NotebookCellOutputItem>obj).mime === 'string'
-			&& (<vscode.NotebookCellOutputItem>obj).data instanceof Uint8Array;
+		return (
+			typeof (<vscode.NotebookCellOutputItem>obj).mime === 'string' &&
+			(<vscode.NotebookCellOutputItem>obj).data instanceof Uint8Array
+		);
 	}
 
 	static error(err: Error | { name: string; message?: string; stack?: string }): NotebookCellOutputItem {
@@ -236,7 +240,6 @@ export class NotebookCellOutputItem {
 }
 
 export class NotebookCellOutput {
-
 	static isNotebookCellOutput(candidate: unknown): candidate is vscode.NotebookCellOutput {
 		if (candidate instanceof NotebookCellOutput) {
 			return true;
@@ -244,7 +247,9 @@ export class NotebookCellOutput {
 		if (!candidate || typeof candidate !== 'object') {
 			return false;
 		}
-		return typeof (<NotebookCellOutput>candidate).id === 'string' && Array.isArray((<NotebookCellOutput>candidate).items);
+		return (
+			typeof (<NotebookCellOutput>candidate).id === 'string' && Array.isArray((<NotebookCellOutput>candidate).items)
+		);
 	}
 
 	static ensureUniqueMimeTypes(items: NotebookCellOutputItem[], warn: boolean = false): NotebookCellOutputItem[] {

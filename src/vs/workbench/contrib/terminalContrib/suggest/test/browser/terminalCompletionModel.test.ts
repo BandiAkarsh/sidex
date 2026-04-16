@@ -6,7 +6,11 @@ import assert, { notStrictEqual, strictEqual } from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
 import { TerminalCompletionModel } from '../../browser/terminalCompletionModel.js';
 import { LineContext } from '../../../../../services/suggest/browser/simpleCompletionModel.js';
-import { TerminalCompletionItem, TerminalCompletionItemKind, type ITerminalCompletion } from '../../browser/terminalCompletionItem.js';
+import {
+	TerminalCompletionItem,
+	TerminalCompletionItemKind,
+	type ITerminalCompletion
+} from '../../browser/terminalCompletionItem.js';
 import type { CompletionItemLabel } from '../../../../../services/suggest/browser/simpleCompletionItem.js';
 
 function createItem(options: Partial<ITerminalCompletion>): TerminalCompletionItem {
@@ -15,7 +19,7 @@ function createItem(options: Partial<ITerminalCompletion>): TerminalCompletionIt
 		kind: options.kind ?? TerminalCompletionItemKind.Method,
 		label: options.label || 'defaultLabel',
 		provider: options.provider || 'defaultProvider',
-		replacementRange: options.replacementRange || [0, 1],
+		replacementRange: options.replacementRange || [0, 1]
 	});
 }
 
@@ -24,10 +28,7 @@ function createFileItems(...labels: string[]): TerminalCompletionItem[] {
 }
 
 function createFileItemsModel(...labels: string[]): TerminalCompletionModel {
-	return new TerminalCompletionModel(
-		createFileItems(...labels),
-		new LineContext('', 0)
-	);
+	return new TerminalCompletionModel(createFileItems(...labels), new LineContext('', 0));
 }
 
 function createFolderItems(...labels: string[]): TerminalCompletionItem[] {
@@ -35,14 +36,14 @@ function createFolderItems(...labels: string[]): TerminalCompletionItem[] {
 }
 
 function createFolderItemsModel(...labels: string[]): TerminalCompletionModel {
-	return new TerminalCompletionModel(
-		createFolderItems(...labels),
-		new LineContext('', 0)
-	);
+	return new TerminalCompletionModel(createFolderItems(...labels), new LineContext('', 0));
 }
 
 function assertItems(model: TerminalCompletionModel, labels: (string | CompletionItemLabel)[]): void {
-	assert.deepStrictEqual(model.items.map(i => i.completion.label), labels);
+	assert.deepStrictEqual(
+		model.items.map(i => i.completion.label),
+		labels
+	);
 	assert.strictEqual(model.items.length, labels.length); // sanity check
 }
 
@@ -58,20 +59,17 @@ suite('TerminalCompletionModel', function () {
 	});
 
 	test('should handle a list with one item', function () {
-		model = new TerminalCompletionModel([
-			createItem({ label: 'a' }),
-		], new LineContext('', 0));
+		model = new TerminalCompletionModel([createItem({ label: 'a' })], new LineContext('', 0));
 
 		assert.strictEqual(model.items.length, 1);
 		assert.strictEqual(model.items[0].completion.label, 'a');
 	});
 
 	test('should sort alphabetically', function () {
-		model = new TerminalCompletionModel([
-			createItem({ label: 'b' }),
-			createItem({ label: 'z' }),
-			createItem({ label: 'a' }),
-		], new LineContext('', 0));
+		model = new TerminalCompletionModel(
+			[createItem({ label: 'b' }), createItem({ label: 'z' }), createItem({ label: 'a' })],
+			new LineContext('', 0)
+		);
 
 		assert.strictEqual(model.items.length, 3);
 		assert.strictEqual(model.items[0].completion.label, 'a');
@@ -80,19 +78,12 @@ suite('TerminalCompletionModel', function () {
 	});
 
 	test('fuzzy matching', () => {
-		const initial = [
-			'.\\.eslintrc',
-			'.\\resources\\',
-			'.\\scripts\\',
-			'.\\src\\',
-		];
-		const expected = [
-			'.\\scripts\\',
-			'.\\src\\',
-			'.\\.eslintrc',
-			'.\\resources\\',
-		];
-		model = new TerminalCompletionModel(initial.map(e => (createItem({ label: e }))), new LineContext('s', 0));
+		const initial = ['.\\.eslintrc', '.\\resources\\', '.\\scripts\\', '.\\src\\'];
+		const expected = ['.\\scripts\\', '.\\src\\', '.\\.eslintrc', '.\\resources\\'];
+		model = new TerminalCompletionModel(
+			initial.map(e => createItem({ label: e })),
+			new LineContext('s', 0)
+		);
 
 		assertItems(model, expected);
 	});
@@ -135,7 +126,7 @@ suite('TerminalCompletionModel', function () {
 					'resources',
 					'scripts',
 					'src',
-					'test',
+					'test'
 				),
 				...createFileItems(
 					'__init__.py',
@@ -163,7 +154,7 @@ suite('TerminalCompletionModel', function () {
 					'README.md',
 					'SECURITY.md',
 					'ThirdPartyNotices.txt',
-					'tsfmt.json',
+					'tsfmt.json'
 				)
 			];
 			const model = new TerminalCompletionModel(items, new LineContext('', 0));
@@ -212,7 +203,7 @@ suite('TerminalCompletionModel', function () {
 				'.vscode-test',
 				'.vscode-test.js',
 				'__init__.py',
-				'__pycache',
+				'__pycache'
 			]);
 		});
 	});
@@ -227,7 +218,7 @@ suite('TerminalCompletionModel', function () {
 				createItem({ label: ':' }),
 				createItem({ label: 'c' }),
 				createItem({ label: '[' }),
-				createItem({ label: '...' }),
+				createItem({ label: '...' })
 			];
 			model = new TerminalCompletionModel(items, new LineContext('', 0));
 			assertItems(model, ['a', 'b', 'c', ',', ';', ':', '[', '...']);
@@ -238,7 +229,7 @@ suite('TerminalCompletionModel', function () {
 				createItem({ label: '...' }),
 				createItem({ label: '../' }),
 				createItem({ label: './a/' }),
-				createItem({ label: './b/' }),
+				createItem({ label: './b/' })
 			];
 			model = new TerminalCompletionModel(items, new LineContext('', 0));
 			assertItems(model, ['./a/', './b/', '..', '...', '../']);
@@ -246,7 +237,9 @@ suite('TerminalCompletionModel', function () {
 	});
 
 	suite('inline completions', () => {
-		function createItems(kind: TerminalCompletionItemKind.InlineSuggestion | TerminalCompletionItemKind.InlineSuggestionAlwaysOnTop) {
+		function createItems(
+			kind: TerminalCompletionItemKind.InlineSuggestion | TerminalCompletionItemKind.InlineSuggestionAlwaysOnTop
+		) {
 			return [
 				...createFolderItems('a', 'c'),
 				...createFileItems('b', 'd'),
@@ -260,27 +253,38 @@ suite('TerminalCompletionModel', function () {
 		}
 		suite('InlineSuggestion', () => {
 			test('should put on top generally', function () {
-				const model = new TerminalCompletionModel(createItems(TerminalCompletionItemKind.InlineSuggestion), new LineContext('', 0));
+				const model = new TerminalCompletionModel(
+					createItems(TerminalCompletionItemKind.InlineSuggestion),
+					new LineContext('', 0)
+				);
 				strictEqual(model.items[0].completion.label, 'ab');
 			});
-			test('should NOT put on top when there\'s an exact match of another item', function () {
-				const model = new TerminalCompletionModel(createItems(TerminalCompletionItemKind.InlineSuggestion), new LineContext('a', 0));
+			test("should NOT put on top when there's an exact match of another item", function () {
+				const model = new TerminalCompletionModel(
+					createItems(TerminalCompletionItemKind.InlineSuggestion),
+					new LineContext('a', 0)
+				);
 				notStrictEqual(model.items[0].completion.label, 'ab');
 				strictEqual(model.items[1].completion.label, 'ab');
 			});
 		});
 		suite('InlineSuggestionAlwaysOnTop', () => {
 			test('should put on top generally', function () {
-				const model = new TerminalCompletionModel(createItems(TerminalCompletionItemKind.InlineSuggestionAlwaysOnTop), new LineContext('', 0));
+				const model = new TerminalCompletionModel(
+					createItems(TerminalCompletionItemKind.InlineSuggestionAlwaysOnTop),
+					new LineContext('', 0)
+				);
 				strictEqual(model.items[0].completion.label, 'ab');
 			});
-			test('should put on top even if there\'s an exact match of another item', function () {
-				const model = new TerminalCompletionModel(createItems(TerminalCompletionItemKind.InlineSuggestionAlwaysOnTop), new LineContext('a', 0));
+			test("should put on top even if there's an exact match of another item", function () {
+				const model = new TerminalCompletionModel(
+					createItems(TerminalCompletionItemKind.InlineSuggestionAlwaysOnTop),
+					new LineContext('a', 0)
+				);
 				strictEqual(model.items[0].completion.label, 'ab');
 			});
 		});
 	});
-
 
 	suite('git branch priority sorting', () => {
 		test('should prioritize main and master branches for git commands', () => {
@@ -327,15 +331,21 @@ suite('TerminalCompletionModel', function () {
 
 		test('should work with complex label objects', () => {
 			const items = [
-				createItem({ kind: TerminalCompletionItemKind.Argument, label: { label: 'feature-branch', description: 'Feature branch' } }),
-				createItem({ kind: TerminalCompletionItemKind.Argument, label: { label: 'master', description: 'Master branch' } }),
+				createItem({
+					kind: TerminalCompletionItemKind.Argument,
+					label: { label: 'feature-branch', description: 'Feature branch' }
+				}),
+				createItem({
+					kind: TerminalCompletionItemKind.Argument,
+					label: { label: 'master', description: 'Master branch' }
+				}),
 				createItem({ kind: TerminalCompletionItemKind.Argument, label: { label: 'main', description: 'Main branch' } })
 			];
 			const model = new TerminalCompletionModel(items, new LineContext('git checkout ', 0));
 			assertItems(model, [
 				{ label: 'main', description: 'Main branch' },
 				{ label: 'master', description: 'Master branch' },
-				{ label: 'feature-branch', description: 'Feature branch' },
+				{ label: 'feature-branch', description: 'Feature branch' }
 			]);
 		});
 
@@ -368,7 +378,7 @@ suite('TerminalCompletionModel', function () {
 				createItem({ kind: TerminalCompletionItemKind.Option, label: '--config' }),
 				createItem({ kind: TerminalCompletionItemKind.Argument, label: 'value2' }),
 				createItem({ kind: TerminalCompletionItemKind.Argument, label: 'value1' }),
-				createItem({ kind: TerminalCompletionItemKind.Flag, label: '--all' }),
+				createItem({ kind: TerminalCompletionItemKind.Flag, label: '--all' })
 			];
 			const model = new TerminalCompletionModel(items, new LineContext('cmd ', 0));
 			assertItems(model, ['value1', 'value2', '--all', '--config', '--verbose']);
@@ -384,11 +394,20 @@ suite('TerminalCompletionModel', function () {
 				createItem({ kind: TerminalCompletionItemKind.Option, label: '--option' }),
 				createItem({ kind: TerminalCompletionItemKind.Alias, label: 'alias' }),
 				createItem({ kind: TerminalCompletionItemKind.SymbolicLinkFile, label: 'file2.txt' }),
-				createItem({ kind: TerminalCompletionItemKind.SymbolicLinkFolder, label: 'folder2/' }),
+				createItem({ kind: TerminalCompletionItemKind.SymbolicLinkFolder, label: 'folder2/' })
 			];
 			const model = new TerminalCompletionModel(items, new LineContext('', 0));
-			assertItems(model, ['alias', 'method', 'arg', '--flag', '--option', 'file2.txt', 'file.txt', 'folder/', 'folder2/']);
+			assertItems(model, [
+				'alias',
+				'method',
+				'arg',
+				'--flag',
+				'--option',
+				'file2.txt',
+				'file.txt',
+				'folder/',
+				'folder2/'
+			]);
 		});
 	});
 });
-

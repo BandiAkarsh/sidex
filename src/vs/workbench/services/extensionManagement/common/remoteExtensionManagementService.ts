@@ -15,8 +15,10 @@ import { ExtensionIdentifier } from '../../../../platform/extensions/common/exte
 import { IProductService } from '../../../../platform/product/common/productService.js';
 import { IAllowedExtensionsService } from '../../../../platform/extensionManagement/common/extensionManagement.js';
 
-export class RemoteExtensionManagementService extends ProfileAwareExtensionManagementChannelClient implements IProfileAwareExtensionManagementService {
-
+export class RemoteExtensionManagementService
+	extends ProfileAwareExtensionManagementChannelClient
+	implements IProfileAwareExtensionManagementService
+{
 	constructor(
 		channel: IChannel,
 		@IProductService productService: IProductService,
@@ -36,7 +38,9 @@ export class RemoteExtensionManagementService extends ProfileAwareExtensionManag
 		if (!profileLocation && this.userDataProfileService.currentProfile.isDefault) {
 			return true;
 		}
-		const currentRemoteProfile = await this.remoteUserDataProfilesService.getRemoteProfile(this.userDataProfileService.currentProfile);
+		const currentRemoteProfile = await this.remoteUserDataProfilesService.getRemoteProfile(
+			this.userDataProfileService.currentProfile
+		);
 		if (this.uriIdentityService.extUri.isEqual(currentRemoteProfile.extensionsResource, profileLocation)) {
 			return true;
 		}
@@ -50,19 +54,31 @@ export class RemoteExtensionManagementService extends ProfileAwareExtensionManag
 			return undefined;
 		}
 		profileLocation = await super.getProfileLocation(profileLocation);
-		let profile = this.userDataProfilesService.profiles.find(p => this.uriIdentityService.extUri.isEqual(p.extensionsResource, profileLocation));
+		let profile = this.userDataProfilesService.profiles.find(p =>
+			this.uriIdentityService.extUri.isEqual(p.extensionsResource, profileLocation)
+		);
 		if (profile) {
 			profile = await this.remoteUserDataProfilesService.getRemoteProfile(profile);
 		} else {
-			profile = (await this.remoteUserDataProfilesService.getRemoteProfiles()).find(p => this.uriIdentityService.extUri.isEqual(p.extensionsResource, profileLocation));
+			profile = (await this.remoteUserDataProfilesService.getRemoteProfiles()).find(p =>
+				this.uriIdentityService.extUri.isEqual(p.extensionsResource, profileLocation)
+			);
 		}
 		return profile?.extensionsResource;
 	}
 
-	protected override async switchExtensionsProfile(previousProfileLocation: URI, currentProfileLocation: URI, preserveExtensions?: ExtensionIdentifier[]): Promise<DidChangeProfileEvent> {
+	protected override async switchExtensionsProfile(
+		previousProfileLocation: URI,
+		currentProfileLocation: URI,
+		preserveExtensions?: ExtensionIdentifier[]
+	): Promise<DidChangeProfileEvent> {
 		const remoteProfiles = await this.remoteUserDataProfilesService.getRemoteProfiles();
-		const previousProfile = remoteProfiles.find(p => this.uriIdentityService.extUri.isEqual(p.extensionsResource, previousProfileLocation));
-		const currentProfile = remoteProfiles.find(p => this.uriIdentityService.extUri.isEqual(p.extensionsResource, currentProfileLocation));
+		const previousProfile = remoteProfiles.find(p =>
+			this.uriIdentityService.extUri.isEqual(p.extensionsResource, previousProfileLocation)
+		);
+		const currentProfile = remoteProfiles.find(p =>
+			this.uriIdentityService.extUri.isEqual(p.extensionsResource, currentProfileLocation)
+		);
 		if (previousProfile?.id === currentProfile?.id) {
 			return { added: [], removed: [] };
 		}

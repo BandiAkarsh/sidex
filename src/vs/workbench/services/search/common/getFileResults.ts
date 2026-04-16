@@ -15,7 +15,6 @@ export const getFileResults = (
 		remainingResultQuota: number;
 	}
 ): ITextSearchResult[] => {
-
 	let text: string;
 	if (bytes[0] === 0xff && bytes[1] === 0xfe) {
 		text = new TextDecoder('utf-16le').decode(bytes);
@@ -53,7 +52,9 @@ export const getFileResults = (
 			lineRanges.push({ start: prevLineEnd, end: lineEndingMatch.index });
 			prevLineEnd = lineEndingMatch.index + lineEndingMatch[0].length;
 		}
-		if (prevLineEnd < text.length) { lineRanges.push({ start: prevLineEnd, end: text.length }); }
+		if (prevLineEnd < text.length) {
+			lineRanges.push({ start: prevLineEnd, end: text.length });
+		}
 
 		let startLine = 0;
 		for (const { matchStartIndex, matchedText } of patternIndices) {
@@ -70,7 +71,11 @@ export const getFileResults = (
 			}
 
 			if (options.surroundingContext) {
-				for (let contextLine = Math.max(0, startLine - options.surroundingContext); contextLine < startLine; contextLine++) {
+				for (
+					let contextLine = Math.max(0, startLine - options.surroundingContext);
+					contextLine < startLine;
+					contextLine++
+				) {
 					contextLinesNeeded.add(contextLine);
 				}
 			}
@@ -101,27 +106,32 @@ export const getFileResults = (
 			);
 
 			const match: ITextSearchMatch = {
-				rangeLocations: [{
-					source: fileRange,
-					preview: previewRange,
-				}],
+				rangeLocations: [
+					{
+						source: fileRange,
+						preview: previewRange
+					}
+				],
 				previewText: previewText
 			};
 
 			results.push(match);
 
 			if (options.surroundingContext) {
-				for (let contextLine = endLine + 1; contextLine <= Math.min(endLine + options.surroundingContext, lineRanges.length - 1); contextLine++) {
+				for (
+					let contextLine = endLine + 1;
+					contextLine <= Math.min(endLine + options.surroundingContext, lineRanges.length - 1);
+					contextLine++
+				) {
 					contextLinesNeeded.add(contextLine);
 				}
 			}
 		}
 		for (const contextLine of contextLinesNeeded) {
 			if (!resultLines.has(contextLine)) {
-
 				results.push({
 					text: readLine(contextLine),
-					lineNumber: contextLine + 1,
+					lineNumber: contextLine + 1
 				});
 			}
 		}

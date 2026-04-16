@@ -10,19 +10,32 @@ import { DisposableStore } from '../../../base/common/lifecycle.js';
 import { runWithFakedTimers } from '../../../base/test/common/timeTravelScheduler.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../base/test/common/utils.js';
 import { BaseWindow } from '../../browser/window.js';
-import { TestContextMenuService, TestEnvironmentService, TestHostService, TestLayoutService } from './workbenchTestServices.js';
+import {
+	TestContextMenuService,
+	TestEnvironmentService,
+	TestHostService,
+	TestLayoutService
+} from './workbenchTestServices.js';
 
 suite('Window', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	class TestWindow extends BaseWindow {
-
-		constructor(window: CodeWindow, dom: { getWindowsCount: () => number; getWindows: () => Iterable<IRegisteredCodeWindow> }) {
-			super(window, dom, new TestHostService(), TestEnvironmentService, new TestContextMenuService(), new TestLayoutService());
+		constructor(
+			window: CodeWindow,
+			dom: { getWindowsCount: () => number; getWindows: () => Iterable<IRegisteredCodeWindow> }
+		) {
+			super(
+				window,
+				dom,
+				new TestHostService(),
+				TestEnvironmentService,
+				new TestContextMenuService(),
+				new TestLayoutService()
+			);
 		}
 
-		protected override enableWindowFocusOnElementFocus(): void { }
+		protected override enableWindowFocusOnElementFocus(): void {}
 	}
 
 	test('multi window aware setTimeout()', async function () {
@@ -133,7 +146,7 @@ suite('Window', () => {
 			window2 = createWindow(2, true);
 			windows = [
 				{ window: window2, disposables },
-				{ window: window1, disposables },
+				{ window: window1, disposables }
 			];
 
 			await new Promise<void>((resolve, reject) => {

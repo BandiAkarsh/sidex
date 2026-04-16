@@ -9,7 +9,12 @@ import { ThemeIcon } from '../../../../base/common/themables.js';
 import { Action, Separator } from '../../../../base/common/actions.js';
 
 // UI Components
-import { Button, ButtonBar, ButtonWithDescription, unthemedButtonStyles } from '../../../../base/browser/ui/button/button.js';
+import {
+	Button,
+	ButtonBar,
+	ButtonWithDescription,
+	unthemedButtonStyles
+} from '../../../../base/browser/ui/button/button.js';
 import { Toggle, Checkbox, unthemedToggleStyles } from '../../../../base/browser/ui/toggle/toggle.js';
 import { InputBox, MessageType, unthemedInboxStyles } from '../../../../base/browser/ui/inputbox/inputBox.js';
 import { CountBadge } from '../../../../base/browser/ui/countBadge/countBadge.js';
@@ -19,49 +24,47 @@ import { HighlightedLabel } from '../../../../base/browser/ui/highlightedlabel/h
 
 import { ComponentFixtureContext, defineComponentFixture, defineThemedFixtureGroup } from './fixtureUtils.js';
 
-
 export default defineThemedFixtureGroup({
 	Buttons: defineComponentFixture({
 		labels: { kind: 'screenshot' },
-		render: renderButtons,
+		render: renderButtons
 	}),
 
 	ButtonBar: defineComponentFixture({
 		labels: { kind: 'screenshot' },
-		render: renderButtonBar,
+		render: renderButtonBar
 	}),
 
 	Toggles: defineComponentFixture({
 		labels: { kind: 'screenshot' },
-		render: renderToggles,
+		render: renderToggles
 	}),
 
 	InputBoxes: defineComponentFixture({
 		labels: { kind: 'screenshot' },
-		render: renderInputBoxes,
+		render: renderInputBoxes
 	}),
 
 	CountBadges: defineComponentFixture({
 		labels: { kind: 'screenshot' },
-		render: renderCountBadges,
+		render: renderCountBadges
 	}),
 
 	ActionBar: defineComponentFixture({
 		labels: { kind: 'screenshot' },
-		render: renderActionBar,
+		render: renderActionBar
 	}),
 
 	ProgressBars: defineComponentFixture({
 		labels: { kind: 'screenshot' },
-		render: renderProgressBars,
+		render: renderProgressBars
 	}),
 
 	HighlightedLabels: defineComponentFixture({
 		labels: { kind: 'screenshot' },
-		render: renderHighlightedLabels,
-	}),
+		render: renderHighlightedLabels
+	})
 });
-
 
 // ============================================================================
 // Styles (themed versions for fixture display)
@@ -75,14 +78,14 @@ const themedButtonStyles = {
 	buttonSecondaryBackground: 'var(--vscode-button-secondaryBackground)',
 	buttonSecondaryHoverBackground: 'var(--vscode-button-secondaryHoverBackground)',
 	buttonSecondaryForeground: 'var(--vscode-button-secondaryForeground)',
-	buttonBorder: 'var(--vscode-button-border)',
+	buttonBorder: 'var(--vscode-button-border)'
 };
 
 const themedToggleStyles = {
 	...unthemedToggleStyles,
 	inputActiveOptionBorder: 'var(--vscode-inputOption-activeBorder)',
 	inputActiveOptionForeground: 'var(--vscode-inputOption-activeForeground)',
-	inputActiveOptionBackground: 'var(--vscode-inputOption-activeBackground)',
+	inputActiveOptionBackground: 'var(--vscode-inputOption-activeBackground)'
 };
 
 const themedCheckboxStyles = {
@@ -90,7 +93,7 @@ const themedCheckboxStyles = {
 	checkboxBorder: 'var(--vscode-checkbox-border)',
 	checkboxForeground: 'var(--vscode-checkbox-foreground)',
 	checkboxDisabledBackground: undefined,
-	checkboxDisabledForeground: undefined,
+	checkboxDisabledForeground: undefined
 };
 
 const themedInputBoxStyles = {
@@ -103,19 +106,18 @@ const themedInputBoxStyles = {
 	inputValidationWarningBackground: 'var(--vscode-inputValidation-warningBackground)',
 	inputValidationWarningBorder: 'var(--vscode-inputValidation-warningBorder)',
 	inputValidationErrorBackground: 'var(--vscode-inputValidation-errorBackground)',
-	inputValidationErrorBorder: 'var(--vscode-inputValidation-errorBorder)',
+	inputValidationErrorBorder: 'var(--vscode-inputValidation-errorBorder)'
 };
 
 const themedBadgeStyles = {
 	badgeBackground: 'var(--vscode-badge-background)',
 	badgeForeground: 'var(--vscode-badge-foreground)',
-	badgeBorder: undefined,
+	badgeBorder: undefined
 };
 
 const themedProgressBarOptions = {
-	progressBarBackground: 'var(--vscode-progressBar-background)',
+	progressBarBackground: 'var(--vscode-progressBar-background)'
 };
-
 
 // ============================================================================
 // Buttons
@@ -134,13 +136,19 @@ function renderButtons({ container, disposableStore }: ComponentFixtureContext):
 	primarySection.style.alignItems = 'center';
 	container.appendChild(primarySection);
 
-	const primaryButton = disposableStore.add(new Button(primarySection, { ...themedButtonStyles, title: 'Primary button' }));
+	const primaryButton = disposableStore.add(
+		new Button(primarySection, { ...themedButtonStyles, title: 'Primary button' })
+	);
 	primaryButton.label = 'Primary Button';
 
-	const primaryIconButton = disposableStore.add(new Button(primarySection, { ...themedButtonStyles, title: 'With Icon', supportIcons: true }));
+	const primaryIconButton = disposableStore.add(
+		new Button(primarySection, { ...themedButtonStyles, title: 'With Icon', supportIcons: true })
+	);
 	primaryIconButton.label = '$(add) Add Item';
 
-	const smallButton = disposableStore.add(new Button(primarySection, { ...themedButtonStyles, title: 'Small button', small: true }));
+	const smallButton = disposableStore.add(
+		new Button(primarySection, { ...themedButtonStyles, title: 'Small button', small: true })
+	);
 	smallButton.label = 'Small';
 
 	// Section: Secondary Buttons
@@ -150,10 +158,14 @@ function renderButtons({ container, disposableStore }: ComponentFixtureContext):
 	secondarySection.style.alignItems = 'center';
 	container.appendChild(secondarySection);
 
-	const secondaryButton = disposableStore.add(new Button(secondarySection, { ...themedButtonStyles, secondary: true, title: 'Secondary button' }));
+	const secondaryButton = disposableStore.add(
+		new Button(secondarySection, { ...themedButtonStyles, secondary: true, title: 'Secondary button' })
+	);
 	secondaryButton.label = 'Secondary Button';
 
-	const secondaryIconButton = disposableStore.add(new Button(secondarySection, { ...themedButtonStyles, secondary: true, title: 'Cancel', supportIcons: true }));
+	const secondaryIconButton = disposableStore.add(
+		new Button(secondarySection, { ...themedButtonStyles, secondary: true, title: 'Cancel', supportIcons: true })
+	);
 	secondaryIconButton.label = '$(close) Cancel';
 
 	// Section: Disabled Buttons
@@ -163,11 +175,15 @@ function renderButtons({ container, disposableStore }: ComponentFixtureContext):
 	disabledSection.style.alignItems = 'center';
 	container.appendChild(disabledSection);
 
-	const disabledButton = disposableStore.add(new Button(disabledSection, { ...themedButtonStyles, title: 'Disabled', disabled: true }));
+	const disabledButton = disposableStore.add(
+		new Button(disabledSection, { ...themedButtonStyles, title: 'Disabled', disabled: true })
+	);
 	disabledButton.label = 'Disabled';
 	disabledButton.enabled = false;
 
-	const disabledSecondary = disposableStore.add(new Button(disabledSection, { ...themedButtonStyles, secondary: true, title: 'Disabled Secondary', disabled: true }));
+	const disabledSecondary = disposableStore.add(
+		new Button(disabledSection, { ...themedButtonStyles, secondary: true, title: 'Disabled Secondary', disabled: true })
+	);
 	disabledSecondary.label = 'Disabled Secondary';
 	disabledSecondary.enabled = false;
 }
@@ -196,11 +212,12 @@ function renderButtonBar({ container, disposableStore }: ComponentFixtureContext
 	descContainer.style.width = '300px';
 	container.appendChild(descContainer);
 
-	const buttonWithDesc = disposableStore.add(new ButtonWithDescription(descContainer, { ...themedButtonStyles, title: 'Install Extension', supportIcons: true }));
+	const buttonWithDesc = disposableStore.add(
+		new ButtonWithDescription(descContainer, { ...themedButtonStyles, title: 'Install Extension', supportIcons: true })
+	);
 	buttonWithDesc.label = '$(extensions) Install Extension';
 	buttonWithDesc.description = 'This will install the extension and enable it globally';
 }
-
 
 // ============================================================================
 // Toggles and Checkboxes
@@ -219,28 +236,34 @@ function renderToggles({ container, disposableStore }: ComponentFixtureContext):
 	toggleSection.style.alignItems = 'center';
 	container.appendChild(toggleSection);
 
-	const toggle1 = disposableStore.add(new Toggle({
-		...themedToggleStyles,
-		title: 'Case Sensitive',
-		isChecked: false,
-		icon: Codicon.caseSensitive,
-	}));
+	const toggle1 = disposableStore.add(
+		new Toggle({
+			...themedToggleStyles,
+			title: 'Case Sensitive',
+			isChecked: false,
+			icon: Codicon.caseSensitive
+		})
+	);
 	toggleSection.appendChild(toggle1.domNode);
 
-	const toggle2 = disposableStore.add(new Toggle({
-		...themedToggleStyles,
-		title: 'Whole Word',
-		isChecked: true,
-		icon: Codicon.wholeWord,
-	}));
+	const toggle2 = disposableStore.add(
+		new Toggle({
+			...themedToggleStyles,
+			title: 'Whole Word',
+			isChecked: true,
+			icon: Codicon.wholeWord
+		})
+	);
 	toggleSection.appendChild(toggle2.domNode);
 
-	const toggle3 = disposableStore.add(new Toggle({
-		...themedToggleStyles,
-		title: 'Use Regular Expression',
-		isChecked: false,
-		icon: Codicon.regex,
-	}));
+	const toggle3 = disposableStore.add(
+		new Toggle({
+			...themedToggleStyles,
+			title: 'Use Regular Expression',
+			isChecked: false,
+			icon: Codicon.regex
+		})
+	);
 	toggleSection.appendChild(toggle3.domNode);
 
 	// Checkboxes
@@ -272,7 +295,6 @@ function renderToggles({ container, disposableStore }: ComponentFixtureContext):
 	checkboxSection.appendChild(createCheckboxRow('Word wrap', false));
 }
 
-
 // ============================================================================
 // Input Boxes
 // ============================================================================
@@ -285,46 +307,58 @@ function renderInputBoxes({ container, disposableStore }: ComponentFixtureContex
 	container.style.width = '350px';
 
 	// Input with value
-	const filledInput = disposableStore.add(new InputBox(container, undefined, {
-		placeholder: 'File path',
-		inputBoxStyles: themedInputBoxStyles,
-	}));
+	const filledInput = disposableStore.add(
+		new InputBox(container, undefined, {
+			placeholder: 'File path',
+			inputBoxStyles: themedInputBoxStyles
+		})
+	);
 	filledInput.value = '/src/vs/editor/browser';
 
 	// Input with info validation
-	const infoInput = disposableStore.add(new InputBox(container, undefined, {
-		placeholder: 'Username',
-		inputBoxStyles: themedInputBoxStyles,
-		validationOptions: {
-			validation: (value) => value.length < 3 ? { content: 'Username must be at least 3 characters', type: MessageType.INFO } : null
-		}
-	}));
+	const infoInput = disposableStore.add(
+		new InputBox(container, undefined, {
+			placeholder: 'Username',
+			inputBoxStyles: themedInputBoxStyles,
+			validationOptions: {
+				validation: value =>
+					value.length < 3 ? { content: 'Username must be at least 3 characters', type: MessageType.INFO } : null
+			}
+		})
+	);
 	infoInput.value = 'ab';
 	infoInput.validate();
 
 	// Input with warning validation
-	const warningInput = disposableStore.add(new InputBox(container, undefined, {
-		placeholder: 'Password',
-		inputBoxStyles: themedInputBoxStyles,
-		validationOptions: {
-			validation: (value) => value.length < 8 ? { content: 'Password should be at least 8 characters for security', type: MessageType.WARNING } : null
-		}
-	}));
+	const warningInput = disposableStore.add(
+		new InputBox(container, undefined, {
+			placeholder: 'Password',
+			inputBoxStyles: themedInputBoxStyles,
+			validationOptions: {
+				validation: value =>
+					value.length < 8
+						? { content: 'Password should be at least 8 characters for security', type: MessageType.WARNING }
+						: null
+			}
+		})
+	);
 	warningInput.value = 'pass';
 	warningInput.validate();
 
 	// Input with error validation
-	const errorInput = disposableStore.add(new InputBox(container, undefined, {
-		placeholder: 'Email address',
-		inputBoxStyles: themedInputBoxStyles,
-		validationOptions: {
-			validation: (value) => !value.includes('@') ? { content: 'Please enter a valid email address', type: MessageType.ERROR } : null
-		}
-	}));
+	const errorInput = disposableStore.add(
+		new InputBox(container, undefined, {
+			placeholder: 'Email address',
+			inputBoxStyles: themedInputBoxStyles,
+			validationOptions: {
+				validation: value =>
+					!value.includes('@') ? { content: 'Please enter a valid email address', type: MessageType.ERROR } : null
+			}
+		})
+	);
 	errorInput.value = 'invalid-email';
 	errorInput.validate();
 }
-
 
 // ============================================================================
 // Count Badges
@@ -355,7 +389,6 @@ function renderCountBadges({ container }: ComponentFixtureContext): void {
 	}
 }
 
-
 // ============================================================================
 // Action Bar
 // ============================================================================
@@ -376,17 +409,29 @@ function renderActionBar({ container, disposableStore }: ComponentFixtureContext
 	const horizontalContainer = $('div');
 	container.appendChild(horizontalContainer);
 
-	const horizontalBar = disposableStore.add(new ActionBar(horizontalContainer, {
-		ariaLabel: 'Editor Actions',
-	}));
+	const horizontalBar = disposableStore.add(
+		new ActionBar(horizontalContainer, {
+			ariaLabel: 'Editor Actions'
+		})
+	);
 
 	horizontalBar.push([
-		new Action('editor.action.save', 'Save', ThemeIcon.asClassName(Codicon.save), true, async () => console.log('Save')),
-		new Action('editor.action.undo', 'Undo', ThemeIcon.asClassName(Codicon.discard), true, async () => console.log('Undo')),
-		new Action('editor.action.redo', 'Redo', ThemeIcon.asClassName(Codicon.redo), true, async () => console.log('Redo')),
+		new Action('editor.action.save', 'Save', ThemeIcon.asClassName(Codicon.save), true, async () =>
+			console.log('Save')
+		),
+		new Action('editor.action.undo', 'Undo', ThemeIcon.asClassName(Codicon.discard), true, async () =>
+			console.log('Undo')
+		),
+		new Action('editor.action.redo', 'Redo', ThemeIcon.asClassName(Codicon.redo), true, async () =>
+			console.log('Redo')
+		),
 		new Separator(),
-		new Action('editor.action.find', 'Find', ThemeIcon.asClassName(Codicon.search), true, async () => console.log('Find')),
-		new Action('editor.action.replace', 'Replace', ThemeIcon.asClassName(Codicon.replaceAll), true, async () => console.log('Replace')),
+		new Action('editor.action.find', 'Find', ThemeIcon.asClassName(Codicon.search), true, async () =>
+			console.log('Find')
+		),
+		new Action('editor.action.replace', 'Replace', ThemeIcon.asClassName(Codicon.replaceAll), true, async () =>
+			console.log('Replace')
+		)
 	]);
 
 	// Action bar with disabled items
@@ -399,17 +444,18 @@ function renderActionBar({ container, disposableStore }: ComponentFixtureContext
 	const mixedContainer = $('div');
 	container.appendChild(mixedContainer);
 
-	const mixedBar = disposableStore.add(new ActionBar(mixedContainer, {
-		ariaLabel: 'Mixed Actions',
-	}));
+	const mixedBar = disposableStore.add(
+		new ActionBar(mixedContainer, {
+			ariaLabel: 'Mixed Actions'
+		})
+	);
 
 	mixedBar.push([
-		new Action('action.enabled', 'Enabled', ThemeIcon.asClassName(Codicon.play), true, async () => { }),
-		new Action('action.disabled', 'Disabled', ThemeIcon.asClassName(Codicon.debugPause), false, async () => { }),
-		new Action('action.enabled2', 'Enabled', ThemeIcon.asClassName(Codicon.debugStop), true, async () => { }),
+		new Action('action.enabled', 'Enabled', ThemeIcon.asClassName(Codicon.play), true, async () => {}),
+		new Action('action.disabled', 'Disabled', ThemeIcon.asClassName(Codicon.debugPause), false, async () => {}),
+		new Action('action.enabled2', 'Enabled', ThemeIcon.asClassName(Codicon.debugStop), true, async () => {})
 	]);
 }
-
 
 // ============================================================================
 // Progress Bar
@@ -468,7 +514,6 @@ function renderProgressBars({ container, disposableStore }: ComponentFixtureCont
 	doneBar.worked(100);
 }
 
-
 // ============================================================================
 // Highlighted Label
 // ============================================================================
@@ -503,6 +548,11 @@ function renderHighlightedLabels({ container }: ComponentFixtureContext): void {
 	// File search examples
 	container.appendChild(createHighlightedLabel('codeEditorWidget.ts', [{ start: 0, end: 4 }])); // "code"
 	container.appendChild(createHighlightedLabel('inlineCompletionsController.ts', [{ start: 6, end: 10 }])); // "Comp"
-	container.appendChild(createHighlightedLabel('diffEditorViewModel.ts', [{ start: 0, end: 4 }, { start: 10, end: 14 }])); // "diff" and "View"
+	container.appendChild(
+		createHighlightedLabel('diffEditorViewModel.ts', [
+			{ start: 0, end: 4 },
+			{ start: 10, end: 14 }
+		])
+	); // "diff" and "View"
 	container.appendChild(createHighlightedLabel('workbenchTestServices.ts', [{ start: 9, end: 13 }])); // "Test"
 }

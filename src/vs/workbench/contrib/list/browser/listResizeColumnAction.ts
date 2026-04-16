@@ -14,8 +14,8 @@ export class ListResizeColumnAction extends Action2 {
 	constructor() {
 		super({
 			id: 'list.resizeColumn',
-			title: { value: localize('list.resizeColumn', "Resize Column"), original: 'Resize Column' },
-			category: { value: localize('list', "List"), original: 'List' },
+			title: { value: localize('list.resizeColumn', 'Resize Column'), original: 'Resize Column' },
+			category: { value: localize('list', 'List'), original: 'List' },
 			precondition: WorkbenchListFocusContextKey,
 			f1: true
 		});
@@ -31,4 +31,3 @@ export class ListResizeColumnAction extends Action2 {
 		}
 	}
 }
-

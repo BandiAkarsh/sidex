@@ -8,7 +8,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { extractRangeFromFilter } from '../../common/search.js';
 
 suite('extractRangeFromFilter', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('basics', async function () {
@@ -56,7 +55,9 @@ suite('extractRangeFromFilter', () => {
 			{ filter: '/some/path/file.txt (19,20)@', unless: ['@'], result: undefined },
 			// unless before ,
 			{
-				filter: '/some/@path/file.txt (19,20)', unless: ['@'], result: {
+				filter: '/some/@path/file.txt (19,20)',
+				unless: ['@'],
+				result: {
 					filter: '/some/@path/file.txt',
 					range: {
 						endColumn: 20,
@@ -68,7 +69,9 @@ suite('extractRangeFromFilter', () => {
 			},
 			// unless before :
 			{
-				filter: '/some/@path/file.txt:19:20', unless: ['@'], result: {
+				filter: '/some/@path/file.txt:19:20',
+				unless: ['@'],
+				result: {
 					filter: '/some/@path/file.txt',
 					range: {
 						endColumn: 20,
@@ -80,7 +83,9 @@ suite('extractRangeFromFilter', () => {
 			},
 			// unless before #
 			{
-				filter: '/some/@path/file.txt#19', unless: ['@'], result: {
+				filter: '/some/@path/file.txt#19',
+				unless: ['@'],
+				result: {
 					filter: '/some/@path/file.txt',
 					range: {
 						endColumn: 1,
@@ -89,7 +94,7 @@ suite('extractRangeFromFilter', () => {
 						startLineNumber: 19
 					}
 				}
-			},
+			}
 		];
 		for (const { filter, unless, result } of testSpecs) {
 			test(`${filter} - ${JSON.stringify(unless)}`, () => {

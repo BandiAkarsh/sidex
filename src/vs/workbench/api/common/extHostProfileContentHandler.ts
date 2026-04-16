@@ -11,25 +11,26 @@ import { IExtensionDescription } from '../../../platform/extensions/common/exten
 import { checkProposedApiEnabled } from '../../services/extensions/common/extensions.js';
 import { ISaveProfileResult } from '../../services/userDataProfile/common/userDataProfile.js';
 import type * as vscode from 'vscode';
-import { ExtHostProfileContentHandlersShape, IMainContext, MainContext, MainThreadProfileContentHandlersShape } from './extHost.protocol.js';
-
+import {
+	ExtHostProfileContentHandlersShape,
+	IMainContext,
+	MainContext,
+	MainThreadProfileContentHandlersShape
+} from './extHost.protocol.js';
 
 export class ExtHostProfileContentHandlers implements ExtHostProfileContentHandlersShape {
-
 	private readonly proxy: MainThreadProfileContentHandlersShape;
 
 	private readonly handlers = new Map<string, vscode.ProfileContentHandler>();
 
-	constructor(
-		mainContext: IMainContext,
-	) {
+	constructor(mainContext: IMainContext) {
 		this.proxy = mainContext.getProxy(MainContext.MainThreadProfileContentHandlers);
 	}
 
 	registerProfileContentHandler(
 		extension: IExtensionDescription,
 		id: string,
-		handler: vscode.ProfileContentHandler,
+		handler: vscode.ProfileContentHandler
 	): vscode.Disposable {
 		checkProposedApiEnabled(extension, 'profileContentHandlers');
 		if (this.handlers.has(id)) {
@@ -45,7 +46,12 @@ export class ExtHostProfileContentHandlers implements ExtHostProfileContentHandl
 		});
 	}
 
-	async $saveProfile(id: string, name: string, content: string, token: CancellationToken): Promise<ISaveProfileResult | null> {
+	async $saveProfile(
+		id: string,
+		name: string,
+		content: string,
+		token: CancellationToken
+	): Promise<ISaveProfileResult | null> {
 		const handler = this.handlers.get(id);
 		if (!handler) {
 			throw new Error(`Unknown handler with id: ${id}`);

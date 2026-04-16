@@ -12,12 +12,19 @@ import { Categories } from '../../../../../platform/action/common/actionCommonCa
 import { Action2, registerAction2 } from '../../../../../platform/actions/common/actions.js';
 import { IsDevelopmentContext } from '../../../../../platform/contextkey/common/contextkeys.js';
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
-import { getNotebookEditorFromEditorPane, INotebookViewCellsUpdateEvent, INotebookViewZone, INotebookViewZoneChangeAccessor } from '../notebookBrowser.js';
+import {
+	getNotebookEditorFromEditorPane,
+	INotebookViewCellsUpdateEvent,
+	INotebookViewZone,
+	INotebookViewZoneChangeAccessor
+} from '../notebookBrowser.js';
 import { NotebookCellListView } from '../view/notebookCellListView.js';
 import { ICoordinatesConverter } from '../view/notebookRenderingCommon.js';
 import { CellViewModel } from '../viewModel/notebookViewModelImpl.js';
 
-const invalidFunc = () => { throw new Error(`Invalid notebook view zone change accessor`); };
+const invalidFunc = () => {
+	throw new Error(`Invalid notebook view zone change accessor`);
+};
 
 interface IZoneWidget {
 	whitespaceId: string;
@@ -30,7 +37,10 @@ export class NotebookViewZones extends Disposable {
 	private _zones: { [key: string]: IZoneWidget };
 	public domNode: FastDomNode<HTMLElement>;
 
-	constructor(private readonly listView: NotebookCellListView<CellViewModel>, private readonly coordinator: ICoordinatesConverter) {
+	constructor(
+		private readonly listView: NotebookCellListView<CellViewModel>,
+		private readonly coordinator: ICoordinatesConverter
+	) {
 		super();
 		this.domNode = createFastDomNode(document.createElement('div'));
 		this.domNode.setClassName('view-zones');
@@ -196,7 +206,6 @@ export class NotebookViewZones extends Disposable {
 
 		// In notebook, the first cell (markdown cell) in a folding range is always visible, so we need to check the cell after the notebook view zone
 		return !this.coordinator.modelIndexIsVisible(afterIndex);
-
 	}
 
 	override dispose(): void {
@@ -218,7 +227,7 @@ class ToggleNotebookViewZoneDeveloperAction extends Action2 {
 	constructor() {
 		super({
 			id: 'notebook.developer.addViewZones',
-			title: localize2('workbench.notebook.developer.addViewZones', "Toggle Notebook View Zones"),
+			title: localize2('workbench.notebook.developer.addViewZones', 'Toggle Notebook View Zones'),
 			category: Categories.Developer,
 			precondition: IsDevelopmentContext,
 			f1: true
@@ -257,7 +266,7 @@ class ToggleNotebookViewZoneDeveloperAction extends Action2 {
 					const viewZoneId = accessor.addZone({
 						afterModelPosition: i,
 						heightInPx: 200,
-						domNode: domNode,
+						domNode: domNode
 					});
 					viewZoneIds.push(viewZoneId);
 				}

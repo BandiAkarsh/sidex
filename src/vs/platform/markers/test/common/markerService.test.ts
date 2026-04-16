@@ -21,7 +21,6 @@ function randomMarkerData(severity = MarkerSeverity.Error): IMarkerData {
 }
 
 suite('Marker Service', () => {
-
 	let service: markerService.MarkerService;
 
 	teardown(function () {
@@ -31,24 +30,26 @@ suite('Marker Service', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('query', () => {
-
 		service = new markerService.MarkerService();
 
-		service.changeAll('far', [{
-			resource: URI.parse('file:///c/test/file.cs'),
-			marker: randomMarkerData(MarkerSeverity.Error)
-		}]);
+		service.changeAll('far', [
+			{
+				resource: URI.parse('file:///c/test/file.cs'),
+				marker: randomMarkerData(MarkerSeverity.Error)
+			}
+		]);
 
 		assert.strictEqual(service.read().length, 1);
 		assert.strictEqual(service.read({ owner: 'far' }).length, 1);
 		assert.strictEqual(service.read({ resource: URI.parse('file:///c/test/file.cs') }).length, 1);
 		assert.strictEqual(service.read({ owner: 'far', resource: URI.parse('file:///c/test/file.cs') }).length, 1);
 
-
-		service.changeAll('boo', [{
-			resource: URI.parse('file:///c/test/file.cs'),
-			marker: randomMarkerData(MarkerSeverity.Warning)
-		}]);
+		service.changeAll('boo', [
+			{
+				resource: URI.parse('file:///c/test/file.cs'),
+				marker: randomMarkerData(MarkerSeverity.Warning)
+			}
+		]);
 
 		assert.strictEqual(service.read().length, 2);
 		assert.strictEqual(service.read({ owner: 'far' }).length, 1);
@@ -58,12 +59,9 @@ suite('Marker Service', () => {
 		assert.strictEqual(service.read({ severities: MarkerSeverity.Warning }).length, 1);
 		assert.strictEqual(service.read({ severities: MarkerSeverity.Hint }).length, 0);
 		assert.strictEqual(service.read({ severities: MarkerSeverity.Error | MarkerSeverity.Warning }).length, 2);
-
 	});
 
-
 	test('changeOne override', () => {
-
 		service = new markerService.MarkerService();
 		service.changeOne('far', URI.parse('file:///path/only.cs'), [randomMarkerData()]);
 		assert.strictEqual(service.read().length, 1);
@@ -77,11 +75,9 @@ suite('Marker Service', () => {
 		service.changeOne('far', URI.parse('file:///path/only.cs'), [randomMarkerData(), randomMarkerData()]);
 		assert.strictEqual(service.read({ owner: 'far' }).length, 2);
 		assert.strictEqual(service.read({ owner: 'boo' }).length, 1);
-
 	});
 
 	test('changeOne/All clears', () => {
-
 		service = new markerService.MarkerService();
 		service.changeOne('far', URI.parse('file:///path/only.cs'), [randomMarkerData()]);
 		service.changeOne('boo', URI.parse('file:///path/only.cs'), [randomMarkerData()]);
@@ -101,15 +97,17 @@ suite('Marker Service', () => {
 	});
 
 	test('changeAll sends event for cleared', () => {
-
 		service = new markerService.MarkerService();
-		service.changeAll('far', [{
-			resource: URI.parse('file:///d/path'),
-			marker: randomMarkerData()
-		}, {
-			resource: URI.parse('file:///d/path'),
-			marker: randomMarkerData()
-		}]);
+		service.changeAll('far', [
+			{
+				resource: URI.parse('file:///d/path'),
+				marker: randomMarkerData()
+			},
+			{
+				resource: URI.parse('file:///d/path'),
+				marker: randomMarkerData()
+			}
+		]);
 
 		assert.strictEqual(service.read({ owner: 'far' }).length, 2);
 
@@ -127,13 +125,16 @@ suite('Marker Service', () => {
 	test('changeAll merges', () => {
 		service = new markerService.MarkerService();
 
-		service.changeAll('far', [{
-			resource: URI.parse('file:///c/test/file.cs'),
-			marker: randomMarkerData()
-		}, {
-			resource: URI.parse('file:///c/test/file.cs'),
-			marker: randomMarkerData()
-		}]);
+		service.changeAll('far', [
+			{
+				resource: URI.parse('file:///c/test/file.cs'),
+				marker: randomMarkerData()
+			},
+			{
+				resource: URI.parse('file:///c/test/file.cs'),
+				marker: randomMarkerData()
+			}
+		]);
 
 		assert.strictEqual(service.read({ owner: 'far' }).length, 2);
 	});
@@ -141,33 +142,40 @@ suite('Marker Service', () => {
 	test('changeAll must not break integrety, issue #12635', () => {
 		service = new markerService.MarkerService();
 
-		service.changeAll('far', [{
-			resource: URI.parse('scheme:path1'),
-			marker: randomMarkerData()
-		}, {
-			resource: URI.parse('scheme:path2'),
-			marker: randomMarkerData()
-		}]);
+		service.changeAll('far', [
+			{
+				resource: URI.parse('scheme:path1'),
+				marker: randomMarkerData()
+			},
+			{
+				resource: URI.parse('scheme:path2'),
+				marker: randomMarkerData()
+			}
+		]);
 
-		service.changeAll('boo', [{
-			resource: URI.parse('scheme:path1'),
-			marker: randomMarkerData()
-		}]);
+		service.changeAll('boo', [
+			{
+				resource: URI.parse('scheme:path1'),
+				marker: randomMarkerData()
+			}
+		]);
 
-		service.changeAll('far', [{
-			resource: URI.parse('scheme:path1'),
-			marker: randomMarkerData()
-		}, {
-			resource: URI.parse('scheme:path2'),
-			marker: randomMarkerData()
-		}]);
+		service.changeAll('far', [
+			{
+				resource: URI.parse('scheme:path1'),
+				marker: randomMarkerData()
+			},
+			{
+				resource: URI.parse('scheme:path2'),
+				marker: randomMarkerData()
+			}
+		]);
 
 		assert.strictEqual(service.read({ owner: 'far' }).length, 2);
 		assert.strictEqual(service.read({ resource: URI.parse('scheme:path1') }).length, 2);
 	});
 
 	test('invalid marker data', () => {
-
 		const data = randomMarkerData();
 		service = new markerService.MarkerService();
 
@@ -189,7 +197,6 @@ suite('Marker Service', () => {
 
 		service.changeOne('o', URI.parse('some:uri/1'), [randomMarkerData()]);
 		service.changeOne('o', URI.parse('some:uri/2'), []);
-
 	});
 
 	test('Error code of zero in markers get removed, #31275', function () {
@@ -292,9 +299,15 @@ suite('Marker Service', () => {
 		// Verify resource1 markers are visible again
 		assert.strictEqual(service.read({ ignoreResourceFilters: true }).length, 2);
 		assert.strictEqual(service.read({ resource: resource1, ignoreResourceFilters: true }).length, 1);
-		assert.strictEqual(service.read({ resource: resource1, ignoreResourceFilters: true })[0].severity, MarkerSeverity.Error);
+		assert.strictEqual(
+			service.read({ resource: resource1, ignoreResourceFilters: true })[0].severity,
+			MarkerSeverity.Error
+		);
 		assert.strictEqual(service.read({ resource: resource2, ignoreResourceFilters: true }).length, 1);
-		assert.strictEqual(service.read({ resource: resource2, ignoreResourceFilters: true })[0].severity, MarkerSeverity.Error);
+		assert.strictEqual(
+			service.read({ resource: resource2, ignoreResourceFilters: true })[0].severity,
+			MarkerSeverity.Error
+		);
 
 		// Dispose filter
 		filter.dispose();
@@ -426,9 +439,8 @@ suite('Marker Service', () => {
 		assert.strictEqual(allMarkers.length, 2);
 
 		// Find the info marker
-		const infoMarker = allMarkers.find(marker =>
-			marker.owner === 'markersFilter' &&
-			marker.severity === MarkerSeverity.Info
+		const infoMarker = allMarkers.find(
+			marker => marker.owner === 'markersFilter' && marker.severity === MarkerSeverity.Info
 		);
 
 		// Verify the info marker
@@ -461,7 +473,7 @@ suite('Marker Service', () => {
 		assert.strictEqual(service.read({ resource }).length, 1); // 1 info marker
 
 		// Dispose filters in a different order than they were created
-		filter2.dispose();  // Remove the second filter first
+		filter2.dispose(); // Remove the second filter first
 
 		// Verify resource markers are still filtered out with 2 filters remaining
 		assert.strictEqual(service.read().length, 1); // still 1 info marker

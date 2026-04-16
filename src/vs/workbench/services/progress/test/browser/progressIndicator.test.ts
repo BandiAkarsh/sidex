@@ -59,13 +59,12 @@ class TestProgressBar extends ProgressBar {
 		return this.done();
 	}
 
-	override show(): void { }
+	override show(): void {}
 
-	override hide(): void { }
+	override hide(): void {}
 }
 
 suite('Progress Indicator', () => {
-
 	const disposables = new DisposableStore();
 
 	teardown(() => {
@@ -74,11 +73,19 @@ suite('Progress Indicator', () => {
 
 	test('ScopedProgressIndicator', async () => {
 		const testProgressBar = disposables.add(new TestProgressBar(document.createElement('div')));
-		const progressScope = disposables.add(new class extends AbstractProgressScope {
-			constructor() { super('test.scopeId', true); }
-			testOnScopeOpened(scopeId: string) { super.onScopeOpened(scopeId); }
-			testOnScopeClosed(scopeId: string): void { super.onScopeClosed(scopeId); }
-		}());
+		const progressScope = disposables.add(
+			new (class extends AbstractProgressScope {
+				constructor() {
+					super('test.scopeId', true);
+				}
+				testOnScopeOpened(scopeId: string) {
+					super.onScopeOpened(scopeId);
+				}
+				testOnScopeClosed(scopeId: string): void {
+					super.onScopeClosed(scopeId);
+				}
+			})()
+		);
 		const testObject = disposables.add(new ScopedProgressIndicator(testProgressBar, progressScope));
 
 		// Active: Show (Infinite)

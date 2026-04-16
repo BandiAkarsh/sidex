@@ -39,7 +39,7 @@ export class TimestampWidget extends Disposable {
 	}
 
 	public async setTimestamp(timestamp: Date | undefined) {
-		if ((timestamp !== this._timestamp) || (this.useRelativeTimeSetting !== this._useRelativeTime)) {
+		if (timestamp !== this._timestamp || this.useRelativeTimeSetting !== this._useRelativeTime) {
 			this.updateDate(timestamp);
 		}
 		this._timestamp = timestamp;
@@ -50,8 +50,7 @@ export class TimestampWidget extends Disposable {
 		if (!timestamp) {
 			this._date.textContent = '';
 			this._date.style.display = 'none';
-		} else if ((timestamp !== this._timestamp)
-			|| (this.useRelativeTimeSetting !== this._useRelativeTime)) {
+		} else if (timestamp !== this._timestamp || this.useRelativeTimeSetting !== this._useRelativeTime) {
 			this._date.style.display = '';
 			let textContent: string;
 			let tooltip: string | undefined;

@@ -16,7 +16,7 @@ import {
 	TERMINAL_CURSOR_FOREGROUND_COLOR,
 	TERMINAL_CURSOR_BACKGROUND_COLOR,
 	TERMINAL_SELECTION_BACKGROUND_COLOR,
-	ansiColorIdentifiers,
+	ansiColorIdentifiers
 } from '../common/terminalColorRegistry.js';
 import { CommandsRegistry } from '../../../../platform/commands/common/commands.js';
 import { ILayoutService } from '../../../../platform/layout/browser/layoutService.js';
@@ -52,16 +52,28 @@ function resolveColor(themeService: IThemeService, id: string): string | undefin
 function buildXtermTheme(themeService: IThemeService): Record<string, string | undefined> {
 	const theme: Record<string, string | undefined> = {
 		foreground: resolveColor(themeService, TERMINAL_FOREGROUND_COLOR),
-		background: resolveColor(themeService, TERMINAL_BACKGROUND_COLOR)
-			?? resolveColor(themeService, PANEL_BACKGROUND),
+		background: resolveColor(themeService, TERMINAL_BACKGROUND_COLOR) ?? resolveColor(themeService, PANEL_BACKGROUND),
 		cursor: resolveColor(themeService, TERMINAL_CURSOR_FOREGROUND_COLOR),
 		cursorAccent: resolveColor(themeService, TERMINAL_CURSOR_BACKGROUND_COLOR),
-		selectionBackground: resolveColor(themeService, TERMINAL_SELECTION_BACKGROUND_COLOR),
+		selectionBackground: resolveColor(themeService, TERMINAL_SELECTION_BACKGROUND_COLOR)
 	};
 	const ansiNames = [
-		'black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white',
-		'brightBlack', 'brightRed', 'brightGreen', 'brightYellow',
-		'brightBlue', 'brightMagenta', 'brightCyan', 'brightWhite',
+		'black',
+		'red',
+		'green',
+		'yellow',
+		'blue',
+		'magenta',
+		'cyan',
+		'white',
+		'brightBlack',
+		'brightRed',
+		'brightGreen',
+		'brightYellow',
+		'brightBlue',
+		'brightMagenta',
+		'brightCyan',
+		'brightWhite'
 	];
 	for (let i = 0; i < ansiColorIdentifiers.length && i < ansiNames.length; i++) {
 		theme[ansiNames[i]] = resolveColor(themeService, ansiColorIdentifiers[i]);
@@ -72,7 +84,6 @@ function buildXtermTheme(themeService: IThemeService): Record<string, string | u
 // ─── Contribution ────────────────────────────────────────────────────────────
 
 class TauriTerminalContribution extends Disposable implements IWorkbenchContribution {
-
 	static readonly ID = 'workbench.contrib.tauriTerminal';
 
 	private _panelEl: HTMLElement | undefined;
@@ -84,7 +95,7 @@ class TauriTerminalContribution extends Disposable implements IWorkbenchContribu
 	constructor(
 		@IWorkspaceContextService private readonly _workspaceCtx: IWorkspaceContextService,
 		@IThemeService private readonly _themeService: IThemeService,
-		@ILayoutService private readonly _layoutService: ILayoutService,
+		@ILayoutService private readonly _layoutService: ILayoutService
 	) {
 		super();
 		this._registerToggleCommand();
@@ -93,11 +104,13 @@ class TauriTerminalContribution extends Disposable implements IWorkbenchContribu
 	// ── Command registration ──────────────────────────────────────────────
 
 	private _registerToggleCommand(): void {
-		this._register(toDisposable(
-			CommandsRegistry.registerCommand('workbench.action.terminal.toggleTerminal', () => {
-				this._toggle();
-			}).dispose
-		));
+		this._register(
+			toDisposable(
+				CommandsRegistry.registerCommand('workbench.action.terminal.toggleTerminal', () => {
+					this._toggle();
+				}).dispose
+			)
+		);
 	}
 
 	// ── Toggle logic ──────────────────────────────────────────────────────
@@ -163,7 +176,7 @@ class TauriTerminalContribution extends Disposable implements IWorkbenchContribu
 			backgroundColor: 'var(--vscode-panel-background, #1e1e1e)',
 			textTransform: 'uppercase',
 			letterSpacing: '0.5px',
-			userSelect: 'none',
+			userSelect: 'none'
 		} satisfies Partial<CSSStyleDeclaration>);
 		header.textContent = 'Terminal';
 
@@ -175,7 +188,7 @@ class TauriTerminalContribution extends Disposable implements IWorkbenchContribu
 			cursor: 'pointer',
 			fontSize: '14px',
 			padding: '0 4px',
-			lineHeight: '1',
+			lineHeight: '1'
 		} satisfies Partial<CSSStyleDeclaration>);
 		closeBtn.textContent = '\u00d7'; // ×
 		closeBtn.title = 'Hide Terminal';
@@ -187,7 +200,7 @@ class TauriTerminalContribution extends Disposable implements IWorkbenchContribu
 		termContainer.className = 'tauri-terminal-xterm';
 		Object.assign(termContainer.style, {
 			flex: '1',
-			overflow: 'hidden',
+			overflow: 'hidden'
 		} satisfies Partial<CSSStyleDeclaration>);
 
 		panel.appendChild(header);
@@ -195,9 +208,11 @@ class TauriTerminalContribution extends Disposable implements IWorkbenchContribu
 		container.appendChild(panel);
 		this._panelEl = panel;
 
-		this._register(toDisposable(() => {
-			panel.remove();
-		}));
+		this._register(
+			toDisposable(() => {
+				panel.remove();
+			})
+		);
 	}
 
 	// ── xterm.js + PTY wiring ─────────────────────────────────────────────
@@ -212,10 +227,7 @@ class TauriTerminalContribution extends Disposable implements IWorkbenchContribu
 		}
 
 		// Dynamically import xterm to keep the initial bundle lean
-		const [{ Terminal }, { FitAddon }] = await Promise.all([
-			import('@xterm/xterm'),
-			import('@xterm/addon-fit'),
-		]);
+		const [{ Terminal }, { FitAddon }] = await Promise.all([import('@xterm/xterm'), import('@xterm/addon-fit')]);
 
 		const theme = buildXtermTheme(this._themeService);
 
@@ -224,7 +236,7 @@ class TauriTerminalContribution extends Disposable implements IWorkbenchContribu
 			fontSize: 13,
 			fontFamily: 'Menlo, Monaco, "Courier New", monospace',
 			theme,
-			allowProposedApi: true,
+			allowProposedApi: true
 		});
 		this._xtermInstance = xterm;
 
@@ -240,57 +252,73 @@ class TauriTerminalContribution extends Disposable implements IWorkbenchContribu
 		const cwd = folders.length > 0 ? folders[0].uri.fsPath : undefined;
 
 		// Spawn PTY
-		const terminalId = await _invoke('terminal_spawn', {
+		const terminalId = (await _invoke('terminal_spawn', {
 			shell: undefined,
 			cwd: cwd ?? null,
-			env: null,
-		}) as number;
+			env: null
+		})) as number;
 		this._terminalId = terminalId;
 
 		// Listen for PTY output
-		const unlisten = await _listen('terminal-data', (event) => {
+		const unlisten = await _listen('terminal-data', event => {
 			const payload = event.payload as { terminal_id: number; data: string };
 			if (payload.terminal_id === terminalId) {
 				xterm.write(payload.data);
 			}
 		});
-		this._register(toDisposable(() => { unlisten(); }));
+		this._register(
+			toDisposable(() => {
+				unlisten();
+			})
+		);
 
 		// Forward user input to PTY
-		this._register(toDisposable(
-			xterm.onData((data: string) => {
-				_invoke!('terminal_write', { terminalId, data });
-			}).dispose
-		));
+		this._register(
+			toDisposable(
+				xterm.onData((data: string) => {
+					_invoke!('terminal_write', { terminalId, data });
+				}).dispose
+			)
+		);
 
 		// Forward resize events to PTY
-		this._register(toDisposable(
-			xterm.onResize(({ cols, rows }: { cols: number; rows: number }) => {
-				_invoke!('terminal_resize', { terminalId, cols, rows });
-			}).dispose
-		));
+		this._register(
+			toDisposable(
+				xterm.onResize(({ cols, rows }: { cols: number; rows: number }) => {
+					_invoke!('terminal_resize', { terminalId, cols, rows });
+				}).dispose
+			)
+		);
 
 		// Handle window/panel resize
 		let resizeRaf = 0;
 		const resizeObserver = new ResizeObserver(() => {
-			if (resizeRaf) { cancelAnimationFrame(resizeRaf); }
+			if (resizeRaf) {
+				cancelAnimationFrame(resizeRaf);
+			}
 			resizeRaf = requestAnimationFrame(() => {
 				fitAddon.fit();
 				resizeRaf = 0;
 			});
 		});
 		resizeObserver.observe(termContainer);
-		this._register(toDisposable(() => {
-			if (resizeRaf) { cancelAnimationFrame(resizeRaf); }
-			resizeObserver.disconnect();
-		}));
+		this._register(
+			toDisposable(() => {
+				if (resizeRaf) {
+					cancelAnimationFrame(resizeRaf);
+				}
+				resizeObserver.disconnect();
+			})
+		);
 
 		// Update theme on change
-		this._register(toDisposable(
-			this._themeService.onDidColorThemeChange(() => {
-				xterm.options.theme = buildXtermTheme(this._themeService);
-			}).dispose
-		));
+		this._register(
+			toDisposable(
+				this._themeService.onDidColorThemeChange(() => {
+					xterm.options.theme = buildXtermTheme(this._themeService);
+				}).dispose
+			)
+		);
 
 		// Do an initial resize notification so the PTY knows the real dimensions
 		const dims = fitAddon.proposeDimensions();
@@ -305,7 +333,7 @@ class TauriTerminalContribution extends Disposable implements IWorkbenchContribu
 
 	override dispose(): void {
 		if (this._terminalId !== undefined && _invoke) {
-			_invoke('terminal_kill', { terminalId: this._terminalId }).catch(() => { });
+			_invoke('terminal_kill', { terminalId: this._terminalId }).catch(() => {});
 		}
 		this._xtermInstance?.dispose();
 		super.dispose();
@@ -314,8 +342,4 @@ class TauriTerminalContribution extends Disposable implements IWorkbenchContribu
 
 // ─── Registration ────────────────────────────────────────────────────────────
 
-registerWorkbenchContribution2(
-	TauriTerminalContribution.ID,
-	TauriTerminalContribution,
-	WorkbenchPhase.AfterRestored,
-);
+registerWorkbenchContribution2(TauriTerminalContribution.ID, TauriTerminalContribution, WorkbenchPhase.AfterRestored);

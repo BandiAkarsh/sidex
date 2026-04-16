@@ -19,7 +19,6 @@ interface ISize {
  * without requiring the full editor part infrastructure.
  */
 class TestModalEditorResizeHost extends Disposable {
-
 	private readonly _onDidChangeMaximized = this._register(new Emitter<boolean>());
 	readonly onDidChangeMaximized = this._onDidChangeMaximized.event;
 
@@ -27,15 +26,25 @@ class TestModalEditorResizeHost extends Disposable {
 	readonly onDidRequestLayout = this._onDidRequestLayout.event;
 
 	private _maximized = false;
-	get maximized(): boolean { return this._maximized; }
+	get maximized(): boolean {
+		return this._maximized;
+	}
 
 	private _size: ISize | undefined;
-	get size(): ISize | undefined { return this._size; }
-	set size(value: ISize | undefined) { this._size = value; }
+	get size(): ISize | undefined {
+		return this._size;
+	}
+	set size(value: ISize | undefined) {
+		this._size = value;
+	}
 
 	private _position: { left: number; top: number } | undefined;
-	get position(): { left: number; top: number } | undefined { return this._position; }
-	set position(value: { left: number; top: number } | undefined) { this._position = value; }
+	get position(): { left: number; top: number } | undefined {
+		return this._position;
+	}
+	set position(value: { left: number; top: number } | undefined) {
+		this._position = value;
+	}
 
 	private savedSize: ISize | undefined;
 	private savedPosition: { left: number; top: number } | undefined;
@@ -69,11 +78,9 @@ class TestModalEditorResizeHost extends Disposable {
 			this.toggleMaximized(); // maximize
 		}
 	}
-
 }
 
 suite('Modal Editor Resize', () => {
-
 	const disposables = new DisposableStore();
 
 	teardown(() => disposables.clear());
@@ -118,7 +125,11 @@ suite('Modal Editor Resize', () => {
 		const maximizedEvents: boolean[] = [];
 		let layoutRequested = false;
 		disposables.add(host.onDidChangeMaximized(v => maximizedEvents.push(v)));
-		disposables.add(host.onDidRequestLayout(() => { layoutRequested = true; }));
+		disposables.add(
+			host.onDidRequestLayout(() => {
+				layoutRequested = true;
+			})
+		);
 
 		host.handleHeaderDoubleClick();
 
@@ -181,10 +192,7 @@ suite('Modal Editor Resize', () => {
 
 		// Double-click to un-maximize: should go to default, not restore custom
 		host.handleHeaderDoubleClick();
-		assert.deepStrictEqual(
-			{ maximized: host.maximized, size: host.size },
-			{ maximized: false, size: undefined }
-		);
+		assert.deepStrictEqual({ maximized: host.maximized, size: host.size }, { maximized: false, size: undefined });
 	});
 
 	test('double-click clears custom position along with size', () => {
@@ -211,7 +219,7 @@ suite('Modal Editor Resize', () => {
 		const savedState = {
 			size: host1.size,
 			position: host1.position,
-			maximized: host1.maximized,
+			maximized: host1.maximized
 		};
 
 		// Simulate restoring state on new modal

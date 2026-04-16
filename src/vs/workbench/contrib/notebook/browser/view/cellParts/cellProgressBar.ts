@@ -9,7 +9,10 @@ import { ICellViewModel } from '../../notebookBrowser.js';
 import { CellViewModelStateChangeEvent } from '../../notebookViewEvents.js';
 import { CellContentPart } from '../cellPart.js';
 import { NotebookCellExecutionState } from '../../../common/notebookCommon.js';
-import { ICellExecutionStateChangedEvent, INotebookExecutionStateService } from '../../../common/notebookExecutionStateService.js';
+import {
+	ICellExecutionStateChangedEvent,
+	INotebookExecutionStateService
+} from '../../../common/notebookExecutionStateService.js';
 
 export class CellProgressBar extends CellContentPart {
 	private readonly _progressBar: ProgressBar;
@@ -18,7 +21,8 @@ export class CellProgressBar extends CellContentPart {
 	constructor(
 		editorContainer: HTMLElement,
 		collapsedInputContainer: HTMLElement,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService) {
+		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService
+	) {
 		super();
 
 		this._progressBar = this._register(new ProgressBar(editorContainer, defaultProgressBarStyles));

@@ -41,9 +41,7 @@ export class GettingStartedIndexList<T extends { id: string; when?: ContextKeyEx
 	private contextService: IContextKeyService;
 	private contextKeysToWatch = new Set<string>();
 
-	constructor(
-		private options: GettingStartedIndexListOptions<T>
-	) {
+	constructor(private options: GettingStartedIndexListOptions<T>) {
 		super();
 
 		this.contextService = options.contextService;
@@ -54,15 +52,15 @@ export class GettingStartedIndexList<T extends { id: string; when?: ContextKeyEx
 		this.list = $('ul');
 		this.scrollbar = this._register(new DomScrollableElement(this.list, {}));
 		this._register(this.onDidChangeEntries(() => this.scrollbar.scanDomNode()));
-		this.domElement = $('.index-list.' + options.klass, {},
-			$('h2', {}, options.title),
-			this.scrollbar.getDomNode());
+		this.domElement = $('.index-list.' + options.klass, {}, $('h2', {}, options.title), this.scrollbar.getDomNode());
 
-		this._register(this.contextService.onDidChangeContext(e => {
-			if (e.affectsSome(this.contextKeysToWatch)) {
-				this.rerender();
-			}
-		}));
+		this._register(
+			this.contextService.onDidChangeContext(e => {
+				if (e.affectsSome(this.contextKeysToWatch)) {
+					this.rerender();
+				}
+			})
+		);
 	}
 
 	getDomElement() {
@@ -77,7 +75,13 @@ export class GettingStartedIndexList<T extends { id: string; when?: ContextKeyEx
 		this._register(this.onDidChangeEntries(listener));
 	}
 
-	register(d: IDisposable) { if (this.isDisposed) { d.dispose(); } else { this._register(d); } }
+	register(d: IDisposable) {
+		if (this.isDisposed) {
+			d.dispose();
+		} else {
+			this._register(d);
+		}
+	}
 
 	override dispose() {
 		this.isDisposed = true;
@@ -109,7 +113,9 @@ export class GettingStartedIndexList<T extends { id: string; when?: ContextKeyEx
 
 		const toRender = limitedEntries.map(e => e.id);
 
-		if (this.entries === entries && equals(toRender, this.lastRendered)) { return; }
+		if (this.entries === entries && equals(toRender, this.lastRendered)) {
+			return;
+		}
 		this.entries = entries;
 
 		this.contextKeysToWatch.clear();
@@ -120,7 +126,6 @@ export class GettingStartedIndexList<T extends { id: string; when?: ContextKeyEx
 
 		this.lastRendered = toRender;
 		this.itemCount = limitedEntries.length;
-
 
 		while (this.list.firstChild) {
 			this.list.firstChild.remove();
@@ -134,11 +139,9 @@ export class GettingStartedIndexList<T extends { id: string; when?: ContextKeyEx
 
 		if (activeEntries.length > limitedEntries.length && this.options.more) {
 			this.list.appendChild(this.options.more);
-		}
-		else if (entries !== undefined && this.itemCount === 0 && this.options.empty) {
+		} else if (entries !== undefined && this.itemCount === 0 && this.options.empty) {
 			this.list.appendChild(this.options.empty);
-		}
-		else if (this.options.footer) {
+		} else if (this.options.footer) {
 			this.list.appendChild(this.options.footer);
 		}
 

@@ -47,19 +47,41 @@ suite('HoverService', () => {
 		});
 
 		instantiationService.stub(IKeybindingService, {
-			mightProducePrintableCharacter() { return false; },
-			softDispatch() { return NoMatchingKb; },
+			mightProducePrintableCharacter() {
+				return false;
+			},
+			softDispatch() {
+				return NoMatchingKb;
+			},
 			resolveKeyboardEvent() {
 				return {
-					getLabel() { return ''; },
-					getAriaLabel() { return ''; },
-					getElectronAccelerator() { return null; },
-					getUserSettingsLabel() { return null; },
-					isWYSIWYG() { return false; },
-					hasMultipleChords() { return false; },
-					getDispatchChords() { return [null]; },
-					getSingleModifierDispatchChords() { return []; },
-					getChords() { return []; }
+					getLabel() {
+						return '';
+					},
+					getAriaLabel() {
+						return '';
+					},
+					getElectronAccelerator() {
+						return null;
+					},
+					getUserSettingsLabel() {
+						return null;
+					},
+					isWYSIWYG() {
+						return false;
+					},
+					hasMultipleChords() {
+						return false;
+					},
+					getDispatchChords() {
+						return [null];
+					},
+					getSingleModifierDispatchChords() {
+						return [];
+					},
+					getChords() {
+						return [];
+					}
 				};
 			}
 		});
@@ -67,15 +89,19 @@ suite('HoverService', () => {
 		instantiationService.stub(ILayoutService, {
 			activeContainer: fixture,
 			mainContainer: fixture,
-			getContainer() { return fixture; },
+			getContainer() {
+				return fixture;
+			},
 			onDidLayoutContainer: Event.None
 		});
 
 		instantiationService.stub(IAccessibilityService, new TestAccessibilityService());
 
 		instantiationService.stub(IMarkdownRendererService, {
-			render() { return { element: document.createElement('div'), dispose() { } }; },
-			setDefaultCodeBlockRenderer() { }
+			render() {
+				return { element: document.createElement('div'), dispose() {} };
+			},
+			setDefaultCodeBlockRenderer() {}
 		});
 
 		hoverService = store.add(instantiationService.createInstance(HoverService));
@@ -91,7 +117,11 @@ suite('HoverService', () => {
 		return target;
 	}
 
-	function showHover(content: string, target?: HTMLElement, options?: Partial<Parameters<typeof hoverService.showInstantHover>[0]>): IHoverWidget {
+	function showHover(
+		content: string,
+		target?: HTMLElement,
+		options?: Partial<Parameters<typeof hoverService.showInstantHover>[0]>
+	): IHoverWidget {
 		const hover = hoverService.showInstantHover({
 			content,
 			target: target ?? createTarget(),
@@ -185,7 +215,9 @@ suite('HoverService', () => {
 			const hover = hoverService.showInstantHover({
 				content: 'Test',
 				target,
-				onDidShow: () => { didShowCalled = true; }
+				onDidShow: () => {
+					didShowCalled = true;
+				}
 			});
 
 			assert.ok(didShowCalled, 'onDidShow should be called');
@@ -415,55 +447,60 @@ suite('HoverService', () => {
 	});
 
 	suite('setupDelayedHover', () => {
-		test('should evaluate function options on mouseover', () => runWithFakedTimers({ useFakeTimers: true }, async () => {
-			const target = createTarget();
-			let callCount = 0;
+		test('should evaluate function options on mouseover', () =>
+			runWithFakedTimers({ useFakeTimers: true }, async () => {
+				const target = createTarget();
+				let callCount = 0;
 
-			const disposable = hoverService.setupDelayedHover(target, () => {
-				callCount++;
-				return { content: `Call ${callCount}` };
-			});
+				const disposable = hoverService.setupDelayedHover(target, () => {
+					callCount++;
+					return { content: `Call ${callCount}` };
+				});
 
-			// First mouseover
-			target.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-			assert.strictEqual(callCount, 1, 'Options function should be called on first mouseover');
+				// First mouseover
+				target.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+				assert.strictEqual(callCount, 1, 'Options function should be called on first mouseover');
 
-			await timeout(0);
-			hoverService.hideHover(true);
+				await timeout(0);
+				hoverService.hideHover(true);
 
-			// Second mouseover should call function again
-			target.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-			assert.strictEqual(callCount, 2, 'Options function should be called on second mouseover');
+				// Second mouseover should call function again
+				target.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+				assert.strictEqual(callCount, 2, 'Options function should be called on second mouseover');
 
-			await timeout(0);
-			disposable.dispose();
-			hoverService.hideHover(true);
-		}));
+				await timeout(0);
+				disposable.dispose();
+				hoverService.hideHover(true);
+			}));
 
-		test('should use reduced delay when reducedDelay is true', () => runWithFakedTimers({ useFakeTimers: true }, async () => {
-			const target = createTarget();
+		test('should use reduced delay when reducedDelay is true', () =>
+			runWithFakedTimers({ useFakeTimers: true }, async () => {
+				const target = createTarget();
 
-			// Configure reducedDelay to 150ms for this test
-			(instantiationService.get(IConfigurationService) as TestConfigurationService).setUserConfiguration('workbench.hover.reducedDelay', 150);
+				// Configure reducedDelay to 150ms for this test
+				(instantiationService.get(IConfigurationService) as TestConfigurationService).setUserConfiguration(
+					'workbench.hover.reducedDelay',
+					150
+				);
 
-			const disposable = hoverService.setupDelayedHover(target, { content: 'Reduced delay' }, { reducedDelay: true });
+				const disposable = hoverService.setupDelayedHover(target, { content: 'Reduced delay' }, { reducedDelay: true });
 
-			// Trigger mouseover
-			target.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
+				// Trigger mouseover
+				target.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
 
-			// Hover should not be visible before delay
-			await timeout(75);
-			const hoversBefore = mainWindow.document.querySelectorAll('.monaco-hover');
-			assert.strictEqual(hoversBefore.length, 0, 'Hover should not be visible before delay completes');
+				// Hover should not be visible before delay
+				await timeout(75);
+				const hoversBefore = mainWindow.document.querySelectorAll('.monaco-hover');
+				assert.strictEqual(hoversBefore.length, 0, 'Hover should not be visible before delay completes');
 
-			// Hover should be visible after delay
-			await timeout(150);
-			const hoversAfter = mainWindow.document.querySelectorAll('.monaco-hover');
-			assert.strictEqual(hoversAfter.length, 1, 'Hover should be visible after reduced delay');
+				// Hover should be visible after delay
+				await timeout(150);
+				const hoversAfter = mainWindow.document.querySelectorAll('.monaco-hover');
+				assert.strictEqual(hoversAfter.length, 1, 'Hover should be visible after reduced delay');
 
-			disposable.dispose();
-			hoverService.hideHover(true);
-		}));
+				disposable.dispose();
+				hoverService.hideHover(true);
+			}));
 	});
 
 	suite('setupManagedHover', () => {
@@ -510,10 +547,13 @@ suite('HoverService', () => {
 			assertInDOM(lockedHover, 'Locked hover should be in DOM');
 
 			const otherTarget = createTarget();
-			const rejectedHover = hoverService.showDelayedHover({
-				content: 'Should not show',
-				target: otherTarget
-			}, {});
+			const rejectedHover = hoverService.showDelayedHover(
+				{
+					content: 'Should not show',
+					target: otherTarget
+				},
+				{}
+			);
 
 			assert.strictEqual(rejectedHover, undefined, 'Should reject hover when locked hover exists');
 			assertInDOM(lockedHover, 'Locked hover should remain in DOM after rejection');
@@ -522,48 +562,59 @@ suite('HoverService', () => {
 			assertNotInDOM(lockedHover, 'Locked hover should be removed from DOM after dispose');
 		});
 
-		test('should use reduced delay when reducedDelay is true', () => runWithFakedTimers({ useFakeTimers: true }, async () => {
-			const target = createTarget();
-			const reducedDelay = 100;
+		test('should use reduced delay when reducedDelay is true', () =>
+			runWithFakedTimers({ useFakeTimers: true }, async () => {
+				const target = createTarget();
+				const reducedDelay = 100;
 
-			// Configure reducedDelay setting for this test
-			(instantiationService.get(IConfigurationService) as TestConfigurationService).setUserConfiguration('workbench.hover.reducedDelay', reducedDelay);
+				// Configure reducedDelay setting for this test
+				(instantiationService.get(IConfigurationService) as TestConfigurationService).setUserConfiguration(
+					'workbench.hover.reducedDelay',
+					reducedDelay
+				);
 
-			const hover = hoverService.showDelayedHover({
-				content: 'Reduced delay hover',
-				target
-			}, { reducedDelay: true });
+				const hover = hoverService.showDelayedHover(
+					{
+						content: 'Reduced delay hover',
+						target
+					},
+					{ reducedDelay: true }
+				);
 
-			assert.ok(hover, 'Hover should be created');
-			assertNotInDOM(hover, 'Hover should not be visible immediately');
+				assert.ok(hover, 'Hover should be created');
+				assertNotInDOM(hover, 'Hover should not be visible immediately');
 
-			// Wait less than reduced delay - hover should still not be visible
-			await timeout(reducedDelay / 2);
-			assertNotInDOM(hover, 'Hover should not be visible before delay completes');
+				// Wait less than reduced delay - hover should still not be visible
+				await timeout(reducedDelay / 2);
+				assertNotInDOM(hover, 'Hover should not be visible before delay completes');
 
-			// Wait for full delay - hover should now be visible
-			await timeout(reducedDelay);
-			assertInDOM(hover, 'Hover should be visible after reduced delay');
+				// Wait for full delay - hover should now be visible
+				await timeout(reducedDelay);
+				assertInDOM(hover, 'Hover should be visible after reduced delay');
 
-			hover.dispose();
-		}));
+				hover.dispose();
+			}));
 
-		test('should use default delay when custom delay is undefined', () => runWithFakedTimers({ useFakeTimers: true }, async () => {
-			const target = createTarget();
-			// Default delay is set to 0 in test setup
-			const hover = hoverService.showDelayedHover({
-				content: 'Default delay hover',
-				target
-			}, {});
+		test('should use default delay when custom delay is undefined', () =>
+			runWithFakedTimers({ useFakeTimers: true }, async () => {
+				const target = createTarget();
+				// Default delay is set to 0 in test setup
+				const hover = hoverService.showDelayedHover(
+					{
+						content: 'Default delay hover',
+						target
+					},
+					{}
+				);
 
-			assert.ok(hover, 'Hover should be created');
+				assert.ok(hover, 'Hover should be created');
 
-			// Since default delay is 0 in tests, hover should appear after minimal timeout
-			await timeout(0);
-			assertInDOM(hover, 'Hover should be visible with default delay');
+				// Since default delay is 0 in tests, hover should appear after minimal timeout
+				await timeout(0);
+				assertInDOM(hover, 'Hover should be visible with default delay');
 
-			hover.dispose();
-		}));
+				hover.dispose();
+			}));
 	});
 
 	suite('hover locking', () => {

@@ -41,8 +41,7 @@ import { ITreeSitterLibraryService } from '../../../../../editor/common/services
 import { TestTreeSitterLibraryService } from '../../../../../editor/test/common/services/testTreeSitterLibraryService.js';
 
 suite('EditorModel', () => {
-
-	class MyEditorModel extends EditorModel { }
+	class MyEditorModel extends EditorModel {}
 	class MyTextEditorModel extends BaseTextEditorModel {
 		testCreateTextEditorModel(value: ITextBufferFactory, resource?: URI, preferredLanguageId?: string) {
 			return super.createTextEditorModel(value, resource, preferredLanguageId);
@@ -59,7 +58,10 @@ suite('EditorModel', () => {
 		const undoRedoService = new UndoRedoService(dialogService, notificationService);
 		instantiationService.stub(IWorkbenchEnvironmentService, TestEnvironmentService);
 		instantiationService.stub(IConfigurationService, new TestConfigurationService());
-		instantiationService.stub(ITextResourcePropertiesService, new TestTextResourcePropertiesService(instantiationService.get(IConfigurationService)));
+		instantiationService.stub(
+			ITextResourcePropertiesService,
+			new TestTextResourcePropertiesService(instantiationService.get(IConfigurationService))
+		);
 		instantiationService.stub(IDialogService, dialogService);
 		instantiationService.stub(INotificationService, notificationService);
 		instantiationService.stub(IUndoRedoService, undoRedoService);
@@ -91,10 +93,12 @@ suite('EditorModel', () => {
 
 		const model = disposables.add(new MyEditorModel());
 
-		disposables.add(model.onWillDispose(() => {
-			assert(true);
-			counter++;
-		}));
+		disposables.add(
+			model.onWillDispose(() => {
+				assert(true);
+				counter++;
+			})
+		);
 
 		await model.resolve();
 		assert.strictEqual(model.isDisposed(), false);
@@ -107,7 +111,14 @@ suite('EditorModel', () => {
 	test('BaseTextEditorModel', async () => {
 		const modelService = stubModelService(instantiationService);
 
-		const model = disposables.add(new MyTextEditorModel(modelService, languageService, disposables.add(instantiationService.createInstance(LanguageDetectionService)), instantiationService.createInstance(TestAccessibilityService)));
+		const model = disposables.add(
+			new MyTextEditorModel(
+				modelService,
+				languageService,
+				disposables.add(instantiationService.createInstance(LanguageDetectionService)),
+				instantiationService.createInstance(TestAccessibilityService)
+			)
+		);
 		await model.resolve();
 
 		disposables.add(model.testCreateTextEditorModel(createTextBufferFactory('foo'), null!, Mimes.text));

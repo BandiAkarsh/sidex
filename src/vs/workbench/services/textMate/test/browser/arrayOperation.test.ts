@@ -21,7 +21,7 @@ suite('array operation', () => {
 		const edit = LengthEdit.create([
 			LengthReplacement.create(4, 7, 2),
 			LengthReplacement.create(8, 8, 2),
-			LengthReplacement.create(9, 11, 0),
+			LengthReplacement.create(9, 11, 0)
 		]);
 
 		const arr = seq(0, 15).map(x => `item${x}`);
@@ -40,12 +40,12 @@ suite('array operation', () => {
 			'item11',
 			'item12',
 			'item13',
-			'item14',
+			'item14'
 		]);
 
 		const transformer = new MonotonousIndexTransformer(edit);
 		assert.deepStrictEqual(
-			seq(0, 15).map((x) => {
+			seq(0, 15).map(x => {
 				const t = transformer.transform(x);
 				let r = `arr[${x}]: ${arr[x]} -> `;
 				if (t !== undefined) {
@@ -70,7 +70,7 @@ suite('array operation', () => {
 				'arr[11]: item11 -> newArr[10]: item11',
 				'arr[12]: item12 -> newArr[11]: item12',
 				'arr[13]: item13 -> newArr[12]: item13',
-				'arr[14]: item14 -> newArr[13]: item14',
+				'arr[14]: item14 -> newArr[13]: item14'
 			]
 		);
 	});

@@ -12,7 +12,6 @@ import './browser/workbench.contribution.js';
 
 //#endregion
 
-
 //#region --- workbench actions
 
 import './browser/actions/textInputActions.js';
@@ -29,7 +28,6 @@ import './browser/actions/widgetNavigationCommands.js';
 
 //#endregion
 
-
 //#region --- API Extension Points
 
 import './services/actions/common/menusExtensionPoint.js';
@@ -37,7 +35,6 @@ import './api/common/configurationExtensionPoint.js';
 import './api/browser/viewsExtensionPoint.js';
 
 //#endregion
-
 
 //#region --- workbench parts
 
@@ -48,7 +45,6 @@ import './browser/parts/banner/bannerPart.js';
 import './browser/parts/statusbar/statusbarPart.js';
 
 //#endregion
-
 
 //#region --- workbench services
 
@@ -126,7 +122,10 @@ import './services/log/common/defaultLogLevels.js';
 
 import { InstantiationType, registerSingleton } from '../platform/instantiation/common/extensions.js';
 import { GlobalExtensionEnablementService } from '../platform/extensionManagement/common/extensionEnablementService.js';
-import { IAllowedExtensionsService, IGlobalExtensionEnablementService } from '../platform/extensionManagement/common/extensionManagement.js';
+import {
+	IAllowedExtensionsService,
+	IGlobalExtensionEnablementService
+} from '../platform/extensionManagement/common/extensionManagement.js';
 import { ContextViewService } from '../platform/contextview/browser/contextViewService.js';
 import { IContextViewService } from '../platform/contextview/browser/contextView.js';
 import { IListService, ListService } from '../platform/list/browser/listService.js';
@@ -142,7 +141,10 @@ import { IDownloadService } from '../platform/download/common/download.js';
 import { DownloadService } from '../platform/download/common/downloadService.js';
 import { OpenerService } from '../editor/browser/services/openerService.js';
 import { IOpenerService } from '../platform/opener/common/opener.js';
-import { ExtensionStorageService, IExtensionStorageService } from '../platform/extensionManagement/common/extensionStorage.js';
+import {
+	ExtensionStorageService,
+	IExtensionStorageService
+} from '../platform/extensionManagement/common/extensionStorage.js';
 // Null UserDataSync stubs (avoid importing heavy userDataSync modules)
 import '../platform/userDataSync/common/nullUserDataSync.js';
 import { AllowedExtensionsService } from '../platform/extensionManagement/common/allowedExtensionsService.js';
@@ -163,7 +165,6 @@ registerSingleton(IOpenerService, OpenerService, InstantiationType.Delayed);
 registerSingleton(IWebWorkerService, WebWorkerService, InstantiationType.Delayed);
 
 //#endregion
-
 
 //#region --- workbench contributions
 

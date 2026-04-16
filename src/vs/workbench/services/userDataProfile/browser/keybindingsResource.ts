@@ -6,7 +6,13 @@
 import { VSBuffer } from '../../../../base/common/buffer.js';
 import { FileOperationError, FileOperationResult, IFileService } from '../../../../platform/files/common/files.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
-import { IProfileResource, IProfileResourceChildTreeItem, IProfileResourceInitializer, IProfileResourceTreeItem, IUserDataProfileService } from '../common/userDataProfile.js';
+import {
+	IProfileResource,
+	IProfileResourceChildTreeItem,
+	IProfileResourceInitializer,
+	IProfileResourceTreeItem,
+	IUserDataProfileService
+} from '../common/userDataProfile.js';
 import { platform, Platform } from '../../../../base/common/platform.js';
 import { ITreeItemCheckboxState, TreeItemCollapsibleState } from '../../../common/views.js';
 import { IUserDataProfile, ProfileResourceType } from '../../../../platform/userDataProfile/common/userDataProfile.js';
@@ -21,13 +27,11 @@ interface IKeybindingsResourceContent {
 }
 
 export class KeybindingsResourceInitializer implements IProfileResourceInitializer {
-
 	constructor(
 		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
 		@IFileService private readonly fileService: IFileService,
-		@ILogService private readonly logService: ILogService,
-	) {
-	}
+		@ILogService private readonly logService: ILogService
+	) {}
 
 	async initialize(content: string): Promise<void> {
 		const keybindingsContent: IKeybindingsResourceContent = JSON.parse(content);
@@ -35,17 +39,18 @@ export class KeybindingsResourceInitializer implements IProfileResourceInitializ
 			this.logService.info(`Initializing Profile: No keybindings to apply...`);
 			return;
 		}
-		await this.fileService.writeFile(this.userDataProfileService.currentProfile.keybindingsResource, VSBuffer.fromString(keybindingsContent.keybindings));
+		await this.fileService.writeFile(
+			this.userDataProfileService.currentProfile.keybindingsResource,
+			VSBuffer.fromString(keybindingsContent.keybindings)
+		);
 	}
 }
 
 export class KeybindingsResource implements IProfileResource {
-
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@ILogService private readonly logService: ILogService,
-	) {
-	}
+		@ILogService private readonly logService: ILogService
+	) {}
 
 	async getContent(profile: IUserDataProfile): Promise<string> {
 		const keybindingsContent = await this.getKeybindingsResourceContent(profile);
@@ -79,14 +84,12 @@ export class KeybindingsResource implements IProfileResource {
 			}
 		}
 	}
-
 }
 
 export class KeybindingsResourceTreeItem implements IProfileResourceTreeItem {
-
 	readonly type = ProfileResourceType.Keybindings;
 	readonly handle = ProfileResourceType.Keybindings;
-	readonly label = { label: localize('keybindings', "Keyboard Shortcuts") };
+	readonly label = { label: localize('keybindings', 'Keyboard Shortcuts') };
 	readonly collapsibleState = TreeItemCollapsibleState.Expanded;
 	checkbox: ITreeItemCheckboxState | undefined;
 
@@ -94,36 +97,39 @@ export class KeybindingsResourceTreeItem implements IProfileResourceTreeItem {
 		private readonly profile: IUserDataProfile,
 		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
 		@IInstantiationService private readonly instantiationService: IInstantiationService
-	) { }
+	) {}
 
 	isFromDefaultProfile(): boolean {
 		return !this.profile.isDefault && !!this.profile.useDefaultFlags?.keybindings;
 	}
 
 	async getChildren(): Promise<IProfileResourceChildTreeItem[]> {
-		return [{
-			handle: this.profile.keybindingsResource.toString(),
-			resourceUri: this.profile.keybindingsResource,
-			collapsibleState: TreeItemCollapsibleState.None,
-			parent: this,
-			accessibilityInformation: {
-				label: this.uriIdentityService.extUri.basename(this.profile.settingsResource)
-			},
-			command: {
-				id: API_OPEN_EDITOR_COMMAND_ID,
-				title: '',
-				arguments: [this.profile.keybindingsResource, undefined, undefined]
+		return [
+			{
+				handle: this.profile.keybindingsResource.toString(),
+				resourceUri: this.profile.keybindingsResource,
+				collapsibleState: TreeItemCollapsibleState.None,
+				parent: this,
+				accessibilityInformation: {
+					label: this.uriIdentityService.extUri.basename(this.profile.settingsResource)
+				},
+				command: {
+					id: API_OPEN_EDITOR_COMMAND_ID,
+					title: '',
+					arguments: [this.profile.keybindingsResource, undefined, undefined]
+				}
 			}
-		}];
+		];
 	}
 
 	async hasContent(): Promise<boolean> {
-		const keybindingsContent = await this.instantiationService.createInstance(KeybindingsResource).getKeybindingsResourceContent(this.profile);
+		const keybindingsContent = await this.instantiationService
+			.createInstance(KeybindingsResource)
+			.getKeybindingsResourceContent(this.profile);
 		return keybindingsContent.keybindings !== null;
 	}
 
 	async getContent(): Promise<string> {
 		return this.instantiationService.createInstance(KeybindingsResource).getContent(this.profile);
 	}
-
 }

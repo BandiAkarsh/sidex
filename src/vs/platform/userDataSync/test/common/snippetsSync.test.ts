@@ -13,7 +13,14 @@ import { IEnvironmentService } from '../../../environment/common/environment.js'
 import { IFileService } from '../../../files/common/files.js';
 import { IUserDataProfile, IUserDataProfilesService } from '../../../userDataProfile/common/userDataProfile.js';
 import { SnippetsSynchroniser } from '../../common/snippetsSync.js';
-import { IResourcePreview, ISyncData, IUserDataSyncStoreService, PREVIEW_DIR_NAME, SyncResource, SyncStatus } from '../../common/userDataSync.js';
+import {
+	IResourcePreview,
+	ISyncData,
+	IUserDataSyncStoreService,
+	PREVIEW_DIR_NAME,
+	SyncResource,
+	SyncStatus
+} from '../../common/userDataSync.js';
 import { UserDataSyncClient, UserDataSyncTestServer } from './userDataSyncClient.js';
 
 const tsSnippet1 = `{
@@ -147,7 +154,6 @@ const globalSnippet = `{
 }`;
 
 suite('SnippetsSync', () => {
-
 	const server = new UserDataSyncTestServer();
 	let testClient: UserDataSyncClient;
 	let client2: UserDataSyncClient;
@@ -179,7 +185,7 @@ suite('SnippetsSync', () => {
 		await testObject.sync(manifest);
 
 		assert.deepStrictEqual(server.requests, []);
-		assert.ok(!await fileService.exists(snippetsResource));
+		assert.ok(!(await fileService.exists(snippetsResource)));
 
 		const lastSyncUserData = await testObject.getLastSyncUserData();
 		const remoteUserData = await testObject.getRemoteUserData(null);
@@ -208,7 +214,11 @@ suite('SnippetsSync', () => {
 		await testObject.sync(manifest);
 
 		assert.deepStrictEqual(server.requests, [
-			{ type: 'POST', url: `${server.url}/v1/resource/${testObject.resource}`, headers: { 'If-Match': lastSyncUserData?.ref } },
+			{
+				type: 'POST',
+				url: `${server.url}/v1/resource/${testObject.resource}`,
+				headers: { 'If-Match': lastSyncUserData?.ref }
+			}
 		]);
 
 		lastSyncUserData = await testObject.getLastSyncUserData();
@@ -314,7 +324,12 @@ suite('SnippetsSync', () => {
 		assert.strictEqual(testObject.status, SyncStatus.HasConflicts);
 		const environmentService = testClient.instantiationService.get(IEnvironmentService);
 		const local1 = joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json');
-		const local2 = joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json');
+		const local2 = joinPath(
+			environmentService.userDataSyncHome,
+			testObject.resource,
+			PREVIEW_DIR_NAME,
+			'typescript.json'
+		);
 		assertPreviews(testObject.conflicts.conflicts, [local1, local2]);
 	});
 
@@ -333,7 +348,12 @@ suite('SnippetsSync', () => {
 		conflicts = testObject.conflicts.conflicts;
 		assert.strictEqual(testObject.status, SyncStatus.HasConflicts);
 		const environmentService = testClient.instantiationService.get(IEnvironmentService);
-		const local = joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json');
+		const local = joinPath(
+			environmentService.userDataSyncHome,
+			testObject.resource,
+			PREVIEW_DIR_NAME,
+			'typescript.json'
+		);
 		assertPreviews(testObject.conflicts.conflicts, [local]);
 	});
 
@@ -669,7 +689,7 @@ suite('SnippetsSync', () => {
 		await testObject.apply(false);
 
 		const fileService = testClient.instantiationService.get(IFileService);
-		assert.ok(!await fileService.exists(dirname(conflicts[0].previewResource)));
+		assert.ok(!(await fileService.exists(dirname(conflicts[0].previewResource))));
 	});
 
 	test('merge when there are multiple snippets and all snippets are merged', async () => {
@@ -680,11 +700,10 @@ suite('SnippetsSync', () => {
 		const preview = await testObject.sync(await testClient.getLatestRef(SyncResource.Snippets), true);
 
 		assert.strictEqual(testObject.status, SyncStatus.Syncing);
-		assertPreviews(preview!.resourcePreviews,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json'),
-			]);
+		assertPreviews(preview!.resourcePreviews, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json')
+		]);
 		assert.deepStrictEqual(testObject.conflicts.conflicts, []);
 	});
 
@@ -710,11 +729,10 @@ suite('SnippetsSync', () => {
 		const preview = await testObject.sync(await testClient.getLatestRef(SyncResource.Snippets), true);
 
 		assert.strictEqual(testObject.status, SyncStatus.Syncing);
-		assertPreviews(preview!.resourcePreviews,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
-			]);
+		assertPreviews(preview!.resourcePreviews, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json')
+		]);
 		assert.deepStrictEqual(testObject.conflicts.conflicts, []);
 	});
 
@@ -745,16 +763,14 @@ suite('SnippetsSync', () => {
 		const preview = await testObject.sync(await testClient.getLatestRef(SyncResource.Snippets), true);
 
 		assert.strictEqual(testObject.status, SyncStatus.HasConflicts);
-		assertPreviews(preview!.resourcePreviews,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json'),
-			]);
-		assertPreviews(testObject.conflicts.conflicts,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json'),
-			]);
+		assertPreviews(preview!.resourcePreviews, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json')
+		]);
+		assertPreviews(testObject.conflicts.conflicts, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json')
+		]);
 	});
 
 	test('accept when there are multiple snippets with conflicts and only one snippet is accepted', async () => {
@@ -769,29 +785,25 @@ suite('SnippetsSync', () => {
 		let preview = await testObject.sync(await testClient.getLatestRef(SyncResource.Snippets), true);
 
 		assert.strictEqual(testObject.status, SyncStatus.HasConflicts);
-		assertPreviews(preview!.resourcePreviews,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json'),
-			]);
-		assertPreviews(testObject.conflicts.conflicts,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json'),
-			]);
+		assertPreviews(preview!.resourcePreviews, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json')
+		]);
+		assertPreviews(testObject.conflicts.conflicts, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json')
+		]);
 
 		preview = await testObject.accept(preview!.resourcePreviews[0].previewResource, htmlSnippet2);
 
 		assert.strictEqual(testObject.status, SyncStatus.HasConflicts);
-		assertPreviews(preview!.resourcePreviews,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json'),
-			]);
-		assertPreviews(testObject.conflicts.conflicts,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json'),
-			]);
+		assertPreviews(preview!.resourcePreviews, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json')
+		]);
+		assertPreviews(testObject.conflicts.conflicts, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json')
+		]);
 	});
 
 	test('accept when there are multiple snippets with conflicts and all snippets are accepted', async () => {
@@ -806,26 +818,23 @@ suite('SnippetsSync', () => {
 		let preview = await testObject.sync(await testClient.getLatestRef(SyncResource.Snippets), true);
 
 		assert.strictEqual(testObject.status, SyncStatus.HasConflicts);
-		assertPreviews(preview!.resourcePreviews,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json'),
-			]);
-		assertPreviews(testObject.conflicts.conflicts,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json'),
-			]);
+		assertPreviews(preview!.resourcePreviews, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json')
+		]);
+		assertPreviews(testObject.conflicts.conflicts, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json')
+		]);
 
 		preview = await testObject.accept(preview!.resourcePreviews[0].previewResource, htmlSnippet2);
 		preview = await testObject.accept(preview!.resourcePreviews[1].previewResource, tsSnippet2);
 
 		assert.strictEqual(testObject.status, SyncStatus.Syncing);
-		assertPreviews(preview!.resourcePreviews,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json'),
-			]);
+		assertPreviews(preview!.resourcePreviews, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json')
+		]);
 		assert.deepStrictEqual(testObject.conflicts.conflicts, []);
 	});
 
@@ -840,16 +849,14 @@ suite('SnippetsSync', () => {
 		let preview = await testObject.sync(await testClient.getLatestRef(SyncResource.Snippets), true);
 
 		assert.strictEqual(testObject.status, SyncStatus.HasConflicts);
-		assertPreviews(preview!.resourcePreviews,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json'),
-			]);
-		assertPreviews(testObject.conflicts.conflicts,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json'),
-			]);
+		assertPreviews(preview!.resourcePreviews, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json')
+		]);
+		assertPreviews(testObject.conflicts.conflicts, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'html.json'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'typescript.json')
+		]);
 
 		preview = await testObject.accept(preview!.resourcePreviews[0].previewResource, htmlSnippet2);
 		preview = await testObject.accept(preview!.resourcePreviews[1].previewResource, tsSnippet2);
@@ -869,7 +876,9 @@ suite('SnippetsSync', () => {
 
 		await testClient.sync();
 
-		const syncedProfile = testClient.instantiationService.get(IUserDataProfilesService).profiles.find(p => p.id === profile.id)!;
+		const syncedProfile = testClient.instantiationService
+			.get(IUserDataProfilesService)
+			.profiles.find(p => p.id === profile.id)!;
 		const content = await readSnippet('html.json', testClient, syncedProfile);
 		assert.strictEqual(content, htmlSnippet1);
 	});
@@ -879,7 +888,12 @@ suite('SnippetsSync', () => {
 		return JSON.parse(syncData.content);
 	}
 
-	async function updateSnippet(name: string, content: string, client: UserDataSyncClient, profile?: IUserDataProfile): Promise<void> {
+	async function updateSnippet(
+		name: string,
+		content: string,
+		client: UserDataSyncClient,
+		profile?: IUserDataProfile
+	): Promise<void> {
 		const fileService = client.instantiationService.get(IFileService);
 		const userDataProfilesService = client.instantiationService.get(IUserDataProfilesService);
 		const snippetsResource = joinPath((profile ?? userDataProfilesService.defaultProfile).snippetsHome, name);
@@ -893,7 +907,11 @@ suite('SnippetsSync', () => {
 		await fileService.del(snippetsResource);
 	}
 
-	async function readSnippet(name: string, client: UserDataSyncClient, profile?: IUserDataProfile): Promise<string | null> {
+	async function readSnippet(
+		name: string,
+		client: UserDataSyncClient,
+		profile?: IUserDataProfile
+	): Promise<string | null> {
 		const fileService = client.instantiationService.get(IFileService);
 		const userDataProfilesService = client.instantiationService.get(IUserDataProfilesService);
 		const snippetsResource = joinPath((profile ?? userDataProfilesService.defaultProfile).snippetsHome, name);
@@ -905,7 +923,9 @@ suite('SnippetsSync', () => {
 	}
 
 	function assertPreviews(actual: IResourcePreview[], expected: URI[]) {
-		assert.deepStrictEqual(actual.map(({ previewResource }) => previewResource.toString()), expected.map(uri => uri.toString()));
+		assert.deepStrictEqual(
+			actual.map(({ previewResource }) => previewResource.toString()),
+			expected.map(uri => uri.toString())
+		);
 	}
-
 });

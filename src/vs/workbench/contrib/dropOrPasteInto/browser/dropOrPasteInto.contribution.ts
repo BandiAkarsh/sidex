@@ -9,7 +9,10 @@ import { DropOrPasteIntoCommands } from './commands.js';
 import { DropOrPasteSchemaContribution, editorConfiguration } from './configurationSchema.js';
 
 registerWorkbenchContribution2(DropOrPasteIntoCommands.ID, DropOrPasteIntoCommands, WorkbenchPhase.Eventually);
-registerWorkbenchContribution2(DropOrPasteSchemaContribution.ID, DropOrPasteSchemaContribution, WorkbenchPhase.Eventually);
+registerWorkbenchContribution2(
+	DropOrPasteSchemaContribution.ID,
+	DropOrPasteSchemaContribution,
+	WorkbenchPhase.Eventually
+);
 
-Registry.as<IConfigurationRegistry>(Extensions.Configuration)
-	.registerConfiguration(editorConfiguration);
+Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerConfiguration(editorConfiguration);

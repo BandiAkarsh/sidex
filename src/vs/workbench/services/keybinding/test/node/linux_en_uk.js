@@ -300,7 +300,7 @@ define({
 		withShiftAltGr: '̋'
 	},
 	Quote: {
-		value: '\'',
+		value: "'",
 		withShift: '@',
 		withAltGr: '̂',
 		withShiftAltGr: '̌'

@@ -1,1 +1,7 @@
-{"initialText":"abcd\r\nefgh\r\nijkl\r\nmnop","edits":[{"replacements":[{"start":12,"endEx":12,"text":"aitext1\naitext2\naitext3\n"}]},{"replacements":[{"start":27,"endEx":28,"text":""}]}]}
+{
+	"initialText": "abcd\r\nefgh\r\nijkl\r\nmnop",
+	"edits": [
+		{ "replacements": [{ "start": 12, "endEx": 12, "text": "aitext1\naitext2\naitext3\n" }] },
+		{ "replacements": [{ "start": 27, "endEx": 28, "text": "" }] }
+	]
+}

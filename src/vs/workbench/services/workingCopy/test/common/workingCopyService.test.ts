@@ -12,7 +12,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 
 suite('WorkingCopyService', () => {
-
 	const disposables = new DisposableStore();
 
 	teardown(() => {

@@ -7,10 +7,18 @@ import { ok } from 'assert';
 import { Emitter, Event } from '../../../../../base/common/event.js';
 import { Disposable } from '../../../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { AccessibilitySignal, IAccessibilitySignalService } from '../../../../../platform/accessibilitySignal/browser/accessibilitySignalService.js';
+import {
+	AccessibilitySignal,
+	IAccessibilitySignalService
+} from '../../../../../platform/accessibilitySignal/browser/accessibilitySignalService.js';
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { TestInstantiationService } from '../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
-import { ACTIVE_TASK_STATUS, FAILED_TASK_STATUS, SUCCEEDED_TASK_STATUS, TaskTerminalStatus } from '../../browser/taskTerminalStatus.js';
+import {
+	ACTIVE_TASK_STATUS,
+	FAILED_TASK_STATUS,
+	SUCCEEDED_TASK_STATUS,
+	TaskTerminalStatus
+} from '../../browser/taskTerminalStatus.js';
 import { AbstractProblemCollector } from '../../common/problemCollectors.js';
 import { CommonTask, ITaskEvent, TaskEventKind, TaskRunType } from '../../common/tasks.js';
 import { ITaskService, Task } from '../../common/taskService.js';
@@ -46,11 +54,9 @@ class TestTerminal extends Disposable implements Partial<ITerminalInstance> {
 
 	private readonly _onDisposed = this._register(new Emitter<ITerminalInstance>());
 	readonly onDisposed = this._onDisposed.event;
-
 }
 
 class TestTask extends CommonTask {
-
 	constructor() {
 		super('test', undefined, undefined, {}, {}, { kind: '', label: '' });
 	}
@@ -100,7 +106,11 @@ suite('Task Terminal Status', () => {
 		taskService.triggerStateChange({ kind: TaskEventKind.Inactive });
 		assertStatus(testTerminal.statusList, SUCCEEDED_TASK_STATUS);
 		taskService.triggerStateChange({ kind: TaskEventKind.End });
-		await poll<void>(async () => Promise.resolve(), () => testTerminal?.statusList.primary?.id === FAILED_TASK_STATUS.id, 'terminal status should be updated');
+		await poll<void>(
+			async () => Promise.resolve(),
+			() => testTerminal?.statusList.primary?.id === FAILED_TASK_STATUS.id,
+			'terminal status should be updated'
+		);
 	});
 	test('Should add active status when a non-background task is run for a second time in the same terminal', () => {
 		taskTerminalStatus.addTerminal(testTask, testTerminal, problemCollector);
@@ -120,7 +130,11 @@ suite('Task Terminal Status', () => {
 		taskService.triggerStateChange({ kind: TaskEventKind.Inactive });
 		assertStatus(testTerminal.statusList, SUCCEEDED_TASK_STATUS);
 		taskService.triggerStateChange({ kind: TaskEventKind.ProcessEnded, exitCode: 0 });
-		await poll<void>(async () => Promise.resolve(), () => testTerminal?.statusList.statuses?.includes(SUCCEEDED_TASK_STATUS) === false, 'terminal should have dropped status');
+		await poll<void>(
+			async () => Promise.resolve(),
+			() => testTerminal?.statusList.statuses?.includes(SUCCEEDED_TASK_STATUS) === false,
+			'terminal should have dropped status'
+		);
 	});
 	test('Should add succeeded status when a non-background task exits', () => {
 		taskTerminalStatus.addTerminal(testTask, testTerminal, problemCollector);

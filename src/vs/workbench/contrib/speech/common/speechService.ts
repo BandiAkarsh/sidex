@@ -14,9 +14,18 @@ import { language } from '../../../../base/common/platform.js';
 
 export const ISpeechService = createDecorator<ISpeechService>('speechService');
 
-export const HasSpeechProvider = new RawContextKey<boolean>('hasSpeechProvider', false, { type: 'boolean', description: localize('hasSpeechProvider', "A speech provider is registered to the speech service.") });
-export const SpeechToTextInProgress = new RawContextKey<boolean>('speechToTextInProgress', false, { type: 'boolean', description: localize('speechToTextInProgress', "A speech-to-text session is in progress.") });
-export const TextToSpeechInProgress = new RawContextKey<boolean>('textToSpeechInProgress', false, { type: 'boolean', description: localize('textToSpeechInProgress', "A text-to-speech session is in progress.") });
+export const HasSpeechProvider = new RawContextKey<boolean>('hasSpeechProvider', false, {
+	type: 'boolean',
+	description: localize('hasSpeechProvider', 'A speech provider is registered to the speech service.')
+});
+export const SpeechToTextInProgress = new RawContextKey<boolean>('speechToTextInProgress', false, {
+	type: 'boolean',
+	description: localize('speechToTextInProgress', 'A speech-to-text session is in progress.')
+});
+export const TextToSpeechInProgress = new RawContextKey<boolean>('textToSpeechInProgress', false, {
+	type: 'boolean',
+	description: localize('textToSpeechInProgress', 'A text-to-speech session is in progress.')
+});
 
 export interface ISpeechProviderMetadata {
 	readonly extension: ExtensionIdentifier;
@@ -89,7 +98,6 @@ export interface ISpeechProvider {
 }
 
 export interface ISpeechService {
-
 	readonly _serviceBrand: undefined;
 
 	readonly onDidChangeHasSpeechProvider: Event<void>;
@@ -145,83 +153,83 @@ export const SPEECH_LANGUAGE_CONFIG = AccessibilityVoiceSettingId.SpeechLanguage
 
 export const SPEECH_LANGUAGES = {
 	['da-DK']: {
-		name: localize('speechLanguage.da-DK', "Danish (Denmark)")
+		name: localize('speechLanguage.da-DK', 'Danish (Denmark)')
 	},
 	['de-DE']: {
-		name: localize('speechLanguage.de-DE', "German (Germany)")
+		name: localize('speechLanguage.de-DE', 'German (Germany)')
 	},
 	['en-AU']: {
-		name: localize('speechLanguage.en-AU', "English (Australia)")
+		name: localize('speechLanguage.en-AU', 'English (Australia)')
 	},
 	['en-CA']: {
-		name: localize('speechLanguage.en-CA', "English (Canada)")
+		name: localize('speechLanguage.en-CA', 'English (Canada)')
 	},
 	['en-GB']: {
-		name: localize('speechLanguage.en-GB', "English (United Kingdom)")
+		name: localize('speechLanguage.en-GB', 'English (United Kingdom)')
 	},
 	['en-IE']: {
-		name: localize('speechLanguage.en-IE', "English (Ireland)")
+		name: localize('speechLanguage.en-IE', 'English (Ireland)')
 	},
 	['en-IN']: {
-		name: localize('speechLanguage.en-IN', "English (India)")
+		name: localize('speechLanguage.en-IN', 'English (India)')
 	},
 	['en-NZ']: {
-		name: localize('speechLanguage.en-NZ', "English (New Zealand)")
+		name: localize('speechLanguage.en-NZ', 'English (New Zealand)')
 	},
 	['en-US']: {
-		name: localize('speechLanguage.en-US', "English (United States)")
+		name: localize('speechLanguage.en-US', 'English (United States)')
 	},
 	['es-ES']: {
-		name: localize('speechLanguage.es-ES', "Spanish (Spain)")
+		name: localize('speechLanguage.es-ES', 'Spanish (Spain)')
 	},
 	['es-MX']: {
-		name: localize('speechLanguage.es-MX', "Spanish (Mexico)")
+		name: localize('speechLanguage.es-MX', 'Spanish (Mexico)')
 	},
 	['fr-CA']: {
-		name: localize('speechLanguage.fr-CA', "French (Canada)")
+		name: localize('speechLanguage.fr-CA', 'French (Canada)')
 	},
 	['fr-FR']: {
-		name: localize('speechLanguage.fr-FR', "French (France)")
+		name: localize('speechLanguage.fr-FR', 'French (France)')
 	},
 	['hi-IN']: {
-		name: localize('speechLanguage.hi-IN', "Hindi (India)")
+		name: localize('speechLanguage.hi-IN', 'Hindi (India)')
 	},
 	['it-IT']: {
-		name: localize('speechLanguage.it-IT', "Italian (Italy)")
+		name: localize('speechLanguage.it-IT', 'Italian (Italy)')
 	},
 	['ja-JP']: {
-		name: localize('speechLanguage.ja-JP', "Japanese (Japan)")
+		name: localize('speechLanguage.ja-JP', 'Japanese (Japan)')
 	},
 	['ko-KR']: {
-		name: localize('speechLanguage.ko-KR', "Korean (South Korea)")
+		name: localize('speechLanguage.ko-KR', 'Korean (South Korea)')
 	},
 	['nl-NL']: {
-		name: localize('speechLanguage.nl-NL', "Dutch (Netherlands)")
+		name: localize('speechLanguage.nl-NL', 'Dutch (Netherlands)')
 	},
 	['pt-PT']: {
-		name: localize('speechLanguage.pt-PT', "Portuguese (Portugal)")
+		name: localize('speechLanguage.pt-PT', 'Portuguese (Portugal)')
 	},
 	['pt-BR']: {
-		name: localize('speechLanguage.pt-BR', "Portuguese (Brazil)")
+		name: localize('speechLanguage.pt-BR', 'Portuguese (Brazil)')
 	},
 	['ru-RU']: {
-		name: localize('speechLanguage.ru-RU', "Russian (Russia)")
+		name: localize('speechLanguage.ru-RU', 'Russian (Russia)')
 	},
 	['sv-SE']: {
-		name: localize('speechLanguage.sv-SE', "Swedish (Sweden)")
+		name: localize('speechLanguage.sv-SE', 'Swedish (Sweden)')
 	},
 	['tr-TR']: {
 		// allow-any-unicode-next-line
-		name: localize('speechLanguage.tr-TR', "Turkish (Türkiye)")
+		name: localize('speechLanguage.tr-TR', 'Turkish (Türkiye)')
 	},
 	['zh-CN']: {
-		name: localize('speechLanguage.zh-CN', "Chinese (Simplified, China)")
+		name: localize('speechLanguage.zh-CN', 'Chinese (Simplified, China)')
 	},
 	['zh-HK']: {
-		name: localize('speechLanguage.zh-HK', "Chinese (Traditional, Hong Kong)")
+		name: localize('speechLanguage.zh-HK', 'Chinese (Traditional, Hong Kong)')
 	},
 	['zh-TW']: {
-		name: localize('speechLanguage.zh-TW', "Chinese (Traditional, Taiwan)")
+		name: localize('speechLanguage.zh-TW', 'Chinese (Traditional, Taiwan)')
 	}
 };
 

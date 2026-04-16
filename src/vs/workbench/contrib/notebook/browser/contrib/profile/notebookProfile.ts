@@ -61,29 +61,33 @@ export interface ISetProfileArgs {
 	profile: NotebookProfileType;
 }
 
-registerAction2(class extends Action2 {
-	constructor() {
-		super({
-			id: 'notebook.setProfile',
-			title: localize('setProfileTitle', "Set Profile")
-		});
-	}
-
-	async run(accessor: ServicesAccessor, args: unknown): Promise<void> {
-		if (!isSetProfileArgs(args)) {
-			return;
+registerAction2(
+	class extends Action2 {
+		constructor() {
+			super({
+				id: 'notebook.setProfile',
+				title: localize('setProfileTitle', 'Set Profile')
+			});
 		}
 
-		const configService = accessor.get(IConfigurationService);
-		return applyProfile(configService, profiles[args.profile]);
+		async run(accessor: ServicesAccessor, args: unknown): Promise<void> {
+			if (!isSetProfileArgs(args)) {
+				return;
+			}
+
+			const configService = accessor.get(IConfigurationService);
+			return applyProfile(configService, profiles[args.profile]);
+		}
 	}
-});
+);
 
 function isSetProfileArgs(args: unknown): args is ISetProfileArgs {
 	const setProfileArgs = args as ISetProfileArgs;
-	return setProfileArgs.profile === NotebookProfileType.colab ||
+	return (
+		setProfileArgs.profile === NotebookProfileType.colab ||
 		setProfileArgs.profile === NotebookProfileType.default ||
-		setProfileArgs.profile === NotebookProfileType.jupyter;
+		setProfileArgs.profile === NotebookProfileType.jupyter
+	);
 }
 
 // export class NotebookProfileContribution extends Disposable {

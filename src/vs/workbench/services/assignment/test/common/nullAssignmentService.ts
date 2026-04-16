@@ -19,5 +19,5 @@ export class NullWorkbenchAssignmentService implements IWorkbenchAssignmentServi
 		return undefined;
 	}
 
-	addTelemetryAssignmentFilter(filter: IAssignmentFilter): void { }
+	addTelemetryAssignmentFilter(filter: IAssignmentFilter): void {}
 }

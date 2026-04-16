@@ -4,13 +4,22 @@
  *--------------------------------------------------------------------------------------------*/
 
 import assert from 'assert';
-import { IIdentityProvider, IKeyboardNavigationLabelProvider, IListVirtualDelegate } from '../../../../../base/browser/ui/list/list.js';
+import {
+	IIdentityProvider,
+	IKeyboardNavigationLabelProvider,
+	IListVirtualDelegate
+} from '../../../../../base/browser/ui/list/list.js';
 import { IListAccessibilityProvider } from '../../../../../base/browser/ui/list/listWidget.js';
 import { TreeFindMatchType, TreeFindMode } from '../../../../../base/browser/ui/tree/abstractTree.js';
 import { ITreeCompressionDelegate } from '../../../../../base/browser/ui/tree/asyncDataTree.js';
 import { ICompressedTreeNode } from '../../../../../base/browser/ui/tree/compressedObjectTreeModel.js';
 import { ICompressibleTreeRenderer } from '../../../../../base/browser/ui/tree/objectTree.js';
-import { IAsyncDataSource, ITreeFilter, ITreeNode, TreeFilterResult } from '../../../../../base/browser/ui/tree/tree.js';
+import {
+	IAsyncDataSource,
+	ITreeFilter,
+	ITreeNode,
+	TreeFilterResult
+} from '../../../../../base/browser/ui/tree/tree.js';
 import { CancellationToken, CancellationTokenSource } from '../../../../../base/common/cancellation.js';
 import { FuzzyScore } from '../../../../../base/common/filters.js';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
@@ -19,7 +28,10 @@ import { URI } from '../../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { TestInstantiationService } from '../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
-import { IWorkbenchCompressibleAsyncDataTreeOptions, WorkbenchCompressibleAsyncDataTree } from '../../../../../platform/list/browser/listService.js';
+import {
+	IWorkbenchCompressibleAsyncDataTreeOptions,
+	WorkbenchCompressibleAsyncDataTree
+} from '../../../../../platform/list/browser/listService.js';
 import { IFileMatch, IFileQuery, ISearchComplete, ISearchService } from '../../../../services/search/common/search.js';
 import { workbenchInstantiationService } from '../../../../test/browser/workbenchTestServices.js';
 import { NullFilesConfigurationService, TestFileService } from '../../../../test/common/workbenchTestServices.js';
@@ -58,7 +70,11 @@ class Renderer implements ICompressibleTreeRenderer<ExplorerItem, FuzzyScore, HT
 	disposeTemplate(templateData: HTMLElement): void {
 		// noop
 	}
-	renderCompressedElements(node: ITreeNode<ICompressedTreeNode<ExplorerItem>, FuzzyScore>, index: number, templateData: HTMLElement): void {
+	renderCompressedElements(
+		node: ITreeNode<ICompressedTreeNode<ExplorerItem>, FuzzyScore>,
+		index: number,
+		templateData: HTMLElement
+	): void {
 		const result: string[] = [];
 
 		for (const element of node.element.elements) {
@@ -72,14 +88,20 @@ class Renderer implements ICompressibleTreeRenderer<ExplorerItem, FuzzyScore, HT
 class IdentityProvider implements IIdentityProvider<ExplorerItem> {
 	getId(element: ExplorerItem) {
 		return {
-			toString: () => { return element.name; }
+			toString: () => {
+				return element.name;
+			}
 		};
 	}
 }
 
 class VirtualDelegate implements IListVirtualDelegate<ExplorerItem> {
-	getHeight() { return 20; }
-	getTemplateId(element: ExplorerItem): string { return 'default'; }
+	getHeight() {
+		return 20;
+	}
+	getTemplateId(element: ExplorerItem): string {
+		return 'default';
+	}
 }
 
 class DataSource implements IAsyncDataSource<ExplorerItem, ExplorerItem> {
@@ -92,7 +114,6 @@ class DataSource implements IAsyncDataSource<ExplorerItem, ExplorerItem> {
 	getParent(element: ExplorerItem): ExplorerItem {
 		return element.parent!;
 	}
-
 }
 
 class AccessibilityProvider implements IListAccessibilityProvider<ExplorerItem> {
@@ -114,16 +135,20 @@ class KeyboardNavigationLabelProvider implements IKeyboardNavigationLabelProvide
 }
 
 class CompressionDelegate implements ITreeCompressionDelegate<ExplorerItem> {
-	constructor(private dataSource: DataSource) { }
+	constructor(private dataSource: DataSource) {}
 	isIncompressible(element: ExplorerItem): boolean {
 		return !this.dataSource.hasChildren(element);
 	}
 }
 
 class TestFilesFilter implements ITreeFilter<ExplorerItem> {
-	filter(): TreeFilterResult<void> { return true; }
-	isIgnored(): boolean { return false; }
-	dispose() { }
+	filter(): TreeFilterResult<void> {
+		return true;
+	}
+	isIgnored(): boolean {
+		return false;
+	}
+	dispose() {}
 }
 
 suite('Find Provider - ExplorerView', () => {
@@ -133,7 +158,14 @@ suite('Find Provider - ExplorerView', () => {
 	const configService = new TestConfigurationService();
 
 	function createStat(this: any, path: string, isFolder: boolean): ExplorerItem {
-		return new ExplorerItem(URI.from({ scheme: 'file', path }), fileService, configService, NullFilesConfigurationService, undefined, isFolder);
+		return new ExplorerItem(
+			URI.from({ scheme: 'file', path }),
+			fileService,
+			configService,
+			NullFilesConfigurationService,
+			undefined,
+			isFolder
+		);
 	}
 
 	let root: ExplorerItem;
@@ -141,7 +173,7 @@ suite('Find Provider - ExplorerView', () => {
 	let instantiationService: TestInstantiationService;
 
 	const searchMappings = new Map<string, URI[]>([
-		['bb', [URI.file('/root/b/bb/bbb.txt'), URI.file('/root/a/ab/abb.txt'), URI.file('/root/b/bb/bba.txt')]],
+		['bb', [URI.file('/root/b/bb/bbb.txt'), URI.file('/root/a/ab/abb.txt'), URI.file('/root/b/bb/bba.txt')]]
 	]);
 
 	setup(() => {
@@ -174,15 +206,17 @@ suite('Find Provider - ExplorerView', () => {
 			refresh: () => Promise.resolve(),
 			findClosest: (resource: URI) => {
 				return find(root, basename(resource)) ?? null;
-			},
+			}
 		});
 		instantiationService.stub(ISearchService, {
 			fileSearch(query: IFileQuery, token?: CancellationToken): Promise<ISearchComplete> {
-				const filePattern = query.filePattern?.replace(/\//g, '')
-					.replace(/\*/g, '')
-					.replace(/\[/g, '')
-					.replace(/\]/g, '')
-					.replace(/[A-Z]/g, '') ?? '';
+				const filePattern =
+					query.filePattern
+						?.replace(/\//g, '')
+						.replace(/\*/g, '')
+						.replace(/\[/g, '')
+						.replace(/\]/g, '')
+						.replace(/[A-Z]/g, '') ?? '';
 				const fileMatches: IFileMatch[] = (searchMappings.get(filePattern) ?? []).map(u => ({ resource: u }));
 				return Promise.resolve({ results: fileMatches, messages: [] });
 			},
@@ -204,8 +238,23 @@ suite('Find Provider - ExplorerView', () => {
 		const accessibilityProvider = new AccessibilityProvider();
 		const filter = instantiationService.createInstance(TestFilesFilter) as unknown as FilesFilter;
 
-		const options: IWorkbenchCompressibleAsyncDataTreeOptions<ExplorerItem, FuzzyScore> = { identityProvider: new IdentityProvider(), keyboardNavigationLabelProvider, accessibilityProvider };
-		const tree = disposables.add(instantiationService.createInstance(WorkbenchCompressibleAsyncDataTree<ExplorerItem | ExplorerItem[], ExplorerItem, FuzzyScore>, 'test', container, new VirtualDelegate(), compressionDelegate, [new Renderer()], dataSource, options));
+		const options: IWorkbenchCompressibleAsyncDataTreeOptions<ExplorerItem, FuzzyScore> = {
+			identityProvider: new IdentityProvider(),
+			keyboardNavigationLabelProvider,
+			accessibilityProvider
+		};
+		const tree = disposables.add(
+			instantiationService.createInstance(
+				WorkbenchCompressibleAsyncDataTree<ExplorerItem | ExplorerItem[], ExplorerItem, FuzzyScore>,
+				'test',
+				container,
+				new VirtualDelegate(),
+				compressionDelegate,
+				[new Renderer()],
+				dataSource,
+				options
+			)
+		);
 		tree.layout(200);
 
 		await tree.setInput(root);
@@ -222,7 +271,11 @@ suite('Find Provider - ExplorerView', () => {
 		assert.strictEqual(find(root, 'a')?.isMarkedAsFiltered(), false);
 		assert.strictEqual(find(root, 'ab')?.isMarkedAsFiltered(), false);
 
-		await findProvider.find('bb', { matchType: TreeFindMatchType.Contiguous, findMode: TreeFindMode.Filter }, new CancellationTokenSource().token);
+		await findProvider.find(
+			'bb',
+			{ matchType: TreeFindMatchType.Contiguous, findMode: TreeFindMode.Filter },
+			new CancellationTokenSource().token
+		);
 
 		assert.strictEqual(find(root, 'abb.txt') !== undefined, true);
 		assert.strictEqual(find(root, 'bba.txt') !== undefined, true);

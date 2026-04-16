@@ -9,11 +9,9 @@ import { testUrlMatchesGlob } from '../../common/urlGlob.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 
 suite('urlGlob', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	suite('testUrlMatchesGlob', () => {
-
 		test('exact match', () => {
 			assert.strictEqual(testUrlMatchesGlob('https://example.com', 'https://example.com'), true);
 			assert.strictEqual(testUrlMatchesGlob('http://example.com', 'http://example.com'), true);
@@ -48,8 +46,14 @@ suite('urlGlob', () => {
 		test('wildcard matching in path', () => {
 			assert.strictEqual(testUrlMatchesGlob('https://example.com/anything', 'https://example.com/*'), true);
 			assert.strictEqual(testUrlMatchesGlob('https://example.com/path/to/resource', 'https://example.com/*'), true);
-			assert.strictEqual(testUrlMatchesGlob('https://example.com/path/to/resource', 'https://example.com/path/*'), true);
-			assert.strictEqual(testUrlMatchesGlob('https://example.com/path/to/resource', 'https://example.com/path/*/resource'), true);
+			assert.strictEqual(
+				testUrlMatchesGlob('https://example.com/path/to/resource', 'https://example.com/path/*'),
+				true
+			);
+			assert.strictEqual(
+				testUrlMatchesGlob('https://example.com/path/to/resource', 'https://example.com/path/*/resource'),
+				true
+			);
 		});
 
 		test('subdomain wildcard matching', () => {
@@ -113,9 +117,18 @@ suite('urlGlob', () => {
 		});
 
 		test('complex patterns', () => {
-			assert.strictEqual(testUrlMatchesGlob('https://api.github.com/repos/microsoft/vscode', 'https://*.github.com/repos/*/*'), true);
-			assert.strictEqual(testUrlMatchesGlob('https://github.com/microsoft/vscode', 'https://*.github.com/repos/*/*'), false);
-			assert.strictEqual(testUrlMatchesGlob('https://api.github.com:443/repos/microsoft/vscode', 'https://*.github.com:*/repos/*/*'), true);
+			assert.strictEqual(
+				testUrlMatchesGlob('https://api.github.com/repos/microsoft/vscode', 'https://*.github.com/repos/*/*'),
+				true
+			);
+			assert.strictEqual(
+				testUrlMatchesGlob('https://github.com/microsoft/vscode', 'https://*.github.com/repos/*/*'),
+				false
+			);
+			assert.strictEqual(
+				testUrlMatchesGlob('https://api.github.com:443/repos/microsoft/vscode', 'https://*.github.com:*/repos/*/*'),
+				true
+			);
 		});
 
 		test('edge cases', () => {

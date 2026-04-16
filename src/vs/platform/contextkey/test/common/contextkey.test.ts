@@ -16,7 +16,6 @@ function createContext(ctx: any) {
 }
 
 suite('ContextKeyExpr', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('ContextKeyExpr.equals', () => {
@@ -76,10 +75,10 @@ suite('ContextKeyExpr', () => {
 
 	test('evaluate', () => {
 		const context = createContext({
-			'a': true,
-			'b': false,
-			'c': '5',
-			'd': 'd'
+			a: true,
+			b: false,
+			c: '5',
+			d: 'd'
 		});
 		function testExpression(expr: string, expected: boolean): void {
 			// console.log(expr + ' ' + expected);
@@ -135,7 +134,10 @@ suite('ContextKeyExpr', () => {
 		testNegate('a && b || c', '!a && !c || !b && !c');
 		testNegate('a && b || c || d', '!a && !c && !d || !b && !c && !d');
 		testNegate('!a && !b || !c && !d', 'a && c || a && d || b && c || b && d');
-		testNegate('!a && !b || !c && !d || !e && !f', 'a && c && e || a && c && f || a && d && e || a && d && f || b && c && e || b && c && f || b && d && e || b && d && f');
+		testNegate(
+			'!a && !b || !c && !d || !e && !f',
+			'a && c && e || a && c && f || a && d && e || a && d && f || b && c && e || b && c && f || b && d && e || b && d && f'
+		);
 	});
 
 	test('false, true', () => {
@@ -172,116 +174,114 @@ suite('ContextKeyExpr', () => {
 
 	test('ContextKeyInExpr', () => {
 		const ainb = ContextKeyExpr.deserialize('a in b')!;
-		assert.strictEqual(ainb.evaluate(createContext({ 'a': 3, 'b': [3, 2, 1] })), true);
-		assert.strictEqual(ainb.evaluate(createContext({ 'a': 3, 'b': [1, 2, 3] })), true);
-		assert.strictEqual(ainb.evaluate(createContext({ 'a': 3, 'b': [1, 2] })), false);
-		assert.strictEqual(ainb.evaluate(createContext({ 'a': 3 })), false);
-		assert.strictEqual(ainb.evaluate(createContext({ 'a': 3, 'b': null })), false);
-		assert.strictEqual(ainb.evaluate(createContext({ 'a': 'x', 'b': ['x'] })), true);
-		assert.strictEqual(ainb.evaluate(createContext({ 'a': 'x', 'b': ['y'] })), false);
-		assert.strictEqual(ainb.evaluate(createContext({ 'a': 'x', 'b': {} })), false);
-		assert.strictEqual(ainb.evaluate(createContext({ 'a': 'x', 'b': { 'x': false } })), true);
-		assert.strictEqual(ainb.evaluate(createContext({ 'a': 'x', 'b': { 'x': true } })), true);
-		assert.strictEqual(ainb.evaluate(createContext({ 'a': 'prototype', 'b': {} })), false);
+		assert.strictEqual(ainb.evaluate(createContext({ a: 3, b: [3, 2, 1] })), true);
+		assert.strictEqual(ainb.evaluate(createContext({ a: 3, b: [1, 2, 3] })), true);
+		assert.strictEqual(ainb.evaluate(createContext({ a: 3, b: [1, 2] })), false);
+		assert.strictEqual(ainb.evaluate(createContext({ a: 3 })), false);
+		assert.strictEqual(ainb.evaluate(createContext({ a: 3, b: null })), false);
+		assert.strictEqual(ainb.evaluate(createContext({ a: 'x', b: ['x'] })), true);
+		assert.strictEqual(ainb.evaluate(createContext({ a: 'x', b: ['y'] })), false);
+		assert.strictEqual(ainb.evaluate(createContext({ a: 'x', b: {} })), false);
+		assert.strictEqual(ainb.evaluate(createContext({ a: 'x', b: { x: false } })), true);
+		assert.strictEqual(ainb.evaluate(createContext({ a: 'x', b: { x: true } })), true);
+		assert.strictEqual(ainb.evaluate(createContext({ a: 'prototype', b: {} })), false);
 
 		// file URI case-insensitive comparison on Windows
 		if (isWindows) {
 			// Array source: file URIs with different casing should match on Windows
-			assert.strictEqual(ainb.evaluate(createContext({ 'a': 'file:///c%3A/Users/path/file.ts', 'b': ['file:///c%3A/users/path/file.ts'] })), true);
-			assert.strictEqual(ainb.evaluate(createContext({ 'a': 'file:///c%3A/users/path/file.ts', 'b': ['file:///c%3A/Users/path/file.ts'] })), true);
+			assert.strictEqual(
+				ainb.evaluate(createContext({ a: 'file:///c%3A/Users/path/file.ts', b: ['file:///c%3A/users/path/file.ts'] })),
+				true
+			);
+			assert.strictEqual(
+				ainb.evaluate(createContext({ a: 'file:///c%3A/users/path/file.ts', b: ['file:///c%3A/Users/path/file.ts'] })),
+				true
+			);
 			// Object source: file URIs with different casing should match on Windows
-			assert.strictEqual(ainb.evaluate(createContext({ 'a': 'file:///c%3A/Users/path/file.ts', 'b': { 'file:///c%3A/users/path/file.ts': true } })), true);
+			assert.strictEqual(
+				ainb.evaluate(
+					createContext({ a: 'file:///c%3A/Users/path/file.ts', b: { 'file:///c%3A/users/path/file.ts': true } })
+				),
+				true
+			);
 			// Non-file URIs should still be case-sensitive
-			assert.strictEqual(ainb.evaluate(createContext({ 'a': 'git:/path/File.ts', 'b': ['git:/path/file.ts'] })), false);
+			assert.strictEqual(ainb.evaluate(createContext({ a: 'git:/path/File.ts', b: ['git:/path/file.ts'] })), false);
 			// Exact match still works
-			assert.strictEqual(ainb.evaluate(createContext({ 'a': 'file:///c%3A/Users/path/file.ts', 'b': ['file:///c%3A/Users/path/file.ts'] })), true);
+			assert.strictEqual(
+				ainb.evaluate(createContext({ a: 'file:///c%3A/Users/path/file.ts', b: ['file:///c%3A/Users/path/file.ts'] })),
+				true
+			);
 		}
 	});
 
 	test('ContextKeyNotInExpr', () => {
 		const aNotInB = ContextKeyExpr.deserialize('a not in b')!;
-		assert.strictEqual(aNotInB.evaluate(createContext({ 'a': 3, 'b': [3, 2, 1] })), false);
-		assert.strictEqual(aNotInB.evaluate(createContext({ 'a': 3, 'b': [1, 2, 3] })), false);
-		assert.strictEqual(aNotInB.evaluate(createContext({ 'a': 3, 'b': [1, 2] })), true);
-		assert.strictEqual(aNotInB.evaluate(createContext({ 'a': 3 })), true);
-		assert.strictEqual(aNotInB.evaluate(createContext({ 'a': 3, 'b': null })), true);
-		assert.strictEqual(aNotInB.evaluate(createContext({ 'a': 'x', 'b': ['x'] })), false);
-		assert.strictEqual(aNotInB.evaluate(createContext({ 'a': 'x', 'b': ['y'] })), true);
-		assert.strictEqual(aNotInB.evaluate(createContext({ 'a': 'x', 'b': {} })), true);
-		assert.strictEqual(aNotInB.evaluate(createContext({ 'a': 'x', 'b': { 'x': false } })), false);
-		assert.strictEqual(aNotInB.evaluate(createContext({ 'a': 'x', 'b': { 'x': true } })), false);
-		assert.strictEqual(aNotInB.evaluate(createContext({ 'a': 'prototype', 'b': {} })), true);
+		assert.strictEqual(aNotInB.evaluate(createContext({ a: 3, b: [3, 2, 1] })), false);
+		assert.strictEqual(aNotInB.evaluate(createContext({ a: 3, b: [1, 2, 3] })), false);
+		assert.strictEqual(aNotInB.evaluate(createContext({ a: 3, b: [1, 2] })), true);
+		assert.strictEqual(aNotInB.evaluate(createContext({ a: 3 })), true);
+		assert.strictEqual(aNotInB.evaluate(createContext({ a: 3, b: null })), true);
+		assert.strictEqual(aNotInB.evaluate(createContext({ a: 'x', b: ['x'] })), false);
+		assert.strictEqual(aNotInB.evaluate(createContext({ a: 'x', b: ['y'] })), true);
+		assert.strictEqual(aNotInB.evaluate(createContext({ a: 'x', b: {} })), true);
+		assert.strictEqual(aNotInB.evaluate(createContext({ a: 'x', b: { x: false } })), false);
+		assert.strictEqual(aNotInB.evaluate(createContext({ a: 'x', b: { x: true } })), false);
+		assert.strictEqual(aNotInB.evaluate(createContext({ a: 'prototype', b: {} })), true);
 
 		// file URI case-insensitive comparison on Windows
 		if (isWindows) {
-			assert.strictEqual(aNotInB.evaluate(createContext({ 'a': 'file:///c%3A/Users/path/file.ts', 'b': ['file:///c%3A/users/path/file.ts'] })), false);
-			assert.strictEqual(aNotInB.evaluate(createContext({ 'a': 'file:///c%3A/users/path/file.ts', 'b': ['file:///c%3A/Users/path/file.ts'] })), false);
-			assert.strictEqual(aNotInB.evaluate(createContext({ 'a': 'git:/path/File.ts', 'b': ['git:/path/file.ts'] })), true);
+			assert.strictEqual(
+				aNotInB.evaluate(
+					createContext({ a: 'file:///c%3A/Users/path/file.ts', b: ['file:///c%3A/users/path/file.ts'] })
+				),
+				false
+			);
+			assert.strictEqual(
+				aNotInB.evaluate(
+					createContext({ a: 'file:///c%3A/users/path/file.ts', b: ['file:///c%3A/Users/path/file.ts'] })
+				),
+				false
+			);
+			assert.strictEqual(aNotInB.evaluate(createContext({ a: 'git:/path/File.ts', b: ['git:/path/file.ts'] })), true);
 		}
 	});
 
 	test('issue #106524: distributing AND should normalize', () => {
 		const actual = ContextKeyExpr.and(
-			ContextKeyExpr.or(
-				ContextKeyExpr.has('a'),
-				ContextKeyExpr.has('b')
-			),
+			ContextKeyExpr.or(ContextKeyExpr.has('a'), ContextKeyExpr.has('b')),
 			ContextKeyExpr.has('c')
 		);
 		const expected = ContextKeyExpr.or(
-			ContextKeyExpr.and(
-				ContextKeyExpr.has('a'),
-				ContextKeyExpr.has('c')
-			),
-			ContextKeyExpr.and(
-				ContextKeyExpr.has('b'),
-				ContextKeyExpr.has('c')
-			)
+			ContextKeyExpr.and(ContextKeyExpr.has('a'), ContextKeyExpr.has('c')),
+			ContextKeyExpr.and(ContextKeyExpr.has('b'), ContextKeyExpr.has('c'))
 		);
 		assert.strictEqual(actual!.equals(expected!), true);
 	});
 
 	test('issue #129625: Removes duplicated terms in OR expressions', () => {
-		const expr = ContextKeyExpr.or(
-			ContextKeyExpr.has('A'),
-			ContextKeyExpr.has('B'),
-			ContextKeyExpr.has('A')
-		)!;
+		const expr = ContextKeyExpr.or(ContextKeyExpr.has('A'), ContextKeyExpr.has('B'), ContextKeyExpr.has('A'))!;
 		assert.strictEqual(expr.serialize(), 'A || B');
 	});
 
 	test('Resolves true constant OR expressions', () => {
-		const expr = ContextKeyExpr.or(
-			ContextKeyExpr.has('A'),
-			ContextKeyExpr.not('A')
-		)!;
+		const expr = ContextKeyExpr.or(ContextKeyExpr.has('A'), ContextKeyExpr.not('A'))!;
 		assert.strictEqual(expr.serialize(), 'true');
 	});
 
 	test('Resolves false constant AND expressions', () => {
-		const expr = ContextKeyExpr.and(
-			ContextKeyExpr.has('A'),
-			ContextKeyExpr.not('A')
-		)!;
+		const expr = ContextKeyExpr.and(ContextKeyExpr.has('A'), ContextKeyExpr.not('A'))!;
 		assert.strictEqual(expr.serialize(), 'false');
 	});
 
 	test('issue #129625: Removes duplicated terms in AND expressions', () => {
-		const expr = ContextKeyExpr.and(
-			ContextKeyExpr.has('A'),
-			ContextKeyExpr.has('B'),
-			ContextKeyExpr.has('A')
-		)!;
+		const expr = ContextKeyExpr.and(ContextKeyExpr.has('A'), ContextKeyExpr.has('B'), ContextKeyExpr.has('A'))!;
 		assert.strictEqual(expr.serialize(), 'A && B');
 	});
 
 	test('issue #129625: Remove duplicated terms when negating', () => {
 		const expr = ContextKeyExpr.and(
 			ContextKeyExpr.has('A'),
-			ContextKeyExpr.or(
-				ContextKeyExpr.has('B1'),
-				ContextKeyExpr.has('B2'),
-			)
+			ContextKeyExpr.or(ContextKeyExpr.has('B1'), ContextKeyExpr.has('B2'))
 		)!;
 		assert.strictEqual(expr.serialize(), 'A && B1 || A && B2');
 		assert.strictEqual(expr.negate()!.serialize(), '!A || !A && !B1 || !A && !B2 || !B1 && !B2');
@@ -390,12 +390,14 @@ suite('ContextKeyExpr', () => {
 
 	test('issue #111899: context keys can use `<` or `>` ', () => {
 		const actual = ContextKeyExpr.deserialize('editorTextFocus && vim.active && vim.use<C-r>')!;
-		assert.ok(actual.equals(
-			ContextKeyExpr.and(
-				ContextKeyExpr.has('editorTextFocus'),
-				ContextKeyExpr.has('vim.active'),
-				ContextKeyExpr.has('vim.use<C-r>'),
-			)!
-		));
+		assert.ok(
+			actual.equals(
+				ContextKeyExpr.and(
+					ContextKeyExpr.has('editorTextFocus'),
+					ContextKeyExpr.has('vim.active'),
+					ContextKeyExpr.has('vim.use<C-r>')
+				)!
+			)
+		);
 	});
 });

@@ -18,19 +18,21 @@ import { Schemas } from '../../../base/common/network.js';
 import { IMarkdownString } from '../../../base/common/htmlContent.js';
 
 export class ExtHostConsumerFileSystem {
-
 	readonly _serviceBrand: undefined;
 
 	readonly value: vscode.FileSystem;
 
 	private readonly _proxy: MainThreadFileSystemShape;
-	private readonly _fileSystemProvider = new Map<string, { impl: vscode.FileSystemProvider; extUri: IExtUri; isReadonly: boolean }>();
+	private readonly _fileSystemProvider = new Map<
+		string,
+		{ impl: vscode.FileSystemProvider; extUri: IExtUri; isReadonly: boolean }
+	>();
 
 	private readonly _writeQueue = new ResourceQueue();
 
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
-		@IExtHostFileSystemInfo fileSystemInfo: IExtHostFileSystemInfo,
+		@IExtHostFileSystemInfo fileSystemInfo: IExtHostFileSystemInfo
 	) {
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadFileSystem);
 		const that = this;
@@ -110,7 +112,9 @@ export class ExtHostConsumerFileSystem {
 						// use shortcut
 						await that._proxy.$ensureActivation(uri.scheme);
 						await that.mkdirp(provider.impl, provider.extUri, provider.extUri.dirname(uri));
-						return await that._writeQueue.queueFor(uri, () => Promise.resolve(provider.impl.writeFile(uri, content, { create: true, overwrite: true })));
+						return await that._writeQueue.queueFor(uri, () =>
+							Promise.resolve(provider.impl.writeFile(uri, content, { create: true, overwrite: true }))
+						);
 					} else {
 						return await that._proxy.$writeFile(uri, VSBuffer.wrap(content));
 					}
@@ -158,14 +162,20 @@ export class ExtHostConsumerFileSystem {
 		});
 	}
 
-	private async mkdirp(provider: vscode.FileSystemProvider, providerExtUri: IExtUri, directory: vscode.Uri): Promise<void> {
+	private async mkdirp(
+		provider: vscode.FileSystemProvider,
+		providerExtUri: IExtUri,
+		directory: vscode.Uri
+	): Promise<void> {
 		const directoriesToCreate: string[] = [];
 
 		while (!providerExtUri.isEqual(directory, providerExtUri.dirname(directory))) {
 			try {
 				const stat = await provider.stat(directory);
 				if ((stat.type & files.FileType.Directory) === 0) {
-					throw FileSystemError.FileExists(`Unable to create folder '${directory.scheme === Schemas.file ? directory.fsPath : directory.toString(true)}' that already exists but is not a directory`);
+					throw FileSystemError.FileExists(
+						`Unable to create folder '${directory.scheme === Schemas.file ? directory.fsPath : directory.toString(true)}' that already exists but is not a directory`
+					);
 				}
 
 				break; // we have hit a directory that exists -> good
@@ -210,14 +220,21 @@ export class ExtHostConsumerFileSystem {
 		// file system provider error
 		if (err instanceof files.FileSystemProviderError) {
 			switch (err.code) {
-				case files.FileSystemProviderErrorCode.FileExists: throw FileSystemError.FileExists(err.message);
-				case files.FileSystemProviderErrorCode.FileNotFound: throw FileSystemError.FileNotFound(err.message);
-				case files.FileSystemProviderErrorCode.FileNotADirectory: throw FileSystemError.FileNotADirectory(err.message);
-				case files.FileSystemProviderErrorCode.FileIsADirectory: throw FileSystemError.FileIsADirectory(err.message);
-				case files.FileSystemProviderErrorCode.NoPermissions: throw FileSystemError.NoPermissions(err.message);
-				case files.FileSystemProviderErrorCode.Unavailable: throw FileSystemError.Unavailable(err.message);
+				case files.FileSystemProviderErrorCode.FileExists:
+					throw FileSystemError.FileExists(err.message);
+				case files.FileSystemProviderErrorCode.FileNotFound:
+					throw FileSystemError.FileNotFound(err.message);
+				case files.FileSystemProviderErrorCode.FileNotADirectory:
+					throw FileSystemError.FileNotADirectory(err.message);
+				case files.FileSystemProviderErrorCode.FileIsADirectory:
+					throw FileSystemError.FileIsADirectory(err.message);
+				case files.FileSystemProviderErrorCode.NoPermissions:
+					throw FileSystemError.NoPermissions(err.message);
+				case files.FileSystemProviderErrorCode.Unavailable:
+					throw FileSystemError.Unavailable(err.message);
 
-				default: throw new FileSystemError(err.message, err.name as files.FileSystemProviderErrorCode);
+				default:
+					throw new FileSystemError(err.message, err.name as files.FileSystemProviderErrorCode);
 			}
 		}
 
@@ -233,21 +250,36 @@ export class ExtHostConsumerFileSystem {
 
 		// file system error
 		switch (err.name) {
-			case files.FileSystemProviderErrorCode.FileExists: throw FileSystemError.FileExists(err.message);
-			case files.FileSystemProviderErrorCode.FileNotFound: throw FileSystemError.FileNotFound(err.message);
-			case files.FileSystemProviderErrorCode.FileNotADirectory: throw FileSystemError.FileNotADirectory(err.message);
-			case files.FileSystemProviderErrorCode.FileIsADirectory: throw FileSystemError.FileIsADirectory(err.message);
-			case files.FileSystemProviderErrorCode.NoPermissions: throw FileSystemError.NoPermissions(err.message);
-			case files.FileSystemProviderErrorCode.Unavailable: throw FileSystemError.Unavailable(err.message);
+			case files.FileSystemProviderErrorCode.FileExists:
+				throw FileSystemError.FileExists(err.message);
+			case files.FileSystemProviderErrorCode.FileNotFound:
+				throw FileSystemError.FileNotFound(err.message);
+			case files.FileSystemProviderErrorCode.FileNotADirectory:
+				throw FileSystemError.FileNotADirectory(err.message);
+			case files.FileSystemProviderErrorCode.FileIsADirectory:
+				throw FileSystemError.FileIsADirectory(err.message);
+			case files.FileSystemProviderErrorCode.NoPermissions:
+				throw FileSystemError.NoPermissions(err.message);
+			case files.FileSystemProviderErrorCode.Unavailable:
+				throw FileSystemError.Unavailable(err.message);
 
-			default: throw new FileSystemError(err.message, err.name as files.FileSystemProviderErrorCode);
+			default:
+				throw new FileSystemError(err.message, err.name as files.FileSystemProviderErrorCode);
 		}
 	}
 
 	// ---
 
-	addFileSystemProvider(scheme: string, provider: vscode.FileSystemProvider, options?: { isCaseSensitive?: boolean; isReadonly?: boolean | IMarkdownString }): IDisposable {
-		this._fileSystemProvider.set(scheme, { impl: provider, extUri: options?.isCaseSensitive ? extUri : extUriIgnorePathCase, isReadonly: !!options?.isReadonly });
+	addFileSystemProvider(
+		scheme: string,
+		provider: vscode.FileSystemProvider,
+		options?: { isCaseSensitive?: boolean; isReadonly?: boolean | IMarkdownString }
+	): IDisposable {
+		this._fileSystemProvider.set(scheme, {
+			impl: provider,
+			extUri: options?.isCaseSensitive ? extUri : extUriIgnorePathCase,
+			isReadonly: !!options?.isReadonly
+		});
 		return toDisposable(() => this._fileSystemProvider.delete(scheme));
 	}
 
@@ -256,5 +288,5 @@ export class ExtHostConsumerFileSystem {
 	}
 }
 
-export interface IExtHostConsumerFileSystem extends ExtHostConsumerFileSystem { }
+export interface IExtHostConsumerFileSystem extends ExtHostConsumerFileSystem {}
 export const IExtHostConsumerFileSystem = createDecorator<IExtHostConsumerFileSystem>('IExtHostConsumerFileSystem');

@@ -25,28 +25,34 @@ import { workbenchInstantiationService } from '../../../../test/browser/workbenc
 suite('NotebookProviderInfoStore', function () {
 	const disposables = ensureNoDisposablesAreLeakedInTestSuite() as Pick<DisposableStore, 'add'>;
 
-	test('Can\'t open untitled notebooks in test #119363', function () {
+	test("Can't open untitled notebooks in test #119363", function () {
 		const instantiationService = workbenchInstantiationService(undefined, disposables);
 		const store = new NotebookProviderInfoStore(
-			new class extends mock<IStorageService>() {
-				override get() { return ''; }
-				override store() { }
-				override getObject() { return {}; }
-			},
-			new class extends mock<IExtensionService>() {
+			new (class extends mock<IStorageService>() {
+				override get() {
+					return '';
+				}
+				override store() {}
+				override getObject() {
+					return {};
+				}
+			})(),
+			new (class extends mock<IExtensionService>() {
 				override onDidRegisterExtensions = Event.None;
-			},
+			})(),
 			disposables.add(instantiationService.createInstance(EditorResolverService)),
 			new TestConfigurationService(),
-			new class extends mock<IAccessibilityService>() {
+			new (class extends mock<IAccessibilityService>() {
 				override onDidChangeScreenReaderOptimized: Event<void> = Event.None;
-			},
+			})(),
 			instantiationService,
-			new class extends mock<IFileService>() {
-				override hasProvider() { return true; }
-			},
-			new class extends mock<INotebookEditorModelResolverService>() { },
-			new class extends mock<IUriIdentityService>() { }
+			new (class extends mock<IFileService>() {
+				override hasProvider() {
+					return true;
+				}
+			})(),
+			new (class extends mock<INotebookEditorModelResolverService>() {})(),
+			new (class extends mock<IUriIdentityService>() {})()
 		);
 		disposables.add(store);
 
@@ -56,7 +62,7 @@ suite('NotebookProviderInfoStore', function () {
 			displayName: 'foo',
 			selectors: [{ filenamePattern: '*.foo' }],
 			priority: RegisteredEditorPriority.default,
-			providerDisplayName: 'foo',
+			providerDisplayName: 'foo'
 		});
 		const barInfo = new NotebookProviderInfo({
 			extension: nullExtensionDescription.identifier,
@@ -64,7 +70,7 @@ suite('NotebookProviderInfoStore', function () {
 			displayName: 'bar',
 			selectors: [{ filenamePattern: '*.bar' }],
 			priority: RegisteredEditorPriority.default,
-			providerDisplayName: 'bar',
+			providerDisplayName: 'bar'
 		});
 
 		store.add(fooInfo);
@@ -91,5 +97,4 @@ suite('NotebookProviderInfoStore', function () {
 		assert.strictEqual(providers.length, 1);
 		assert.strictEqual(providers[0] === barInfo, true);
 	});
-
 });

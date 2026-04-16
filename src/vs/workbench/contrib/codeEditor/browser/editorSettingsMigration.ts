@@ -5,10 +5,14 @@
 
 import { Registry } from '../../../../platform/registry/common/platform.js';
 import { EditorSettingMigration, ISettingsWriter } from '../../../../editor/browser/config/migrateOptions.js';
-import { ConfigurationKeyValuePairs, Extensions, IConfigurationMigrationRegistry } from '../../../common/configuration.js';
+import {
+	ConfigurationKeyValuePairs,
+	Extensions,
+	IConfigurationMigrationRegistry
+} from '../../../common/configuration.js';
 
-Registry.as<IConfigurationMigrationRegistry>(Extensions.ConfigurationMigration)
-	.registerConfigurationMigrations(EditorSettingMigration.items.map(item => ({
+Registry.as<IConfigurationMigrationRegistry>(Extensions.ConfigurationMigration).registerConfigurationMigrations(
+	EditorSettingMigration.items.map(item => ({
 		key: `editor.${item.key}`,
 		migrateFn: (value, accessor) => {
 			const configurationKeyValuePairs: ConfigurationKeyValuePairs = [];
@@ -16,4 +20,5 @@ Registry.as<IConfigurationMigrationRegistry>(Extensions.ConfigurationMigration)
 			item.migrate(value, key => accessor(`editor.${key}`), writer);
 			return configurationKeyValuePairs;
 		}
-	})));
+	}))
+);

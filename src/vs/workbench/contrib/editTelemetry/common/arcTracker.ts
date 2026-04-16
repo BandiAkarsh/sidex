@@ -11,14 +11,14 @@ import { AbstractText } from '../../../../editor/common/core/text/abstractText.j
 /**
  * The ARC (accepted and retained characters) counts how many characters inserted by the initial suggestion (trackedEdit)
  * stay unmodified after a certain amount of time after acceptance.
-*/
+ */
 export class ArcTracker {
 	private _updatedTrackedEdit: AnnotatedStringEdit<IsTrackedEditData>;
 	private _trackedEdit: BaseStringEdit;
 
 	constructor(
 		private readonly _valueBeforeTrackedEdit: AbstractText,
-		trackedEdit: BaseStringEdit,
+		trackedEdit: BaseStringEdit
 	) {
 		this._trackedEdit = trackedEdit.removeCommonSuffixPrefix(_valueBeforeTrackedEdit.getValue());
 		this._updatedTrackedEdit = this._trackedEdit.mapData(() => new IsTrackedEditData(true));
@@ -30,7 +30,7 @@ export class ArcTracker {
 
 	/**
 	 * edit must apply to _updatedTrackedEdit.apply(_valueBeforeTrackedEdit)
-	*/
+	 */
 	handleEdits(edit: BaseStringEdit): void {
 		const e = edit.mapData(_d => new IsTrackedEditData(false));
 		const composedEdit = this._updatedTrackedEdit.compose(e); // (still) applies to _valueBeforeTrackedEdit
@@ -42,7 +42,7 @@ export class ArcTracker {
 	}
 
 	getAcceptedRestrainedCharactersCount(): number {
-		const s = sumBy(this._updatedTrackedEdit.replacements, e => e.data.isTrackedEdit ? e.getNewLength() : 0);
+		const s = sumBy(this._updatedTrackedEdit.replacements, e => (e.data.isTrackedEdit ? e.getNewLength() : 0));
 		return s;
 	}
 
@@ -51,7 +51,7 @@ export class ArcTracker {
 			edits: this._updatedTrackedEdit.replacements.map(e => ({
 				range: e.replaceRange.toString(),
 				newText: e.newText,
-				isTrackedEdit: e.data.isTrackedEdit,
+				isTrackedEdit: e.data.isTrackedEdit
 			}))
 		};
 	}
@@ -63,22 +63,20 @@ export class ArcTracker {
 		const insertedLineCount = sumBy(le.getNewLineRanges(), r => r.length);
 		return {
 			deletedLineCounts: deletedLineCount,
-			insertedLineCounts: insertedLineCount,
+			insertedLineCounts: insertedLineCount
 		};
 	}
 
 	public getValues(): unknown {
 		return {
 			arc: this.getAcceptedRestrainedCharactersCount(),
-			...this.getLineCountInfo(),
+			...this.getLineCountInfo()
 		};
 	}
 }
 
 export class IsTrackedEditData implements IEditData<IsTrackedEditData> {
-	constructor(
-		public readonly isTrackedEdit: boolean
-	) { }
+	constructor(public readonly isTrackedEdit: boolean) {}
 
 	join(data: IsTrackedEditData): IsTrackedEditData | undefined {
 		if (this.isTrackedEdit !== data.isTrackedEdit) {

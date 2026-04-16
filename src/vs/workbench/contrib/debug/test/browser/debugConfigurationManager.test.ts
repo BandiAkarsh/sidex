@@ -15,10 +15,20 @@ import { TestConfigurationService } from '../../../../../platform/configuration/
 import { IRemoteAgentEnvironment } from '../../../../../platform/remote/common/remoteAgentEnvironment.js';
 import { IWorkspaceContextService } from '../../../../../platform/workspace/common/workspace.js';
 import { ConfigurationManager } from '../../browser/debugConfigurationManager.js';
-import { DebugConfigurationProviderTriggerKind, IAdapterManager, IConfig, IDebugAdapterExecutable, IDebugSession } from '../../common/debug.js';
+import {
+	DebugConfigurationProviderTriggerKind,
+	IAdapterManager,
+	IConfig,
+	IDebugAdapterExecutable,
+	IDebugSession
+} from '../../common/debug.js';
 import { IPreferencesService } from '../../../../services/preferences/common/preferences.js';
 import { IRemoteAgentService } from '../../../../services/remote/common/remoteAgentService.js';
-import { ITestInstantiationService, TestRemoteAgentService, workbenchInstantiationService } from '../../../../test/browser/workbenchTestServices.js';
+import {
+	ITestInstantiationService,
+	TestRemoteAgentService,
+	workbenchInstantiationService
+} from '../../../../test/browser/workbenchTestServices.js';
 import { TestContextService } from '../../../../test/common/workbenchTestServices.js';
 
 suite('debugConfigurationManager', () => {
@@ -70,64 +80,88 @@ suite('debugConfigurationManager', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('resolves configuration based on type', async () => {
-		disposables.add(_debugConfigurationManager.registerDebugConfigurationProvider({
-			type: configurationProviderType,
-			resolveDebugConfiguration: (folderUri, config, token) => {
-				assert.strictEqual(config.type, configurationProviderType);
-				return Promise.resolve({
-					...config,
-					configurationResolved: true
-				});
-			},
-			triggerKind: DebugConfigurationProviderTriggerKind.Initial
-		}));
+		disposables.add(
+			_debugConfigurationManager.registerDebugConfigurationProvider({
+				type: configurationProviderType,
+				resolveDebugConfiguration: (folderUri, config, token) => {
+					assert.strictEqual(config.type, configurationProviderType);
+					return Promise.resolve({
+						...config,
+						configurationResolved: true
+					});
+				},
+				triggerKind: DebugConfigurationProviderTriggerKind.Initial
+			})
+		);
 
 		const initialConfig: IConfig = {
 			type: configurationProviderType,
 			request: 'launch',
-			name: 'configName',
+			name: 'configName'
 		};
 
-		const resultConfig = await _debugConfigurationManager.resolveConfigurationByProviders(undefined, configurationProviderType, initialConfig, CancellationToken.None);
+		const resultConfig = await _debugConfigurationManager.resolveConfigurationByProviders(
+			undefined,
+			configurationProviderType,
+			initialConfig,
+			CancellationToken.None
+		);
 		// eslint-disable-next-line local/code-no-any-casts
-		assert.strictEqual((resultConfig as any).configurationResolved, true, 'Configuration should be updated by test provider');
+		assert.strictEqual(
+			(resultConfig as any).configurationResolved,
+			true,
+			'Configuration should be updated by test provider'
+		);
 	});
 
 	test('resolves configuration from second provider if type changes', async () => {
 		const secondProviderType = 'second-provider';
-		disposables.add(_debugConfigurationManager.registerDebugConfigurationProvider({
-			type: configurationProviderType,
-			resolveDebugConfiguration: (folderUri, config, token) => {
-				assert.strictEqual(config.type, configurationProviderType);
-				return Promise.resolve({
-					...config,
-					type: secondProviderType
-				});
-			},
-			triggerKind: DebugConfigurationProviderTriggerKind.Initial
-		}));
-		disposables.add(_debugConfigurationManager.registerDebugConfigurationProvider({
-			type: secondProviderType,
-			resolveDebugConfiguration: (folderUri, config, token) => {
-				assert.strictEqual(config.type, secondProviderType);
-				return Promise.resolve({
-					...config,
-					configurationResolved: true
-				});
-			},
-			triggerKind: DebugConfigurationProviderTriggerKind.Initial
-		}));
+		disposables.add(
+			_debugConfigurationManager.registerDebugConfigurationProvider({
+				type: configurationProviderType,
+				resolveDebugConfiguration: (folderUri, config, token) => {
+					assert.strictEqual(config.type, configurationProviderType);
+					return Promise.resolve({
+						...config,
+						type: secondProviderType
+					});
+				},
+				triggerKind: DebugConfigurationProviderTriggerKind.Initial
+			})
+		);
+		disposables.add(
+			_debugConfigurationManager.registerDebugConfigurationProvider({
+				type: secondProviderType,
+				resolveDebugConfiguration: (folderUri, config, token) => {
+					assert.strictEqual(config.type, secondProviderType);
+					return Promise.resolve({
+						...config,
+						configurationResolved: true
+					});
+				},
+				triggerKind: DebugConfigurationProviderTriggerKind.Initial
+			})
+		);
 
 		const initialConfig: IConfig = {
 			type: configurationProviderType,
 			request: 'launch',
-			name: 'configName',
+			name: 'configName'
 		};
 
-		const resultConfig = await _debugConfigurationManager.resolveConfigurationByProviders(undefined, configurationProviderType, initialConfig, CancellationToken.None);
+		const resultConfig = await _debugConfigurationManager.resolveConfigurationByProviders(
+			undefined,
+			configurationProviderType,
+			initialConfig,
+			CancellationToken.None
+		);
 		assert.strictEqual(resultConfig!.type, secondProviderType);
 		// eslint-disable-next-line local/code-no-any-casts
-		assert.strictEqual((resultConfig as any).configurationResolved, true, 'Configuration should be updated by test provider');
+		assert.strictEqual(
+			(resultConfig as any).configurationResolved,
+			true,
+			'Configuration should be updated by test provider'
+		);
 	});
 
 	test('uses remote target OS when computing visible configurations', async () => {
@@ -139,8 +173,8 @@ suite('debugConfigurationManager', () => {
 					appRoot: URI.file('/remote/app'),
 					execPath: '/remote/app/node',
 					tmpDir: URI.file('/remote/tmp'),
-				settingsPath: URI.file('/remote/settings.json'),
-				logsPath: URI.file('/remote/logs'),
+					settingsPath: URI.file('/remote/settings.json'),
+					logsPath: URI.file('/remote/logs'),
 					extensionHostLogsPath: URI.file('/remote/ext-logs'),
 					globalStorageHome: URI.file('/remote/global-storage'),
 					workspaceStorageHome: URI.file('/remote/workspace-storage'),
@@ -175,7 +209,10 @@ suite('debugConfigurationManager', () => {
 			await Event.toPromise(_debugConfigurationManager.onDidSelectConfiguration);
 		}
 
-		assert.deepStrictEqual(_debugConfigurationManager.getAllConfigurations().map(({ name }) => name), ['visible']);
+		assert.deepStrictEqual(
+			_debugConfigurationManager.getAllConfigurations().map(({ name }) => name),
+			['visible']
+		);
 	});
 
 	teardown(() => disposables.clear());

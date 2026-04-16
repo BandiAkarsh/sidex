@@ -6,10 +6,12 @@
 import * as extHostProtocol from '../common/extHost.protocol.js';
 import * as notebookCommon from '../../contrib/notebook/common/notebookCommon.js';
 import { CellExecutionUpdateType } from '../../contrib/notebook/common/notebookExecutionService.js';
-import { ICellExecuteUpdate, ICellExecutionComplete } from '../../contrib/notebook/common/notebookExecutionStateService.js';
+import {
+	ICellExecuteUpdate,
+	ICellExecutionComplete
+} from '../../contrib/notebook/common/notebookExecutionStateService.js';
 
 export namespace NotebookDto {
-
 	export function toNotebookOutputItemDto(item: notebookCommon.IOutputItemDto): extHostProtocol.NotebookOutputItemDto {
 		return {
 			mime: item.mime,
@@ -44,7 +46,9 @@ export namespace NotebookDto {
 		};
 	}
 
-	export function fromNotebookOutputItemDto(item: extHostProtocol.NotebookOutputItemDto): notebookCommon.IOutputItemDto {
+	export function fromNotebookOutputItemDto(
+		item: extHostProtocol.NotebookOutputItemDto
+	): notebookCommon.IOutputItemDto {
 		return {
 			mime: item.mime,
 			data: item.valueBytes
@@ -88,7 +92,7 @@ export namespace NotebookDto {
 			cellKind: cell.cellKind,
 			outputs: cell.outputs.map(toNotebookOutputDto),
 			metadata: cell.metadata,
-			internalMetadata: cell.internalMetadata,
+			internalMetadata: cell.internalMetadata
 		};
 	}
 
@@ -116,7 +120,9 @@ export namespace NotebookDto {
 		return data;
 	}
 
-	export function fromCellEditOperationDto(edit: extHostProtocol.ICellEditOperationDto): notebookCommon.ICellEditOperation {
+	export function fromCellEditOperationDto(
+		edit: extHostProtocol.ICellEditOperationDto
+	): notebookCommon.ICellEditOperation {
 		if (edit.editType === notebookCommon.CellEditType.Replace) {
 			return {
 				editType: edit.editType,

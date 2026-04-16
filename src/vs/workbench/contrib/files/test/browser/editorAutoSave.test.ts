@@ -22,11 +22,22 @@ import { IEditorService } from '../../../../services/editor/common/editorService
 import { IFilesConfigurationService } from '../../../../services/filesConfiguration/common/filesConfigurationService.js';
 import { TextFileEditorModelManager } from '../../../../services/textfile/common/textFileEditorModelManager.js';
 import { ITextFileEditorModel } from '../../../../services/textfile/common/textfiles.js';
-import { createEditorPart, registerTestFileEditor, TestEnvironmentService, TestFilesConfigurationService, TestServiceAccessor, TestTextResourceConfigurationService, workbenchInstantiationService } from '../../../../test/browser/workbenchTestServices.js';
-import { TestContextService, TestFileService, TestMarkerService } from '../../../../test/common/workbenchTestServices.js';
+import {
+	createEditorPart,
+	registerTestFileEditor,
+	TestEnvironmentService,
+	TestFilesConfigurationService,
+	TestServiceAccessor,
+	TestTextResourceConfigurationService,
+	workbenchInstantiationService
+} from '../../../../test/browser/workbenchTestServices.js';
+import {
+	TestContextService,
+	TestFileService,
+	TestMarkerService
+} from '../../../../test/common/workbenchTestServices.js';
 
 suite('EditorAutoSave', () => {
-
 	const disposables = new DisposableStore();
 
 	setup(() => {
@@ -45,19 +56,26 @@ suite('EditorAutoSave', () => {
 		instantiationService.stub(IConfigurationService, configurationService);
 		// eslint-disable-next-line local/code-no-any-casts
 		instantiationService.stub(IAccessibilitySignalService, {
-			playSignal: async () => { },
-			isSoundEnabled(signal: unknown) { return false; },
+			playSignal: async () => {},
+			isSoundEnabled(signal: unknown) {
+				return false;
+			}
 		} as any);
-		instantiationService.stub(IFilesConfigurationService, disposables.add(new TestFilesConfigurationService(
-			<IContextKeyService>instantiationService.createInstance(MockContextKeyService),
-			configurationService,
-			new TestContextService(TestWorkspace),
-			TestEnvironmentService,
-			disposables.add(new UriIdentityService(disposables.add(new TestFileService()))),
-			disposables.add(new TestFileService()),
-			new TestMarkerService(),
-			new TestTextResourceConfigurationService(configurationService)
-		)));
+		instantiationService.stub(
+			IFilesConfigurationService,
+			disposables.add(
+				new TestFilesConfigurationService(
+					<IContextKeyService>instantiationService.createInstance(MockContextKeyService),
+					configurationService,
+					new TestContextService(TestWorkspace),
+					TestEnvironmentService,
+					disposables.add(new UriIdentityService(disposables.add(new TestFileService()))),
+					disposables.add(new TestFileService()),
+					new TestMarkerService(),
+					new TestTextResourceConfigurationService(configurationService)
+				)
+			)
+		);
 
 		const part = await createEditorPart(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, part);
@@ -66,7 +84,7 @@ suite('EditorAutoSave', () => {
 		instantiationService.stub(IEditorService, editorService);
 
 		const accessor = instantiationService.createInstance(TestServiceAccessor);
-		disposables.add((<TextFileEditorModelManager>accessor.textFileService.files));
+		disposables.add(<TextFileEditorModelManager>accessor.textFileService.files);
 
 		disposables.add(instantiationService.createInstance(EditorAutoSave));
 
@@ -99,7 +117,9 @@ suite('EditorAutoSave', () => {
 
 		assert.ok(model.isDirty());
 
-		const editorPane = await accessor.editorService.openEditor({ resource: toResource.call(this, '/path/index_other.txt') });
+		const editorPane = await accessor.editorService.openEditor({
+			resource: toResource.call(this, '/path/index_other.txt')
+		});
 
 		await awaitModelSaved(model);
 

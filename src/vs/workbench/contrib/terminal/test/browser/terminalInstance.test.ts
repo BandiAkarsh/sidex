@@ -14,20 +14,43 @@ import { IConfigurationService } from '../../../../../platform/configuration/com
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { TestInstantiationService } from '../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
 import { ResultKind } from '../../../../../platform/keybinding/common/keybindingResolver.js';
-import { TerminalCapability, type ICwdDetectionCapability } from '../../../../../platform/terminal/common/capabilities/capabilities.js';
+import {
+	TerminalCapability,
+	type ICwdDetectionCapability
+} from '../../../../../platform/terminal/common/capabilities/capabilities.js';
 import { TerminalCapabilityStore } from '../../../../../platform/terminal/common/capabilities/terminalCapabilityStore.js';
-import { GeneralShellType, ITerminalChildProcess, ITerminalProfile, TitleEventSource, type IShellLaunchConfig, type ITerminalBackend, type ITerminalProcessOptions } from '../../../../../platform/terminal/common/terminal.js';
+import {
+	GeneralShellType,
+	ITerminalChildProcess,
+	ITerminalProfile,
+	TitleEventSource,
+	type IShellLaunchConfig,
+	type ITerminalBackend,
+	type ITerminalProcessOptions
+} from '../../../../../platform/terminal/common/terminal.js';
 import { IWorkspaceFolder } from '../../../../../platform/workspace/common/workspace.js';
 import { IViewDescriptorService } from '../../../../common/views.js';
-import { ITerminalConfigurationService, ITerminalInstance, ITerminalInstanceService, ITerminalService } from '../../browser/terminal.js';
+import {
+	ITerminalConfigurationService,
+	ITerminalInstance,
+	ITerminalInstanceService,
+	ITerminalService
+} from '../../browser/terminal.js';
 import { TerminalConfigurationService } from '../../browser/terminalConfigurationService.js';
 import { parseExitResult, TerminalInstance, TerminalLabelComputer } from '../../browser/terminalInstance.js';
 import { IEnvironmentVariableService } from '../../common/environmentVariable.js';
 import { EnvironmentVariableService } from '../../common/environmentVariableService.js';
-import { ITerminalProfileResolverService, ProcessState, DEFAULT_COMMANDS_TO_SKIP_SHELL } from '../../common/terminal.js';
+import {
+	ITerminalProfileResolverService,
+	ProcessState,
+	DEFAULT_COMMANDS_TO_SKIP_SHELL
+} from '../../common/terminal.js';
 import { TestViewDescriptorService } from './xterm/xtermTerminal.test.js';
 import { fixPath } from '../../../../services/search/test/browser/queryBuilder.test.js';
-import { TestTerminalProfileResolverService, workbenchInstantiationService } from '../../../../test/browser/workbenchTestServices.js';
+import {
+	TestTerminalProfileResolverService,
+	workbenchInstantiationService
+} from '../../../../test/browser/workbenchTestServices.js';
 
 const root1 = '/foo/root1';
 const ROOT_1 = fixPath(root1);
@@ -40,31 +63,31 @@ class MockTerminalProfileResolverService extends TestTerminalProfileResolverServ
 			profileName: 'my-sh',
 			path: '/usr/bin/zsh',
 			env: {
-				TEST: 'TEST',
+				TEST: 'TEST'
 			},
 			isDefault: true,
 			isUnsafePath: false,
 			isFromPath: true,
 			icon: {
-				id: 'terminal-linux',
+				id: 'terminal-linux'
 			},
-			color: 'terminal.ansiYellow',
+			color: 'terminal.ansiYellow'
 		};
 	}
 }
 
 const terminalShellTypeContextKey = {
-	set: () => { },
-	reset: () => { },
+	set: () => {},
+	reset: () => {},
 	get: () => undefined
 };
 
 class TestTerminalChildProcess extends Disposable implements ITerminalChildProcess {
 	id: number = 0;
-	get capabilities() { return []; }
-	constructor(
-		readonly shouldPersist: boolean
-	) {
+	get capabilities() {
+		return [];
+	}
+	constructor(readonly shouldPersist: boolean) {
 		super();
 	}
 	updateProperty(property: any, value: any): Promise<void> {
@@ -81,18 +104,26 @@ class TestTerminalChildProcess extends Disposable implements ITerminalChildProce
 	onProcessReady = Event.None;
 	onProcessTitleChanged = Event.None;
 	onProcessShellTypeChanged = Event.None;
-	async start(): Promise<undefined> { return undefined; }
-	shutdown(immediate: boolean): void { }
-	input(data: string): void { }
-	sendSignal(signal: string): void { }
-	resize(cols: number, rows: number): void { }
-	clearBuffer(): void { }
-	acknowledgeDataEvent(charCount: number): void { }
-	async setUnicodeVersion(version: '6' | '11'): Promise<void> { }
-	async getInitialCwd(): Promise<string> { return ''; }
-	async getCwd(): Promise<string> { return ''; }
-	async processBinary(data: string): Promise<void> { }
-	refreshProperty(property: any): Promise<any> { return Promise.resolve(''); }
+	async start(): Promise<undefined> {
+		return undefined;
+	}
+	shutdown(immediate: boolean): void {}
+	input(data: string): void {}
+	sendSignal(signal: string): void {}
+	resize(cols: number, rows: number): void {}
+	clearBuffer(): void {}
+	acknowledgeDataEvent(charCount: number): void {}
+	async setUnicodeVersion(version: '6' | '11'): Promise<void> {}
+	async getInitialCwd(): Promise<string> {
+		return '';
+	}
+	async getCwd(): Promise<string> {
+		return '';
+	}
+	async processBinary(data: string): Promise<void> {}
+	refreshProperty(property: any): Promise<any> {
+		return Promise.resolve('');
+	}
 }
 
 class TestTerminalInstanceService extends Disposable implements Partial<ITerminalInstanceService> {
@@ -126,30 +157,39 @@ suite('Workbench - TerminalInstance', () => {
 		let terminalInstance: ITerminalInstance;
 
 		async function createTerminalInstance(): Promise<TerminalInstance> {
-			const instantiationService = workbenchInstantiationService({
-				configurationService: () => new TestConfigurationService({
-					files: {},
-					terminal: {
-						integrated: {
-							fontFamily: 'monospace',
-							scrollback: 1000,
-							fastScrollSensitivity: 2,
-							mouseWheelScrollSensitivity: 1,
-							unicodeVersion: '6',
-							commandsToSkipShell: [],
-							shellIntegration: {
-								enabled: true
+			const instantiationService = workbenchInstantiationService(
+				{
+					configurationService: () =>
+						new TestConfigurationService({
+							files: {},
+							terminal: {
+								integrated: {
+									fontFamily: 'monospace',
+									scrollback: 1000,
+									fastScrollSensitivity: 2,
+									mouseWheelScrollSensitivity: 1,
+									unicodeVersion: '6',
+									commandsToSkipShell: [],
+									shellIntegration: {
+										enabled: true
+									}
+								}
 							}
-						}
-					},
-				})
-			}, store);
+						})
+				},
+				store
+			);
 			instantiationService.set(ITerminalProfileResolverService, new MockTerminalProfileResolverService());
 			instantiationService.stub(IViewDescriptorService, new TestViewDescriptorService());
-			instantiationService.stub(IEnvironmentVariableService, store.add(instantiationService.createInstance(EnvironmentVariableService)));
+			instantiationService.stub(
+				IEnvironmentVariableService,
+				store.add(instantiationService.createInstance(EnvironmentVariableService))
+			);
 			instantiationService.stub(ITerminalInstanceService, store.add(new TestTerminalInstanceService()));
-			instantiationService.stub(ITerminalService, { setNextCommandId: async () => { } } as Partial<ITerminalService>);
-			const instance = store.add(instantiationService.createInstance(TerminalInstance, terminalShellTypeContextKey, {}));
+			instantiationService.stub(ITerminalService, { setNextCommandId: async () => {} } as Partial<ITerminalService>);
+			const instance = store.add(
+				instantiationService.createInstance(TerminalInstance, terminalShellTypeContextKey, {})
+			);
 			await instance.xtermReadyPromise;
 			return instance;
 		}
@@ -162,34 +202,42 @@ suite('Workbench - TerminalInstance', () => {
 		});
 
 		test('should preserve title for task terminals', async () => {
-			const instantiationService = workbenchInstantiationService({
-				configurationService: () => new TestConfigurationService({
-					files: {},
-					terminal: {
-						integrated: {
-							fontFamily: 'monospace',
-							scrollback: 1000,
-							fastScrollSensitivity: 2,
-							mouseWheelScrollSensitivity: 1,
-							unicodeVersion: '6',
-							shellIntegration: {
-								enabled: true
+			const instantiationService = workbenchInstantiationService(
+				{
+					configurationService: () =>
+						new TestConfigurationService({
+							files: {},
+							terminal: {
+								integrated: {
+									fontFamily: 'monospace',
+									scrollback: 1000,
+									fastScrollSensitivity: 2,
+									mouseWheelScrollSensitivity: 1,
+									unicodeVersion: '6',
+									shellIntegration: {
+										enabled: true
+									}
+								}
 							}
-						}
-					},
-				})
-			}, store);
+						})
+				},
+				store
+			);
 			instantiationService.set(ITerminalProfileResolverService, new MockTerminalProfileResolverService());
 			instantiationService.stub(IViewDescriptorService, new TestViewDescriptorService());
-			instantiationService.stub(IEnvironmentVariableService, store.add(instantiationService.createInstance(EnvironmentVariableService)));
+			instantiationService.stub(
+				IEnvironmentVariableService,
+				store.add(instantiationService.createInstance(EnvironmentVariableService))
+			);
 			instantiationService.stub(ITerminalInstanceService, store.add(new TestTerminalInstanceService()));
-			instantiationService.stub(ITerminalService, { setNextCommandId: async () => { } } as Partial<ITerminalService>);
+			instantiationService.stub(ITerminalService, { setNextCommandId: async () => {} } as Partial<ITerminalService>);
 
-			const taskTerminal = store.add(instantiationService.createInstance(TerminalInstance, terminalShellTypeContextKey, {
-				type: 'Task',
-				name: 'Test Task Name'
-			}));
-
+			const taskTerminal = store.add(
+				instantiationService.createInstance(TerminalInstance, terminalShellTypeContextKey, {
+					type: 'Task',
+					name: 'Test Task Name'
+				})
+			);
 
 			// Simulate setting the title via API (as the task system would do)
 			await taskTerminal.rename('Test Task Name');
@@ -206,10 +254,17 @@ suite('Workbench - TerminalInstance', () => {
 			const instance = await createTerminalInstance();
 			const keybindingService = instance['_keybindingService'];
 			const originalSoftDispatch = keybindingService.softDispatch;
-			keybindingService.softDispatch = () => ({ kind: ResultKind.KbFound, commandId: 'workbench.action.zoomIn', commandArgs: undefined, isBubble: false });
+			keybindingService.softDispatch = () => ({
+				kind: ResultKind.KbFound,
+				commandId: 'workbench.action.zoomIn',
+				commandArgs: undefined,
+				isBubble: false
+			});
 
 			let capturedHandler: ((e: KeyboardEvent) => boolean) | undefined;
-			instance.xterm!.raw.attachCustomKeyEventHandler = handler => { capturedHandler = handler; };
+			instance.xterm!.raw.attachCustomKeyEventHandler = handler => {
+				capturedHandler = handler;
+			};
 			const container = document.createElement('div');
 			document.body.appendChild(container);
 			instance.attachToElement(container);
@@ -232,10 +287,17 @@ suite('Workbench - TerminalInstance', () => {
 			const keybindingService = instance['_keybindingService'];
 			const originalSoftDispatch = keybindingService.softDispatch;
 			strictEqual(DEFAULT_COMMANDS_TO_SKIP_SHELL.includes('test.metaKeyInterceptCommand'), false);
-			keybindingService.softDispatch = () => ({ kind: ResultKind.KbFound, commandId: 'test.metaKeyInterceptCommand', commandArgs: undefined, isBubble: false });
+			keybindingService.softDispatch = () => ({
+				kind: ResultKind.KbFound,
+				commandId: 'test.metaKeyInterceptCommand',
+				commandArgs: undefined,
+				isBubble: false
+			});
 
 			let capturedHandler: ((e: KeyboardEvent) => boolean) | undefined;
-			instance.xterm!.raw.attachCustomKeyEventHandler = handler => { capturedHandler = handler; };
+			instance.xterm!.raw.attachCustomKeyEventHandler = handler => {
+				capturedHandler = handler;
+			};
 			const container = document.createElement('div');
 			document.body.appendChild(container);
 			instance.attachToElement(container);
@@ -256,8 +318,8 @@ suite('Workbench - TerminalInstance', () => {
 	suite('DEFAULT_COMMANDS_TO_SKIP_SHELL', () => {
 		test('should include zoom commands so they are not consumed by kitty keyboard protocol', () => {
 			deepStrictEqual(
-				['workbench.action.zoomIn', 'workbench.action.zoomOut', 'workbench.action.zoomReset'].every(
-					cmd => DEFAULT_COMMANDS_TO_SKIP_SHELL.includes(cmd)
+				['workbench.action.zoomIn', 'workbench.action.zoomOut', 'workbench.action.zoomReset'].every(cmd =>
+					DEFAULT_COMMANDS_TO_SKIP_SHELL.includes(cmd)
 				),
 				true
 			);
@@ -265,46 +327,43 @@ suite('Workbench - TerminalInstance', () => {
 	});
 	suite('parseExitResult', () => {
 		test('should return no message for exit code = undefined', () => {
-			deepStrictEqual(
-				parseExitResult(undefined, {}, ProcessState.KilledDuringLaunch, undefined),
-				{ code: undefined, message: undefined }
-			);
-			deepStrictEqual(
-				parseExitResult(undefined, {}, ProcessState.KilledByUser, undefined),
-				{ code: undefined, message: undefined }
-			);
-			deepStrictEqual(
-				parseExitResult(undefined, {}, ProcessState.KilledByProcess, undefined),
-				{ code: undefined, message: undefined }
-			);
+			deepStrictEqual(parseExitResult(undefined, {}, ProcessState.KilledDuringLaunch, undefined), {
+				code: undefined,
+				message: undefined
+			});
+			deepStrictEqual(parseExitResult(undefined, {}, ProcessState.KilledByUser, undefined), {
+				code: undefined,
+				message: undefined
+			});
+			deepStrictEqual(parseExitResult(undefined, {}, ProcessState.KilledByProcess, undefined), {
+				code: undefined,
+				message: undefined
+			});
 		});
 		test('should return no message for exit code = 0', () => {
-			deepStrictEqual(
-				parseExitResult(0, {}, ProcessState.KilledDuringLaunch, undefined),
-				{ code: 0, message: undefined }
-			);
-			deepStrictEqual(
-				parseExitResult(0, {}, ProcessState.KilledByUser, undefined),
-				{ code: 0, message: undefined }
-			);
-			deepStrictEqual(
-				parseExitResult(0, {}, ProcessState.KilledDuringLaunch, undefined),
-				{ code: 0, message: undefined }
-			);
+			deepStrictEqual(parseExitResult(0, {}, ProcessState.KilledDuringLaunch, undefined), {
+				code: 0,
+				message: undefined
+			});
+			deepStrictEqual(parseExitResult(0, {}, ProcessState.KilledByUser, undefined), { code: 0, message: undefined });
+			deepStrictEqual(parseExitResult(0, {}, ProcessState.KilledDuringLaunch, undefined), {
+				code: 0,
+				message: undefined
+			});
 		});
 		test('should return friendly message when executable is specified for non-zero exit codes', () => {
-			deepStrictEqual(
-				parseExitResult(1, { executable: 'foo' }, ProcessState.KilledDuringLaunch, undefined),
-				{ code: 1, message: 'The terminal process "foo" failed to launch (exit code: 1).' }
-			);
-			deepStrictEqual(
-				parseExitResult(1, { executable: 'foo' }, ProcessState.KilledByUser, undefined),
-				{ code: 1, message: 'The terminal process "foo" terminated with exit code: 1.' }
-			);
-			deepStrictEqual(
-				parseExitResult(1, { executable: 'foo' }, ProcessState.KilledByProcess, undefined),
-				{ code: 1, message: 'The terminal process "foo" terminated with exit code: 1.' }
-			);
+			deepStrictEqual(parseExitResult(1, { executable: 'foo' }, ProcessState.KilledDuringLaunch, undefined), {
+				code: 1,
+				message: 'The terminal process "foo" failed to launch (exit code: 1).'
+			});
+			deepStrictEqual(parseExitResult(1, { executable: 'foo' }, ProcessState.KilledByUser, undefined), {
+				code: 1,
+				message: 'The terminal process "foo" terminated with exit code: 1.'
+			});
+			deepStrictEqual(parseExitResult(1, { executable: 'foo' }, ProcessState.KilledByProcess, undefined), {
+				code: 1,
+				message: 'The terminal process "foo" terminated with exit code: 1.'
+			});
 		});
 		test('should return friendly message when executable and args are specified for non-zero exit codes', () => {
 			deepStrictEqual(
@@ -321,18 +380,18 @@ suite('Workbench - TerminalInstance', () => {
 			);
 		});
 		test('should return friendly message when executable and arguments are omitted for non-zero exit codes', () => {
-			deepStrictEqual(
-				parseExitResult(1, {}, ProcessState.KilledDuringLaunch, undefined),
-				{ code: 1, message: `The terminal process failed to launch (exit code: 1).` }
-			);
-			deepStrictEqual(
-				parseExitResult(1, {}, ProcessState.KilledByUser, undefined),
-				{ code: 1, message: `The terminal process terminated with exit code: 1.` }
-			);
-			deepStrictEqual(
-				parseExitResult(1, {}, ProcessState.KilledByProcess, undefined),
-				{ code: 1, message: `The terminal process terminated with exit code: 1.` }
-			);
+			deepStrictEqual(parseExitResult(1, {}, ProcessState.KilledDuringLaunch, undefined), {
+				code: 1,
+				message: `The terminal process failed to launch (exit code: 1).`
+			});
+			deepStrictEqual(parseExitResult(1, {}, ProcessState.KilledByUser, undefined), {
+				code: 1,
+				message: `The terminal process terminated with exit code: 1.`
+			});
+			deepStrictEqual(parseExitResult(1, {}, ProcessState.KilledByProcess, undefined), {
+				code: 1,
+				message: `The terminal process terminated with exit code: 1.`
+			});
 		});
 		test('should ignore pty host-related errors', () => {
 			deepStrictEqual(
@@ -342,44 +401,106 @@ suite('Workbench - TerminalInstance', () => {
 		});
 		test('should format conpty failure code 5', () => {
 			deepStrictEqual(
-				parseExitResult({ code: 5, message: 'A native exception occurred during launch (Cannot create process, error code: 5)' }, { executable: 'foo' }, ProcessState.KilledDuringLaunch, undefined),
-				{ code: 5, message: `The terminal process failed to launch: Access was denied to the path containing your executable "foo". Manage and change your permissions to get this to work.` }
+				parseExitResult(
+					{ code: 5, message: 'A native exception occurred during launch (Cannot create process, error code: 5)' },
+					{ executable: 'foo' },
+					ProcessState.KilledDuringLaunch,
+					undefined
+				),
+				{
+					code: 5,
+					message: `The terminal process failed to launch: Access was denied to the path containing your executable "foo". Manage and change your permissions to get this to work.`
+				}
 			);
 		});
 		test('should format conpty failure code 267', () => {
 			deepStrictEqual(
-				parseExitResult({ code: 267, message: 'A native exception occurred during launch (Cannot create process, error code: 267)' }, {}, ProcessState.KilledDuringLaunch, '/foo'),
-				{ code: 267, message: `The terminal process failed to launch: Invalid starting directory "/foo", review your terminal.integrated.cwd setting.` }
+				parseExitResult(
+					{ code: 267, message: 'A native exception occurred during launch (Cannot create process, error code: 267)' },
+					{},
+					ProcessState.KilledDuringLaunch,
+					'/foo'
+				),
+				{
+					code: 267,
+					message: `The terminal process failed to launch: Invalid starting directory "/foo", review your terminal.integrated.cwd setting.`
+				}
 			);
 		});
 		test('should format conpty failure code 1260', () => {
 			deepStrictEqual(
-				parseExitResult({ code: 1260, message: 'A native exception occurred during launch (Cannot create process, error code: 1260)' }, { executable: 'foo' }, ProcessState.KilledDuringLaunch, undefined),
-				{ code: 1260, message: `The terminal process failed to launch: Windows cannot open this program because it has been prevented by a software restriction policy. For more information, open Event Viewer or contact your system Administrator.` }
+				parseExitResult(
+					{
+						code: 1260,
+						message: 'A native exception occurred during launch (Cannot create process, error code: 1260)'
+					},
+					{ executable: 'foo' },
+					ProcessState.KilledDuringLaunch,
+					undefined
+				),
+				{
+					code: 1260,
+					message: `The terminal process failed to launch: Windows cannot open this program because it has been prevented by a software restriction policy. For more information, open Event Viewer or contact your system Administrator.`
+				}
 			);
 		});
 		test('should format conpty launch failure', () => {
 			deepStrictEqual(
-				parseExitResult({ message: 'A native exception occurred during launch (Cannot launch conpty). Winpty has been removed, see https://code.visualstudio.com/updates/v1_109#_removal-of-winpty-support for more details. You can also try enabling the `terminal.integrated.windowsUseConptyDll` setting.' }, {}, ProcessState.KilledDuringLaunch, undefined),
-				{ code: undefined, message: `The terminal process failed to launch: A native exception occurred during launch (Cannot launch conpty). Winpty has been removed, see https://code.visualstudio.com/updates/v1_109#_removal-of-winpty-support for more details. You can also try enabling the \`terminal.integrated.windowsUseConptyDll\` setting..` }
+				parseExitResult(
+					{
+						message:
+							'A native exception occurred during launch (Cannot launch conpty). Winpty has been removed, see https://code.visualstudio.com/updates/v1_109#_removal-of-winpty-support for more details. You can also try enabling the `terminal.integrated.windowsUseConptyDll` setting.'
+					},
+					{},
+					ProcessState.KilledDuringLaunch,
+					undefined
+				),
+				{
+					code: undefined,
+					message: `The terminal process failed to launch: A native exception occurred during launch (Cannot launch conpty). Winpty has been removed, see https://code.visualstudio.com/updates/v1_109#_removal-of-winpty-support for more details. You can also try enabling the \`terminal.integrated.windowsUseConptyDll\` setting..`
+				}
 			);
 		});
 		test('should format generic failures', () => {
 			deepStrictEqual(
-				parseExitResult({ code: 123, message: 'A native exception occurred during launch (Cannot create process, error code: 123)' }, {}, ProcessState.KilledDuringLaunch, undefined),
-				{ code: 123, message: `The terminal process failed to launch: A native exception occurred during launch (Cannot create process, error code: 123).` }
+				parseExitResult(
+					{ code: 123, message: 'A native exception occurred during launch (Cannot create process, error code: 123)' },
+					{},
+					ProcessState.KilledDuringLaunch,
+					undefined
+				),
+				{
+					code: 123,
+					message: `The terminal process failed to launch: A native exception occurred during launch (Cannot create process, error code: 123).`
+				}
 			);
-			deepStrictEqual(
-				parseExitResult({ code: 123, message: 'foo' }, {}, ProcessState.KilledDuringLaunch, undefined),
-				{ code: 123, message: `The terminal process failed to launch: foo.` }
-			);
+			deepStrictEqual(parseExitResult({ code: 123, message: 'foo' }, {}, ProcessState.KilledDuringLaunch, undefined), {
+				code: 123,
+				message: `The terminal process failed to launch: foo.`
+			});
 		});
 	});
 	suite('TerminalLabelComputer', () => {
 		let instantiationService: TestInstantiationService;
 		let capabilities: TerminalCapabilityStore;
 
-		function createInstance(partial?: Partial<ITerminalInstance>): Pick<ITerminalInstance, 'shellLaunchConfig' | 'shellType' | 'userHome' | 'cwd' | 'initialCwd' | 'processName' | 'sequence' | 'workspaceFolder' | 'staticTitle' | 'capabilities' | 'title' | 'description'> {
+		function createInstance(
+			partial?: Partial<ITerminalInstance>
+		): Pick<
+			ITerminalInstance,
+			| 'shellLaunchConfig'
+			| 'shellType'
+			| 'userHome'
+			| 'cwd'
+			| 'initialCwd'
+			| 'processName'
+			| 'sequence'
+			| 'workspaceFolder'
+			| 'staticTitle'
+			| 'capabilities'
+			| 'title'
+			| 'description'
+		> {
 			const capabilities = store.add(new TerminalCapabilityStore());
 			if (!isWindows) {
 				capabilities.add(TerminalCapability.NaiveCwdDetection, null!);
@@ -411,12 +532,17 @@ suite('Workbench - TerminalInstance', () => {
 
 		function createLabelComputer(configuration: any) {
 			instantiationService.set(IConfigurationService, new TestConfigurationService(configuration));
-			instantiationService.set(ITerminalConfigurationService, store.add(instantiationService.createInstance(TerminalConfigurationService)));
+			instantiationService.set(
+				ITerminalConfigurationService,
+				store.add(instantiationService.createInstance(TerminalConfigurationService))
+			);
 			return store.add(instantiationService.createInstance(TerminalLabelComputer));
 		}
 
 		test('should resolve to "" when the template variables are empty', () => {
-			const terminalLabelComputer = createLabelComputer({ terminal: { integrated: { tabs: { separator: ' - ', title: '', description: '' } } } });
+			const terminalLabelComputer = createLabelComputer({
+				terminal: { integrated: { tabs: { separator: ' - ', title: '', description: '' } } }
+			});
 			terminalLabelComputer.refreshLabel(createInstance({ capabilities, processName: '' }));
 			// TODO:
 			// terminalLabelComputer.onLabelChanged(e => {
@@ -427,67 +553,135 @@ suite('Workbench - TerminalInstance', () => {
 			strictEqual(terminalLabelComputer.description, '');
 		});
 		test('should resolve cwd', () => {
-			const terminalLabelComputer = createLabelComputer({ terminal: { integrated: { tabs: { separator: ' - ', title: '${cwd}', description: '${cwd}' } } } });
+			const terminalLabelComputer = createLabelComputer({
+				terminal: { integrated: { tabs: { separator: ' - ', title: '${cwd}', description: '${cwd}' } } }
+			});
 			terminalLabelComputer.refreshLabel(createInstance({ capabilities, cwd: ROOT_1 }));
 			strictEqual(terminalLabelComputer.title, ROOT_1);
 			strictEqual(terminalLabelComputer.description, ROOT_1);
 		});
 		test('should resolve workspaceFolder', () => {
-			const terminalLabelComputer = createLabelComputer({ terminal: { integrated: { tabs: { separator: ' - ', title: '${workspaceFolder}', description: '${workspaceFolder}' } } } });
-			terminalLabelComputer.refreshLabel(createInstance({ capabilities, processName: 'zsh', workspaceFolder: { uri: URI.from({ scheme: Schemas.file, path: 'folder' }) } as IWorkspaceFolder }));
+			const terminalLabelComputer = createLabelComputer({
+				terminal: {
+					integrated: { tabs: { separator: ' - ', title: '${workspaceFolder}', description: '${workspaceFolder}' } }
+				}
+			});
+			terminalLabelComputer.refreshLabel(
+				createInstance({
+					capabilities,
+					processName: 'zsh',
+					workspaceFolder: { uri: URI.from({ scheme: Schemas.file, path: 'folder' }) } as IWorkspaceFolder
+				})
+			);
 			strictEqual(terminalLabelComputer.title, 'folder');
 			strictEqual(terminalLabelComputer.description, 'folder');
 		});
 		test('should resolve local', () => {
-			const terminalLabelComputer = createLabelComputer({ terminal: { integrated: { tabs: { separator: ' - ', title: '${local}', description: '${local}' } } } });
-			terminalLabelComputer.refreshLabel(createInstance({ capabilities, processName: 'zsh', shellLaunchConfig: { type: 'Local' } }));
+			const terminalLabelComputer = createLabelComputer({
+				terminal: { integrated: { tabs: { separator: ' - ', title: '${local}', description: '${local}' } } }
+			});
+			terminalLabelComputer.refreshLabel(
+				createInstance({ capabilities, processName: 'zsh', shellLaunchConfig: { type: 'Local' } })
+			);
 			strictEqual(terminalLabelComputer.title, 'Local');
 			strictEqual(terminalLabelComputer.description, 'Local');
 		});
 		test('should resolve process', () => {
-			const terminalLabelComputer = createLabelComputer({ terminal: { integrated: { tabs: { separator: ' - ', title: '${process}', description: '${process}' } } } });
+			const terminalLabelComputer = createLabelComputer({
+				terminal: { integrated: { tabs: { separator: ' - ', title: '${process}', description: '${process}' } } }
+			});
 			terminalLabelComputer.refreshLabel(createInstance({ capabilities, processName: 'zsh' }));
 			strictEqual(terminalLabelComputer.title, 'zsh');
 			strictEqual(terminalLabelComputer.description, 'zsh');
 		});
 		test('should resolve sequence', () => {
-			const terminalLabelComputer = createLabelComputer({ terminal: { integrated: { tabs: { separator: ' - ', title: '${sequence}', description: '${sequence}' } } } });
+			const terminalLabelComputer = createLabelComputer({
+				terminal: { integrated: { tabs: { separator: ' - ', title: '${sequence}', description: '${sequence}' } } }
+			});
 			terminalLabelComputer.refreshLabel(createInstance({ capabilities, sequence: 'sequence' }));
 			strictEqual(terminalLabelComputer.title, 'sequence');
 			strictEqual(terminalLabelComputer.description, 'sequence');
 		});
 		test('should resolve task', () => {
-			const terminalLabelComputer = createLabelComputer({ terminal: { integrated: { tabs: { separator: ' ~ ', title: '${process}${separator}${task}', description: '${task}' } } } });
-			terminalLabelComputer.refreshLabel(createInstance({ capabilities, processName: 'zsh', shellLaunchConfig: { type: 'Task' } }));
+			const terminalLabelComputer = createLabelComputer({
+				terminal: {
+					integrated: { tabs: { separator: ' ~ ', title: '${process}${separator}${task}', description: '${task}' } }
+				}
+			});
+			terminalLabelComputer.refreshLabel(
+				createInstance({ capabilities, processName: 'zsh', shellLaunchConfig: { type: 'Task' } })
+			);
 			strictEqual(terminalLabelComputer.title, 'zsh ~ Task');
 			strictEqual(terminalLabelComputer.description, 'Task');
 		});
 		test('should resolve separator', () => {
-			const terminalLabelComputer = createLabelComputer({ terminal: { integrated: { tabs: { separator: ' ~ ', title: '${separator}', description: '${separator}' } } } });
-			terminalLabelComputer.refreshLabel(createInstance({ capabilities, processName: 'zsh', shellLaunchConfig: { type: 'Task' } }));
+			const terminalLabelComputer = createLabelComputer({
+				terminal: { integrated: { tabs: { separator: ' ~ ', title: '${separator}', description: '${separator}' } } }
+			});
+			terminalLabelComputer.refreshLabel(
+				createInstance({ capabilities, processName: 'zsh', shellLaunchConfig: { type: 'Task' } })
+			);
 			strictEqual(terminalLabelComputer.title, 'zsh');
 			strictEqual(terminalLabelComputer.description, '');
 		});
 		test('should always return static title when specified', () => {
-			const terminalLabelComputer = createLabelComputer({ terminal: { integrated: { tabs: { separator: ' ~ ', title: '${process}', description: '${workspaceFolder}' } } } });
-			terminalLabelComputer.refreshLabel(createInstance({ capabilities, processName: 'process', workspaceFolder: { uri: URI.from({ scheme: Schemas.file, path: 'folder' }) } as IWorkspaceFolder, staticTitle: 'my-title' }));
+			const terminalLabelComputer = createLabelComputer({
+				terminal: { integrated: { tabs: { separator: ' ~ ', title: '${process}', description: '${workspaceFolder}' } } }
+			});
+			terminalLabelComputer.refreshLabel(
+				createInstance({
+					capabilities,
+					processName: 'process',
+					workspaceFolder: { uri: URI.from({ scheme: Schemas.file, path: 'folder' }) } as IWorkspaceFolder,
+					staticTitle: 'my-title'
+				})
+			);
 			strictEqual(terminalLabelComputer.title, 'my-title');
 			strictEqual(terminalLabelComputer.description, 'folder');
 		});
 		test('should use shellLaunchConfig.titleTemplate as template when set', () => {
-			const terminalLabelComputer = createLabelComputer({ terminal: { integrated: { tabs: { separator: ' - ', title: '${process}', description: '${cwd}' } } } });
-			terminalLabelComputer.refreshLabel(createInstance({ capabilities, sequence: 'my-sequence', processName: 'zsh', shellLaunchConfig: { titleTemplate: '${sequence}' } }));
+			const terminalLabelComputer = createLabelComputer({
+				terminal: { integrated: { tabs: { separator: ' - ', title: '${process}', description: '${cwd}' } } }
+			});
+			terminalLabelComputer.refreshLabel(
+				createInstance({
+					capabilities,
+					sequence: 'my-sequence',
+					processName: 'zsh',
+					shellLaunchConfig: { titleTemplate: '${sequence}' }
+				})
+			);
 			strictEqual(terminalLabelComputer.title, 'my-sequence');
 			strictEqual(terminalLabelComputer.description, 'cwd');
 		});
 		test('should provide cwdFolder for all cwds only when in multi-root', () => {
-			const terminalLabelComputer = createLabelComputer({ terminal: { integrated: { tabs: { separator: ' ~ ', title: '${process}${separator}${cwdFolder}', description: '${cwdFolder}' } } } });
-			terminalLabelComputer.refreshLabel(createInstance({ capabilities, processName: 'process', workspaceFolder: { uri: URI.from({ scheme: Schemas.file, path: ROOT_1 }) } as IWorkspaceFolder, cwd: ROOT_1 }));
+			const terminalLabelComputer = createLabelComputer({
+				terminal: {
+					integrated: {
+						tabs: { separator: ' ~ ', title: '${process}${separator}${cwdFolder}', description: '${cwdFolder}' }
+					}
+				}
+			});
+			terminalLabelComputer.refreshLabel(
+				createInstance({
+					capabilities,
+					processName: 'process',
+					workspaceFolder: { uri: URI.from({ scheme: Schemas.file, path: ROOT_1 }) } as IWorkspaceFolder,
+					cwd: ROOT_1
+				})
+			);
 			// single-root, cwd is same as root
 			strictEqual(terminalLabelComputer.title, 'process');
 			strictEqual(terminalLabelComputer.description, '');
 			// multi-root
-			terminalLabelComputer.refreshLabel(createInstance({ capabilities, processName: 'process', workspaceFolder: { uri: URI.from({ scheme: Schemas.file, path: ROOT_1 }) } as IWorkspaceFolder, cwd: ROOT_2 }));
+			terminalLabelComputer.refreshLabel(
+				createInstance({
+					capabilities,
+					processName: 'process',
+					workspaceFolder: { uri: URI.from({ scheme: Schemas.file, path: ROOT_1 }) } as IWorkspaceFolder,
+					cwd: ROOT_2
+				})
+			);
 			if (isWindows) {
 				strictEqual(terminalLabelComputer.title, 'process');
 				strictEqual(terminalLabelComputer.description, '');
@@ -496,14 +690,40 @@ suite('Workbench - TerminalInstance', () => {
 				strictEqual(terminalLabelComputer.description, 'root2');
 			}
 		});
-		test('should hide cwdFolder in single folder workspaces when cwd matches the workspace\'s default cwd even when slashes differ', async () => {
-			let terminalLabelComputer = createLabelComputer({ terminal: { integrated: { tabs: { separator: ' ~ ', title: '${process}${separator}${cwdFolder}', description: '${cwdFolder}' } } } });
-			terminalLabelComputer.refreshLabel(createInstance({ capabilities, processName: 'process', workspaceFolder: { uri: URI.from({ scheme: Schemas.file, path: ROOT_1 }) } as IWorkspaceFolder, cwd: ROOT_1 }));
+		test("should hide cwdFolder in single folder workspaces when cwd matches the workspace's default cwd even when slashes differ", async () => {
+			let terminalLabelComputer = createLabelComputer({
+				terminal: {
+					integrated: {
+						tabs: { separator: ' ~ ', title: '${process}${separator}${cwdFolder}', description: '${cwdFolder}' }
+					}
+				}
+			});
+			terminalLabelComputer.refreshLabel(
+				createInstance({
+					capabilities,
+					processName: 'process',
+					workspaceFolder: { uri: URI.from({ scheme: Schemas.file, path: ROOT_1 }) } as IWorkspaceFolder,
+					cwd: ROOT_1
+				})
+			);
 			strictEqual(terminalLabelComputer.title, 'process');
 			strictEqual(terminalLabelComputer.description, '');
 			if (!isWindows) {
-				terminalLabelComputer = createLabelComputer({ terminal: { integrated: { tabs: { separator: ' ~ ', title: '${process}${separator}${cwdFolder}', description: '${cwdFolder}' } } } });
-				terminalLabelComputer.refreshLabel(createInstance({ capabilities, processName: 'process', workspaceFolder: { uri: URI.from({ scheme: Schemas.file, path: ROOT_1 }) } as IWorkspaceFolder, cwd: ROOT_2 }));
+				terminalLabelComputer = createLabelComputer({
+					terminal: {
+						integrated: {
+							tabs: { separator: ' ~ ', title: '${process}${separator}${cwdFolder}', description: '${cwdFolder}' }
+						}
+					}
+				});
+				terminalLabelComputer.refreshLabel(
+					createInstance({
+						capabilities,
+						processName: 'process',
+						workspaceFolder: { uri: URI.from({ scheme: Schemas.file, path: ROOT_1 }) } as IWorkspaceFolder,
+						cwd: ROOT_2
+					})
+				);
 				strictEqual(terminalLabelComputer.title, 'process ~ root2');
 				strictEqual(terminalLabelComputer.description, 'root2');
 			}

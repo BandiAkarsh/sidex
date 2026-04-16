@@ -14,8 +14,16 @@ import { IBulkEditService, ResourceTextEdit } from '../../../../../editor/browse
 import { Range } from '../../../../../editor/common/core/range.js';
 import * as editorCommon from '../../../../../editor/common/editorCommon.js';
 import { IWorkspaceTextEdit } from '../../../../../editor/common/languages.js';
-import { FindMatch, IModelDecorationOptions, IModelDeltaDecoration, TrackedRangeStickiness } from '../../../../../editor/common/model.js';
-import { MultiModelEditStackElement, SingleModelEditStackElement } from '../../../../../editor/common/model/editStack.js';
+import {
+	FindMatch,
+	IModelDecorationOptions,
+	IModelDeltaDecoration,
+	TrackedRangeStickiness
+} from '../../../../../editor/common/model.js';
+import {
+	MultiModelEditStackElement,
+	SingleModelEditStackElement
+} from '../../../../../editor/common/model/editStack.js';
 import { IntervalNode, IntervalTree } from '../../../../../editor/common/model/intervalTree.js';
 import { ModelDecorationOptions } from '../../../../../editor/common/model/textModel.js';
 import { ITextModelService } from '../../../../../editor/common/services/resolverService.js';
@@ -23,7 +31,23 @@ import { FoldingRegions } from '../../../../../editor/contrib/folding/browser/fo
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { IUndoRedoService } from '../../../../../platform/undoRedo/common/undoRedo.js';
 import { CellFindMatchModel } from '../contrib/find/findModel.js';
-import { CellEditState, CellFindMatchWithIndex, CellFoldingState, EditorFoldingStateDelegate, ICellModelDecorations, ICellModelDeltaDecorations, ICellViewModel, IModelDecorationsChangeAccessor, INotebookDeltaCellStatusBarItems, INotebookEditorViewState, INotebookViewCellsUpdateEvent, INotebookViewModel, INotebookDeltaDecoration, isNotebookCellDecoration, INotebookDeltaViewZoneDecoration } from '../notebookBrowser.js';
+import {
+	CellEditState,
+	CellFindMatchWithIndex,
+	CellFoldingState,
+	EditorFoldingStateDelegate,
+	ICellModelDecorations,
+	ICellModelDeltaDecorations,
+	ICellViewModel,
+	IModelDecorationsChangeAccessor,
+	INotebookDeltaCellStatusBarItems,
+	INotebookEditorViewState,
+	INotebookViewCellsUpdateEvent,
+	INotebookViewModel,
+	INotebookDeltaDecoration,
+	isNotebookCellDecoration,
+	INotebookDeltaViewZoneDecoration
+} from '../notebookBrowser.js';
 import { NotebookLayoutInfo, NotebookMetadataChangedEvent } from '../notebookViewEvents.js';
 import { NotebookCellSelectionCollection } from './cellSelectionCollection.js';
 import { CodeCellViewModel } from './codeCellViewModel.js';
@@ -31,11 +55,22 @@ import { MarkupCellViewModel } from './markupCellViewModel.js';
 import { ViewContext } from './viewContext.js';
 import { NotebookCellTextModel } from '../../common/model/notebookCellTextModel.js';
 import { NotebookTextModel } from '../../common/model/notebookTextModel.js';
-import { CellKind, ICell, INotebookFindOptions, ISelectionState, NotebookCellsChangeType, NotebookCellTextModelSplice, NotebookFindScopeType, SelectionStateType } from '../../common/notebookCommon.js';
+import {
+	CellKind,
+	ICell,
+	INotebookFindOptions,
+	ISelectionState,
+	NotebookCellsChangeType,
+	NotebookCellTextModelSplice,
+	NotebookFindScopeType,
+	SelectionStateType
+} from '../../common/notebookCommon.js';
 import { INotebookExecutionStateService, NotebookExecutionType } from '../../common/notebookExecutionStateService.js';
 import { cellIndexesToRanges, cellRangesToIndexes, ICellRange, reduceCellRanges } from '../../common/notebookRange.js';
 
-const invalidFunc = () => { throw new Error(`Invalid change accessor`); };
+const invalidFunc = () => {
+	throw new Error(`Invalid change accessor`);
+};
 
 class DecorationsTree {
 	private readonly _decorationsTree: IntervalTree;
@@ -44,14 +79,42 @@ class DecorationsTree {
 		this._decorationsTree = new IntervalTree();
 	}
 
-	public intervalSearch(start: number, end: number, filterOwnerId: number, filterOutValidation: boolean, filterFontDecorations: boolean, cachedVersionId: number, onlyMarginDecorations: boolean = false): IntervalNode[] {
-		const r1 = this._decorationsTree.intervalSearch(start, end, filterOwnerId, filterOutValidation, filterFontDecorations, cachedVersionId, onlyMarginDecorations);
+	public intervalSearch(
+		start: number,
+		end: number,
+		filterOwnerId: number,
+		filterOutValidation: boolean,
+		filterFontDecorations: boolean,
+		cachedVersionId: number,
+		onlyMarginDecorations: boolean = false
+	): IntervalNode[] {
+		const r1 = this._decorationsTree.intervalSearch(
+			start,
+			end,
+			filterOwnerId,
+			filterOutValidation,
+			filterFontDecorations,
+			cachedVersionId,
+			onlyMarginDecorations
+		);
 		return r1;
 	}
 
-	public search(filterOwnerId: number, filterOutValidation: boolean, filterFontDecorations: boolean, overviewRulerOnly: boolean, cachedVersionId: number, onlyMarginDecorations: boolean): IntervalNode[] {
-		return this._decorationsTree.search(filterOwnerId, filterOutValidation, filterFontDecorations, cachedVersionId, onlyMarginDecorations);
-
+	public search(
+		filterOwnerId: number,
+		filterOutValidation: boolean,
+		filterFontDecorations: boolean,
+		overviewRulerOnly: boolean,
+		cachedVersionId: number,
+		onlyMarginDecorations: boolean
+	): IntervalNode[] {
+		return this._decorationsTree.search(
+			filterOwnerId,
+			filterOutValidation,
+			filterFontDecorations,
+			cachedVersionId,
+			onlyMarginDecorations
+		);
 	}
 
 	public collectNodesFromOwner(ownerId: number): IntervalNode[] {
@@ -82,10 +145,22 @@ class DecorationsTree {
 }
 
 const TRACKED_RANGE_OPTIONS = [
-	ModelDecorationOptions.register({ description: 'notebook-view-model-tracked-range-always-grows-when-typing-at-edges', stickiness: TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges }),
-	ModelDecorationOptions.register({ description: 'notebook-view-model-tracked-range-never-grows-when-typing-at-edges', stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges }),
-	ModelDecorationOptions.register({ description: 'notebook-view-model-tracked-range-grows-only-when-typing-before', stickiness: TrackedRangeStickiness.GrowsOnlyWhenTypingBefore }),
-	ModelDecorationOptions.register({ description: 'notebook-view-model-tracked-range-grows-only-when-typing-after', stickiness: TrackedRangeStickiness.GrowsOnlyWhenTypingAfter }),
+	ModelDecorationOptions.register({
+		description: 'notebook-view-model-tracked-range-always-grows-when-typing-at-edges',
+		stickiness: TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges
+	}),
+	ModelDecorationOptions.register({
+		description: 'notebook-view-model-tracked-range-never-grows-when-typing-at-edges',
+		stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges
+	}),
+	ModelDecorationOptions.register({
+		description: 'notebook-view-model-tracked-range-grows-only-when-typing-before',
+		stickiness: TrackedRangeStickiness.GrowsOnlyWhenTypingBefore
+	}),
+	ModelDecorationOptions.register({
+		description: 'notebook-view-model-tracked-range-grows-only-when-typing-after',
+		stickiness: TrackedRangeStickiness.GrowsOnlyWhenTypingAfter
+	})
 ];
 
 function _normalizeOptions(options: IModelDecorationOptions): ModelDecorationOptions {
@@ -104,9 +179,13 @@ export interface NotebookViewModelOptions {
 export class NotebookViewModel extends Disposable implements EditorFoldingStateDelegate, INotebookViewModel {
 	private readonly _localStore = this._register(new DisposableStore());
 	private _handleToViewCellMapping = new Map<number, CellViewModel>();
-	get options(): NotebookViewModelOptions { return this._options; }
+	get options(): NotebookViewModelOptions {
+		return this._options;
+	}
 	private readonly _onDidChangeOptions = this._register(new Emitter<void>());
-	get onDidChangeOptions(): Event<void> { return this._onDidChangeOptions.event; }
+	get onDidChangeOptions(): Event<void> {
+		return this._onDidChangeOptions.event;
+	}
 	private _viewCells: CellViewModel[] = [];
 
 	get viewCells(): ICellViewModel[] {
@@ -134,7 +213,9 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 	}
 
 	private readonly _onDidChangeViewCells = this._register(new Emitter<INotebookViewCellsUpdateEvent>());
-	get onDidChangeViewCells(): Event<INotebookViewCellsUpdateEvent> { return this._onDidChangeViewCells.event; }
+	get onDidChangeViewCells(): Event<INotebookViewCellsUpdateEvent> {
+		return this._onDidChangeViewCells.event;
+	}
 
 	private _lastNotebookEditResource: URI[] = [];
 
@@ -150,19 +231,23 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 	}
 
 	private readonly _onDidChangeSelection = this._register(new Emitter<string>());
-	get onDidChangeSelection(): Event<string> { return this._onDidChangeSelection.event; }
+	get onDidChangeSelection(): Event<string> {
+		return this._onDidChangeSelection.event;
+	}
 
 	private _selectionCollection = this._register(new NotebookCellSelectionCollection());
 
 	private get selectionHandles() {
 		const handlesSet = new Set<number>();
 		const handles: number[] = [];
-		cellRangesToIndexes(this._selectionCollection.selections).map(index => index < this.length ? this.cellAt(index) : undefined).forEach(cell => {
-			if (cell && !handlesSet.has(cell.handle)) {
-				handlesSet.add(cell.handle);
-				handles.push(cell.handle);
-			}
-		});
+		cellRangesToIndexes(this._selectionCollection.selections)
+			.map(index => (index < this.length ? this.cellAt(index) : undefined))
+			.forEach(cell => {
+				if (cell && !handlesSet.has(cell.handle)) {
+					handlesSet.add(cell.handle);
+					handles.push(cell.handle);
+				}
+			});
 
 		return handles;
 	}
@@ -203,7 +288,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		@IBulkEditService private readonly _bulkEditService: IBulkEditService,
 		@IUndoRedoService private readonly _undoService: IUndoRedoService,
 		@ITextModelService private readonly _textModelService: ITextModelService,
-		@INotebookExecutionStateService private readonly notebookExecutionStateService: INotebookExecutionStateService,
+		@INotebookExecutionStateService private readonly notebookExecutionStateService: INotebookExecutionStateService
 	) {
 		super();
 
@@ -213,9 +298,18 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 		const compute = (changes: NotebookCellTextModelSplice<ICell>[], synchronous: boolean) => {
 			const diffs = changes.map(splice => {
-				return [splice[0], splice[1], splice[2].map(cell => {
-					return createCellViewModel(this._instantiationService, this, cell as NotebookCellTextModel, this._viewContext);
-				})] as [number, number, CellViewModel[]];
+				return [
+					splice[0],
+					splice[1],
+					splice[2].map(cell => {
+						return createCellViewModel(
+							this._instantiationService,
+							this,
+							cell as NotebookCellTextModel,
+							this._viewContext
+						);
+					})
+				] as [number, number, CellViewModel[]];
 			});
 
 			diffs.reverse().forEach(diff => {
@@ -268,85 +362,107 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 			}
 
 			// TODO@rebornix
-			const selectionIndexes = endSelectionHandles.map(handle => this._viewCells.findIndex(cell => cell.handle === handle));
-			this._selectionCollection.setState(cellIndexesToRanges([selectionIndexes[0]])[0], cellIndexesToRanges(selectionIndexes), true, 'model');
+			const selectionIndexes = endSelectionHandles.map(handle =>
+				this._viewCells.findIndex(cell => cell.handle === handle)
+			);
+			this._selectionCollection.setState(
+				cellIndexesToRanges([selectionIndexes[0]])[0],
+				cellIndexesToRanges(selectionIndexes),
+				true,
+				'model'
+			);
 		};
 
-		this._register(this._notebook.onDidChangeContent(e => {
-			for (let i = 0; i < e.rawEvents.length; i++) {
-				const change = e.rawEvents[i];
-				let changes: NotebookCellTextModelSplice<ICell>[] = [];
-				const synchronous = e.synchronous ?? true;
+		this._register(
+			this._notebook.onDidChangeContent(e => {
+				for (let i = 0; i < e.rawEvents.length; i++) {
+					const change = e.rawEvents[i];
+					let changes: NotebookCellTextModelSplice<ICell>[] = [];
+					const synchronous = e.synchronous ?? true;
 
-				if (change.kind === NotebookCellsChangeType.ModelChange || change.kind === NotebookCellsChangeType.Initialize) {
-					changes = change.changes;
-					compute(changes, synchronous);
-					continue;
-				} else if (change.kind === NotebookCellsChangeType.Move) {
-					compute([[change.index, change.length, []]], synchronous);
-					compute([[change.newIdx, 0, change.cells]], synchronous);
-				} else {
-					continue;
-				}
-			}
-		}));
-
-		this._register(this._notebook.onDidChangeContent(contentChanges => {
-			contentChanges.rawEvents.forEach(e => {
-				if (e.kind === NotebookCellsChangeType.ChangeDocumentMetadata) {
-					this._viewContext.eventDispatcher.emit([new NotebookMetadataChangedEvent(this._notebook.metadata)]);
-				}
-			});
-
-			if (contentChanges.endSelectionState) {
-				this.updateSelectionsState(contentChanges.endSelectionState);
-			}
-		}));
-
-		this._register(this._viewContext.eventDispatcher.onDidChangeLayout((e) => {
-			this._layoutInfo = e.value;
-
-			this._viewCells.forEach(cell => {
-				if (cell.cellKind === CellKind.Markup) {
-					if (e.source.width || e.source.fontInfo) {
-						cell.layoutChange({ outerWidth: e.value.width, font: e.value.fontInfo });
-					}
-				} else {
-					if (e.source.width !== undefined) {
-						cell.layoutChange({ outerWidth: e.value.width, font: e.value.fontInfo });
+					if (
+						change.kind === NotebookCellsChangeType.ModelChange ||
+						change.kind === NotebookCellsChangeType.Initialize
+					) {
+						changes = change.changes;
+						compute(changes, synchronous);
+						continue;
+					} else if (change.kind === NotebookCellsChangeType.Move) {
+						compute([[change.index, change.length, []]], synchronous);
+						compute([[change.newIdx, 0, change.cells]], synchronous);
+					} else {
+						continue;
 					}
 				}
-			});
-		}));
+			})
+		);
 
-		this._register(this._viewContext.notebookOptions.onDidChangeOptions(e => {
-			for (let i = 0; i < this.length; i++) {
-				const cell = this._viewCells[i];
-				cell.updateOptions(e);
-			}
-		}));
+		this._register(
+			this._notebook.onDidChangeContent(contentChanges => {
+				contentChanges.rawEvents.forEach(e => {
+					if (e.kind === NotebookCellsChangeType.ChangeDocumentMetadata) {
+						this._viewContext.eventDispatcher.emit([new NotebookMetadataChangedEvent(this._notebook.metadata)]);
+					}
+				});
 
-		this._register(notebookExecutionStateService.onDidChangeExecution(e => {
-			if (e.type !== NotebookExecutionType.cell) {
-				return;
-			}
-			const cell = this.getCellByHandle(e.cellHandle);
+				if (contentChanges.endSelectionState) {
+					this.updateSelectionsState(contentChanges.endSelectionState);
+				}
+			})
+		);
 
-			if (cell instanceof CodeCellViewModel) {
-				cell.updateExecutionState(e);
-			}
-		}));
+		this._register(
+			this._viewContext.eventDispatcher.onDidChangeLayout(e => {
+				this._layoutInfo = e.value;
 
-		this._register(this._selectionCollection.onDidChangeSelection(e => {
-			this._onDidChangeSelection.fire(e);
-		}));
+				this._viewCells.forEach(cell => {
+					if (cell.cellKind === CellKind.Markup) {
+						if (e.source.width || e.source.fontInfo) {
+							cell.layoutChange({ outerWidth: e.value.width, font: e.value.fontInfo });
+						}
+					} else {
+						if (e.source.width !== undefined) {
+							cell.layoutChange({ outerWidth: e.value.width, font: e.value.fontInfo });
+						}
+					}
+				});
+			})
+		);
 
+		this._register(
+			this._viewContext.notebookOptions.onDidChangeOptions(e => {
+				for (let i = 0; i < this.length; i++) {
+					const cell = this._viewCells[i];
+					cell.updateOptions(e);
+				}
+			})
+		);
+
+		this._register(
+			notebookExecutionStateService.onDidChangeExecution(e => {
+				if (e.type !== NotebookExecutionType.cell) {
+					return;
+				}
+				const cell = this.getCellByHandle(e.cellHandle);
+
+				if (cell instanceof CodeCellViewModel) {
+					cell.updateExecutionState(e);
+				}
+			})
+		);
+
+		this._register(
+			this._selectionCollection.onDidChangeSelection(e => {
+				this._onDidChangeSelection.fire(e);
+			})
+		);
 
 		const viewCellCount = this.isRepl ? this._notebook.cells.length - 1 : this._notebook.cells.length;
 		for (let i = 0; i < viewCellCount; i++) {
-			this._viewCells.push(createCellViewModel(this._instantiationService, this, this._notebook.cells[i], this._viewContext));
+			this._viewCells.push(
+				createCellViewModel(this._instantiationService, this, this._notebook.cells[i], this._viewContext)
+			);
 		}
-
 
 		this._viewCells.forEach(cell => {
 			this._handleToViewCellMapping.set(cell.handle, cell);
@@ -396,7 +512,8 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		if (this._focused || source === 'model') {
 			if (state.kind === SelectionStateType.Handle) {
 				const primaryIndex = state.primary !== null ? this.getCellIndexByHandle(state.primary) : null;
-				const primarySelection = primaryIndex !== null ? this.validateRange({ start: primaryIndex, end: primaryIndex + 1 }) : null;
+				const primarySelection =
+					primaryIndex !== null ? this.validateRange({ start: primaryIndex, end: primaryIndex + 1 }) : null;
 				const selections = cellIndexesToRanges(state.selections.map(sel => this.getCellIndexByHandle(sel)))
 					.map(range => this.validateRange(range))
 					.filter(range => range !== null) as ICellRange[];
@@ -471,7 +588,12 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 				continue;
 			}
 
-			if (!updateHiddenAreas && k < this._hiddenRanges.length && this._hiddenRanges[k].start + 1 === startLineNumber && (this._hiddenRanges[k].end + 1) === endLineNumber) {
+			if (
+				!updateHiddenAreas &&
+				k < this._hiddenRanges.length &&
+				this._hiddenRanges[k].start + 1 === startLineNumber &&
+				this._hiddenRanges[k].end + 1 === endLineNumber
+			) {
 				// reuse the old ranges
 				newHiddenAreas.push(this._hiddenRanges[k]);
 				k++;
@@ -638,15 +760,28 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		return { start: node.range.startLineNumber - 1, end: node.range.endLineNumber - 1 };
 	}
 
-	setTrackedRange(id: string | null, newRange: ICellRange | null, newStickiness: TrackedRangeStickiness): string | null {
-		const node = (id ? this._decorations[id] : null);
+	setTrackedRange(
+		id: string | null,
+		newRange: ICellRange | null,
+		newStickiness: TrackedRangeStickiness
+	): string | null {
+		const node = id ? this._decorations[id] : null;
 
 		if (!node) {
 			if (!newRange) {
 				return null;
 			}
 
-			return this._deltaCellDecorationsImpl(0, [], [{ range: new Range(newRange.start + 1, 1, newRange.end + 1, 1), options: TRACKED_RANGE_OPTIONS[newStickiness] }])[0];
+			return this._deltaCellDecorationsImpl(
+				0,
+				[],
+				[
+					{
+						range: new Range(newRange.start + 1, 1, newRange.end + 1, 1),
+						options: TRACKED_RANGE_OPTIONS[newStickiness]
+					}
+				]
+			)[0];
 		}
 
 		if (!newRange) {
@@ -657,13 +792,22 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		}
 
 		this._decorationsTree.delete(node);
-		node.reset(this.getVersionId(), newRange.start, newRange.end + 1, new Range(newRange.start + 1, 1, newRange.end + 1, 1));
+		node.reset(
+			this.getVersionId(),
+			newRange.start,
+			newRange.end + 1,
+			new Range(newRange.start + 1, 1, newRange.end + 1, 1)
+		);
 		node.setOptions(TRACKED_RANGE_OPTIONS[newStickiness]);
 		this._decorationsTree.insert(node);
 		return node.id;
 	}
 
-	private _deltaCellDecorationsImpl(ownerId: number, oldDecorationsIds: string[], newDecorations: IModelDeltaDecoration[]): string[] {
+	private _deltaCellDecorationsImpl(
+		ownerId: number,
+		oldDecorationsIds: string[],
+		newDecorations: IModelDeltaDecoration[]
+	): string[] {
 		const versionId = this.getVersionId();
 
 		const oldDecorationsLen = oldDecorationsIds.length;
@@ -674,7 +818,6 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 		const result = new Array<string>(newDecorationsLen);
 		while (oldDecorationIndex < oldDecorationsLen || newDecorationIndex < newDecorationsLen) {
-
 			let node: IntervalNode | null = null;
 
 			if (oldDecorationIndex < oldDecorationsLen) {
@@ -692,7 +835,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 			if (newDecorationIndex < newDecorationsLen) {
 				// (3) create a new node if necessary
 				if (!node) {
-					const internalDecorationId = (++this._lastDecorationId);
+					const internalDecorationId = ++this._lastDecorationId;
 					const decorationId = `${this._instanceId};${internalDecorationId}`;
 					node = new IntervalNode(decorationId, 0, 0);
 					this._decorations[decorationId] = node;
@@ -751,7 +894,6 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 				this._overviewRulerDecorations.set(decorationId, decoration);
 				result.push(decorationId);
 			}
-
 		});
 
 		return result;
@@ -787,11 +929,16 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 	}
 
 	nearestCodeCellIndex(index: number /* exclusive */) {
-		const nearest = this.viewCells.slice(0, index).reverse().findIndex(cell => cell.cellKind === CellKind.Code);
+		const nearest = this.viewCells
+			.slice(0, index)
+			.reverse()
+			.findIndex(cell => cell.cellKind === CellKind.Code);
 		if (nearest > -1) {
 			return index - nearest - 1;
 		} else {
-			const nearestCellTheOtherDirection = this.viewCells.slice(index + 1).findIndex(cell => cell.cellKind === CellKind.Code);
+			const nearestCellTheOtherDirection = this.viewCells
+				.slice(index + 1)
+				.findIndex(cell => cell.cellKind === CellKind.Code);
 			if (nearestCellTheOtherDirection > -1) {
 				return index + 1 + nearestCellTheOtherDirection;
 			}
@@ -823,11 +970,13 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 			}
 		});
 		const editorViewStates: { [key: number]: editorCommon.ICodeEditorViewState } = {};
-		this._viewCells.map(cell => ({ handle: cell.model.handle, state: cell.saveEditorViewState() })).forEach((viewState, i) => {
-			if (viewState.state) {
-				editorViewStates[i] = viewState.state;
-			}
-		});
+		this._viewCells
+			.map(cell => ({ handle: cell.model.handle, state: cell.saveEditorViewState() }))
+			.forEach((viewState, i) => {
+				if (viewState.state) {
+					editorViewStates[i] = viewState.state;
+				}
+			});
 
 		return {
 			editingCells,
@@ -853,7 +1002,11 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 			if (viewState.collapsedInputCells && viewState.collapsedInputCells[index]) {
 				cell.isInputCollapsed = true;
 			}
-			if (viewState.collapsedOutputCells && viewState.collapsedOutputCells[index] && cell instanceof CodeCellViewModel) {
+			if (
+				viewState.collapsedOutputCells &&
+				viewState.collapsedOutputCells[index] &&
+				cell instanceof CodeCellViewModel
+			) {
 				cell.isOutputCollapsed = true;
 			}
 			if (viewState.cellLineNumberStates && viewState.cellLineNumberStates[index]) {
@@ -868,7 +1021,10 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 	 */
 	changeModelDecorations<T>(callback: (changeAccessor: IModelDecorationsChangeAccessor) => T): T | null {
 		const changeAccessor: IModelDecorationsChangeAccessor = {
-			deltaDecorations: (oldDecorations: ICellModelDecorations[], newDecorations: ICellModelDeltaDecorations[]): ICellModelDecorations[] => {
+			deltaDecorations: (
+				oldDecorations: ICellModelDecorations[],
+				newDecorations: ICellModelDeltaDecorations[]
+			): ICellModelDecorations[] => {
 				return this._deltaModelDecorationsImpl(oldDecorations, newDecorations);
 			}
 		};
@@ -885,9 +1041,14 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		return result;
 	}
 
-	private _deltaModelDecorationsImpl(oldDecorations: ICellModelDecorations[], newDecorations: ICellModelDeltaDecorations[]): ICellModelDecorations[] {
-
-		const mapping = new Map<number, { cell: CellViewModel; oldDecorations: readonly string[]; newDecorations: readonly IModelDeltaDecoration[] }>();
+	private _deltaModelDecorationsImpl(
+		oldDecorations: ICellModelDecorations[],
+		newDecorations: ICellModelDeltaDecorations[]
+	): ICellModelDecorations[] {
+		const mapping = new Map<
+			number,
+			{ cell: CellViewModel; oldDecorations: readonly string[]; newDecorations: readonly IModelDeltaDecoration[] }
+		>();
 		oldDecorations.forEach(oldDecoration => {
 			const ownerId = oldDecoration.ownerId;
 
@@ -938,8 +1099,13 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		const matches: CellFindMatchWithIndex[] = [];
 		let findCells: CellViewModel[] = [];
 
-		if (options.findScope && (options.findScope.findScopeType === NotebookFindScopeType.Cells || options.findScope.findScopeType === NotebookFindScopeType.Text)) {
-			const selectedRanges = options.findScope.selectedCellRanges?.map(range => this.validateRange(range)).filter(range => !!range) ?? [];
+		if (
+			options.findScope &&
+			(options.findScope.findScopeType === NotebookFindScopeType.Cells ||
+				options.findScope.findScopeType === NotebookFindScopeType.Text)
+		) {
+			const selectedRanges =
+				options.findScope.selectedCellRanges?.map(range => this.validateRange(range)).filter(range => !!range) ?? [];
 			const selectedIndexes = cellRangesToIndexes(selectedRanges);
 			findCells = selectedIndexes.map(index => this._viewCells[index]);
 		} else {
@@ -949,12 +1115,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		findCells.forEach((cell, index) => {
 			const cellMatches = cell.startFind(value, options);
 			if (cellMatches) {
-				matches.push(new CellFindMatchModel(
-					cellMatches.cell,
-					index,
-					cellMatches.contentMatches,
-					[]
-				));
+				matches.push(new CellFindMatchModel(cellMatches.cell, index, cellMatches.contentMatches, []));
 			}
 		});
 
@@ -975,18 +1136,16 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 				// if includeMarkupPreview is true, then we should include the webview match result other than this
 				return !options.includeMarkupPreview && options.includeMarkupInput;
 			}
-		}
-		);
+		});
 	}
 
 	replaceOne(cell: ICellViewModel, range: Range, text: string): Promise<void> {
 		const viewCell = cell as CellViewModel;
 		this._lastNotebookEditResource.push(viewCell.uri);
 		return viewCell.resolveTextModel().then(() => {
-			this._bulkEditService.apply(
-				[new ResourceTextEdit(cell.uri, { range, text })],
-				{ quotableLabel: 'Notebook Replace' }
-			);
+			this._bulkEditService.apply([new ResourceTextEdit(cell.uri, { range, text })], {
+				quotableLabel: 'Notebook Replace'
+			});
 		});
 	}
 
@@ -1008,9 +1167,11 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 			});
 		});
 
-		return Promise.all(matches.map(match => {
-			return match.cell.resolveTextModel();
-		})).then(async () => {
+		return Promise.all(
+			matches.map(match => {
+				return match.cell.resolveTextModel();
+			})
+		).then(async () => {
 			this._bulkEditService.apply({ edits: textEdits }, { quotableLabel: 'Notebook Replace All' });
 			return;
 		});
@@ -1020,7 +1181,10 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 	//#region Undo/Redo
 
-	private async _withElement(element: SingleModelEditStackElement | MultiModelEditStackElement, callback: () => Promise<void>) {
+	private async _withElement(
+		element: SingleModelEditStackElement | MultiModelEditStackElement,
+		callback: () => Promise<void>
+	) {
 		const viewCells = this._viewCells.filter(cell => element.matchesResource(cell.uri));
 		const refs = await Promise.all(viewCells.map(cell => this._textModelService.createModelReference(cell.uri)));
 		await callback();
@@ -1028,16 +1192,15 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 	}
 
 	async undo() {
-
 		const editStack = this._undoService.getElements(this.uri);
 		const element = editStack.past.length ? editStack.past[editStack.past.length - 1] : undefined;
 
-		if (element && element instanceof SingleModelEditStackElement || element instanceof MultiModelEditStackElement) {
+		if ((element && element instanceof SingleModelEditStackElement) || element instanceof MultiModelEditStackElement) {
 			await this._withElement(element, async () => {
 				await this._undoService.undo(this.uri);
 			});
 
-			return (element instanceof SingleModelEditStackElement) ? [element.resource] : element.resources;
+			return element instanceof SingleModelEditStackElement ? [element.resource] : element.resources;
 		}
 
 		await this._undoService.undo(this.uri);
@@ -1045,16 +1208,15 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 	}
 
 	async redo() {
-
 		const editStack = this._undoService.getElements(this.uri);
 		const element = editStack.future[0];
 
-		if (element && element instanceof SingleModelEditStackElement || element instanceof MultiModelEditStackElement) {
+		if ((element && element instanceof SingleModelEditStackElement) || element instanceof MultiModelEditStackElement) {
 			await this._withElement(element, async () => {
 				await this._undoService.redo(this.uri);
 			});
 
-			return (element instanceof SingleModelEditStackElement) ? [element.resource] : element.resources;
+			return element instanceof SingleModelEditStackElement ? [element.resource] : element.resources;
 		}
 
 		await this._undoService.redo(this.uri);
@@ -1080,10 +1242,28 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 export type CellViewModel = (CodeCellViewModel | MarkupCellViewModel) & ICellViewModel;
 
-export function createCellViewModel(instantiationService: IInstantiationService, notebookViewModel: NotebookViewModel, cell: NotebookCellTextModel, viewContext: ViewContext) {
+export function createCellViewModel(
+	instantiationService: IInstantiationService,
+	notebookViewModel: NotebookViewModel,
+	cell: NotebookCellTextModel,
+	viewContext: ViewContext
+) {
 	if (cell.cellKind === CellKind.Code) {
-		return instantiationService.createInstance(CodeCellViewModel, notebookViewModel.viewType, cell, notebookViewModel.layoutInfo, viewContext);
+		return instantiationService.createInstance(
+			CodeCellViewModel,
+			notebookViewModel.viewType,
+			cell,
+			notebookViewModel.layoutInfo,
+			viewContext
+		);
 	} else {
-		return instantiationService.createInstance(MarkupCellViewModel, notebookViewModel.viewType, cell, notebookViewModel.layoutInfo, notebookViewModel, viewContext);
+		return instantiationService.createInstance(
+			MarkupCellViewModel,
+			notebookViewModel.viewType,
+			cell,
+			notebookViewModel.layoutInfo,
+			notebookViewModel,
+			viewContext
+		);
 	}
 }

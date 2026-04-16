@@ -16,10 +16,11 @@ import { IOutlineService } from '../../../../services/outline/browser/outline.js
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('Breadcrumb Model', function () {
-
 	let model: BreadcrumbsModel;
-	const workspaceService = new TestContextService(new Workspace('ffff', [new WorkspaceFolder({ uri: URI.parse('foo:/bar/baz/ws'), name: 'ws', index: 0 })]));
-	const configService = new class extends TestConfigurationService {
+	const workspaceService = new TestContextService(
+		new Workspace('ffff', [new WorkspaceFolder({ uri: URI.parse('foo:/bar/baz/ws'), name: 'ws', index: 0 })])
+	);
+	const configService = new (class extends TestConfigurationService {
 		override getValue<T>(...args: Parameters<TestConfigurationService['getValue']>): T | undefined {
 			if (args[0] === 'breadcrumbs.filePath') {
 				return 'on' as T;
@@ -32,7 +33,7 @@ suite('Breadcrumb Model', function () {
 		override updateValue() {
 			return Promise.resolve();
 		}
-	};
+	})();
 
 	teardown(function () {
 		model.dispose();
@@ -41,8 +42,13 @@ suite('Breadcrumb Model', function () {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('only uri, inside workspace', function () {
-
-		model = new BreadcrumbsModel(URI.parse('foo:/bar/baz/ws/some/path/file.ts'), undefined, configService, workspaceService, new class extends mock<IOutlineService>() { });
+		model = new BreadcrumbsModel(
+			URI.parse('foo:/bar/baz/ws/some/path/file.ts'),
+			undefined,
+			configService,
+			workspaceService,
+			new (class extends mock<IOutlineService>() {})()
+		);
 		const elements = model.getElements();
 
 		assert.strictEqual(elements.length, 3);
@@ -56,8 +62,13 @@ suite('Breadcrumb Model', function () {
 	});
 
 	test('display uri matters for FileElement', function () {
-
-		model = new BreadcrumbsModel(URI.parse('foo:/bar/baz/ws/some/PATH/file.ts'), undefined, configService, workspaceService, new class extends mock<IOutlineService>() { });
+		model = new BreadcrumbsModel(
+			URI.parse('foo:/bar/baz/ws/some/PATH/file.ts'),
+			undefined,
+			configService,
+			workspaceService,
+			new (class extends mock<IOutlineService>() {})()
+		);
 		const elements = model.getElements();
 
 		assert.strictEqual(elements.length, 3);
@@ -71,8 +82,13 @@ suite('Breadcrumb Model', function () {
 	});
 
 	test('only uri, outside workspace', function () {
-
-		model = new BreadcrumbsModel(URI.parse('foo:/outside/file.ts'), undefined, configService, workspaceService, new class extends mock<IOutlineService>() { });
+		model = new BreadcrumbsModel(
+			URI.parse('foo:/outside/file.ts'),
+			undefined,
+			configService,
+			workspaceService,
+			new (class extends mock<IOutlineService>() {})()
+		);
 		const elements = model.getElements();
 
 		assert.strictEqual(elements.length, 2);

@@ -19,15 +19,21 @@ import { CancellationToken } from '../../../../../base/common/cancellation.js';
 import { EditorInputCapabilities } from '../../../../common/editor.js';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { isReadable, isReadableStream } from '../../../../../base/common/stream.js';
-import { readableToBuffer, streamToBuffer, VSBufferReadable, VSBufferReadableStream } from '../../../../../base/common/buffer.js';
+import {
+	readableToBuffer,
+	streamToBuffer,
+	VSBufferReadable,
+	VSBufferReadableStream
+} from '../../../../../base/common/buffer.js';
 import { LanguageDetectionLanguageEventSource } from '../../../languageDetection/common/languageDetectionWorkerService.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { timeout } from '../../../../../base/common/async.js';
 
 suite('Untitled text editors', () => {
-
 	class TestUntitledTextEditorInput extends UntitledTextEditorInput {
-		getModel() { return this.model; }
+		getModel() {
+			return this.model;
+		}
 	}
 
 	const disposables = new DisposableStore();
@@ -49,9 +55,11 @@ suite('Untitled text editors', () => {
 		const workingCopyService = accessor.workingCopyService;
 
 		const events: IUntitledTextEditorModel[] = [];
-		disposables.add(service.onDidCreate(model => {
-			events.push(model);
-		}));
+		disposables.add(
+			service.onDidCreate(model => {
+				events.push(model);
+			})
+		);
 
 		const input1 = instantiationService.createInstance(TestUntitledTextEditorInput, service.create());
 		await input1.resolve();
@@ -155,9 +163,11 @@ suite('Untitled text editors', () => {
 		const file = URI.file(join('C:\\', '/foo/file.txt'));
 
 		let onDidChangeDirtyModel: IUntitledTextEditorModel | undefined = undefined;
-		disposables.add(service.onDidChangeDirty(model => {
-			onDidChangeDirtyModel = model;
-		}));
+		disposables.add(
+			service.onDidChangeDirty(model => {
+				onDidChangeDirtyModel = model;
+			})
+		);
 
 		const model = disposables.add(service.create({ associatedResource: file }));
 		assert.ok(accessor.untitledTextEditorService.isUntitledWithAssociatedResource(model.resource));
@@ -198,19 +208,27 @@ suite('Untitled text editors', () => {
 		model1.textEditorModel!.setValue('');
 		assert.ok(!model1.isDirty());
 
-		const input2 = disposables.add(instantiationService.createInstance(UntitledTextEditorInput, service.create({ initialValue: 'Hello World' })));
+		const input2 = disposables.add(
+			instantiationService.createInstance(UntitledTextEditorInput, service.create({ initialValue: 'Hello World' }))
+		);
 		const model2 = disposables.add(await input2.resolve());
 		assert.strictEqual(snapshotToString(model2.createSnapshot()!), 'Hello World');
 
-		const input = disposables.add(instantiationService.createInstance(UntitledTextEditorInput, disposables.add(service.create())));
+		const input = disposables.add(
+			instantiationService.createInstance(UntitledTextEditorInput, disposables.add(service.create()))
+		);
 
-		const input3 = disposables.add(instantiationService.createInstance(UntitledTextEditorInput, service.create({ untitledResource: input.resource })));
+		const input3 = disposables.add(
+			instantiationService.createInstance(UntitledTextEditorInput, service.create({ untitledResource: input.resource }))
+		);
 		const model3 = disposables.add(await input3.resolve());
 
 		assert.strictEqual(model3.resource.toString(), input.resource.toString());
 
 		const file = URI.file(join('C:\\', '/foo/file44.txt'));
-		const input4 = disposables.add(instantiationService.createInstance(UntitledTextEditorInput, service.create({ associatedResource: file })));
+		const input4 = disposables.add(
+			instantiationService.createInstance(UntitledTextEditorInput, service.create({ associatedResource: file }))
+		);
 		const model4 = disposables.add(await input4.resolve());
 		assert.ok(model4.hasAssociatedFilePath);
 		assert.ok(model4.isDirty());
@@ -219,7 +237,9 @@ suite('Untitled text editors', () => {
 	test('associated path remains dirty when content gets empty', async () => {
 		const service = accessor.untitledTextEditorService;
 		const file = URI.file(join('C:\\', '/foo/file.txt'));
-		const input = disposables.add(instantiationService.createInstance(UntitledTextEditorInput, service.create({ associatedResource: file })));
+		const input = disposables.add(
+			instantiationService.createInstance(UntitledTextEditorInput, service.create({ associatedResource: file }))
+		);
 
 		// dirty
 		const model = disposables.add(await input.resolve());
@@ -233,7 +253,9 @@ suite('Untitled text editors', () => {
 		const service = accessor.untitledTextEditorService;
 		const workingCopyService = accessor.workingCopyService;
 
-		const untitled = disposables.add(instantiationService.createInstance(TestUntitledTextEditorInput, service.create({ initialValue: 'Hello World' })));
+		const untitled = disposables.add(
+			instantiationService.createInstance(TestUntitledTextEditorInput, service.create({ initialValue: 'Hello World' }))
+		);
 		assert.ok(untitled.isDirty());
 
 		const backup = (await untitled.getModel().backup(CancellationToken.None)).content;
@@ -256,19 +278,19 @@ suite('Untitled text editors', () => {
 	test('created with files.defaultLanguage setting', () => {
 		const defaultLanguage = 'javascript';
 		const config = accessor.testConfigurationService;
-		config.setUserConfiguration('files', { 'defaultLanguage': defaultLanguage });
+		config.setUserConfiguration('files', { defaultLanguage: defaultLanguage });
 
 		const service = accessor.untitledTextEditorService;
 		const input = disposables.add(service.create());
 
 		assert.strictEqual(input.getLanguageId(), defaultLanguage);
 
-		config.setUserConfiguration('files', { 'defaultLanguage': undefined });
+		config.setUserConfiguration('files', { defaultLanguage: undefined });
 	});
 
 	test('created with files.defaultLanguage setting (${activeEditorLanguage})', async () => {
 		const config = accessor.testConfigurationService;
-		config.setUserConfiguration('files', { 'defaultLanguage': '${activeEditorLanguage}' });
+		config.setUserConfiguration('files', { defaultLanguage: '${activeEditorLanguage}' });
 
 		accessor.editorService.activeTextEditorLanguageId = 'typescript';
 
@@ -277,7 +299,7 @@ suite('Untitled text editors', () => {
 
 		assert.strictEqual(model.getLanguageId(), 'typescript');
 
-		config.setUserConfiguration('files', { 'defaultLanguage': undefined });
+		config.setUserConfiguration('files', { defaultLanguage: undefined });
 		accessor.editorService.activeTextEditorLanguageId = undefined;
 	});
 
@@ -285,25 +307,29 @@ suite('Untitled text editors', () => {
 		const language = 'typescript';
 		const defaultLanguage = 'javascript';
 		const config = accessor.testConfigurationService;
-		config.setUserConfiguration('files', { 'defaultLanguage': defaultLanguage });
+		config.setUserConfiguration('files', { defaultLanguage: defaultLanguage });
 
 		const service = accessor.untitledTextEditorService;
 		const input = disposables.add(service.create({ languageId: language }));
 
 		assert.strictEqual(input.getLanguageId(), language);
 
-		config.setUserConfiguration('files', { 'defaultLanguage': undefined });
+		config.setUserConfiguration('files', { defaultLanguage: undefined });
 	});
 
 	test('can change language afterwards', async () => {
 		const languageId = 'untitled-input-test';
 
-		disposables.add(accessor.languageService.registerLanguage({
-			id: languageId,
-		}));
+		disposables.add(
+			accessor.languageService.registerLanguage({
+				id: languageId
+			})
+		);
 
 		const service = accessor.untitledTextEditorService;
-		const input = disposables.add(instantiationService.createInstance(UntitledTextEditorInput, service.create({ languageId: languageId })));
+		const input = disposables.add(
+			instantiationService.createInstance(UntitledTextEditorInput, service.create({ languageId: languageId }))
+		);
 
 		assert.strictEqual(input.getLanguageId(), languageId);
 
@@ -318,9 +344,11 @@ suite('Untitled text editors', () => {
 	test('remembers that language was set explicitly', async () => {
 		const language = 'untitled-input-test';
 
-		disposables.add(accessor.languageService.registerLanguage({
-			id: language,
-		}));
+		disposables.add(
+			accessor.languageService.registerLanguage({
+				id: language
+			})
+		);
 
 		const service = accessor.untitledTextEditorService;
 		const model = disposables.add(service.create());
@@ -337,9 +365,11 @@ suite('Untitled text editors', () => {
 	test('remembers that language was set explicitly if set by another source (i.e. ModelService)', async () => {
 		const language = 'untitled-input-test';
 
-		disposables.add(accessor.languageService.registerLanguage({
-			id: language,
-		}));
+		disposables.add(
+			accessor.languageService.registerLanguage({
+				id: language
+			})
+		);
 
 		const service = accessor.untitledTextEditorService;
 		const model = disposables.add(service.create());
@@ -356,9 +386,11 @@ suite('Untitled text editors', () => {
 	test('Language is not set explicitly if set by language detection source', async () => {
 		const language = 'untitled-input-test';
 
-		disposables.add(accessor.languageService.registerLanguage({
-			id: language,
-		}));
+		disposables.add(
+			accessor.languageService.registerLanguage({
+				id: language
+			})
+		);
 
 		const service = accessor.untitledTextEditorService;
 		const model = disposables.add(service.create());
@@ -369,7 +401,8 @@ suite('Untitled text editors', () => {
 		model.textEditorModel!.setLanguage(
 			accessor.languageService.createById(language),
 			// This is really what this is testing
-			LanguageDetectionLanguageEventSource);
+			LanguageDetectionLanguageEventSource
+		);
 		assert.ok(!input.hasLanguageSetExplicitly);
 
 		assert.strictEqual(model.getLanguageId(), language);
@@ -381,10 +414,12 @@ suite('Untitled text editors', () => {
 
 		let counter = 0;
 
-		disposables.add(service.onDidChangeEncoding(model => {
-			counter++;
-			assert.strictEqual(model.resource.toString(), input.resource.toString());
-		}));
+		disposables.add(
+			service.onDidChangeEncoding(model => {
+				counter++;
+				assert.strictEqual(model.resource.toString(), input.resource.toString());
+			})
+		);
 
 		// encoding
 		const model = disposables.add(await input.resolve());
@@ -398,10 +433,12 @@ suite('Untitled text editors', () => {
 
 		let counter = 0;
 
-		disposables.add(service.onDidChangeLabel(model => {
-			counter++;
-			assert.strictEqual(model.resource.toString(), input.resource.toString());
-		}));
+		disposables.add(
+			service.onDidChangeLabel(model => {
+				counter++;
+				assert.strictEqual(model.resource.toString(), input.resource.toString());
+			})
+		);
 
 		// label
 		const model = disposables.add(await input.resolve());
@@ -415,17 +452,18 @@ suite('Untitled text editors', () => {
 
 		let counter = 0;
 
-		disposables.add(service.onWillDispose(model => {
-			counter++;
-			assert.strictEqual(model.resource.toString(), input.resource.toString());
-		}));
+		disposables.add(
+			service.onWillDispose(model => {
+				counter++;
+				assert.strictEqual(model.resource.toString(), input.resource.toString());
+			})
+		);
 
 		const model = disposables.add(await input.resolve());
 		assert.strictEqual(counter, 0);
 		model.dispose();
 		assert.strictEqual(counter, 1);
 	});
-
 
 	test('service#getValue', async () => {
 		const service = accessor.untitledTextEditorService;
@@ -532,13 +570,14 @@ suite('Untitled text editors', () => {
 		model.textEditorModel?.setValue('Hello\nWorld');
 		assert.strictEqual(counter, 8);
 
-		function createSingleEditOp(text: string, positionLineNumber: number, positionColumn: number, selectionLineNumber: number = positionLineNumber, selectionColumn: number = positionColumn): ISingleEditOperation {
-			const range = new Range(
-				selectionLineNumber,
-				selectionColumn,
-				positionLineNumber,
-				positionColumn
-			);
+		function createSingleEditOp(
+			text: string,
+			positionLineNumber: number,
+			positionColumn: number,
+			selectionLineNumber: number = positionLineNumber,
+			selectionColumn: number = positionColumn
+		): ISingleEditOperation {
+			const range = new Range(selectionLineNumber, selectionColumn, positionLineNumber, positionColumn);
 
 			return {
 				range,
@@ -553,7 +592,9 @@ suite('Untitled text editors', () => {
 		input.dispose();
 		model.dispose();
 
-		const inputWithContents = disposables.add(instantiationService.createInstance(UntitledTextEditorInput, service.create({ initialValue: 'Foo' })));
+		const inputWithContents = disposables.add(
+			instantiationService.createInstance(UntitledTextEditorInput, service.create({ initialValue: 'Foo' }))
+		);
 		model = disposables.add(await inputWithContents.resolve());
 
 		assert.strictEqual(inputWithContents.getName(), 'Foo');

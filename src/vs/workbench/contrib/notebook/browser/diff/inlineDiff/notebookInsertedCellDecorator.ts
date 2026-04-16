@@ -10,35 +10,39 @@ import { overviewRulerAddedForeground } from '../../../../scm/common/quickDiff.j
 
 export class NotebookInsertedCellDecorator extends Disposable {
 	private readonly decorators = this._register(new DisposableStore());
-	constructor(
-		private readonly notebookEditor: INotebookEditor,
-	) {
+	constructor(private readonly notebookEditor: INotebookEditor) {
 		super();
-
 	}
 	public apply(diffInfo: CellDiffInfo[]) {
 		const model = this.notebookEditor.textModel;
 		if (!model) {
 			return;
 		}
-		const cells = diffInfo.filter(diff => diff.type === 'insert').map((diff) => model.cells[diff.modifiedCellIndex]);
-		const ids = this.notebookEditor.deltaCellDecorations([], cells.map(cell => ({
-			handle: cell.handle,
-			options: {
-				className: 'nb-insertHighlight', outputClassName: 'nb-insertHighlight', overviewRuler: {
-					color: overviewRulerAddedForeground,
-					modelRanges: [],
-					includeOutput: true,
-					position: NotebookOverviewRulerLane.Full
+		const cells = diffInfo.filter(diff => diff.type === 'insert').map(diff => model.cells[diff.modifiedCellIndex]);
+		const ids = this.notebookEditor.deltaCellDecorations(
+			[],
+			cells.map(cell => ({
+				handle: cell.handle,
+				options: {
+					className: 'nb-insertHighlight',
+					outputClassName: 'nb-insertHighlight',
+					overviewRuler: {
+						color: overviewRulerAddedForeground,
+						modelRanges: [],
+						includeOutput: true,
+						position: NotebookOverviewRulerLane.Full
+					}
 				}
-			}
-		})));
+			}))
+		);
 		this.clear();
-		this.decorators.add(toDisposable(() => {
-			if (!this.notebookEditor.isDisposed) {
-				this.notebookEditor.deltaCellDecorations(ids, []);
-			}
-		}));
+		this.decorators.add(
+			toDisposable(() => {
+				if (!this.notebookEditor.isDisposed) {
+					this.notebookEditor.deltaCellDecorations(ids, []);
+				}
+			})
+		);
 	}
 	public clear() {
 		this.decorators.clear();

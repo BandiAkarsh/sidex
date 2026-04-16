@@ -14,15 +14,36 @@ import { FontInfo } from '../../../../editor/common/config/fontInfo.js';
 import { IPosition } from '../../../../editor/common/core/position.js';
 import { IRange, Range } from '../../../../editor/common/core/range.js';
 import { Selection } from '../../../../editor/common/core/selection.js';
-import { FindMatch, IModelDeltaDecoration, IReadonlyTextBuffer, ITextModel, TrackedRangeStickiness } from '../../../../editor/common/model.js';
+import {
+	FindMatch,
+	IModelDeltaDecoration,
+	IReadonlyTextBuffer,
+	ITextModel,
+	TrackedRangeStickiness
+} from '../../../../editor/common/model.js';
 import { MenuId } from '../../../../platform/actions/common/actions.js';
 import { ITextEditorOptions, ITextResourceEditorInput } from '../../../../platform/editor/common/editor.js';
 import { IConstructorSignature } from '../../../../platform/instantiation/common/instantiation.js';
 import { IEditorPane, IEditorPaneWithSelection } from '../../../common/editor.js';
-import { CellViewModelStateChangeEvent, NotebookCellStateChangedEvent, NotebookLayoutInfo } from './notebookViewEvents.js';
+import {
+	CellViewModelStateChangeEvent,
+	NotebookCellStateChangedEvent,
+	NotebookLayoutInfo
+} from './notebookViewEvents.js';
 import { NotebookCellTextModel } from '../common/model/notebookCellTextModel.js';
 import { NotebookTextModel } from '../common/model/notebookTextModel.js';
-import { CellKind, ICellOutput, INotebookCellStatusBarItem, INotebookRendererInfo, INotebookFindOptions, IOrderedMimeType, NotebookCellInternalMetadata, NotebookCellMetadata, NOTEBOOK_EDITOR_ID, NOTEBOOK_DIFF_EDITOR_ID } from '../common/notebookCommon.js';
+import {
+	CellKind,
+	ICellOutput,
+	INotebookCellStatusBarItem,
+	INotebookRendererInfo,
+	INotebookFindOptions,
+	IOrderedMimeType,
+	NotebookCellInternalMetadata,
+	NotebookCellMetadata,
+	NOTEBOOK_EDITOR_ID,
+	NOTEBOOK_DIFF_EDITOR_ID
+} from '../common/notebookCommon.js';
 import { isCompositeNotebookEditorInput } from '../common/notebookEditorInput.js';
 import { INotebookKernel } from '../common/notebookKernelService.js';
 import { NotebookOptions } from './notebookOptions.js';
@@ -42,7 +63,6 @@ export const CHANGE_CELL_LANGUAGE = 'notebook.cell.changeLanguage';
 export const QUIT_EDIT_CELL_COMMAND_ID = 'notebook.cell.quitEdit';
 export const EXPAND_CELL_OUTPUT_COMMAND_ID = 'notebook.cell.expandCellOutput';
 
-
 //#endregion
 
 //#region Notebook extensions
@@ -52,18 +72,13 @@ export const EXPAND_CELL_OUTPUT_COMMAND_ID = 'notebook.cell.expandCellOutput';
 export const IPYNB_VIEW_TYPE = 'jupyter-notebook';
 export const JUPYTER_EXTENSION_ID = 'ms-toolsai.jupyter';
 /** @deprecated use the notebookKernel<Type> "keyword" instead */
-export const KERNEL_EXTENSIONS = new Map<string, string>([
-	[IPYNB_VIEW_TYPE, JUPYTER_EXTENSION_ID],
-]);
+export const KERNEL_EXTENSIONS = new Map<string, string>([[IPYNB_VIEW_TYPE, JUPYTER_EXTENSION_ID]]);
 // @TODO lramos15, place this in a similar spot to our normal recommendations.
 export const KERNEL_RECOMMENDATIONS = new Map<string, Map<string, INotebookExtensionRecommendation>>();
 KERNEL_RECOMMENDATIONS.set(IPYNB_VIEW_TYPE, new Map<string, INotebookExtensionRecommendation>());
 KERNEL_RECOMMENDATIONS.get(IPYNB_VIEW_TYPE)?.set('python', {
-	extensionIds: [
-		'ms-python.python',
-		JUPYTER_EXTENSION_ID
-	],
-	displayName: 'Python + Jupyter',
+	extensionIds: ['ms-python.python', JUPYTER_EXTENSION_ID],
+	displayName: 'Python + Jupyter'
 });
 
 export interface INotebookExtensionRecommendation {
@@ -106,7 +121,10 @@ export interface ICellOutputViewModel extends IDisposable {
 	 * When rendering an output, `model` should always be used as we convert legacy `text/error` output to `display_data` output under the hood.
 	 */
 	model: ICellOutput;
-	resolveMimeTypes(textModel: NotebookTextModel, kernelProvides: readonly string[] | undefined): [readonly IOrderedMimeType[], number];
+	resolveMimeTypes(
+		textModel: NotebookTextModel,
+		kernelProvides: readonly string[] | undefined
+	): [readonly IOrderedMimeType[], number];
 	pickedMimeType: IOrderedMimeType | undefined;
 	hasMultiMimeType(): boolean;
 	readonly onDidResetRenderer: Event<void>;
@@ -117,9 +135,11 @@ export interface ICellOutputViewModel extends IDisposable {
 }
 
 export interface IDisplayOutputViewModel extends ICellOutputViewModel {
-	resolveMimeTypes(textModel: NotebookTextModel, kernelProvides: readonly string[] | undefined): [readonly IOrderedMimeType[], number];
+	resolveMimeTypes(
+		textModel: NotebookTextModel,
+		kernelProvides: readonly string[] | undefined
+	): [readonly IOrderedMimeType[], number];
 }
-
 
 //#endregion
 
@@ -246,7 +266,10 @@ export interface ICellViewModel extends IGenericCellViewModel {
 	readonly layoutInfo: CellLayoutInfo;
 	readonly onDidChangeLayout: Event<ICommonCellViewModelLayoutChangeInfo>;
 	readonly onDidChangeCellStatusBarItems: Event<void>;
-	readonly onCellDecorationsChanged: Event<{ added: INotebookCellDecorationOptions[]; removed: INotebookCellDecorationOptions[] }>;
+	readonly onCellDecorationsChanged: Event<{
+		added: INotebookCellDecorationOptions[];
+		removed: INotebookCellDecorationOptions[];
+	}>;
 	readonly onDidChangeState: Event<CellViewModelStateChangeEvent>;
 	readonly onDidChangeEditorAttachState: Event<void>;
 	readonly editStateSource: string;
@@ -378,7 +401,7 @@ export const enum CellRevealType {
 export enum CellRevealRangeType {
 	Default = 1,
 	Center = 2,
-	CenterIfOutsideViewport = 3,
+	CenterIfOutsideViewport = 3
 }
 
 export interface INotebookEditorOptions extends ITextEditorOptions {
@@ -447,7 +470,10 @@ export interface ICellModelDeltaDecorations {
 }
 
 export interface IModelDecorationsChangeAccessor {
-	deltaDecorations(oldDecorations: ICellModelDecorations[], newDecorations: ICellModelDeltaDecorations[]): ICellModelDecorations[];
+	deltaDecorations(
+		oldDecorations: ICellModelDecorations[],
+		newDecorations: ICellModelDeltaDecorations[]
+	): ICellModelDecorations[];
 }
 
 export interface INotebookViewZone {
@@ -477,11 +503,7 @@ export interface INotebookCellOverlayChangeAccessor {
 	layoutOverlay(id: string): void;
 }
 
-export type NotebookViewCellsSplice = [
-	number /* start */,
-	number /* delete count */,
-	ICellViewModel[]
-];
+export type NotebookViewCellsSplice = [number /* start */, number /* delete count */, ICellViewModel[]];
 
 export interface INotebookViewCellsUpdateEvent {
 	readonly synchronous: boolean;
@@ -603,7 +625,11 @@ export interface INotebookEditor {
 	/**
 	 * Focus the container of a cell (the monaco editor inside is not focused).
 	 */
-	focusNotebookCell(cell: ICellViewModel, focus: 'editor' | 'container' | 'output', options?: IFocusNotebookCellOptions): Promise<void>;
+	focusNotebookCell(
+		cell: ICellViewModel,
+		focus: 'editor' | 'container' | 'output',
+		options?: IFocusNotebookCellOptions
+	): Promise<void>;
 
 	/**
 	 * Execute the given notebook cells
@@ -628,7 +654,12 @@ export interface INotebookEditor {
 	/**
 	 * Render the output in webview layer
 	 */
-	createOutput(cell: ICellViewModel, output: IInsetRenderOutput, offset: number, createWhenIdle: boolean): Promise<void>;
+	createOutput(
+		cell: ICellViewModel,
+		output: IInsetRenderOutput,
+		offset: number,
+		createWhenIdle: boolean
+	): Promise<void>;
 
 	/**
 	 * Update the output in webview layer with latest content. It will delegate to `createOutput` is the output is not rendered yet
@@ -795,7 +826,14 @@ export interface INotebookEditor {
 	getCellIndex(cell: ICellViewModel): number | undefined;
 	getNextVisibleCellIndex(index: number): number | undefined;
 	getPreviousVisibleCellIndex(index: number): number | undefined;
-	find(query: string, options: INotebookFindOptions, token: CancellationToken, skipWarmup?: boolean, shouldGetSearchPreviewInfo?: boolean, ownerID?: string): Promise<CellFindMatchWithIndex[]>;
+	find(
+		query: string,
+		options: INotebookFindOptions,
+		token: CancellationToken,
+		skipWarmup?: boolean,
+		shouldGetSearchPreviewInfo?: boolean,
+		ownerID?: string
+	): Promise<CellFindMatchWithIndex[]>;
 	findHighlightCurrent(matchIndex: number, ownerID?: string): Promise<number>;
 	findUnHighlightCurrent(matchIndex: number, ownerID?: string): Promise<void>;
 	findStop(ownerID?: string): void;

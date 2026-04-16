@@ -61,14 +61,14 @@ const mapping: ReadonlyMap<string, string> = new Map([
 	['theme-notebook-cell-selected-background', 'vscode-notebook-selectedCellBackground'],
 	['theme-notebook-symbol-highlight-background', 'vscode-notebook-symbolHighlightBackground'],
 	['theme-notebook-diff-removed-background', 'vscode-diffEditor-removedTextBackground'],
-	['theme-notebook-diff-inserted-background', 'vscode-diffEditor-insertedTextBackground'],
+	['theme-notebook-diff-inserted-background', 'vscode-diffEditor-insertedTextBackground']
 ]);
 
 const constants: Readonly<WebviewStyles> = {
 	'theme-input-border-width': '1px',
 	'theme-button-primary-hover-shadow': 'none',
 	'theme-button-secondary-hover-shadow': 'none',
-	'theme-input-border-color': 'transparent',
+	'theme-input-border-color': 'transparent'
 };
 
 /**

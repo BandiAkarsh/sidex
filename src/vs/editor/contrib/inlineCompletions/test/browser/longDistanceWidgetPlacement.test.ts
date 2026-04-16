@@ -7,7 +7,11 @@ import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { Size2D } from '../../../../common/core/2d/size.js';
 import { LineRange } from '../../../../common/core/ranges/lineRange.js';
-import { WidgetLayoutConstants, WidgetPlacementContext, ContinuousLineSizes } from '../../browser/view/inlineEdits/inlineEditsViews/longDistanceHint/longDistnaceWidgetPlacement.js';
+import {
+	WidgetLayoutConstants,
+	WidgetPlacementContext,
+	ContinuousLineSizes
+} from '../../browser/view/inlineEdits/inlineEditsViews/longDistanceHint/longDistnaceWidgetPlacement.js';
 
 suite('WidgetPlacementContext', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
@@ -16,7 +20,7 @@ suite('WidgetPlacementContext', () => {
 		return {
 			lineRange: LineRange.ofLength(startLine, sizes.length),
 			top,
-			sizes,
+			sizes
 		};
 	}
 
@@ -25,7 +29,7 @@ suite('WidgetPlacementContext', () => {
 		widgetPadding: 2,
 		widgetBorder: 1,
 		lowerBarHeight: 10,
-		minWidgetWidth: 50,
+		minWidgetWidth: 50
 	};
 
 	suite('constructor - availableSpaceSizes computation', () => {
@@ -156,7 +160,7 @@ suite('WidgetPlacementContext', () => {
 				widgetPadding: 0,
 				widgetBorder: 0,
 				lowerBarHeight: 0,
-				minWidgetWidth: 50,
+				minWidgetWidth: 50
 			};
 
 			const context = new WidgetPlacementContext(lineRangeInfo, 500, () => 0);
@@ -194,13 +198,13 @@ suite('WidgetPlacementContext', () => {
 			// First and last lines are excluded from placement
 			// Lines 2, 3 have no space, line 4 has space
 			const sizes = [
-				new Size2D(100, 20),  // line 1 - excluded (first)
-				new Size2D(460, 20),  // line 2 - no space
-				new Size2D(460, 20),  // line 3 - no space (target)
-				new Size2D(100, 20),  // line 4 - has space
-				new Size2D(100, 20),  // line 5 - has space
-				new Size2D(100, 20),  // line 6 - has space
-				new Size2D(100, 20),  // line 7 - excluded (last)
+				new Size2D(100, 20), // line 1 - excluded (first)
+				new Size2D(460, 20), // line 2 - no space
+				new Size2D(460, 20), // line 3 - no space (target)
+				new Size2D(100, 20), // line 4 - has space
+				new Size2D(100, 20), // line 5 - has space
+				new Size2D(100, 20), // line 6 - has space
+				new Size2D(100, 20) // line 7 - excluded (last)
 			];
 			const lineRangeInfo = createLineRangeInfo(1, sizes, 0);
 
@@ -213,15 +217,15 @@ suite('WidgetPlacementContext', () => {
 
 		test('prefers closer lines to target', () => {
 			const sizes = [
-				new Size2D(100, 20),  // line 0 - excluded (first)
-				new Size2D(100, 20),  // line 1 - has space
-				new Size2D(100, 20),  // line 2 - has space
-				new Size2D(100, 20),  // line 3 - has space
-				new Size2D(500, 9999),// line 4 - no space (target)
-				new Size2D(100, 20),  // line 5 - has space
-				new Size2D(100, 20),  // line 6 - has space
-				new Size2D(100, 20),  // line 7 - has space
-				new Size2D(100, 20),  // line 8 - excluded (last)
+				new Size2D(100, 20), // line 0 - excluded (first)
+				new Size2D(100, 20), // line 1 - has space
+				new Size2D(100, 20), // line 2 - has space
+				new Size2D(100, 20), // line 3 - has space
+				new Size2D(500, 9999), // line 4 - no space (target)
+				new Size2D(100, 20), // line 5 - has space
+				new Size2D(100, 20), // line 6 - has space
+				new Size2D(100, 20), // line 7 - has space
+				new Size2D(100, 20) // line 8 - excluded (last)
 			];
 			const lineRangeInfo = createLineRangeInfo(1, sizes, 0);
 

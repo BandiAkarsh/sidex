@@ -5,7 +5,11 @@
 
 import { createFastDomNode, FastDomNode } from '../../../../../base/browser/fastDomNode.js';
 import { Disposable } from '../../../../../base/common/lifecycle.js';
-import { INotebookCellOverlay, INotebookCellOverlayChangeAccessor, INotebookViewCellsUpdateEvent } from '../notebookBrowser.js';
+import {
+	INotebookCellOverlay,
+	INotebookCellOverlayChangeAccessor,
+	INotebookViewCellsUpdateEvent
+} from '../notebookBrowser.js';
 import { NotebookCellListView } from '../view/notebookCellListView.js';
 import { CellViewModel } from '../viewModel/notebookViewModelImpl.js';
 
@@ -20,9 +24,7 @@ export class NotebookCellOverlays extends Disposable {
 	public domNode: FastDomNode<HTMLElement>;
 	private _overlays: { [key: string]: INotebookCellOverlayWidget } = Object.create(null);
 
-	constructor(
-		private readonly listView: NotebookCellListView<CellViewModel>
-	) {
+	constructor(private readonly listView: NotebookCellListView<CellViewModel>) {
 		super();
 		this.domNode = createFastDomNode(document.createElement('div'));
 		this.domNode.setClassName('cell-overlays');
@@ -133,5 +135,3 @@ export class NotebookCellOverlays extends Disposable {
 		return false;
 	}
 }
-
-

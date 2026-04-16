@@ -8,7 +8,13 @@ import { localize2 } from '../../../../../../nls.js';
 import { Categories } from '../../../../../../platform/action/common/actionCommonCategories.js';
 import { Action2, registerAction2 } from '../../../../../../platform/actions/common/actions.js';
 import { ServicesAccessor } from '../../../../../../platform/instantiation/common/instantiation.js';
-import { getNotebookEditorFromEditorPane, ICellViewModel, INotebookDeltaCellStatusBarItems, INotebookEditor, INotebookEditorContribution } from '../../notebookBrowser.js';
+import {
+	getNotebookEditorFromEditorPane,
+	ICellViewModel,
+	INotebookDeltaCellStatusBarItems,
+	INotebookEditor,
+	INotebookEditorContribution
+} from '../../notebookBrowser.js';
 import { registerNotebookContribution } from '../../notebookEditorExtensions.js';
 import { NotebookEditorWidget } from '../../notebookEditorWidget.js';
 import { CellStatusbarAlignment, INotebookCellStatusBarItem } from '../../../common/notebookCommon.js';
@@ -28,9 +34,11 @@ export class TroubleshootController extends Disposable implements INotebookEdito
 	constructor(private readonly _notebookEditor: INotebookEditor) {
 		super();
 
-		this._register(this._notebookEditor.onDidChangeModel(() => {
-			this._update();
-		}));
+		this._register(
+			this._notebookEditor.onDidChangeModel(() => {
+				this._update();
+			})
+		);
 
 		this._update();
 	}
@@ -75,15 +83,17 @@ export class TroubleshootController extends Disposable implements INotebookEdito
 		}
 
 		// Add listener for new cells
-		this._localStore.add(this._notebookEditor.onDidChangeViewCells(e => {
-			const addedCells = e.splices.reduce((acc, [, , newCells]) => [...acc, ...newCells], [] as ICellViewModel[]);
-			for (let i = 0; i < addedCells.length; i++) {
-				const cellIndex = this._notebookEditor.getCellIndex(addedCells[i]);
-				if (cellIndex !== undefined) {
-					this._createCellOverlay(addedCells[i], cellIndex);
+		this._localStore.add(
+			this._notebookEditor.onDidChangeViewCells(e => {
+				const addedCells = e.splices.reduce((acc, [, , newCells]) => [...acc, ...newCells], [] as ICellViewModel[]);
+				for (let i = 0; i < addedCells.length; i++) {
+					const cellIndex = this._notebookEditor.getCellIndex(addedCells[i]);
+					if (cellIndex !== undefined) {
+						this._createCellOverlay(addedCells[i], cellIndex);
+					}
 				}
-			}
-		}));
+			})
+		);
 	}
 
 	private _createNotebookOverlay() {
@@ -94,46 +104,54 @@ export class TroubleshootController extends Disposable implements INotebookEdito
 		const listViewTop = this._notebookEditor.getLayoutInfo().listViewOffsetTop;
 		const scrollTop = this._notebookEditor.scrollTop;
 
-		const overlay = n.div({
-			style: {
-				position: 'absolute',
-				top: '0',
-				left: '0',
-				width: '100%',
-				height: '100%',
-				pointerEvents: 'none',
-				zIndex: '1000'
-			}
-		}, [
-			// Top line
-			n.div({
-				style: {
-					position: 'absolute',
-					top: `${listViewTop}px`,
-					left: '0',
-					width: '100%',
-					height: '2px',
-					backgroundColor: 'rgba(0, 0, 255, 0.7)'
-				}
-			}),
-			// Text label for the notebook overlay
-			n.div({
-				style: {
-					position: 'absolute',
-					top: `${listViewTop}px`,
-					left: '10px',
-					backgroundColor: 'rgba(0, 0, 255, 0.7)',
-					color: 'white',
-					fontSize: '11px',
-					fontWeight: 'bold',
-					padding: '2px 6px',
-					borderRadius: '3px',
-					whiteSpace: 'nowrap',
-					pointerEvents: 'none',
-					zIndex: '1001'
-				}
-			}, [`ScrollTop: ${scrollTop}px`])
-		]).keepUpdated(this._store);
+		const overlay = n
+			.div(
+				{
+					style: {
+						position: 'absolute',
+						top: '0',
+						left: '0',
+						width: '100%',
+						height: '100%',
+						pointerEvents: 'none',
+						zIndex: '1000'
+					}
+				},
+				[
+					// Top line
+					n.div({
+						style: {
+							position: 'absolute',
+							top: `${listViewTop}px`,
+							left: '0',
+							width: '100%',
+							height: '2px',
+							backgroundColor: 'rgba(0, 0, 255, 0.7)'
+						}
+					}),
+					// Text label for the notebook overlay
+					n.div(
+						{
+							style: {
+								position: 'absolute',
+								top: `${listViewTop}px`,
+								left: '10px',
+								backgroundColor: 'rgba(0, 0, 255, 0.7)',
+								color: 'white',
+								fontSize: '11px',
+								fontWeight: 'bold',
+								padding: '2px 6px',
+								borderRadius: '3px',
+								whiteSpace: 'nowrap',
+								pointerEvents: 'none',
+								zIndex: '1001'
+							}
+						},
+						[`ScrollTop: ${scrollTop}px`]
+					)
+				]
+			)
+			.keepUpdated(this._store);
 
 		this._notebookOverlayDomNode = overlay.element;
 
@@ -141,27 +159,29 @@ export class TroubleshootController extends Disposable implements INotebookEdito
 			this._notebookEditor.getDomNode().appendChild(this._notebookOverlayDomNode);
 		}
 
-		this._localStore.add(this._notebookEditor.onDidScroll(() => {
-			const scrollTop = this._notebookEditor.scrollTop;
-			const listViewTop = this._notebookEditor.getLayoutInfo().listViewOffsetTop;
+		this._localStore.add(
+			this._notebookEditor.onDidScroll(() => {
+				const scrollTop = this._notebookEditor.scrollTop;
+				const listViewTop = this._notebookEditor.getLayoutInfo().listViewOffsetTop;
 
-			if (this._notebookOverlayDomNode) {
-				// Update label
-				// eslint-disable-next-line no-restricted-syntax
-				const labelElement = this._notebookOverlayDomNode.querySelector('div:nth-child(2)') as HTMLElement;
-				if (labelElement) {
-					labelElement.textContent = `ScrollTop: ${scrollTop}px`;
-					labelElement.style.top = `${listViewTop}px`;
-				}
+				if (this._notebookOverlayDomNode) {
+					// Update label
+					// eslint-disable-next-line no-restricted-syntax
+					const labelElement = this._notebookOverlayDomNode.querySelector('div:nth-child(2)') as HTMLElement;
+					if (labelElement) {
+						labelElement.textContent = `ScrollTop: ${scrollTop}px`;
+						labelElement.style.top = `${listViewTop}px`;
+					}
 
-				// Update top line
-				// eslint-disable-next-line no-restricted-syntax
-				const topLineElement = this._notebookOverlayDomNode.querySelector('div:first-child') as HTMLElement;
-				if (topLineElement) {
-					topLineElement.style.top = `${listViewTop}px`;
+					// Update top line
+					// eslint-disable-next-line no-restricted-syntax
+					const topLineElement = this._notebookOverlayDomNode.querySelector('div:first-child') as HTMLElement;
+					if (topLineElement) {
+						topLineElement.style.top = `${listViewTop}px`;
+					}
 				}
-			}
-		}));
+			})
+		);
 	}
 
 	private _createCellOverlay(cell: ICellViewModel, index: number) {
@@ -207,7 +227,7 @@ export class TroubleshootController extends Disposable implements INotebookEdito
 		overlayContainer.appendChild(label);
 
 		let overlayId: string | undefined = undefined;
-		this._notebookEditor.changeCellOverlays((accessor) => {
+		this._notebookEditor.changeCellOverlays(accessor => {
 			overlayId = accessor.addOverlay({
 				cell,
 				domNode: overlayContainer
@@ -215,7 +235,6 @@ export class TroubleshootController extends Disposable implements INotebookEdito
 		});
 
 		if (overlayId) {
-
 			// Update overlay when layout changes
 			const updateLayout = () => {
 				// Update label text
@@ -223,36 +242,45 @@ export class TroubleshootController extends Disposable implements INotebookEdito
 
 				// Refresh the overlay position
 				if (overlayId) {
-					this._notebookEditor.changeCellOverlays((accessor) => {
+					this._notebookEditor.changeCellOverlays(accessor => {
 						accessor.layoutOverlay(overlayId!);
 					});
 				}
 			};
 
 			const disposables = this._cellDisposables[index];
-			disposables.add(cell.onDidChangeLayout((e) => {
-				updateLayout();
-			}));
-			disposables.add(cell.textBuffer.onDidChangeContent(() => {
-				updateLayout();
-			}));
-			if (cell.textModel) {
-				disposables.add(cell.textModel.onDidChangeContent(() => {
+			disposables.add(
+				cell.onDidChangeLayout(e => {
 					updateLayout();
-				}));
+				})
+			);
+			disposables.add(
+				cell.textBuffer.onDidChangeContent(() => {
+					updateLayout();
+				})
+			);
+			if (cell.textModel) {
+				disposables.add(
+					cell.textModel.onDidChangeContent(() => {
+						updateLayout();
+					})
+				);
 			}
-			disposables.add(this._notebookEditor.onDidChangeLayout(() => {
-				updateLayout();
-			}));
-			disposables.add(toDisposable(() => {
-				this._notebookEditor.changeCellOverlays((accessor) => {
-					if (overlayId) {
-						accessor.removeOverlay(overlayId);
-					}
-				});
-			}));
+			disposables.add(
+				this._notebookEditor.onDidChangeLayout(() => {
+					updateLayout();
+				})
+			);
+			disposables.add(
+				toDisposable(() => {
+					this._notebookEditor.changeCellOverlays(accessor => {
+						if (overlayId) {
+							accessor.removeOverlay(overlayId);
+						}
+					});
+				})
+			);
 		}
-
 	}
 
 	private _removeNotebookOverlay() {
@@ -272,34 +300,44 @@ export class TroubleshootController extends Disposable implements INotebookEdito
 
 			const disposableStore = new DisposableStore();
 			this._cellDisposables.push(disposableStore);
-			disposableStore.add(cell.onDidChangeLayout(e => {
-				this._log(cell, e);
-			}));
+			disposableStore.add(
+				cell.onDidChangeLayout(e => {
+					this._log(cell, e);
+				})
+			);
 		}
 
-		this._localStore.add(this._notebookEditor.onDidChangeViewCells(e => {
-			[...e.splices].reverse().forEach(splice => {
-				const [start, deleted, newCells] = splice;
-				const deletedCells = this._cellDisposables.splice(start, deleted, ...newCells.map(cell => {
-					const disposableStore = new DisposableStore();
-					disposableStore.add(cell.onDidChangeLayout(e => {
-						this._log(cell, e);
-					}));
-					return disposableStore;
-				}));
+		this._localStore.add(
+			this._notebookEditor.onDidChangeViewCells(e => {
+				[...e.splices].reverse().forEach(splice => {
+					const [start, deleted, newCells] = splice;
+					const deletedCells = this._cellDisposables.splice(
+						start,
+						deleted,
+						...newCells.map(cell => {
+							const disposableStore = new DisposableStore();
+							disposableStore.add(
+								cell.onDidChangeLayout(e => {
+									this._log(cell, e);
+								})
+							);
+							return disposableStore;
+						})
+					);
 
-				dispose(deletedCells);
-			});
+					dispose(deletedCells);
+				});
 
-			// Add the overlays
-			const addedCells = e.splices.reduce((acc, [, , newCells]) => [...acc, ...newCells], [] as ICellViewModel[]);
-			for (let i = 0; i < addedCells.length; i++) {
-				const cellIndex = this._notebookEditor.getCellIndex(addedCells[i]);
-				if (cellIndex !== undefined) {
-					this._createCellOverlay(addedCells[i], cellIndex);
+				// Add the overlays
+				const addedCells = e.splices.reduce((acc, [, , newCells]) => [...acc, ...newCells], [] as ICellViewModel[]);
+				for (let i = 0; i < addedCells.length; i++) {
+					const cellIndex = this._notebookEditor.getCellIndex(addedCells[i]);
+					if (cellIndex !== undefined) {
+						this._createCellOverlay(addedCells[i], cellIndex);
+					}
 				}
-			}
-		}));
+			})
+		);
 
 		const vm = this._notebookEditor.getViewModel();
 		let items: INotebookDeltaCellStatusBarItems[] = [];
@@ -309,7 +347,6 @@ export class TroubleshootController extends Disposable implements INotebookEdito
 		}
 
 		this._cellStatusItems = vm.deltaCellStatusBarItems(this._cellStatusItems, items);
-
 	}
 
 	private _getItemsForCells(): INotebookDeltaCellStatusBarItems[] {
@@ -340,66 +377,72 @@ export class TroubleshootController extends Disposable implements INotebookEdito
 
 registerNotebookContribution(TroubleshootController.id, TroubleshootController);
 
-registerAction2(class extends Action2 {
-	constructor() {
-		super({
-			id: 'notebook.toggleLayoutTroubleshoot',
-			title: localize2('workbench.notebook.toggleLayoutTroubleshoot', "Toggle Notebook Layout Troubleshoot"),
-			category: Categories.Developer,
-			f1: true
-		});
-	}
-
-	async run(accessor: ServicesAccessor): Promise<void> {
-		const editorService = accessor.get(IEditorService);
-		const editor = getNotebookEditorFromEditorPane(editorService.activeEditorPane);
-
-		if (!editor) {
-			return;
+registerAction2(
+	class extends Action2 {
+		constructor() {
+			super({
+				id: 'notebook.toggleLayoutTroubleshoot',
+				title: localize2('workbench.notebook.toggleLayoutTroubleshoot', 'Toggle Notebook Layout Troubleshoot'),
+				category: Categories.Developer,
+				f1: true
+			});
 		}
 
-		const controller = editor.getContribution<TroubleshootController>(TroubleshootController.id);
-		controller?.toggle();
-	}
-});
+		async run(accessor: ServicesAccessor): Promise<void> {
+			const editorService = accessor.get(IEditorService);
+			const editor = getNotebookEditorFromEditorPane(editorService.activeEditorPane);
 
-registerAction2(class extends Action2 {
-	constructor() {
-		super({
-			id: 'notebook.inspectLayout',
-			title: localize2('workbench.notebook.inspectLayout', "Inspect Notebook Layout"),
-			category: Categories.Developer,
-			f1: true
-		});
-	}
+			if (!editor) {
+				return;
+			}
 
-	async run(accessor: ServicesAccessor): Promise<void> {
-		const editorService = accessor.get(IEditorService);
-		const editor = getNotebookEditorFromEditorPane(editorService.activeEditorPane);
-
-		if (!editor || !editor.hasModel()) {
-			return;
-		}
-
-		for (let i = 0; i < editor.getLength(); i++) {
-			const cell = editor.cellAt(i);
-			console.log(`cell#${cell.handle}`, cell.layoutInfo);
+			const controller = editor.getContribution<TroubleshootController>(TroubleshootController.id);
+			controller?.toggle();
 		}
 	}
-});
+);
 
-registerAction2(class extends Action2 {
-	constructor() {
-		super({
-			id: 'notebook.clearNotebookEdtitorTypeCache',
-			title: localize2('workbench.notebook.clearNotebookEdtitorTypeCache', "Clear Notebook Editor Type Cache"),
-			category: Categories.Developer,
-			f1: true
-		});
-	}
+registerAction2(
+	class extends Action2 {
+		constructor() {
+			super({
+				id: 'notebook.inspectLayout',
+				title: localize2('workbench.notebook.inspectLayout', 'Inspect Notebook Layout'),
+				category: Categories.Developer,
+				f1: true
+			});
+		}
 
-	async run(accessor: ServicesAccessor): Promise<void> {
-		const notebookService = accessor.get(INotebookService);
-		notebookService.clearEditorCache();
+		async run(accessor: ServicesAccessor): Promise<void> {
+			const editorService = accessor.get(IEditorService);
+			const editor = getNotebookEditorFromEditorPane(editorService.activeEditorPane);
+
+			if (!editor || !editor.hasModel()) {
+				return;
+			}
+
+			for (let i = 0; i < editor.getLength(); i++) {
+				const cell = editor.cellAt(i);
+				console.log(`cell#${cell.handle}`, cell.layoutInfo);
+			}
+		}
 	}
-});
+);
+
+registerAction2(
+	class extends Action2 {
+		constructor() {
+			super({
+				id: 'notebook.clearNotebookEdtitorTypeCache',
+				title: localize2('workbench.notebook.clearNotebookEdtitorTypeCache', 'Clear Notebook Editor Type Cache'),
+				category: Categories.Developer,
+				f1: true
+			});
+		}
+
+		async run(accessor: ServicesAccessor): Promise<void> {
+			const notebookService = accessor.get(INotebookService);
+			notebookService.clearEditorCache();
+		}
+	}
+);

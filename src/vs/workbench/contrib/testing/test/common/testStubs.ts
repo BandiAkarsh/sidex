@@ -7,7 +7,14 @@ import { URI } from '../../../../../base/common/uri.js';
 import { MainThreadTestCollection } from '../../common/mainThreadTestCollection.js';
 import { ITestItem, TestsDiff } from '../../common/testTypes.js';
 import { TestId } from '../../common/testId.js';
-import { createTestItemChildren, ITestItemApi, ITestItemChildren, ITestItemLike, TestItemCollection, TestItemEventOp } from '../../common/testItemCollection.js';
+import {
+	createTestItemChildren,
+	ITestItemApi,
+	ITestItemChildren,
+	ITestItemLike,
+	TestItemCollection,
+	TestItemEventOp
+} from '../../common/testItemCollection.js';
 
 export class TestTestItem implements ITestItemLike {
 	private readonly props: ITestItem;
@@ -46,7 +53,7 @@ export class TestTestItem implements ITestItemLike {
 	constructor(
 		private readonly _extId: TestId,
 		label: string,
-		uri?: URI,
+		uri?: URI
 	) {
 		this.api = { controllerId: this._extId.controllerId };
 		this.children = createTestItemChildren(this.api, i => i.api, TestTestItem);
@@ -59,7 +66,7 @@ export class TestTestItem implements ITestItemLike {
 			range: null,
 			sortText: null,
 			tags: [],
-			uri,
+			uri
 		};
 	}
 
@@ -90,7 +97,7 @@ export class TestTestCollection extends TestItemCollection<TestTestItem> {
 			toITestItem: t => t.toTestItem(),
 			getChildren: t => t.children,
 			getDocumentVersion: () => undefined,
-			root,
+			root
 		});
 	}
 
@@ -152,5 +159,5 @@ export const testStubs = {
 		};
 
 		return collection;
-	},
+	}
 };

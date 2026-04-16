@@ -7,9 +7,18 @@ import assert from 'assert';
 import { OperatingSystem } from '../../../../../base/common/platform.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { IConfig } from '../../common/debug.js';
-import { formatPII, getEffectiveConfigForPlatform, getEffectivePresentationForConfig, getExactExpressionStartAndEnd, getVisibleAndSorted } from '../../common/debugUtils.js';
+import {
+	formatPII,
+	getEffectiveConfigForPlatform,
+	getEffectivePresentationForConfig,
+	getExactExpressionStartAndEnd,
+	getVisibleAndSorted
+} from '../../common/debugUtils.js';
 
-function platformSection(os: OperatingSystem, value: NonNullable<IConfig['windows']>): Pick<IConfig, 'windows' | 'osx' | 'linux'> {
+function platformSection(
+	os: OperatingSystem,
+	value: NonNullable<IConfig['windows']>
+): Pick<IConfig, 'windows' | 'osx' | 'linux'> {
 	switch (os) {
 		case OperatingSystem.Windows:
 			return { windows: value };
@@ -26,13 +35,25 @@ suite('Debug - Utils', () => {
 	test('formatPII', () => {
 		assert.strictEqual(formatPII('Foo Bar', false, {}), 'Foo Bar');
 		assert.strictEqual(formatPII('Foo {key} Bar', false, {}), 'Foo {key} Bar');
-		assert.strictEqual(formatPII('Foo {key} Bar', false, { 'key': 'yes' }), 'Foo yes Bar');
-		assert.strictEqual(formatPII('Foo {_0} Bar {_0}', true, { '_0': 'yes' }), 'Foo yes Bar yes');
+		assert.strictEqual(formatPII('Foo {key} Bar', false, { key: 'yes' }), 'Foo yes Bar');
+		assert.strictEqual(formatPII('Foo {_0} Bar {_0}', true, { _0: 'yes' }), 'Foo yes Bar yes');
 		assert.strictEqual(formatPII('Foo {0} Bar {1}{2}', false, { '0': 'yes' }), 'Foo yes Bar {1}{2}');
-		assert.strictEqual(formatPII('Foo {0} Bar {1}{2}', false, { '0': 'yes', '1': 'undefined' }), 'Foo yes Bar undefined{2}');
-		assert.strictEqual(formatPII('Foo {_key0} Bar {key1}{key2}', true, { '_key0': 'yes', 'key1': '5', 'key2': 'false' }), 'Foo yes Bar {key1}{key2}');
-		assert.strictEqual(formatPII('Foo {_key0} Bar {key1}{key2}', false, { '_key0': 'yes', 'key1': '5', 'key2': 'false' }), 'Foo yes Bar 5false');
-		assert.strictEqual(formatPII('Unable to display threads:"{e}"', false, { 'e': 'detached from process' }), 'Unable to display threads:"detached from process"');
+		assert.strictEqual(
+			formatPII('Foo {0} Bar {1}{2}', false, { '0': 'yes', '1': 'undefined' }),
+			'Foo yes Bar undefined{2}'
+		);
+		assert.strictEqual(
+			formatPII('Foo {_key0} Bar {key1}{key2}', true, { _key0: 'yes', key1: '5', key2: 'false' }),
+			'Foo yes Bar {key1}{key2}'
+		);
+		assert.strictEqual(
+			formatPII('Foo {_key0} Bar {key1}{key2}', false, { _key0: 'yes', key1: '5', key2: 'false' }),
+			'Foo yes Bar 5false'
+		);
+		assert.strictEqual(
+			formatPII('Unable to display threads:"{e}"', false, { e: 'detached from process' }),
+			'Unable to display threads:"detached from process"'
+		);
 	});
 
 	test('getExactExpressionStartAndEnd', () => {
@@ -43,7 +64,10 @@ suite('Debug - Utils', () => {
 		assert.deepStrictEqual(getExactExpressionStartAndEnd('this.name = "John"', 1, 10), { start: 1, end: 9 });
 		assert.deepStrictEqual(getExactExpressionStartAndEnd('this.name = "John"', 6, 10), { start: 1, end: 9 });
 		// Hovers over "address" should pick up this->address
-		assert.deepStrictEqual(getExactExpressionStartAndEnd('this->address = "Main street"', 6, 10), { start: 1, end: 13 });
+		assert.deepStrictEqual(getExactExpressionStartAndEnd('this->address = "Main street"', 6, 10), {
+			start: 1,
+			end: 13
+		});
 		// Hovers over "name" should pick up a.b.c.d.name
 		assert.deepStrictEqual(getExactExpressionStartAndEnd('var t = a.b.c.d.name', 16, 20), { start: 9, end: 20 });
 		assert.deepStrictEqual(getExactExpressionStartAndEnd('MyClass::StaticProp', 10, 20), { start: 1, end: 19 });
@@ -70,7 +94,9 @@ suite('Debug - Utils', () => {
 
 		// Platform-specific presentation overrides base hidden value
 		const config2: IConfig = {
-			type: 'node', request: 'launch', name: 'b',
+			type: 'node',
+			request: 'launch',
+			name: 'b',
 			presentation: { hidden: false },
 			...platformSection(OperatingSystem.Windows, { presentation: { hidden: true } })
 		};
@@ -78,7 +104,9 @@ suite('Debug - Utils', () => {
 
 		// Non-matching platform override does not affect result
 		const config3: IConfig = {
-			type: 'node', request: 'launch', name: 'c',
+			type: 'node',
+			request: 'launch',
+			name: 'c',
 			presentation: { hidden: false },
 			...platformSection(OperatingSystem.Windows, { presentation: { hidden: true } })
 		};
@@ -86,22 +114,32 @@ suite('Debug - Utils', () => {
 
 		// No base presentation, platform-specific sets hidden
 		const config4: IConfig = {
-			type: 'node', request: 'launch', name: 'd',
+			type: 'node',
+			request: 'launch',
+			name: 'd',
 			...platformSection(OperatingSystem.Macintosh, { presentation: { hidden: true } })
 		};
 		assert.deepStrictEqual(getEffectivePresentationForConfig(config4, OperatingSystem.Macintosh), { hidden: true });
 
 		// Platform-specific merges with base (group and order preserved)
 		const config5: IConfig = {
-			type: 'node', request: 'launch', name: 'e',
+			type: 'node',
+			request: 'launch',
+			name: 'e',
 			presentation: { group: 'myGroup', order: 2 },
 			...platformSection(OperatingSystem.Linux, { presentation: { hidden: true } })
 		};
-		assert.deepStrictEqual(getEffectivePresentationForConfig(config5, OperatingSystem.Linux), { group: 'myGroup', order: 2, hidden: true });
+		assert.deepStrictEqual(getEffectivePresentationForConfig(config5, OperatingSystem.Linux), {
+			group: 'myGroup',
+			order: 2,
+			hidden: true
+		});
 
 		// Platform-specific config overrides other launch attributes while preserving nested sections
 		const config6: IConfig = {
-			type: 'node', request: 'launch', name: 'f',
+			type: 'node',
+			request: 'launch',
+			name: 'f',
 			preLaunchTask: 'base-task',
 			presentation: { group: 'base' },
 			...platformSection(OperatingSystem.Windows, { preLaunchTask: 'windows-task', presentation: { hidden: true } })
@@ -205,6 +243,5 @@ suite('Debug - Utils', () => {
 		assert.strictEqual(sorted[6].name, 'b');
 		assert.strictEqual(sorted[7].name, 'p');
 		assert.strictEqual(sorted[8].name, 'a');
-
 	});
 });

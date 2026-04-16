@@ -10,20 +10,40 @@ import { CancelablePromise, createCancelablePromise, Delayer } from '../../../..
 import { onUnexpectedError } from '../../../../base/common/errors.js';
 import { Disposable, DisposableStore, dispose, IDisposable } from '../../../../base/common/lifecycle.js';
 import './media/review.css';
-import { ICodeEditor, IEditorMouseEvent, isCodeEditor, isDiffEditor } from '../../../../editor/browser/editorBrowser.js';
+import {
+	ICodeEditor,
+	IEditorMouseEvent,
+	isCodeEditor,
+	isDiffEditor
+} from '../../../../editor/browser/editorBrowser.js';
 import { ICodeEditorService } from '../../../../editor/browser/services/codeEditorService.js';
 import { IRange, Range } from '../../../../editor/common/core/range.js';
-import { EditorType, IDiffEditor, IEditor, IEditorContribution, IModelChangedEvent } from '../../../../editor/common/editorCommon.js';
+import {
+	EditorType,
+	IDiffEditor,
+	IEditor,
+	IEditorContribution,
+	IModelChangedEvent
+} from '../../../../editor/common/editorCommon.js';
 import { IModelDecorationOptions, IModelDeltaDecoration } from '../../../../editor/common/model.js';
 import { ModelDecorationOptions, TextModel } from '../../../../editor/common/model/textModel.js';
 import * as languages from '../../../../editor/common/languages.js';
 import * as nls from '../../../../nls.js';
 import { IContextMenuService } from '../../../../platform/contextview/browser/contextView.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
-import { IQuickInputService, IQuickPickItem, QuickPickInput } from '../../../../platform/quickinput/common/quickInput.js';
+import {
+	IQuickInputService,
+	IQuickPickItem,
+	QuickPickInput
+} from '../../../../platform/quickinput/common/quickInput.js';
 import { CommentGlyphWidget } from './commentGlyphWidget.js';
 import { ICommentInfo, ICommentService } from './commentService.js';
-import { CommentWidgetFocus, isMouseUpEventDragFromMouseDown, parseMouseDownInfoFromEvent, ReviewZoneWidget } from './commentThreadZoneWidget.js';
+import {
+	CommentWidgetFocus,
+	isMouseUpEventDragFromMouseDown,
+	parseMouseDownInfoFromEvent,
+	ReviewZoneWidget
+} from './commentThreadZoneWidget.js';
 import { ACTIVE_GROUP, IEditorService, SIDE_GROUP } from '../../../services/editor/common/editorService.js';
 import { EmbeddedCodeEditorWidget } from '../../../../editor/browser/widget/codeEditor/embeddedCodeEditorWidget.js';
 import { EditorOption } from '../../../../editor/common/config/editorOptions.js';
@@ -78,12 +98,23 @@ class CommentingRangeDecoration implements IModelDeltaDecoration {
 
 	public get range(): IRange {
 		return {
-			startLineNumber: this._startLineNumber, startColumn: 1,
-			endLineNumber: this._endLineNumber, endColumn: 1
+			startLineNumber: this._startLineNumber,
+			startColumn: 1,
+			endLineNumber: this._endLineNumber,
+			endColumn: 1
 		};
 	}
 
-	constructor(private _editor: ICodeEditor, private _ownerId: string, private _extensionId: string | undefined, private _label: string | undefined, private _range: IRange, public readonly options: ModelDecorationOptions, private commentingRangesInfo: languages.CommentingRanges, public readonly isHover: boolean = false) {
+	constructor(
+		private _editor: ICodeEditor,
+		private _ownerId: string,
+		private _extensionId: string | undefined,
+		private _label: string | undefined,
+		private _range: IRange,
+		public readonly options: ModelDecorationOptions,
+		private commentingRangesInfo: languages.CommentingRanges,
+		public readonly isHover: boolean = false
+	) {
 		this._startLineNumber = _range.startLineNumber;
 		this._endLineNumber = _range.endLineNumber;
 	}
@@ -148,7 +179,7 @@ class CommentingRangeDecorator {
 	}
 
 	public updateHover(hoverLine?: number) {
-		if (this._editor && this._infos && (hoverLine !== this._lastHover)) {
+		if (this._editor && this._infos && hoverLine !== this._lastHover) {
 			this._doUpdate(this._editor, this._infos, hoverLine);
 		}
 		this._lastHover = hoverLine ?? -1;
@@ -174,10 +205,17 @@ class CommentingRangeDecorator {
 	}
 
 	private _lineHasThread(editor: ICodeEditor, lineRange: Range) {
-		return editor.getDecorationsInRange(lineRange)?.find(decoration => decoration.options.description === CommentGlyphWidget.description);
+		return editor
+			.getDecorationsInRange(lineRange)
+			?.find(decoration => decoration.options.description === CommentGlyphWidget.description);
 	}
 
-	private _doUpdate(editor: ICodeEditor, commentInfos: ICommentInfo[], emphasisLine: number = -1, selectionRange: Range | undefined = this._lastSelection) {
+	private _doUpdate(
+		editor: ICodeEditor,
+		commentInfos: ICommentInfo[],
+		emphasisLine: number = -1,
+		selectionRange: Range | undefined = this._lastSelection
+	) {
 		const model = editor.getModel();
 		if (!model) {
 			return;
@@ -191,61 +229,171 @@ class CommentingRangeDecorator {
 			info.commentingRanges.ranges.forEach(range => {
 				const rangeObject = new Range(range.startLineNumber, range.startColumn, range.endLineNumber, range.endColumn);
 				let intersectingSelectionRange = selectionRange ? rangeObject.intersectRanges(selectionRange) : undefined;
-				if ((selectionRange && (emphasisLine >= 0) && intersectingSelectionRange)
+				if (
+					selectionRange &&
+					emphasisLine >= 0 &&
+					intersectingSelectionRange &&
 					// If there's only one selection line, then just drop into the else if and show an emphasis line.
-					&& !((intersectingSelectionRange.startLineNumber === intersectingSelectionRange.endLineNumber)
-						&& (emphasisLine === intersectingSelectionRange.startLineNumber))) {
+					!(
+						intersectingSelectionRange.startLineNumber === intersectingSelectionRange.endLineNumber &&
+						emphasisLine === intersectingSelectionRange.startLineNumber
+					)
+				) {
 					// The emphasisLine should be within the commenting range, even if the selection range stretches
 					// outside of the commenting range.
 					// Clip the emphasis and selection ranges to the commenting range
 					let intersectingEmphasisRange: Range;
 					if (emphasisLine <= intersectingSelectionRange.startLineNumber) {
 						intersectingEmphasisRange = intersectingSelectionRange.collapseToStart();
-						intersectingSelectionRange = new Range(intersectingSelectionRange.startLineNumber + 1, 1, intersectingSelectionRange.endLineNumber, 1);
+						intersectingSelectionRange = new Range(
+							intersectingSelectionRange.startLineNumber + 1,
+							1,
+							intersectingSelectionRange.endLineNumber,
+							1
+						);
 					} else {
-						intersectingEmphasisRange = new Range(intersectingSelectionRange.endLineNumber, 1, intersectingSelectionRange.endLineNumber, 1);
-						intersectingSelectionRange = new Range(intersectingSelectionRange.startLineNumber, 1, intersectingSelectionRange.endLineNumber - 1, 1);
+						intersectingEmphasisRange = new Range(
+							intersectingSelectionRange.endLineNumber,
+							1,
+							intersectingSelectionRange.endLineNumber,
+							1
+						);
+						intersectingSelectionRange = new Range(
+							intersectingSelectionRange.startLineNumber,
+							1,
+							intersectingSelectionRange.endLineNumber - 1,
+							1
+						);
 					}
-					commentingRangeDecorations.push(new CommentingRangeDecoration(editor, info.uniqueOwner, info.extensionId, info.label, intersectingSelectionRange, this.multilineDecorationOptions, info.commentingRanges, true));
+					commentingRangeDecorations.push(
+						new CommentingRangeDecoration(
+							editor,
+							info.uniqueOwner,
+							info.extensionId,
+							info.label,
+							intersectingSelectionRange,
+							this.multilineDecorationOptions,
+							info.commentingRanges,
+							true
+						)
+					);
 
 					if (!this._lineHasThread(editor, intersectingEmphasisRange)) {
-						commentingRangeDecorations.push(new CommentingRangeDecoration(editor, info.uniqueOwner, info.extensionId, info.label, intersectingEmphasisRange, this.hoverDecorationOptions, info.commentingRanges, true));
+						commentingRangeDecorations.push(
+							new CommentingRangeDecoration(
+								editor,
+								info.uniqueOwner,
+								info.extensionId,
+								info.label,
+								intersectingEmphasisRange,
+								this.hoverDecorationOptions,
+								info.commentingRanges,
+								true
+							)
+						);
 					}
 
-					const beforeRangeEndLine = Math.min(intersectingEmphasisRange.startLineNumber, intersectingSelectionRange.startLineNumber) - 1;
+					const beforeRangeEndLine =
+						Math.min(intersectingEmphasisRange.startLineNumber, intersectingSelectionRange.startLineNumber) - 1;
 					const hasBeforeRange = rangeObject.startLineNumber <= beforeRangeEndLine;
-					const afterRangeStartLine = Math.max(intersectingEmphasisRange.endLineNumber, intersectingSelectionRange.endLineNumber) + 1;
+					const afterRangeStartLine =
+						Math.max(intersectingEmphasisRange.endLineNumber, intersectingSelectionRange.endLineNumber) + 1;
 					const hasAfterRange = rangeObject.endLineNumber >= afterRangeStartLine;
 					if (hasBeforeRange) {
 						const beforeRange = new Range(range.startLineNumber, 1, beforeRangeEndLine, 1);
-						commentingRangeDecorations.push(new CommentingRangeDecoration(editor, info.uniqueOwner, info.extensionId, info.label, beforeRange, this.decorationOptions, info.commentingRanges, true));
+						commentingRangeDecorations.push(
+							new CommentingRangeDecoration(
+								editor,
+								info.uniqueOwner,
+								info.extensionId,
+								info.label,
+								beforeRange,
+								this.decorationOptions,
+								info.commentingRanges,
+								true
+							)
+						);
 					}
 					if (hasAfterRange) {
 						const afterRange = new Range(afterRangeStartLine, 1, range.endLineNumber, 1);
-						commentingRangeDecorations.push(new CommentingRangeDecoration(editor, info.uniqueOwner, info.extensionId, info.label, afterRange, this.decorationOptions, info.commentingRanges, true));
+						commentingRangeDecorations.push(
+							new CommentingRangeDecoration(
+								editor,
+								info.uniqueOwner,
+								info.extensionId,
+								info.label,
+								afterRange,
+								this.decorationOptions,
+								info.commentingRanges,
+								true
+							)
+						);
 					}
-				} else if ((rangeObject.startLineNumber <= emphasisLine) && (emphasisLine <= rangeObject.endLineNumber)) {
+				} else if (rangeObject.startLineNumber <= emphasisLine && emphasisLine <= rangeObject.endLineNumber) {
 					if (rangeObject.startLineNumber < emphasisLine) {
 						const beforeRange = new Range(range.startLineNumber, 1, emphasisLine - 1, 1);
-						commentingRangeDecorations.push(new CommentingRangeDecoration(editor, info.uniqueOwner, info.extensionId, info.label, beforeRange, this.decorationOptions, info.commentingRanges, true));
+						commentingRangeDecorations.push(
+							new CommentingRangeDecoration(
+								editor,
+								info.uniqueOwner,
+								info.extensionId,
+								info.label,
+								beforeRange,
+								this.decorationOptions,
+								info.commentingRanges,
+								true
+							)
+						);
 					}
 					const emphasisRange = new Range(emphasisLine, 1, emphasisLine, 1);
 					if (!this._lineHasThread(editor, emphasisRange)) {
-						commentingRangeDecorations.push(new CommentingRangeDecoration(editor, info.uniqueOwner, info.extensionId, info.label, emphasisRange, this.hoverDecorationOptions, info.commentingRanges, true));
+						commentingRangeDecorations.push(
+							new CommentingRangeDecoration(
+								editor,
+								info.uniqueOwner,
+								info.extensionId,
+								info.label,
+								emphasisRange,
+								this.hoverDecorationOptions,
+								info.commentingRanges,
+								true
+							)
+						);
 					}
 					if (emphasisLine < rangeObject.endLineNumber) {
 						const afterRange = new Range(emphasisLine + 1, 1, range.endLineNumber, 1);
-						commentingRangeDecorations.push(new CommentingRangeDecoration(editor, info.uniqueOwner, info.extensionId, info.label, afterRange, this.decorationOptions, info.commentingRanges, true));
+						commentingRangeDecorations.push(
+							new CommentingRangeDecoration(
+								editor,
+								info.uniqueOwner,
+								info.extensionId,
+								info.label,
+								afterRange,
+								this.decorationOptions,
+								info.commentingRanges,
+								true
+							)
+						);
 					}
 				} else {
-					commentingRangeDecorations.push(new CommentingRangeDecoration(editor, info.uniqueOwner, info.extensionId, info.label, range, this.decorationOptions, info.commentingRanges));
+					commentingRangeDecorations.push(
+						new CommentingRangeDecoration(
+							editor,
+							info.uniqueOwner,
+							info.extensionId,
+							info.label,
+							range,
+							this.decorationOptions,
+							info.commentingRanges
+						)
+					);
 				}
 			});
 		}
 
-		editor.changeDecorations((accessor) => {
+		editor.changeDecorations(accessor => {
 			this.decorationIds = accessor.deltaDecorations(this.decorationIds, commentingRangeDecorations);
-			commentingRangeDecorations.forEach((decoration, index) => decoration.id = this.decorationIds[index]);
+			commentingRangeDecorations.forEach((decoration, index) => (decoration.id = this.decorationIds[index]));
 		});
 
 		const rangesDifference = this.commentingRangeDecorations.length - commentingRangeDecorations.length;
@@ -257,12 +405,12 @@ class CommentingRangeDecorator {
 
 	private areRangesIntersectingOrTouchingByLine(a: Range, b: Range) {
 		// Check if `a` is before `b`
-		if (a.endLineNumber < (b.startLineNumber - 1)) {
+		if (a.endLineNumber < b.startLineNumber - 1) {
 			return false;
 		}
 
 		// Check if `b` is before `a`
-		if ((b.endLineNumber + 1) < a.startLineNumber) {
+		if (b.endLineNumber + 1 < a.startLineNumber) {
 			return false;
 		}
 
@@ -301,9 +449,15 @@ class CommentingRangeDecorator {
 				if (alreadyFoundInfo?.action.commentingRangesInfo === action.commentingRangesInfo) {
 					// Merge ranges.
 					const newRange = new Range(
-						range.startLineNumber < alreadyFoundInfo.range.startLineNumber ? range.startLineNumber : alreadyFoundInfo.range.startLineNumber,
-						range.startColumn < alreadyFoundInfo.range.startColumn ? range.startColumn : alreadyFoundInfo.range.startColumn,
-						range.endLineNumber > alreadyFoundInfo.range.endLineNumber ? range.endLineNumber : alreadyFoundInfo.range.endLineNumber,
+						range.startLineNumber < alreadyFoundInfo.range.startLineNumber
+							? range.startLineNumber
+							: alreadyFoundInfo.range.startLineNumber,
+						range.startColumn < alreadyFoundInfo.range.startColumn
+							? range.startColumn
+							: alreadyFoundInfo.range.startColumn,
+						range.endLineNumber > alreadyFoundInfo.range.endLineNumber
+							? range.endLineNumber
+							: alreadyFoundInfo.range.endLineNumber,
 						range.endColumn > alreadyFoundInfo.range.endColumn ? range.endColumn : alreadyFoundInfo.range.endColumn
 					);
 					foundHoverActions.set(action.ownerId, { range: newRange, action });
@@ -341,13 +495,21 @@ class CommentingRangeDecorator {
 				continue;
 			}
 
-			if (findPositionContainedWithin && this.areRangesIntersectingOrTouchingByLine(range, findPositionContainedWithin)) {
+			if (
+				findPositionContainedWithin &&
+				this.areRangesIntersectingOrTouchingByLine(range, findPositionContainedWithin)
+			) {
 				findPositionContainedWithin = Range.plusRange(findPositionContainedWithin, range);
 				continue;
 			}
 
 			if (range.startLineNumber <= findPosition.lineNumber && findPosition.lineNumber <= range.endLineNumber) {
-				findPositionContainedWithin = new Range(range.startLineNumber, range.startColumn, range.endLineNumber, range.endColumn);
+				findPositionContainedWithin = new Range(
+					range.startLineNumber,
+					range.startColumn,
+					range.endLineNumber,
+					range.endColumn
+				);
 				continue;
 			}
 
@@ -361,7 +523,7 @@ class CommentingRangeDecorator {
 
 			return range;
 		}
-		return (decorations.length > 0 ? (decorations[0].getActiveRange() ?? undefined) : undefined);
+		return decorations.length > 0 ? (decorations[0].getActiveRange() ?? undefined) : undefined;
 	}
 
 	public dispose(): void {
@@ -371,10 +533,13 @@ class CommentingRangeDecorator {
 }
 
 /**
-* Navigate to the next or previous comment in the current thread.
-* @param type
-*/
-export function moveToNextCommentInThread(commentInfo: { thread: languages.CommentThread<IRange>; comment?: languages.Comment } | undefined, type: 'next' | 'previous') {
+ * Navigate to the next or previous comment in the current thread.
+ * @param type
+ */
+export function moveToNextCommentInThread(
+	commentInfo: { thread: languages.CommentThread<IRange>; comment?: languages.Comment } | undefined,
+	type: 'next' | 'previous'
+) {
 	if (!commentInfo?.comment || !commentInfo?.thread?.comments) {
 		return;
 	}
@@ -394,12 +559,21 @@ export function moveToNextCommentInThread(commentInfo: { thread: languages.Comme
 	}
 	return {
 		...commentInfo,
-		comment,
+		comment
 	};
 }
 
-export function revealCommentThread(commentService: ICommentService, editorService: IEditorService, uriIdentityService: IUriIdentityService,
-	commentThread: languages.CommentThread<IRange>, comment: languages.Comment | undefined, focusReply?: boolean, pinned?: boolean, preserveFocus?: boolean, sideBySide?: boolean): void {
+export function revealCommentThread(
+	commentService: ICommentService,
+	editorService: IEditorService,
+	uriIdentityService: IUriIdentityService,
+	commentThread: languages.CommentThread<IRange>,
+	comment: languages.Comment | undefined,
+	focusReply?: boolean,
+	pinned?: boolean,
+	preserveFocus?: boolean,
+	sideBySide?: boolean
+): void {
 	if (!commentThread.resource) {
 		return;
 	}
@@ -408,21 +582,27 @@ export function revealCommentThread(commentService: ICommentService, editorServi
 	}
 
 	const range = commentThread.range;
-	const focus = focusReply ? CommentWidgetFocus.Editor : (preserveFocus ? CommentWidgetFocus.None : CommentWidgetFocus.Widget);
+	const focus = focusReply
+		? CommentWidgetFocus.Editor
+		: preserveFocus
+			? CommentWidgetFocus.None
+			: CommentWidgetFocus.Widget;
 
 	const activeEditor = editorService.activeTextEditorControl;
 	// If the active editor is a diff editor where one of the sides has the comment,
 	// then we try to reveal the comment in the diff editor.
-	const currentActiveResources: IEditor[] = isDiffEditor(activeEditor) ? [activeEditor.getOriginalEditor(), activeEditor.getModifiedEditor()]
-		: (activeEditor ? [activeEditor] : []);
+	const currentActiveResources: IEditor[] = isDiffEditor(activeEditor)
+		? [activeEditor.getOriginalEditor(), activeEditor.getModifiedEditor()]
+		: activeEditor
+			? [activeEditor]
+			: [];
 	const threadToReveal = commentThread.threadId;
 	const commentToReveal = comment?.uniqueIdInThread;
 	const resource = URI.parse(commentThread.resource);
 
 	for (const editor of currentActiveResources) {
 		const model = editor.getModel();
-		if ((model instanceof TextModel) && uriIdentityService.extUri.isEqual(resource, model.uri)) {
-
+		if (model instanceof TextModel && uriIdentityService.extUri.isEqual(resource, model.uri)) {
 			if (threadToReveal && isCodeEditor(editor)) {
 				const controller = CommentController.get(editor);
 				controller?.revealCommentThread(threadToReveal, commentToReveal, true, focus);
@@ -431,22 +611,27 @@ export function revealCommentThread(commentService: ICommentService, editorServi
 		}
 	}
 
-	editorService.openEditor({
-		resource,
-		options: {
-			pinned: pinned,
-			preserveFocus: preserveFocus,
-			selection: range ?? new Range(1, 1, 1, 1)
-		}
-	}, sideBySide ? SIDE_GROUP : ACTIVE_GROUP).then(editor => {
-		if (editor) {
-			const control = editor.getControl();
-			if (threadToReveal && isCodeEditor(control)) {
-				const controller = CommentController.get(control);
-				controller?.revealCommentThread(threadToReveal, commentToReveal, true, focus);
+	editorService
+		.openEditor(
+			{
+				resource,
+				options: {
+					pinned: pinned,
+					preserveFocus: preserveFocus,
+					selection: range ?? new Range(1, 1, 1, 1)
+				}
+			},
+			sideBySide ? SIDE_GROUP : ACTIVE_GROUP
+		)
+		.then(editor => {
+			if (editor) {
+				const control = editor.getControl();
+				if (threadToReveal && isCodeEditor(control)) {
+					const controller = CommentController.get(control);
+					controller?.revealCommentThread(threadToReveal, commentToReveal, true, focus);
+				}
 			}
-		}
-	});
+		});
 }
 
 export class CommentController extends Disposable implements IEditorContribution {
@@ -507,60 +692,72 @@ export class CommentController extends Disposable implements IEditorContribution
 		this.editor = editor;
 
 		this._commentingRangeDecorator = this._register(new CommentingRangeDecorator());
-		this._register(this._commentingRangeDecorator.onDidChangeDecorationsCount(count => {
-			if (count === 0) {
-				this.clearEditorListeners();
-			} else if (this._editorDisposables.length === 0) {
-				this.registerEditorListeners();
-			}
-		}));
+		this._register(
+			this._commentingRangeDecorator.onDidChangeDecorationsCount(count => {
+				if (count === 0) {
+					this.clearEditorListeners();
+				} else if (this._editorDisposables.length === 0) {
+					this.registerEditorListeners();
+				}
+			})
+		);
 
-		this._register(this._commentThreadRangeDecorator = new CommentThreadRangeDecorator(this.commentService));
+		this._register((this._commentThreadRangeDecorator = new CommentThreadRangeDecorator(this.commentService)));
 
-		this._register(this.commentService.onDidDeleteDataProvider(ownerId => {
-			if (ownerId) {
-				delete this._pendingNewCommentCache[ownerId];
-				delete this._pendingEditsCache[ownerId];
-			} else {
-				this._pendingNewCommentCache = {};
-				this._pendingEditsCache = {};
-			}
-			this.beginCompute();
-		}));
+		this._register(
+			this.commentService.onDidDeleteDataProvider(ownerId => {
+				if (ownerId) {
+					delete this._pendingNewCommentCache[ownerId];
+					delete this._pendingEditsCache[ownerId];
+				} else {
+					this._pendingNewCommentCache = {};
+					this._pendingEditsCache = {};
+				}
+				this.beginCompute();
+			})
+		);
 		this._register(this.commentService.onDidSetDataProvider(_ => this.beginComputeAndHandleEditorChange()));
 		this._register(this.commentService.onDidUpdateCommentingRanges(_ => this.beginComputeAndHandleEditorChange()));
 
-		this._register(this.commentService.onDidSetResourceCommentInfos(async e => {
-			const editorURI = this.editor && this.editor.hasModel() && this.editor.getModel().uri;
-			if (editorURI && editorURI.toString() === e.resource.toString()) {
-				await this.setComments(e.commentInfos.filter(commentInfo => commentInfo !== null));
-			}
-		}));
+		this._register(
+			this.commentService.onDidSetResourceCommentInfos(async e => {
+				const editorURI = this.editor && this.editor.hasModel() && this.editor.getModel().uri;
+				if (editorURI && editorURI.toString() === e.resource.toString()) {
+					await this.setComments(e.commentInfos.filter(commentInfo => commentInfo !== null));
+				}
+			})
+		);
 
-		this._register(this.commentService.onDidChangeCommentingEnabled(e => {
-			if (e) {
-				this.registerEditorListeners();
-				this.beginCompute();
-			} else {
-				this.tryUpdateReservedSpace();
-				this.clearEditorListeners();
-				this._commentingRangeDecorator.update(this.editor, []);
-				this._commentThreadRangeDecorator.update(this.editor, []);
-				dispose(this._commentWidgets);
-				this._commentWidgets = [];
-			}
-		}));
+		this._register(
+			this.commentService.onDidChangeCommentingEnabled(e => {
+				if (e) {
+					this.registerEditorListeners();
+					this.beginCompute();
+				} else {
+					this.tryUpdateReservedSpace();
+					this.clearEditorListeners();
+					this._commentingRangeDecorator.update(this.editor, []);
+					this._commentThreadRangeDecorator.update(this.editor, []);
+					dispose(this._commentWidgets);
+					this._commentWidgets = [];
+				}
+			})
+		);
 
 		this._register(this.editor.onWillChangeModel(e => this.onWillChangeModel(e)));
 		this._register(this.editor.onDidChangeModel(_ => this.onModelChanged()));
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('diffEditor.renderSideBySide')) {
-				this.beginCompute();
-			}
-		}));
+		this._register(
+			this.configurationService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration('diffEditor.renderSideBySide')) {
+					this.beginCompute();
+				}
+			})
+		);
 
 		this.onModelChanged();
-		this._register(this.codeEditorService.registerDecorationType('comment-controller', COMMENTEDITOR_DECORATION_KEY, {}));
+		this._register(
+			this.codeEditorService.registerDecorationType('comment-controller', COMMENTEDITOR_DECORATION_KEY, {})
+		);
 		this._register(
 			this.commentService.registerContinueOnCommentProvider({
 				provideContinueOnComments: () => {
@@ -588,7 +785,7 @@ export class CommentController extends Disposable implements IEditorContribution
 									uri: zone.editor.getModel()!.uri,
 									range: zone.commentThread.range,
 									comment: pendingNewComment,
-									isReply: (zone.commentThread.comments !== undefined) && (zone.commentThread.comments.length > 0)
+									isReply: zone.commentThread.comments !== undefined && zone.commentThread.comments.length > 0
 								});
 							}
 						}
@@ -597,7 +794,6 @@ export class CommentController extends Disposable implements IEditorContribution
 				}
 			})
 		);
-
 	}
 
 	private registerEditorListeners() {
@@ -607,8 +803,12 @@ export class CommentController extends Disposable implements IEditorContribution
 		}
 		this._editorDisposables.push(this.editor.onMouseMove(e => this.onEditorMouseMove(e)));
 		this._editorDisposables.push(this.editor.onMouseLeave(() => this.onEditorMouseLeave()));
-		this._editorDisposables.push(this.editor.onDidChangeCursorPosition(e => this.onEditorChangeCursorPosition(e.position)));
-		this._editorDisposables.push(this.editor.onDidFocusEditorWidget(() => this.onEditorChangeCursorPosition(this.editor?.getPosition() ?? null)));
+		this._editorDisposables.push(
+			this.editor.onDidChangeCursorPosition(e => this.onEditorChangeCursorPosition(e.position))
+		);
+		this._editorDisposables.push(
+			this.editor.onDidFocusEditorWidget(() => this.onEditorChangeCursorPosition(this.editor?.getPosition() ?? null))
+		);
 		this._editorDisposables.push(this.editor.onDidChangeCursorSelection(e => this.onEditorChangeCursorSelection(e)));
 		this._editorDisposables.push(this.editor.onDidBlurEditorWidget(() => this.onEditorChangeCursorSelection()));
 	}
@@ -625,7 +825,10 @@ export class CommentController extends Disposable implements IEditorContribution
 	private onEditorMouseMove(e: IEditorMouseEvent): void {
 		const position = e.target.position?.lineNumber;
 		if (e.event.leftButton.valueOf() && position && this.mouseDownInfo) {
-			this._commentingRangeDecorator.updateSelection(position, new Range(this.mouseDownInfo.lineNumber, 1, position, 1));
+			this._commentingRangeDecorator.updateSelection(
+				position,
+				new Range(this.mouseDownInfo.lineNumber, 1, position, 1)
+			);
 		} else {
 			this._commentingRangeDecorator.updateHover(position);
 		}
@@ -686,33 +889,46 @@ export class CommentController extends Disposable implements IEditorContribution
 			return Promise.resolve([]);
 		});
 
-		this._computeAndSetPromise = this._computePromise.then(async commentInfos => {
-			await this.setComments(coalesce(commentInfos));
-			this._computePromise = null;
-		}, error => console.log(error));
-		this._computePromise.then(() => this._computeAndSetPromise = undefined);
+		this._computeAndSetPromise = this._computePromise.then(
+			async commentInfos => {
+				await this.setComments(coalesce(commentInfos));
+				this._computePromise = null;
+			},
+			error => console.log(error)
+		);
+		this._computePromise.then(() => (this._computeAndSetPromise = undefined));
 		return this._computeAndSetPromise;
 	}
 
 	private beginComputeCommentingRanges() {
 		if (this._computeCommentingRangeScheduler) {
-			this._computeCommentingRangeScheduler.trigger(() => {
-				const editorURI = this.editor && this.editor.hasModel() && this.editor.getModel().uri;
+			this._computeCommentingRangeScheduler
+				.trigger(() => {
+					const editorURI = this.editor && this.editor.hasModel() && this.editor.getModel().uri;
 
-				if (editorURI) {
-					return this.commentService.getDocumentComments(editorURI);
-				}
+					if (editorURI) {
+						return this.commentService.getDocumentComments(editorURI);
+					}
 
-				return Promise.resolve([]);
-			}).then(commentInfos => {
-				if (this.commentService.isCommentingEnabled) {
-					const meaningfulCommentInfos = coalesce(commentInfos);
-					this._commentingRangeDecorator.update(this.editor, meaningfulCommentInfos, this.editor?.getPosition()?.lineNumber, this.editor?.getSelection() ?? undefined);
-				}
-			}, (err) => {
-				onUnexpectedError(err);
-				return null;
-			});
+					return Promise.resolve([]);
+				})
+				.then(
+					commentInfos => {
+						if (this.commentService.isCommentingEnabled) {
+							const meaningfulCommentInfos = coalesce(commentInfos);
+							this._commentingRangeDecorator.update(
+								this.editor,
+								meaningfulCommentInfos,
+								this.editor?.getPosition()?.lineNumber,
+								this.editor?.getSelection() ?? undefined
+							);
+						}
+					},
+					err => {
+						onUnexpectedError(err);
+						return null;
+					}
+				);
 		}
 	}
 
@@ -720,7 +936,12 @@ export class CommentController extends Disposable implements IEditorContribution
 		return editor.getContribution<CommentController>(ID);
 	}
 
-	public revealCommentThread(threadId: string, commentUniqueId: number | undefined, fetchOnceIfNotExist: boolean, focus: CommentWidgetFocus): void {
+	public revealCommentThread(
+		threadId: string,
+		commentUniqueId: number | undefined,
+		fetchOnceIfNotExist: boolean,
+		focus: CommentWidgetFocus
+	): void {
 		const commentThreadWidget = this._commentWidgets.filter(widget => widget.commentThread.threadId === threadId);
 		if (commentThreadWidget.length === 1) {
 			commentThreadWidget[0].reveal(commentUniqueId, focus);
@@ -867,7 +1088,9 @@ export class CommentController extends Disposable implements IEditorContribution
 			const commentRangeEnd = range?.getEndPosition().lineNumber;
 			if (commentRangeStart && commentRangeEnd) {
 				const oneLine = commentRangeStart === commentRangeEnd;
-				oneLine ? status(nls.localize('commentRange', "Line {0}", commentRangeStart)) : status(nls.localize('commentRangeStart', "Lines {0} to {1}", commentRangeStart, commentRangeEnd));
+				oneLine
+					? status(nls.localize('commentRange', 'Line {0}', commentRangeStart))
+					: status(nls.localize('commentRangeStart', 'Lines {0} to {1}', commentRangeStart, commentRangeEnd));
 			}
 		}
 	}
@@ -894,13 +1117,24 @@ export class CommentController extends Disposable implements IEditorContribution
 		}
 	}
 
-	private async handleCommentAdded(editorId: string | undefined, uniqueOwner: string, thread: languages.AddedCommentThread): Promise<void> {
-		const matchedZones = this._commentWidgets.filter(zoneWidget => zoneWidget.uniqueOwner === uniqueOwner && zoneWidget.commentThread.threadId === thread.threadId);
+	private async handleCommentAdded(
+		editorId: string | undefined,
+		uniqueOwner: string,
+		thread: languages.AddedCommentThread
+	): Promise<void> {
+		const matchedZones = this._commentWidgets.filter(
+			zoneWidget => zoneWidget.uniqueOwner === uniqueOwner && zoneWidget.commentThread.threadId === thread.threadId
+		);
 		if (matchedZones.length) {
 			return;
 		}
 
-		const matchedNewCommentThreadZones = this._commentWidgets.filter(zoneWidget => zoneWidget.uniqueOwner === uniqueOwner && zoneWidget.commentThread.commentThreadHandle === -1 && Range.equalsRange(zoneWidget.commentThread.range, thread.range));
+		const matchedNewCommentThreadZones = this._commentWidgets.filter(
+			zoneWidget =>
+				zoneWidget.uniqueOwner === uniqueOwner &&
+				zoneWidget.commentThread.commentThreadHandle === -1 &&
+				Range.equalsRange(zoneWidget.commentThread.range, thread.range)
+		);
 
 		if (matchedNewCommentThreadZones.length) {
 			matchedNewCommentThreadZones[0].update(thread);
@@ -915,14 +1149,20 @@ export class CommentController extends Disposable implements IEditorContribution
 			}
 		});
 		let continueOnCommentText: string | undefined;
-		if ((continueOnCommentIndex !== undefined) && continueOnCommentIndex >= 0) {
-			continueOnCommentText = this._inProcessContinueOnComments.get(uniqueOwner)?.splice(continueOnCommentIndex, 1)[0].comment.body;
+		if (continueOnCommentIndex !== undefined && continueOnCommentIndex >= 0) {
+			continueOnCommentText = this._inProcessContinueOnComments.get(uniqueOwner)?.splice(continueOnCommentIndex, 1)[0]
+				.comment.body;
 		}
 
-		const pendingCommentText = (this._pendingNewCommentCache[uniqueOwner] && this._pendingNewCommentCache[uniqueOwner][thread.threadId])
-			?? continueOnCommentText;
+		const pendingCommentText =
+			(this._pendingNewCommentCache[uniqueOwner] && this._pendingNewCommentCache[uniqueOwner][thread.threadId]) ??
+			continueOnCommentText;
 		const pendingEdits = this._pendingEditsCache[uniqueOwner] && this._pendingEditsCache[uniqueOwner][thread.threadId];
-		const shouldReveal = thread.canReply && thread.isTemplate && (!thread.comments || (thread.comments.length === 0)) && (!thread.editorId || (thread.editorId === editorId));
+		const shouldReveal =
+			thread.canReply &&
+			thread.isTemplate &&
+			(!thread.comments || thread.comments.length === 0) &&
+			(!thread.editorId || thread.editorId === editorId);
 		await this.displayCommentThread(uniqueOwner, thread, shouldReveal, pendingCommentText, pendingEdits);
 		this._commentInfos.filter(info => info.uniqueOwner === uniqueOwner)[0].threads.push(thread);
 		this.tryUpdateReservedSpace();
@@ -953,75 +1193,101 @@ export class CommentController extends Disposable implements IEditorContribution
 				this._computeCommentingRangeScheduler = null;
 			}
 		});
-		this.localToDispose.add(this.editor.onDidChangeModelContent(async () => {
-			this.beginComputeCommentingRanges();
-		}));
-		this.localToDispose.add(this.commentService.onDidUpdateCommentThreads(async e => {
-			const editorURI = this.editor && this.editor.hasModel() && this.editor.getModel().uri;
-			if (!editorURI || !this.commentService.isCommentingEnabled) {
-				return;
-			}
-
-			if (this._computePromise) {
-				await this._computePromise;
-			}
-
-			const commentInfo = this._commentInfos.filter(info => info.uniqueOwner === e.uniqueOwner);
-			if (!commentInfo || !commentInfo.length) {
-				return;
-			}
-
-			const added = e.added.filter(thread => thread.resource && thread.resource === editorURI.toString());
-			const removed = e.removed.filter(thread => thread.resource && thread.resource === editorURI.toString());
-			const changed = e.changed.filter(thread => thread.resource && thread.resource === editorURI.toString());
-			const pending = e.pending.filter(pending => pending.uri.toString() === editorURI.toString());
-
-			removed.forEach(thread => {
-				const matchedZones = this._commentWidgets.filter(zoneWidget => zoneWidget.uniqueOwner === e.uniqueOwner && zoneWidget.commentThread.threadId === thread.threadId && zoneWidget.commentThread.threadId !== '');
-				if (matchedZones.length) {
-					const matchedZone = matchedZones[0];
-					const index = this._commentWidgets.indexOf(matchedZone);
-					this._commentWidgets.splice(index, 1);
-					matchedZone.dispose();
+		this.localToDispose.add(
+			this.editor.onDidChangeModelContent(async () => {
+				this.beginComputeCommentingRanges();
+			})
+		);
+		this.localToDispose.add(
+			this.commentService.onDidUpdateCommentThreads(async e => {
+				const editorURI = this.editor && this.editor.hasModel() && this.editor.getModel().uri;
+				if (!editorURI || !this.commentService.isCommentingEnabled) {
+					return;
 				}
-				const infosThreads = this._commentInfos.filter(info => info.uniqueOwner === e.uniqueOwner)[0].threads;
-				for (let i = 0; i < infosThreads.length; i++) {
-					if (infosThreads[i] === thread) {
-						infosThreads.splice(i, 1);
-						i--;
+
+				if (this._computePromise) {
+					await this._computePromise;
+				}
+
+				const commentInfo = this._commentInfos.filter(info => info.uniqueOwner === e.uniqueOwner);
+				if (!commentInfo || !commentInfo.length) {
+					return;
+				}
+
+				const added = e.added.filter(thread => thread.resource && thread.resource === editorURI.toString());
+				const removed = e.removed.filter(thread => thread.resource && thread.resource === editorURI.toString());
+				const changed = e.changed.filter(thread => thread.resource && thread.resource === editorURI.toString());
+				const pending = e.pending.filter(pending => pending.uri.toString() === editorURI.toString());
+
+				removed.forEach(thread => {
+					const matchedZones = this._commentWidgets.filter(
+						zoneWidget =>
+							zoneWidget.uniqueOwner === e.uniqueOwner &&
+							zoneWidget.commentThread.threadId === thread.threadId &&
+							zoneWidget.commentThread.threadId !== ''
+					);
+					if (matchedZones.length) {
+						const matchedZone = matchedZones[0];
+						const index = this._commentWidgets.indexOf(matchedZone);
+						this._commentWidgets.splice(index, 1);
+						matchedZone.dispose();
+					}
+					const infosThreads = this._commentInfos.filter(info => info.uniqueOwner === e.uniqueOwner)[0].threads;
+					for (let i = 0; i < infosThreads.length; i++) {
+						if (infosThreads[i] === thread) {
+							infosThreads.splice(i, 1);
+							i--;
+						}
+					}
+				});
+
+				for (const thread of changed) {
+					const matchedZones = this._commentWidgets.filter(
+						zoneWidget =>
+							zoneWidget.uniqueOwner === e.uniqueOwner && zoneWidget.commentThread.threadId === thread.threadId
+					);
+					if (matchedZones.length) {
+						const matchedZone = matchedZones[0];
+						matchedZone.update(thread);
+						this.openCommentsView(thread);
 					}
 				}
-			});
-
-			for (const thread of changed) {
-				const matchedZones = this._commentWidgets.filter(zoneWidget => zoneWidget.uniqueOwner === e.uniqueOwner && zoneWidget.commentThread.threadId === thread.threadId);
-				if (matchedZones.length) {
-					const matchedZone = matchedZones[0];
-					matchedZone.update(thread);
-					this.openCommentsView(thread);
+				const editorId = this.editor?.getId();
+				for (const thread of added) {
+					await this.handleCommentAdded(editorId, e.uniqueOwner, thread);
 				}
-			}
-			const editorId = this.editor?.getId();
-			for (const thread of added) {
-				await this.handleCommentAdded(editorId, e.uniqueOwner, thread);
-			}
 
-			for (const thread of pending) {
-				await this.resumePendingComment(editorURI, thread);
-			}
-			this._commentThreadRangeDecorator.update(this.editor, commentInfo);
-		}));
+				for (const thread of pending) {
+					await this.resumePendingComment(editorURI, thread);
+				}
+				this._commentThreadRangeDecorator.update(this.editor, commentInfo);
+			})
+		);
 
 		this.beginComputeAndHandleEditorChange();
 	}
 
 	private async resumePendingComment(editorURI: URI, thread: languages.PendingCommentThread) {
-		const matchedZones = this._commentWidgets.filter(zoneWidget => zoneWidget.uniqueOwner === thread.uniqueOwner && Range.lift(zoneWidget.commentThread.range)?.equalsRange(thread.range));
+		const matchedZones = this._commentWidgets.filter(
+			zoneWidget =>
+				zoneWidget.uniqueOwner === thread.uniqueOwner &&
+				Range.lift(zoneWidget.commentThread.range)?.equalsRange(thread.range)
+		);
 		if (thread.isReply && matchedZones.length) {
-			this.commentService.removeContinueOnComment({ uniqueOwner: thread.uniqueOwner, uri: editorURI, range: thread.range, isReply: true });
+			this.commentService.removeContinueOnComment({
+				uniqueOwner: thread.uniqueOwner,
+				uri: editorURI,
+				range: thread.range,
+				isReply: true
+			});
 			matchedZones[0].setPendingComment(thread.comment);
 		} else if (matchedZones.length) {
-			this.commentService.removeContinueOnComment({ uniqueOwner: thread.uniqueOwner, uri: editorURI, range: thread.range, isReply: false });
+			this.commentService.removeContinueOnComment({
+				uniqueOwner: thread.uniqueOwner,
+				uri: editorURI,
+				range: thread.range,
+				isReply: false
+			});
 			const existingPendingComment = matchedZones[0].getPendingComments().newComment;
 			// We need to try to reconcile the existing pending comment with the incoming pending comment
 			let pendingComment: languages.PendingComment;
@@ -1034,7 +1300,12 @@ export class CommentController extends Disposable implements IEditorContribution
 			}
 			matchedZones[0].setPendingComment(pendingComment);
 		} else if (!thread.isReply) {
-			const threadStillAvailable = this.commentService.removeContinueOnComment({ uniqueOwner: thread.uniqueOwner, uri: editorURI, range: thread.range, isReply: false });
+			const threadStillAvailable = this.commentService.removeContinueOnComment({
+				uniqueOwner: thread.uniqueOwner,
+				uri: editorURI,
+				range: thread.range,
+				isReply: false
+			});
 			if (!threadStillAvailable) {
 				return;
 			}
@@ -1042,25 +1313,46 @@ export class CommentController extends Disposable implements IEditorContribution
 				this._inProcessContinueOnComments.set(thread.uniqueOwner, []);
 			}
 			this._inProcessContinueOnComments.get(thread.uniqueOwner)?.push(thread);
-			await this.commentService.createCommentThreadTemplate(thread.uniqueOwner, thread.uri, thread.range ? Range.lift(thread.range) : undefined);
+			await this.commentService.createCommentThreadTemplate(
+				thread.uniqueOwner,
+				thread.uri,
+				thread.range ? Range.lift(thread.range) : undefined
+			);
 		}
 	}
 
 	private beginComputeAndHandleEditorChange(): void {
 		this.beginCompute().then(() => {
 			if (!this._hasRespondedToEditorChange) {
-				if (this._commentInfos.some(commentInfo => commentInfo.commentingRanges.ranges.length > 0 || commentInfo.commentingRanges.fileComments)) {
+				if (
+					this._commentInfos.some(
+						commentInfo => commentInfo.commentingRanges.ranges.length > 0 || commentInfo.commentingRanges.fileComments
+					)
+				) {
 					this._hasRespondedToEditorChange = true;
 					const verbose = this.configurationService.getValue(AccessibilityVerbositySettingId.Comments);
 					if (verbose) {
-						const keybinding = this.keybindingService.lookupKeybinding(AccessibilityCommandId.OpenAccessibilityHelp)?.getAriaLabel();
+						const keybinding = this.keybindingService
+							.lookupKeybinding(AccessibilityCommandId.OpenAccessibilityHelp)
+							?.getAriaLabel();
 						if (keybinding) {
-							status(nls.localize('hasCommentRangesKb', "Editor has commenting ranges, run the command Open Accessibility Help ({0}), for more information.", keybinding));
+							status(
+								nls.localize(
+									'hasCommentRangesKb',
+									'Editor has commenting ranges, run the command Open Accessibility Help ({0}), for more information.',
+									keybinding
+								)
+							);
 						} else {
-							status(nls.localize('hasCommentRangesNoKb', "Editor has commenting ranges, run the command Open Accessibility Help, which is currently not triggerable via keybinding, for more information."));
+							status(
+								nls.localize(
+									'hasCommentRangesNoKb',
+									'Editor has commenting ranges, run the command Open Accessibility Help, which is currently not triggerable via keybinding, for more information.'
+								)
+							);
 						}
 					} else {
-						status(nls.localize('hasCommentRanges', "Editor has commenting ranges."));
+						status(nls.localize('hasCommentRanges', 'Editor has commenting ranges.'));
 					}
 				}
 			}
@@ -1068,11 +1360,14 @@ export class CommentController extends Disposable implements IEditorContribution
 	}
 
 	private async openCommentsView(thread: languages.CommentThread) {
-		if (thread.comments && (thread.comments.length > 0) && threadHasMeaningfulComments(thread)) {
+		if (thread.comments && thread.comments.length > 0 && threadHasMeaningfulComments(thread)) {
 			const openViewState = this.configurationService.getValue<ICommentsConfiguration>(COMMENTS_SECTION).openView;
 			if (openViewState === 'file') {
 				return this.viewsService.openView(COMMENTS_VIEW_ID);
-			} else if (openViewState === 'firstFile' || (openViewState === 'firstFileUnresolved' && thread.state === languages.CommentThreadState.Unresolved)) {
+			} else if (
+				openViewState === 'firstFile' ||
+				(openViewState === 'firstFileUnresolved' && thread.state === languages.CommentThreadState.Unresolved)
+			) {
 				const hasShownView = this.viewsService.getViewWithId<CommentsPanel>(COMMENTS_VIEW_ID)?.hasRendered;
 				if (!hasShownView) {
 					return this.viewsService.openView(COMMENTS_VIEW_ID);
@@ -1082,7 +1377,13 @@ export class CommentController extends Disposable implements IEditorContribution
 		return undefined;
 	}
 
-	private async displayCommentThread(uniqueOwner: string, thread: languages.CommentThread, shouldReveal: boolean, pendingComment: languages.PendingComment | undefined, pendingEdits: { [key: number]: languages.PendingComment } | undefined): Promise<void> {
+	private async displayCommentThread(
+		uniqueOwner: string,
+		thread: languages.CommentThread,
+		shouldReveal: boolean,
+		pendingComment: languages.PendingComment | undefined,
+		pendingEdits: { [key: number]: languages.PendingComment } | undefined
+	): Promise<void> {
 		const editor = this.editor?.getModel();
 		if (!editor) {
 			return;
@@ -1093,9 +1394,21 @@ export class CommentController extends Disposable implements IEditorContribution
 
 		let continueOnCommentReply: languages.PendingCommentThread | undefined;
 		if (thread.range && !pendingComment) {
-			continueOnCommentReply = this.commentService.removeContinueOnComment({ uniqueOwner, uri: editor.uri, range: thread.range, isReply: true });
+			continueOnCommentReply = this.commentService.removeContinueOnComment({
+				uniqueOwner,
+				uri: editor.uri,
+				range: thread.range,
+				isReply: true
+			});
 		}
-		const zoneWidget = this.instantiationService.createInstance(ReviewZoneWidget, this.editor, uniqueOwner, thread, pendingComment ?? continueOnCommentReply?.comment, pendingEdits);
+		const zoneWidget = this.instantiationService.createInstance(
+			ReviewZoneWidget,
+			this.editor,
+			uniqueOwner,
+			thread,
+			pendingComment ?? continueOnCommentReply?.comment,
+			pendingEdits
+		);
 		await zoneWidget.display(thread.range, shouldReveal);
 		this._commentWidgets.push(zoneWidget);
 		this.localToDispose.add(zoneWidget.onDidChangeExpandedState(() => this._updateCommentWidgetVisibleContext()));
@@ -1104,7 +1417,8 @@ export class CommentController extends Disposable implements IEditorContribution
 	}
 
 	private onEditorMouseDown(e: IEditorMouseEvent): void {
-		this.mouseDownInfo = (e.target.element?.className.indexOf('comment-range-glyph') ?? -1) >= 0 ? parseMouseDownInfoFromEvent(e) : null;
+		this.mouseDownInfo =
+			(e.target.element?.className.indexOf('comment-range-glyph') ?? -1) >= 0 ? parseMouseDownInfoFromEvent(e) : null;
 	}
 
 	private onEditorMouseUp(e: IEditorMouseEvent): void {
@@ -1114,15 +1428,20 @@ export class CommentController extends Disposable implements IEditorContribution
 		if (!this.editor || matchedLineNumber === null || !e.target.element) {
 			return;
 		}
-		const mouseUpIsOnDecorator = (e.target.element.className.indexOf('comment-range-glyph') >= 0);
+		const mouseUpIsOnDecorator = e.target.element.className.indexOf('comment-range-glyph') >= 0;
 
 		const lineNumber = e.target.position!.lineNumber;
 		let range: Range | undefined;
 		let selection: Range | null | undefined;
 		// Check for drag along gutter decoration
-		if ((matchedLineNumber !== lineNumber)) {
+		if (matchedLineNumber !== lineNumber) {
 			if (matchedLineNumber > lineNumber) {
-				selection = new Range(matchedLineNumber, this.editor.getModel()!.getLineLength(matchedLineNumber) + 1, lineNumber, 1);
+				selection = new Range(
+					matchedLineNumber,
+					this.editor.getModel()!.getLineLength(matchedLineNumber) + 1,
+					lineNumber,
+					1
+				);
 			} else {
 				selection = new Range(matchedLineNumber, 1, lineNumber, this.editor.getModel()!.getLineLength(lineNumber) + 1);
 			}
@@ -1131,7 +1450,7 @@ export class CommentController extends Disposable implements IEditorContribution
 		}
 
 		// Check for selection at line number.
-		if (selection && (selection.startLineNumber <= lineNumber) && (lineNumber <= selection.endLineNumber)) {
+		if (selection && selection.startLineNumber <= lineNumber && lineNumber <= selection.endLineNumber) {
 			range = selection;
 			this.editor.setSelection(new Range(selection.endLineNumber, 1, selection.endLineNumber, 1));
 		} else if (mouseUpIsOnDecorator) {
@@ -1144,10 +1463,15 @@ export class CommentController extends Disposable implements IEditorContribution
 	}
 
 	public getCommentsAtLine(commentRange: Range | undefined): ReviewZoneWidget[] {
-		return this._commentWidgets.filter(widget => widget.getGlyphPosition() === (commentRange ? commentRange.endLineNumber : 0));
+		return this._commentWidgets.filter(
+			widget => widget.getGlyphPosition() === (commentRange ? commentRange.endLineNumber : 0)
+		);
 	}
 
-	public async addOrToggleCommentAtLine(commentRange: Range | undefined, e: IEditorMouseEvent | undefined): Promise<void> {
+	public async addOrToggleCommentAtLine(
+		commentRange: Range | undefined,
+		e: IEditorMouseEvent | undefined
+	): Promise<void> {
 		// If an add is already in progress, queue the next add and process it after the current one finishes to
 		// prevent empty comment threads from being added to the same line.
 		if (!this._addInProgress) {
@@ -1177,10 +1501,20 @@ export class CommentController extends Disposable implements IEditorContribution
 
 	private clipUserRangeToCommentRange(userRange: Range, commentRange: Range): Range {
 		if (userRange.startLineNumber < commentRange.startLineNumber) {
-			userRange = new Range(commentRange.startLineNumber, commentRange.startColumn, userRange.endLineNumber, userRange.endColumn);
+			userRange = new Range(
+				commentRange.startLineNumber,
+				commentRange.startColumn,
+				userRange.endLineNumber,
+				userRange.endColumn
+			);
 		}
 		if (userRange.endLineNumber > commentRange.endLineNumber) {
-			userRange = new Range(userRange.startLineNumber, userRange.startColumn, commentRange.endLineNumber, commentRange.endColumn);
+			userRange = new Range(
+				userRange.startLineNumber,
+				userRange.startColumn,
+				commentRange.endLineNumber,
+				commentRange.endColumn
+			);
 		}
 		return userRange;
 	}
@@ -1191,9 +1525,13 @@ export class CommentController extends Disposable implements IEditorContribution
 			this._addInProgress = false;
 			if (!newCommentInfos.length) {
 				if (range) {
-					this.notificationService.error(nls.localize('comments.addCommand.error', "The cursor must be within a commenting range to add a comment."));
+					this.notificationService.error(
+						nls.localize('comments.addCommand.error', 'The cursor must be within a commenting range to add a comment.')
+					);
 				} else {
-					this.notificationService.error(nls.localize('comments.addFileCommentCommand.error', "File comments are not allowed on this file."));
+					this.notificationService.error(
+						nls.localize('comments.addFileCommentCommand.error', 'File comments are not allowed on this file.')
+					);
 				}
 			}
 			return Promise.resolve();
@@ -1204,32 +1542,42 @@ export class CommentController extends Disposable implements IEditorContribution
 				this.contextMenuService.showContextMenu({
 					getAnchor: () => e.event,
 					getActions: () => this.getContextMenuActions(newCommentInfos, range),
-					getActionsContext: () => newCommentInfos.length ? newCommentInfos[0] : undefined,
-					onHide: () => { this._addInProgress = false; }
+					getActionsContext: () => (newCommentInfos.length ? newCommentInfos[0] : undefined),
+					onHide: () => {
+						this._addInProgress = false;
+					}
 				});
 
 				return Promise.resolve();
 			} else {
 				const picks = this.getCommentProvidersQuickPicks(newCommentInfos);
-				return this.quickInputService.pick(picks, { placeHolder: nls.localize('pickCommentService', "Select Comment Provider"), matchOnDescription: true }).then(pick => {
-					if (!pick) {
-						return;
-					}
+				return this.quickInputService
+					.pick(picks, {
+						placeHolder: nls.localize('pickCommentService', 'Select Comment Provider'),
+						matchOnDescription: true
+					})
+					.then(pick => {
+						if (!pick) {
+							return;
+						}
 
-					const commentInfos = newCommentInfos.filter(info => info.action.ownerId === pick.id);
+						const commentInfos = newCommentInfos.filter(info => info.action.ownerId === pick.id);
 
-					if (commentInfos.length) {
-						const { ownerId } = commentInfos[0].action;
-						const clippedRange = range && commentInfos[0].range ? this.clipUserRangeToCommentRange(range, commentInfos[0].range) : range;
-						this.addCommentAtLine2(clippedRange, ownerId);
-					}
-				}).then(() => {
-					this._addInProgress = false;
-				});
+						if (commentInfos.length) {
+							const { ownerId } = commentInfos[0].action;
+							const clippedRange =
+								range && commentInfos[0].range ? this.clipUserRangeToCommentRange(range, commentInfos[0].range) : range;
+							this.addCommentAtLine2(clippedRange, ownerId);
+						}
+					})
+					.then(() => {
+						this._addInProgress = false;
+					});
 			}
 		} else {
 			const { ownerId } = newCommentInfos[0].action;
-			const clippedRange = range && newCommentInfos[0].range ? this.clipUserRangeToCommentRange(range, newCommentInfos[0].range) : range;
+			const clippedRange =
+				range && newCommentInfos[0].range ? this.clipUserRangeToCommentRange(range, newCommentInfos[0].range) : range;
 			this.addCommentAtLine2(clippedRange, ownerId);
 		}
 
@@ -1237,7 +1585,7 @@ export class CommentController extends Disposable implements IEditorContribution
 	}
 
 	private getCommentProvidersQuickPicks(commentInfos: MergedCommentRangeActions[]) {
-		const picks: QuickPickInput[] = commentInfos.map((commentInfo) => {
+		const picks: QuickPickInput[] = commentInfos.map(commentInfo => {
 			const { ownerId, extensionId, label } = commentInfo.action;
 
 			return {
@@ -1255,17 +1603,15 @@ export class CommentController extends Disposable implements IEditorContribution
 		commentInfos.forEach(commentInfo => {
 			const { ownerId, extensionId, label } = commentInfo.action;
 
-			actions.push(new Action(
-				'addCommentThread',
-				`${label || extensionId}`,
-				undefined,
-				true,
-				() => {
-					const clippedRange = commentInfo.range ? this.clipUserRangeToCommentRange(commentRange, commentInfo.range) : commentRange;
+			actions.push(
+				new Action('addCommentThread', `${label || extensionId}`, undefined, true, () => {
+					const clippedRange = commentInfo.range
+						? this.clipUserRangeToCommentRange(commentRange, commentInfo.range)
+						: commentRange;
 					this.addCommentAtLine2(clippedRange, ownerId);
 					return Promise.resolve();
-				}
-			));
+				})
+			);
 		});
 		return actions;
 	}
@@ -1289,7 +1635,11 @@ export class CommentController extends Disposable implements IEditorContribution
 		return { lineDecorationsWidth, extraEditorClassName };
 	}
 
-	private getWithoutCommentsEditorOptions(editor: ICodeEditor, extraEditorClassName: string[], startingLineDecorationsWidth: number) {
+	private getWithoutCommentsEditorOptions(
+		editor: ICodeEditor,
+		extraEditorClassName: string[],
+		startingLineDecorationsWidth: number
+	) {
 		let lineDecorationsWidth = startingLineDecorationsWidth;
 		const inlineCommentPos = extraEditorClassName.findIndex(name => name === 'inline-comment');
 		if (inlineCommentPos >= 0) {
@@ -1315,9 +1665,16 @@ export class CommentController extends Disposable implements IEditorContribution
 		return this._commentingRangeAmountReserved;
 	}
 
-	private getWithCommentsEditorOptions(editor: ICodeEditor, extraEditorClassName: string[], startingLineDecorationsWidth: number) {
+	private getWithCommentsEditorOptions(
+		editor: ICodeEditor,
+		extraEditorClassName: string[],
+		startingLineDecorationsWidth: number
+	) {
 		extraEditorClassName.push('inline-comment');
-		return { lineDecorationsWidth: this.getWithCommentsLineDecorationWidth(editor, startingLineDecorationsWidth), extraEditorClassName };
+		return {
+			lineDecorationsWidth: this.getWithCommentsLineDecorationWidth(editor, startingLineDecorationsWidth),
+			extraEditorClassName
+		};
 	}
 
 	private updateEditorLayoutOptions(editor: ICodeEditor, extraEditorClassName: string[], lineDecorationsWidth: number) {
@@ -1342,8 +1699,11 @@ export class CommentController extends Disposable implements IEditorContribution
 		}
 
 		const hasCommentsOrRangesInInfo = this._commentInfos.some(info => {
-			const hasRanges = Boolean(info.commentingRanges && (Array.isArray(info.commentingRanges) ? info.commentingRanges : info.commentingRanges.ranges).length);
-			return hasRanges || (info.threads.length > 0);
+			const hasRanges = Boolean(
+				info.commentingRanges &&
+				(Array.isArray(info.commentingRanges) ? info.commentingRanges : info.commentingRanges.ranges).length
+			);
+			return hasRanges || info.threads.length > 0;
 		});
 		uri = uri ?? this.editor.getModel()?.uri;
 		const resourceHasCommentingRanges = uri ? this.commentService.resourceHasCommentingRanges(uri) : false;
@@ -1359,7 +1719,10 @@ export class CommentController extends Disposable implements IEditorContribution
 			} else {
 				this.ensureCommentingRangeReservedAmount(this.editor);
 			}
-		} else if ((!hasCommentsOrRanges || !this.commentService.isCommentingEnabled) && this._commentingRangeSpaceReserved) {
+		} else if (
+			(!hasCommentsOrRanges || !this.commentService.isCommentingEnabled) &&
+			this._commentingRangeSpaceReserved
+		) {
 			this._commentingRangeSpaceReserved = false;
 			const { lineDecorationsWidth, extraEditorClassName } = this.getExistingCommentEditorOptions(this.editor);
 			const newOptions = this.getWithoutCommentsEditorOptions(this.editor, extraEditorClassName, lineDecorationsWidth);
@@ -1434,7 +1797,7 @@ export class CommentController extends Disposable implements IEditorContribution
 						lastCommentBody = lastComment.body.value;
 					}
 				}
-				if (pendingNewComment && (pendingNewComment.body !== lastCommentBody)) {
+				if (pendingNewComment && pendingNewComment.body !== lastCommentBody) {
 					if (!providerNewCommentCacheStore) {
 						this._pendingNewCommentCache[zone.uniqueOwner] = {};
 					}

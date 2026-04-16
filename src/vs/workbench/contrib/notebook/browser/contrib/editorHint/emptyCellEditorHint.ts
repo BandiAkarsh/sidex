@@ -5,7 +5,10 @@
 
 import { Schemas } from '../../../../../../base/common/network.js';
 import { ICodeEditor } from '../../../../../../editor/browser/editorBrowser.js';
-import { EditorContributionInstantiation, registerEditorContribution } from '../../../../../../editor/browser/editorExtensions.js';
+import {
+	EditorContributionInstantiation,
+	registerEditorContribution
+} from '../../../../../../editor/browser/editorExtensions.js';
 import { IConfigurationService } from '../../../../../../platform/configuration/common/configuration.js';
 import { EmptyTextEditorHintContribution } from '../../../../codeEditor/browser/emptyTextEditorHint/emptyTextEditorHint.js';
 import { getNotebookEditorFromEditorPane } from '../../notebookBrowser.js';
@@ -20,11 +23,7 @@ export class EmptyCellEditorHintContribution extends EmptyTextEditorHintContribu
 		@IConfigurationService configurationService: IConfigurationService,
 		@IInstantiationService instantiationService: IInstantiationService
 	) {
-		super(
-			editor,
-			configurationService,
-			instantiationService
-		);
+		super(editor, configurationService, instantiationService);
 
 		const activeEditor = getNotebookEditorFromEditorPane(this._editorService.activeEditorPane);
 		if (!activeEditor) {
@@ -65,4 +64,8 @@ export class EmptyCellEditorHintContribution extends EmptyTextEditorHintContribu
 	}
 }
 
-registerEditorContribution(EmptyCellEditorHintContribution.CONTRIB_ID, EmptyCellEditorHintContribution, EditorContributionInstantiation.Eager); // eager because it needs to render a help message
+registerEditorContribution(
+	EmptyCellEditorHintContribution.CONTRIB_ID,
+	EmptyCellEditorHintContribution,
+	EditorContributionInstantiation.Eager
+); // eager because it needs to render a help message

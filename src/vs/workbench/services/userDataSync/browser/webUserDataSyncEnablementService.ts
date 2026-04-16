@@ -7,8 +7,10 @@ import { InstantiationType, registerSingleton } from '../../../../platform/insta
 import { IUserDataSyncEnablementService, SyncResource } from '../../../../platform/userDataSync/common/userDataSync.js';
 import { UserDataSyncEnablementService } from './userDataSyncEnablementService.js';
 
-export class WebUserDataSyncEnablementService extends UserDataSyncEnablementService implements IUserDataSyncEnablementService {
-
+export class WebUserDataSyncEnablementService
+	extends UserDataSyncEnablementService
+	implements IUserDataSyncEnablementService
+{
 	private enabled: boolean | undefined = undefined;
 
 	override canToggleEnablement(): boolean {
@@ -39,13 +41,14 @@ export class WebUserDataSyncEnablementService extends UserDataSyncEnablementServ
 	}
 
 	override getResourceSyncStateVersion(resource: SyncResource): string | undefined {
-		return resource === SyncResource.Extensions ? this.workbenchEnvironmentService.options?.settingsSyncOptions?.extensionsSyncStateVersion : undefined;
+		return resource === SyncResource.Extensions
+			? this.workbenchEnvironmentService.options?.settingsSyncOptions?.extensionsSyncStateVersion
+			: undefined;
 	}
 
 	private isTrusted(): boolean {
 		return !!this.workbenchEnvironmentService.options?.workspaceProvider?.trusted;
 	}
-
 }
 
 registerSingleton(IUserDataSyncEnablementService, WebUserDataSyncEnablementService, InstantiationType.Delayed);

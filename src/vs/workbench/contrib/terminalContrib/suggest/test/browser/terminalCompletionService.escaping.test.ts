@@ -4,7 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { escapeTerminalCompletionLabel } from '../../browser/terminalCompletionService.js';
-import { GeneralShellType, PosixShellType, TerminalShellType, WindowsShellType } from '../../../../../../platform/terminal/common/terminal.js';
+import {
+	GeneralShellType,
+	PosixShellType,
+	TerminalShellType,
+	WindowsShellType
+} from '../../../../../../platform/terminal/common/terminal.js';
 import { strict as assert } from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
 
@@ -17,7 +22,7 @@ suite('escapeTerminalCompletionLabel', () => {
 		{ char: ']', label: 'abc]', expected: 'abc\\]' },
 		{ char: '(', label: '(abc', expected: '\\(abc' },
 		{ char: ')', label: 'abc)', expected: 'abc\\)' },
-		{ char: '\'', label: `'abc`, expected: `\\'abc` },
+		{ char: "'", label: `'abc`, expected: `\\'abc` },
 		{ char: '"', label: '"abc', expected: '\\"abc' },
 		{ char: '\\', label: 'abc\\', expected: 'abc\\\\' },
 		{ char: '`', label: '`abc', expected: '\\`abc' },
@@ -27,7 +32,7 @@ suite('escapeTerminalCompletionLabel', () => {
 		{ char: '&', label: '&abc', expected: '\\&abc' },
 		{ char: '|', label: '|abc', expected: '\\|abc' },
 		{ char: '<', label: '<abc', expected: '\\<abc' },
-		{ char: '>', label: '>abc', expected: '\\>abc' },
+		{ char: '>', label: '>abc', expected: '\\>abc' }
 	];
 
 	for (const { char, label, expected } of cases) {

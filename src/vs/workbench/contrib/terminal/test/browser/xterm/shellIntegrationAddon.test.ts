@@ -9,8 +9,17 @@ import * as sinon from 'sinon';
 import { importAMDNodeModule } from '../../../../../../amdX.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
 import { NullLogService } from '../../../../../../platform/log/common/log.js';
-import { ITerminalCapabilityStore, TerminalCapability } from '../../../../../../platform/terminal/common/capabilities/capabilities.js';
-import { deserializeVSCodeOscMessage, serializeVSCodeOscMessage, parseKeyValueAssignment, parseMarkSequence, ShellIntegrationAddon } from '../../../../../../platform/terminal/common/xterm/shellIntegrationAddon.js';
+import {
+	ITerminalCapabilityStore,
+	TerminalCapability
+} from '../../../../../../platform/terminal/common/capabilities/capabilities.js';
+import {
+	deserializeVSCodeOscMessage,
+	serializeVSCodeOscMessage,
+	parseKeyValueAssignment,
+	parseMarkSequence,
+	ShellIntegrationAddon
+} from '../../../../../../platform/terminal/common/xterm/shellIntegrationAddon.js';
 import { writeP } from '../../../browser/terminalTestHelpers.js';
 import { TestXtermLogger } from '../../../../../../platform/terminal/test/common/terminalTestHelpers.js';
 
@@ -35,9 +44,12 @@ suite('ShellIntegrationAddon', () => {
 	let capabilities: ITerminalCapabilityStore;
 
 	setup(async () => {
-		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
+		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js'))
+			.Terminal;
 		xterm = store.add(new TerminalCtor({ allowProposedApi: true, cols: 80, rows: 30, logger: TestXtermLogger }));
-		shellIntegrationAddon = store.add(new TestShellIntegrationAddon('', true, undefined, undefined, new NullLogService()));
+		shellIntegrationAddon = store.add(
+			new TestShellIntegrationAddon('', true, undefined, undefined, new NullLogService())
+		);
 		xterm.loadAddon(shellIntegrationAddon);
 		capabilities = shellIntegrationAddon.capabilities;
 	});
@@ -62,7 +74,7 @@ suite('ShellIntegrationAddon', () => {
 			type TestCase = [title: string, input: string, expected: string];
 			const cases: TestCase[] = [
 				['root', '/', '/'],
-				['non-root', '/some/path', '/some/path'],
+				['non-root', '/some/path', '/some/path']
 			];
 			for (const x of cases) {
 				const [title, input, expected] = x;
@@ -84,7 +96,7 @@ suite('ShellIntegrationAddon', () => {
 					// URL-encoded chars:
 					['URL-encoded value (1)', 'file:///test-root/%6c%6f%63%61%6c', '/test-root/local'],
 					['URL-encoded value (2)', 'file:///test-root/local%22', '/test-root/local"'],
-					['URL-encoded value (3)', 'file:///test-root/local"', '/test-root/local"'],
+					['URL-encoded value (3)', 'file:///test-root/local"', '/test-root/local"']
 				];
 				for (const x of cases) {
 					const [title, input, expected] = x;
@@ -107,7 +119,7 @@ suite('ShellIntegrationAddon', () => {
 					['no scheme (4)', ':///test-root'],
 					['http', 'http:///test-root'],
 					['ftp', 'ftp:///test-root'],
-					['ssh', 'ssh:///test-root'],
+					['ssh', 'ssh:///test-root']
 				];
 
 				for (const x of cases) {
@@ -124,7 +136,7 @@ suite('ShellIntegrationAddon', () => {
 			type TestCase = [title: string, input: string, expected: string];
 			const cases: TestCase[] = [
 				['root', '/', '/'],
-				['non-root', '/some/path', '/some/path'],
+				['non-root', '/some/path', '/some/path']
 			];
 			for (const x of cases) {
 				const [title, input, expected] = x;
@@ -208,7 +220,7 @@ suite('ShellIntegrationAddon', () => {
 			await writeP(xterm, '\x1b]633;P;Cwd=/foo\x07');
 			strictEqual(capabilities.has(TerminalCapability.CommandDetection), false);
 		});
-		test('should pass cwd sequence to the capability if it\'s initialized', async () => {
+		test("should pass cwd sequence to the capability if it's initialized", async () => {
 			const mock = shellIntegrationAddon.getCommandDetectionMock(xterm);
 			mock.expects('setCwd').once().withExactArgs('/foo');
 			await writeP(xterm, '\x1b]633;P;Cwd=/foo\x07');
@@ -275,21 +287,49 @@ suite('ShellIntegrationAddon', () => {
 			['non-initial escaped backslash', `foo${Backslash}${Backslash}`, `foo${Backslash}`],
 			['two escaped backslashes', `${Backslash}${Backslash}${Backslash}${Backslash}`, `${Backslash}${Backslash}`],
 			['escaped backslash amidst text', `Hello${Backslash}${Backslash}there`, `Hello${Backslash}there`],
-			['backslash escaped literally and as hex', `${Backslash}${Backslash} is same as ${Backslash}x5c`, `${Backslash} is same as ${Backslash}`],
+			[
+				'backslash escaped literally and as hex',
+				`${Backslash}${Backslash} is same as ${Backslash}x5c`,
+				`${Backslash} is same as ${Backslash}`
+			],
 			['escaped semicolon', `${Backslash}x3b`, Semicolon],
 			['non-initial escaped semicolon', `foo${Backslash}x3b`, `foo${Semicolon}`],
 			['escaped semicolon (upper hex)', `${Backslash}x3B`, Semicolon],
-			['escaped backslash followed by literal "x3b" is not a semicolon', `${Backslash}${Backslash}x3b`, `${Backslash}x3b`],
-			['non-initial escaped backslash followed by literal "x3b" is not a semicolon', `foo${Backslash}${Backslash}x3b`, `foo${Backslash}x3b`],
-			['escaped backslash followed by escaped semicolon', `${Backslash}${Backslash}${Backslash}x3b`, `${Backslash}${Semicolon}`],
+			[
+				'escaped backslash followed by literal "x3b" is not a semicolon',
+				`${Backslash}${Backslash}x3b`,
+				`${Backslash}x3b`
+			],
+			[
+				'non-initial escaped backslash followed by literal "x3b" is not a semicolon',
+				`foo${Backslash}${Backslash}x3b`,
+				`foo${Backslash}x3b`
+			],
+			[
+				'escaped backslash followed by escaped semicolon',
+				`${Backslash}${Backslash}${Backslash}x3b`,
+				`${Backslash}${Semicolon}`
+			],
 			['escaped semicolon amidst text', `some${Backslash}x3bthing`, `some${Semicolon}thing`],
 			['escaped newline', `${Backslash}x0a`, Newline],
 			['non-initial escaped newline', `foo${Backslash}x0a`, `foo${Newline}`],
 			['escaped newline (upper hex)', `${Backslash}x0A`, Newline],
-			['escaped backslash followed by literal "x0a" is not a newline', `${Backslash}${Backslash}x0a`, `${Backslash}x0a`],
-			['non-initial escaped backslash followed by literal "x0a" is not a newline', `foo${Backslash}${Backslash}x0a`, `foo${Backslash}x0a`],
+			[
+				'escaped backslash followed by literal "x0a" is not a newline',
+				`${Backslash}${Backslash}x0a`,
+				`${Backslash}x0a`
+			],
+			[
+				'non-initial escaped backslash followed by literal "x0a" is not a newline',
+				`foo${Backslash}${Backslash}x0a`,
+				`foo${Backslash}x0a`
+			],
 			['PS1 simple', '[\\u@\\h \\W]\\$', '[\\u@\\h \\W]\\$'],
-			['PS1 VSC SI', `${Backslash}x1b]633;A${Backslash}x07\\[${Backslash}x1b]0;\\u@\\h:\\w\\a\\]${Backslash}x1b]633;B${Backslash}x07`, '\x1b]633;A\x07\\[\x1b]0;\\u@\\h:\\w\\a\\]\x1b]633;B\x07']
+			[
+				'PS1 VSC SI',
+				`${Backslash}x1b]633;A${Backslash}x07\\[${Backslash}x1b]0;\\u@\\h:\\w\\a\\]${Backslash}x1b]633;B${Backslash}x07`,
+				'\x1b]633;A\x07\\[\x1b]0;\\u@\\h:\\w\\a\\]\x1b]633;B\x07'
+			]
 		];
 
 		cases.forEach(([title, input, expected]) => {
@@ -323,8 +363,16 @@ suite('ShellIntegrationAddon', () => {
 			['null character', '\x00', `${Backslash}x00`],
 			['space character (0x20)', ' ', `${Backslash}x20`],
 			['character above 0x20', '!', '!'],
-			['multiple special chars', `hello${Newline}world${Semicolon}test${Backslash}end`, `hello${Backslash}x0aworld${Backslash}x3btest${Backslash}${Backslash}end`],
-			['PS1 with escape sequences', `\x1b]633;A\x07\\[\x1b]0;\\u@\\h:\\w\\a\\]\x1b]633;B\x07`, `${Backslash}x1b]633${Backslash}x3bA${Backslash}x07${Backslash}${Backslash}[${Backslash}x1b]0${Backslash}x3b${Backslash}${Backslash}u@${Backslash}${Backslash}h:${Backslash}${Backslash}w${Backslash}${Backslash}a${Backslash}${Backslash}]${Backslash}x1b]633${Backslash}x3bB${Backslash}x07`]
+			[
+				'multiple special chars',
+				`hello${Newline}world${Semicolon}test${Backslash}end`,
+				`hello${Backslash}x0aworld${Backslash}x3btest${Backslash}${Backslash}end`
+			],
+			[
+				'PS1 with escape sequences',
+				`\x1b]633;A\x07\\[\x1b]0;\\u@\\h:\\w\\a\\]\x1b]633;B\x07`,
+				`${Backslash}x1b]633${Backslash}x3bA${Backslash}x07${Backslash}${Backslash}[${Backslash}x1b]0${Backslash}x3b${Backslash}${Backslash}u@${Backslash}${Backslash}h:${Backslash}${Backslash}w${Backslash}${Backslash}a${Backslash}${Backslash}]${Backslash}x1b]633${Backslash}x3bB${Backslash}x07`
+			]
 		];
 
 		cases.forEach(([title, input, expected]) => {
@@ -343,7 +391,7 @@ suite('ShellIntegrationAddon', () => {
 			['multiple "=" signs (1)', 'key==value', ['key', '=value']],
 			['multiple "=" signs (2)', 'key=value===true', ['key', 'value===true']],
 			['just a "="', '=', ['', '']],
-			['just a "=="', '==', ['', '=']],
+			['just a "=="', '==', ['', '=']]
 		];
 
 		cases.forEach(x => {

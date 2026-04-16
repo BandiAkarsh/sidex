@@ -7,7 +7,16 @@ import { MarkdownString } from '../../../../base/common/htmlContent.js';
 import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
 import { IPickerQuickAccessItem } from '../../../../platform/quickinput/browser/pickerQuickAccess.js';
 
-export function resolveContentAndKeybindingItems(keybindingService: IKeybindingService, value?: string): { content: MarkdownString; configureKeybindingItems: IPickerQuickAccessItem[] | undefined; configuredKeybindingItems: IPickerQuickAccessItem[] | undefined } | undefined {
+export function resolveContentAndKeybindingItems(
+	keybindingService: IKeybindingService,
+	value?: string
+):
+	| {
+			content: MarkdownString;
+			configureKeybindingItems: IPickerQuickAccessItem[] | undefined;
+			configuredKeybindingItems: IPickerQuickAccessItem[] | undefined;
+	  }
+	| undefined {
 	if (!value) {
 		return;
 	}
@@ -37,6 +46,9 @@ export function resolveContentAndKeybindingItems(keybindingService: IKeybindingS
 	}
 	const content = new MarkdownString(value);
 	content.isTrusted = true;
-	return { content, configureKeybindingItems: configureKeybindingItems.length ? configureKeybindingItems : undefined, configuredKeybindingItems: configuredKeybindingItems.length ? configuredKeybindingItems : undefined };
+	return {
+		content,
+		configureKeybindingItems: configureKeybindingItems.length ? configureKeybindingItems : undefined,
+		configuredKeybindingItems: configuredKeybindingItems.length ? configuredKeybindingItems : undefined
+	};
 }
-

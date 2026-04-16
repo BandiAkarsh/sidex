@@ -5,7 +5,14 @@
 
 import assert from 'assert';
 import { EditorGroupModel, ISerializedEditorGroupModel } from '../../../../common/editor/editorGroupModel.js';
-import { EditorExtensions, IEditorFactoryRegistry, IFileEditorInput, IEditorSerializer, EditorsOrder, GroupModelChangeKind } from '../../../../common/editor.js';
+import {
+	EditorExtensions,
+	IEditorFactoryRegistry,
+	IFileEditorInput,
+	IEditorSerializer,
+	EditorsOrder,
+	GroupModelChangeKind
+} from '../../../../common/editor.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { TestLifecycleService } from '../../workbenchTestServices.js';
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
@@ -23,10 +30,12 @@ import { TestContextService, TestStorageService } from '../../../common/workbenc
 import { EditorInput } from '../../../../common/editor/editorInput.js';
 import { isEqual } from '../../../../../base/common/resources.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { StickyEditorGroupModel, UnstickyEditorGroupModel } from '../../../../common/editor/filteredEditorGroupModel.js';
+import {
+	StickyEditorGroupModel,
+	UnstickyEditorGroupModel
+} from '../../../../common/editor/filteredEditorGroupModel.js';
 
 suite('FilteredEditorGroupModel', () => {
-
 	let testInstService: TestInstantiationService | undefined;
 
 	suiteTeardown(() => {
@@ -45,7 +54,9 @@ suite('FilteredEditorGroupModel', () => {
 		inst.stub(ITelemetryService, NullTelemetryService);
 
 		const config = new TestConfigurationService();
-		config.setUserConfiguration('workbench', { editor: { openPositioning: 'right', focusRecentEditorAfterClose: true } });
+		config.setUserConfiguration('workbench', {
+			editor: { openPositioning: 'right', focusRecentEditorAfterClose: true }
+		});
 		inst.stub(IConfigurationService, config);
 
 		return inst;
@@ -54,25 +65,30 @@ suite('FilteredEditorGroupModel', () => {
 	function createEditorGroupModel(serialized?: ISerializedEditorGroupModel): EditorGroupModel {
 		const group = disposables.add(inst().createInstance(EditorGroupModel, serialized));
 
-		disposables.add(toDisposable(() => {
-			for (const editor of group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)) {
-				group.closeEditor(editor);
-			}
-		}));
+		disposables.add(
+			toDisposable(() => {
+				for (const editor of group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)) {
+					group.closeEditor(editor);
+				}
+			})
+		);
 
 		return group;
 	}
 
 	let index = 0;
 	class TestEditorInput extends EditorInput {
-
 		readonly resource = undefined;
 
 		constructor(public id: string) {
 			super();
 		}
-		override get typeId() { return 'testEditorInputForGroups'; }
-		override async resolve(): Promise<IDisposable> { return null!; }
+		override get typeId() {
+			return 'testEditorInputForGroups';
+		}
+		override async resolve(): Promise<IDisposable> {
+			return null!;
+		}
 
 		override matches(other: TestEditorInput): boolean {
 			return other && this.id === other.id && other instanceof TestEditorInput;
@@ -88,14 +104,17 @@ suite('FilteredEditorGroupModel', () => {
 	}
 
 	class NonSerializableTestEditorInput extends EditorInput {
-
 		readonly resource = undefined;
 
 		constructor(public id: string) {
 			super();
 		}
-		override get typeId() { return 'testEditorInputForGroups-nonSerializable'; }
-		override async resolve(): Promise<IDisposable | null> { return null; }
+		override get typeId() {
+			return 'testEditorInputForGroups-nonSerializable';
+		}
+		override async resolve(): Promise<IDisposable | null> {
+			return null;
+		}
 
 		override matches(other: NonSerializableTestEditorInput): boolean {
 			return other && this.id === other.id && other instanceof NonSerializableTestEditorInput;
@@ -103,27 +122,39 @@ suite('FilteredEditorGroupModel', () => {
 	}
 
 	class TestFileEditorInput extends EditorInput implements IFileEditorInput {
-
 		readonly preferredResource;
 
-		constructor(public id: string, public resource: URI) {
+		constructor(
+			public id: string,
+			public resource: URI
+		) {
 			super();
 			this.preferredResource = this.resource;
 		}
-		override get typeId() { return 'testFileEditorInputForGroups'; }
-		override get editorId() { return this.id; }
-		override async resolve(): Promise<IDisposable | null> { return null; }
-		setPreferredName(name: string): void { }
-		setPreferredDescription(description: string): void { }
-		setPreferredResource(resource: URI): void { }
-		async setEncoding(encoding: string) { }
-		getEncoding() { return undefined; }
-		setPreferredEncoding(encoding: string) { }
-		setForceOpenAsBinary(): void { }
-		setPreferredContents(contents: string): void { }
-		setLanguageId(languageId: string) { }
-		setPreferredLanguageId(languageId: string) { }
-		isResolved(): boolean { return false; }
+		override get typeId() {
+			return 'testFileEditorInputForGroups';
+		}
+		override get editorId() {
+			return this.id;
+		}
+		override async resolve(): Promise<IDisposable | null> {
+			return null;
+		}
+		setPreferredName(name: string): void {}
+		setPreferredDescription(description: string): void {}
+		setPreferredResource(resource: URI): void {}
+		async setEncoding(encoding: string) {}
+		getEncoding() {
+			return undefined;
+		}
+		setPreferredEncoding(encoding: string) {}
+		setForceOpenAsBinary(): void {}
+		setPreferredContents(contents: string): void {}
+		setLanguageId(languageId: string) {}
+		setPreferredLanguageId(languageId: string) {}
+		isResolved(): boolean {
+			return false;
+		}
 
 		override matches(other: TestFileEditorInput): boolean {
 			if (super.matches(other)) {
@@ -143,7 +174,9 @@ suite('FilteredEditorGroupModel', () => {
 			return disposables.add(new TestFileEditorInput(id, resource));
 		}
 
-		return nonSerializable ? disposables.add(new NonSerializableTestEditorInput(id)) : disposables.add(new TestEditorInput(id));
+		return nonSerializable
+			? disposables.add(new NonSerializableTestEditorInput(id))
+			: disposables.add(new TestEditorInput(id));
 	}
 
 	function closeAllEditors(group: EditorGroupModel): void {
@@ -157,7 +190,6 @@ suite('FilteredEditorGroupModel', () => {
 	}
 
 	class TestEditorInputSerializer implements IEditorSerializer {
-
 		static disableSerialize = false;
 		static disableDeserialize = false;
 
@@ -195,7 +227,12 @@ suite('FilteredEditorGroupModel', () => {
 		TestEditorInputSerializer.disableSerialize = false;
 		TestEditorInputSerializer.disableDeserialize = false;
 
-		disposables.add(Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer('testEditorInputForGroups', TestEditorInputSerializer));
+		disposables.add(
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer(
+				'testEditorInputForGroups',
+				TestEditorInputSerializer
+			)
+		);
 	});
 
 	teardown(() => {
@@ -205,7 +242,6 @@ suite('FilteredEditorGroupModel', () => {
 	});
 
 	test('Sticky/Unsticky count', async () => {
-
 		const model = createEditorGroupModel();
 
 		const stickyFilteredEditorGroup = disposables.add(new StickyEditorGroupModel(model));
@@ -216,7 +252,6 @@ suite('FilteredEditorGroupModel', () => {
 
 		model.openEditor(input1, { pinned: true, sticky: true });
 		model.openEditor(input2, { pinned: true, sticky: true });
-
 
 		assert.strictEqual(stickyFilteredEditorGroup.count, 2);
 		assert.strictEqual(unstickyFilteredEditorGroup.count, 0);
@@ -244,7 +279,6 @@ suite('FilteredEditorGroupModel', () => {
 		model.openEditor(input1, { pinned: true, sticky: true });
 		model.openEditor(input2, { pinned: true, sticky: true });
 
-
 		assert.strictEqual(stickyFilteredEditorGroup.stickyCount, 2);
 		assert.strictEqual(unstickyFilteredEditorGroup.stickyCount, 0);
 
@@ -270,7 +304,6 @@ suite('FilteredEditorGroupModel', () => {
 
 		model.openEditor(input1, { pinned: true, sticky: false });
 		model.openEditor(input2, { pinned: true, sticky: false });
-
 
 		assert.strictEqual(stickyFilteredEditorGroup.count === 0, true);
 		assert.strictEqual(unstickyFilteredEditorGroup.count === 0, false);
@@ -454,10 +487,22 @@ suite('FilteredEditorGroupModel', () => {
 		assert.strictEqual(unstickyFilteredEditorGroup.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 0);
 
 		// options: excludeSticky
-		assert.strictEqual(stickyFilteredEditorGroup.getEditors(EditorsOrder.SEQUENTIAL, { excludeSticky: true }).length, 0);
-		assert.strictEqual(stickyFilteredEditorGroup.getEditors(EditorsOrder.SEQUENTIAL, { excludeSticky: false }).length, 2);
-		assert.strictEqual(unstickyFilteredEditorGroup.getEditors(EditorsOrder.SEQUENTIAL, { excludeSticky: true }).length, 0);
-		assert.strictEqual(unstickyFilteredEditorGroup.getEditors(EditorsOrder.SEQUENTIAL, { excludeSticky: false }).length, 0);
+		assert.strictEqual(
+			stickyFilteredEditorGroup.getEditors(EditorsOrder.SEQUENTIAL, { excludeSticky: true }).length,
+			0
+		);
+		assert.strictEqual(
+			stickyFilteredEditorGroup.getEditors(EditorsOrder.SEQUENTIAL, { excludeSticky: false }).length,
+			2
+		);
+		assert.strictEqual(
+			unstickyFilteredEditorGroup.getEditors(EditorsOrder.SEQUENTIAL, { excludeSticky: true }).length,
+			0
+		);
+		assert.strictEqual(
+			unstickyFilteredEditorGroup.getEditors(EditorsOrder.SEQUENTIAL, { excludeSticky: false }).length,
+			0
+		);
 
 		assert.strictEqual(stickyFilteredEditorGroup.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[0], input2);
 		assert.strictEqual(stickyFilteredEditorGroup.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[1], input1);
@@ -703,61 +748,77 @@ suite('FilteredEditorGroupModel', () => {
 
 		// DIRTY
 		let dirty1CounterSticky = 0;
-		disposables.add(stickyFilteredEditorGroup1.onDidModelChange((e) => {
-			if (e.kind === GroupModelChangeKind.EDITOR_DIRTY) {
-				dirty1CounterSticky++;
-			}
-		}));
+		disposables.add(
+			stickyFilteredEditorGroup1.onDidModelChange(e => {
+				if (e.kind === GroupModelChangeKind.EDITOR_DIRTY) {
+					dirty1CounterSticky++;
+				}
+			})
+		);
 
 		let dirty1CounterUnsticky = 0;
-		disposables.add(unstickyFilteredEditorGroup1.onDidModelChange((e) => {
-			if (e.kind === GroupModelChangeKind.EDITOR_DIRTY) {
-				dirty1CounterUnsticky++;
-			}
-		}));
+		disposables.add(
+			unstickyFilteredEditorGroup1.onDidModelChange(e => {
+				if (e.kind === GroupModelChangeKind.EDITOR_DIRTY) {
+					dirty1CounterUnsticky++;
+				}
+			})
+		);
 
 		let dirty2CounterSticky = 0;
-		disposables.add(stickyFilteredEditorGroup2.onDidModelChange((e) => {
-			if (e.kind === GroupModelChangeKind.EDITOR_DIRTY) {
-				dirty2CounterSticky++;
-			}
-		}));
+		disposables.add(
+			stickyFilteredEditorGroup2.onDidModelChange(e => {
+				if (e.kind === GroupModelChangeKind.EDITOR_DIRTY) {
+					dirty2CounterSticky++;
+				}
+			})
+		);
 
 		let dirty2CounterUnsticky = 0;
-		disposables.add(unstickyFilteredEditorGroup2.onDidModelChange((e) => {
-			if (e.kind === GroupModelChangeKind.EDITOR_DIRTY) {
-				dirty2CounterUnsticky++;
-			}
-		}));
+		disposables.add(
+			unstickyFilteredEditorGroup2.onDidModelChange(e => {
+				if (e.kind === GroupModelChangeKind.EDITOR_DIRTY) {
+					dirty2CounterUnsticky++;
+				}
+			})
+		);
 
 		// LABEL
 		let label1ChangeCounterSticky = 0;
-		disposables.add(stickyFilteredEditorGroup1.onDidModelChange((e) => {
-			if (e.kind === GroupModelChangeKind.EDITOR_LABEL) {
-				label1ChangeCounterSticky++;
-			}
-		}));
+		disposables.add(
+			stickyFilteredEditorGroup1.onDidModelChange(e => {
+				if (e.kind === GroupModelChangeKind.EDITOR_LABEL) {
+					label1ChangeCounterSticky++;
+				}
+			})
+		);
 
 		let label1ChangeCounterUnsticky = 0;
-		disposables.add(unstickyFilteredEditorGroup1.onDidModelChange((e) => {
-			if (e.kind === GroupModelChangeKind.EDITOR_LABEL) {
-				label1ChangeCounterUnsticky++;
-			}
-		}));
+		disposables.add(
+			unstickyFilteredEditorGroup1.onDidModelChange(e => {
+				if (e.kind === GroupModelChangeKind.EDITOR_LABEL) {
+					label1ChangeCounterUnsticky++;
+				}
+			})
+		);
 
 		let label2ChangeCounterSticky = 0;
-		disposables.add(stickyFilteredEditorGroup2.onDidModelChange((e) => {
-			if (e.kind === GroupModelChangeKind.EDITOR_LABEL) {
-				label2ChangeCounterSticky++;
-			}
-		}));
+		disposables.add(
+			stickyFilteredEditorGroup2.onDidModelChange(e => {
+				if (e.kind === GroupModelChangeKind.EDITOR_LABEL) {
+					label2ChangeCounterSticky++;
+				}
+			})
+		);
 
 		let label2ChangeCounterUnsticky = 0;
-		disposables.add(unstickyFilteredEditorGroup2.onDidModelChange((e) => {
-			if (e.kind === GroupModelChangeKind.EDITOR_LABEL) {
-				label2ChangeCounterUnsticky++;
-			}
-		}));
+		disposables.add(
+			unstickyFilteredEditorGroup2.onDidModelChange(e => {
+				if (e.kind === GroupModelChangeKind.EDITOR_LABEL) {
+					label2ChangeCounterUnsticky++;
+				}
+			})
+		);
 
 		(<TestEditorInput>input1).setDirty();
 		(<TestEditorInput>input1).setLabel();

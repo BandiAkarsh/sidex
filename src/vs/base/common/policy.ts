@@ -22,41 +22,45 @@ export enum PolicyCategory {
 	IntegratedTerminal = 'IntegratedTerminal',
 	InteractiveSession = 'InteractiveSession',
 	Telemetry = 'Telemetry',
-	Update = 'Update',
+	Update = 'Update'
 }
 
 export const PolicyCategoryData: {
-	[key in PolicyCategory]: { name: LocalizedValue }
+	[key in PolicyCategory]: { name: LocalizedValue };
 } = {
 	[PolicyCategory.Extensions]: {
 		name: {
-			key: 'extensionsConfigurationTitle', value: localize('extensionsConfigurationTitle', "Extensions"),
+			key: 'extensionsConfigurationTitle',
+			value: localize('extensionsConfigurationTitle', 'Extensions')
 		}
 	},
 	[PolicyCategory.IntegratedTerminal]: {
 		name: {
-			key: 'terminalIntegratedConfigurationTitle', value: localize('terminalIntegratedConfigurationTitle', "Integrated Terminal"),
+			key: 'terminalIntegratedConfigurationTitle',
+			value: localize('terminalIntegratedConfigurationTitle', 'Integrated Terminal')
 		}
 	},
 	[PolicyCategory.InteractiveSession]: {
 		name: {
-			key: 'interactiveSessionConfigurationTitle', value: localize('interactiveSessionConfigurationTitle', "Chat"),
+			key: 'interactiveSessionConfigurationTitle',
+			value: localize('interactiveSessionConfigurationTitle', 'Chat')
 		}
 	},
 	[PolicyCategory.Telemetry]: {
 		name: {
-			key: 'telemetryConfigurationTitle', value: localize('telemetryConfigurationTitle', "Telemetry"),
+			key: 'telemetryConfigurationTitle',
+			value: localize('telemetryConfigurationTitle', 'Telemetry')
 		}
 	},
 	[PolicyCategory.Update]: {
 		name: {
-			key: 'updateConfigurationTitle', value: localize('updateConfigurationTitle', "Update"),
+			key: 'updateConfigurationTitle',
+			value: localize('updateConfigurationTitle', 'Update')
 		}
 	}
 };
 
 export interface IPolicy {
-
 	/**
 	 * The policy name.
 	 */
@@ -69,7 +73,7 @@ export interface IPolicy {
 
 	/**
 	 * The Code version in which this policy was introduced.
-	*/
+	 */
 	readonly minimumVersion: `${number}.${number}`;
 
 	/**

@@ -44,17 +44,29 @@ suite('NotebookEditorStickyScroll', () => {
 		if (!editor.hasModel()) {
 			assert.ok(false, 'MUST have active text editor');
 		}
-		const outline = store.add(instantiationService.createInstance(NotebookCellOutline, new class extends mock<INotebookEditorPane>() {
-			override getControl() {
-				return editor;
-			}
-			override onDidChangeModel: Event<void> = Event.None;
-			override onDidChangeSelection: Event<IEditorPaneSelectionChangeEvent> = Event.None;
-		}, OutlineTarget.QuickPick));
+		const outline = store.add(
+			instantiationService.createInstance(
+				NotebookCellOutline,
+				new (class extends mock<INotebookEditorPane>() {
+					override getControl() {
+						return editor;
+					}
+					override onDidChangeModel: Event<void> = Event.None;
+					override onDidChangeSelection: Event<IEditorPaneSelectionChangeEvent> = Event.None;
+				})(),
+				OutlineTarget.QuickPick
+			)
+		);
 		return outline;
 	}
 
-	function nbStickyTestHelper(domNode: HTMLElement, notebookEditor: INotebookEditor, notebookCellList: INotebookCellList, notebookOutlineEntries: OutlineEntry[], disposables: Pick<DisposableStore, 'add'>) {
+	function nbStickyTestHelper(
+		domNode: HTMLElement,
+		notebookEditor: INotebookEditor,
+		notebookCellList: INotebookCellList,
+		notebookOutlineEntries: OutlineEntry[],
+		disposables: Pick<DisposableStore, 'add'>
+	) {
 		const output = computeContent(notebookEditor, notebookCellList, notebookOutlineEntries, 0);
 		for (const stickyLine of output.values()) {
 			disposables.add(stickyLine.line);
@@ -91,7 +103,7 @@ suite('NotebookEditorStickyScroll', () => {
 					cellTotalHeights: Array.from({ length: 8 }, () => 50),
 					cellLineNumberStates: {},
 					collapsedInputCells: {},
-					collapsedOutputCells: {},
+					collapsedOutputCells: {}
 				});
 
 				const cellList = disposables.add(createNotebookCellList(instantiationService, disposables));
@@ -106,20 +118,21 @@ suite('NotebookEditorStickyScroll', () => {
 				const resultingMap = nbStickyTestHelper(domNode, editor, cellList, notebookOutlineEntries, disposables);
 				await assertSnapshot(resultingMap);
 				outline.dispose();
-			});
+			}
+		);
 	});
 
 	test('test1: should render 0->1, 	visible range 3->8', async function () {
 		await withTestNotebook(
 			[
-				['# header a', 'markdown', CellKind.Markup, [], {}],	// 0
-				['## header aa', 'markdown', CellKind.Markup, [], {}],	// 50
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 100
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 150
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 200
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 250
-				['# header b', 'markdown', CellKind.Markup, [], {}],	// 300
-				['var c = 2;', 'javascript', CellKind.Code, [], {}]		// 350
+				['# header a', 'markdown', CellKind.Markup, [], {}], // 0
+				['## header aa', 'markdown', CellKind.Markup, [], {}], // 50
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 100
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 150
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 200
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 250
+				['# header b', 'markdown', CellKind.Markup, [], {}], // 300
+				['var c = 2;', 'javascript', CellKind.Code, [], {}] // 350
 			],
 			async (editor, viewModel, ds) => {
 				viewModel.restoreEditorViewState({
@@ -128,7 +141,7 @@ suite('NotebookEditorStickyScroll', () => {
 					cellTotalHeights: Array.from({ length: 8 }, () => 50),
 					cellLineNumberStates: {},
 					collapsedInputCells: {},
-					collapsedOutputCells: {},
+					collapsedOutputCells: {}
 				});
 
 				const cellList = ds.add(createNotebookCellList(instantiationService, ds));
@@ -144,21 +157,22 @@ suite('NotebookEditorStickyScroll', () => {
 
 				await assertSnapshot(resultingMap);
 				outline.dispose();
-			});
+			}
+		);
 	});
 
 	test('test2: should render 0, 		visible range 6->9 so collapsing next 2 against following section', async function () {
 		await withTestNotebook(
 			[
-				['# header a', 'markdown', CellKind.Markup, [], {}],	// 0
-				['## header aa', 'markdown', CellKind.Markup, [], {}],	// 50
-				['### header aaa', 'markdown', CellKind.Markup, [], {}],// 100
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 150
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 200
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 250
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 300
-				['# header b', 'markdown', CellKind.Markup, [], {}],	// 350
-				['var c = 2;', 'javascript', CellKind.Code, [], {}]		// 400
+				['# header a', 'markdown', CellKind.Markup, [], {}], // 0
+				['## header aa', 'markdown', CellKind.Markup, [], {}], // 50
+				['### header aaa', 'markdown', CellKind.Markup, [], {}], // 100
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 150
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 200
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 250
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 300
+				['# header b', 'markdown', CellKind.Markup, [], {}], // 350
+				['var c = 2;', 'javascript', CellKind.Code, [], {}] // 400
 			],
 			async (editor, viewModel, ds) => {
 				viewModel.restoreEditorViewState({
@@ -167,7 +181,7 @@ suite('NotebookEditorStickyScroll', () => {
 					cellTotalHeights: Array.from({ length: 9 }, () => 50),
 					cellLineNumberStates: {},
 					collapsedInputCells: {},
-					collapsedOutputCells: {},
+					collapsedOutputCells: {}
 				});
 
 				const cellList = ds.add(createNotebookCellList(instantiationService, ds));
@@ -183,22 +197,23 @@ suite('NotebookEditorStickyScroll', () => {
 
 				await assertSnapshot(resultingMap);
 				outline.dispose();
-			});
+			}
+		);
 	});
 
 	test('test3: should render 0->2, 	collapsing against equivalent level header', async function () {
 		await withTestNotebook(
 			[
-				['# header a', 'markdown', CellKind.Markup, [], {}],	// 0
-				['## header aa', 'markdown', CellKind.Markup, [], {}],	// 50
-				['### header aaa', 'markdown', CellKind.Markup, [], {}],// 100
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 150
-				['### header aab', 'markdown', CellKind.Markup, [], {}],// 200
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 250
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 300
-				['var b = 1;', 'javascript', CellKind.Code, [], {}],	// 350
-				['# header b', 'markdown', CellKind.Markup, [], {}],	// 400
-				['var c = 2;', 'javascript', CellKind.Code, [], {}]		// 450
+				['# header a', 'markdown', CellKind.Markup, [], {}], // 0
+				['## header aa', 'markdown', CellKind.Markup, [], {}], // 50
+				['### header aaa', 'markdown', CellKind.Markup, [], {}], // 100
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 150
+				['### header aab', 'markdown', CellKind.Markup, [], {}], // 200
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 250
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 300
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], // 350
+				['# header b', 'markdown', CellKind.Markup, [], {}], // 400
+				['var c = 2;', 'javascript', CellKind.Code, [], {}] // 450
 			],
 			async (editor, viewModel, ds) => {
 				viewModel.restoreEditorViewState({
@@ -207,7 +222,7 @@ suite('NotebookEditorStickyScroll', () => {
 					cellTotalHeights: Array.from({ length: 10 }, () => 50),
 					cellLineNumberStates: {},
 					collapsedInputCells: {},
-					collapsedOutputCells: {},
+					collapsedOutputCells: {}
 				});
 
 				const cellList = ds.add(createNotebookCellList(instantiationService, ds));
@@ -223,7 +238,8 @@ suite('NotebookEditorStickyScroll', () => {
 
 				await assertSnapshot(resultingMap);
 				outline.dispose();
-			});
+			}
+		);
 	});
 
 	// outdated/improper behavior
@@ -246,7 +262,7 @@ suite('NotebookEditorStickyScroll', () => {
 					cellTotalHeights: Array.from({ length: 8 }, () => 50),
 					cellLineNumberStates: {},
 					collapsedInputCells: {},
-					collapsedOutputCells: {},
+					collapsedOutputCells: {}
 				});
 
 				const cellList = ds.add(createNotebookCellList(instantiationService, ds));
@@ -262,7 +278,8 @@ suite('NotebookEditorStickyScroll', () => {
 
 				await assertSnapshot(resultingMap);
 				outline.dispose();
-			});
+			}
+		);
 	});
 
 	test('test5: should render 0->2, 	scrolltop halfway through cell 2', async function () {
@@ -286,7 +303,7 @@ suite('NotebookEditorStickyScroll', () => {
 					cellTotalHeights: Array.from({ length: 10 }, () => 50),
 					cellLineNumberStates: {},
 					collapsedInputCells: {},
-					collapsedOutputCells: {},
+					collapsedOutputCells: {}
 				});
 
 				const cellList = ds.add(createNotebookCellList(instantiationService, ds));
@@ -302,7 +319,8 @@ suite('NotebookEditorStickyScroll', () => {
 
 				await assertSnapshot(resultingMap);
 				outline.dispose();
-			});
+			}
+		);
 	});
 
 	test('test6: should render 6->7, 	scrolltop halfway through cell 7', async function () {
@@ -326,7 +344,7 @@ suite('NotebookEditorStickyScroll', () => {
 					cellTotalHeights: Array.from({ length: 10 }, () => 50),
 					cellLineNumberStates: {},
 					collapsedInputCells: {},
-					collapsedOutputCells: {},
+					collapsedOutputCells: {}
 				});
 
 				const cellList = ds.add(createNotebookCellList(instantiationService, ds));
@@ -342,22 +360,23 @@ suite('NotebookEditorStickyScroll', () => {
 
 				await assertSnapshot(resultingMap);
 				outline.dispose();
-			});
+			}
+		);
 	});
 
 	test('test7: should render 0->1, 	collapsing against next section', async function () {
 		await withTestNotebook(
 			[
-				['# header a', 'markdown', CellKind.Markup, [], {}], 		//0
-				['## header aa', 'markdown', CellKind.Markup, [], {}], 		//50
-				['### header aaa', 'markdown', CellKind.Markup, [], {}], 	//100
-				['#### header aaaa', 'markdown', CellKind.Markup, [], {}], 	//150
-				['var b = 1;', 'javascript', CellKind.Code, [], {}], 		//200
-				['var b = 1;', 'javascript', CellKind.Code, [], {}], 		//250
-				['var b = 1;', 'javascript', CellKind.Code, [], {}], 		//300
-				['var b = 1;', 'javascript', CellKind.Code, [], {}], 		//350
-				['# header b', 'markdown', CellKind.Markup, [], {}], 		//400
-				['## header bb', 'markdown', CellKind.Markup, [], {}], 		//450
+				['# header a', 'markdown', CellKind.Markup, [], {}], //0
+				['## header aa', 'markdown', CellKind.Markup, [], {}], //50
+				['### header aaa', 'markdown', CellKind.Markup, [], {}], //100
+				['#### header aaaa', 'markdown', CellKind.Markup, [], {}], //150
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], //200
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], //250
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], //300
+				['var b = 1;', 'javascript', CellKind.Code, [], {}], //350
+				['# header b', 'markdown', CellKind.Markup, [], {}], //400
+				['## header bb', 'markdown', CellKind.Markup, [], {}], //450
 				['### header bbb', 'markdown', CellKind.Markup, [], {}],
 				['var c = 2;', 'javascript', CellKind.Code, [], {}]
 			],
@@ -368,7 +387,7 @@ suite('NotebookEditorStickyScroll', () => {
 					cellTotalHeights: Array.from({ length: 12 }, () => 50),
 					cellLineNumberStates: {},
 					collapsedInputCells: {},
-					collapsedOutputCells: {},
+					collapsedOutputCells: {}
 				});
 
 				const cellList = ds.add(createNotebookCellList(instantiationService, ds));
@@ -384,6 +403,7 @@ suite('NotebookEditorStickyScroll', () => {
 
 				await assertSnapshot(resultingMap);
 				outline.dispose();
-			});
+			}
+		);
 	});
 });

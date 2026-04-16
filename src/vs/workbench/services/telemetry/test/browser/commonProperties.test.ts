@@ -24,45 +24,68 @@ suite('Browser Telemetry - common properties', function () {
 	test('mixes in additional properties', async function () {
 		const resolveCommonTelemetryProperties = () => {
 			return {
-				'userId': '1'
+				userId: '1'
 			};
 		};
 
-		const props = resolveWorkbenchCommonProperties(testStorageService, undefined!, false, undefined, resolveCommonTelemetryProperties);
+		const props = resolveWorkbenchCommonProperties(
+			testStorageService,
+			undefined!,
+			false,
+			undefined,
+			resolveCommonTelemetryProperties
+		);
 
-		assert.ok(hasKey(props, {
-			commitHash: true,
-			sessionID: true,
-			timestamp: true,
-			'common.platform': true,
-			'common.timesincesessionstart': true,
-			'common.sequence': true,
-			version: true,
-			'common.firstSessionDate': true,
-			'common.lastSessionDate': true,
-			'common.isNewSession': true,
-			'common.machineId': true
-		}));
+		assert.ok(
+			hasKey(props, {
+				commitHash: true,
+				sessionID: true,
+				timestamp: true,
+				'common.platform': true,
+				'common.timesincesessionstart': true,
+				'common.sequence': true,
+				version: true,
+				'common.firstSessionDate': true,
+				'common.lastSessionDate': true,
+				'common.isNewSession': true,
+				'common.machineId': true
+			})
+		);
 		assert.strictEqual(props['userId'], '1');
 	});
 
 	test('mixes in additional dyanmic properties', async function () {
 		let i = 1;
 		const resolveCommonTelemetryProperties = () => {
-			return Object.defineProperties({}, {
-				'userId': {
-					get: () => {
-						return i++;
-					},
-					enumerable: true
+			return Object.defineProperties(
+				{},
+				{
+					userId: {
+						get: () => {
+							return i++;
+						},
+						enumerable: true
+					}
 				}
-			});
+			);
 		};
 
-		const props = resolveWorkbenchCommonProperties(testStorageService, undefined!, false, undefined, resolveCommonTelemetryProperties);
+		const props = resolveWorkbenchCommonProperties(
+			testStorageService,
+			undefined!,
+			false,
+			undefined,
+			resolveCommonTelemetryProperties
+		);
 		assert.strictEqual(props['userId'], 1);
 
-		const props2 = resolveWorkbenchCommonProperties(testStorageService, undefined!, false, undefined, resolveCommonTelemetryProperties);
+		const props2 = resolveWorkbenchCommonProperties(
+			testStorageService,
+			undefined!,
+			false,
+			undefined,
+			resolveCommonTelemetryProperties
+		);
 		assert.strictEqual(props2['userId'], 2);
 	});
 });

@@ -15,10 +15,10 @@ export const NullHoverService: IHoverService = {
 	setupDelayedHover: () => Disposable.None,
 	setupDelayedHoverAtMouse: () => Disposable.None,
 	setupManagedHover: () => ({
-		dispose: () => { },
-		show: (focus?: boolean) => { },
-		hide: () => { },
-		update: (tooltip: IManagedHoverContent, options?: IManagedHoverOptions) => { }
+		dispose: () => {},
+		show: (focus?: boolean) => {},
+		hide: () => {},
+		update: (tooltip: IManagedHoverContent, options?: IManagedHoverOptions) => {}
 	}),
 	showAndFocusLastHover: () => undefined,
 	showManagedHover: () => undefined

@@ -19,7 +19,6 @@ import { NotebookOptions } from '../../notebookOptions.js';
 import { IBorrowValue, INotebookEditorService } from '../../services/notebookEditorService.js';
 
 export class NotebookInlineDiffWidget extends Disposable {
-
 	private widget: IBorrowValue<NotebookEditorWidget> = { value: undefined };
 	private position: DOM.IDomPosition | undefined;
 
@@ -34,11 +33,17 @@ export class NotebookInlineDiffWidget extends Disposable {
 		private readonly options: NotebookOptions,
 		private dimension: DOM.Dimension | undefined,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@INotebookEditorService private readonly widgetService: INotebookEditorService) {
+		@INotebookEditorService private readonly widgetService: INotebookEditorService
+	) {
 		super();
 	}
 
-	async show(input: NotebookDiffEditorInput, model: NotebookTextModel | undefined, previousModel: NotebookTextModel | undefined, options: INotebookEditorOptions | undefined) {
+	async show(
+		input: NotebookDiffEditorInput,
+		model: NotebookTextModel | undefined,
+		previousModel: NotebookTextModel | undefined,
+		options: INotebookEditorOptions | undefined
+	) {
 		if (!this.widget.value) {
 			this.createNotebookWidget(input, this.groupId, this.rootElement);
 		}
@@ -68,7 +73,9 @@ export class NotebookInlineDiffWidget extends Disposable {
 	}
 
 	private createNotebookWidget(input: NotebookDiffEditorInput, groupId: number, rootElement: HTMLElement | undefined) {
-		const contributions = NotebookEditorExtensionsRegistry.getSomeEditorContributions([NotebookInlineDiffDecorationContribution.ID]);
+		const contributions = NotebookEditorExtensionsRegistry.getSomeEditorContributions([
+			NotebookInlineDiffDecorationContribution.ID
+		]);
 		const menuIds = {
 			notebookToolbar: MenuId.NotebookToolbar,
 			cellTitleToolbar: MenuId.NotebookCellTitle,
@@ -76,7 +83,7 @@ export class NotebookInlineDiffWidget extends Disposable {
 			cellInsertToolbar: MenuId.NotebookCellBetween,
 			cellTopInsertToolbar: MenuId.NotebookCellListTop,
 			cellExecuteToolbar: MenuId.NotebookCellExecute,
-			cellExecutePrimary: undefined,
+			cellExecutePrimary: undefined
 		};
 		const skipContributions = [
 			'editor.contrib.review',
@@ -86,12 +93,22 @@ export class NotebookInlineDiffWidget extends Disposable {
 			'editor.contrib.testingDecorations',
 			'store.contrib.stickyScrollController',
 			'editor.contrib.findController',
-			'editor.contrib.emptyTextEditorHint',
+			'editor.contrib.emptyTextEditorHint'
 		];
-		const cellEditorContributions = EditorExtensionsRegistry.getEditorContributions().filter(c => skipContributions.indexOf(c.id) === -1);
+		const cellEditorContributions = EditorExtensionsRegistry.getEditorContributions().filter(
+			c => skipContributions.indexOf(c.id) === -1
+		);
 
-		this.widget = <IBorrowValue<NotebookEditorWidget>>this.instantiationService.invokeFunction(this.widgetService.retrieveWidget,
-			groupId, input, { contributions, menuIds, cellEditorContributions, options: this.options }, this.dimension, this.window);
+		this.widget = <IBorrowValue<NotebookEditorWidget>>(
+			this.instantiationService.invokeFunction(
+				this.widgetService.retrieveWidget,
+				groupId,
+				input,
+				{ contributions, menuIds, cellEditorContributions, options: this.options },
+				this.dimension,
+				this.window
+			)
+		);
 		if (this.rootElement && this.widget.value!.getDomNode()) {
 			this.rootElement.setAttribute('aria-flowto', this.widget.value!.getDomNode().id || '');
 			DOM.setParentFlowTo(this.widget.value!.getDomNode(), this.rootElement);

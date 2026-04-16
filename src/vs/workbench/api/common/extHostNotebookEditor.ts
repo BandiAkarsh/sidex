@@ -12,7 +12,6 @@ import { ExtHostNotebookDocument } from './extHostNotebookDocument.js';
 import { NotebookRange } from './extHostTypes.js';
 
 export class ExtHostNotebookEditor {
-
 	public static readonly apiEditorsToExtHost = new WeakMap<vscode.NotebookEditor, ExtHostNotebookEditor>();
 
 	private _visible: boolean = false;
@@ -27,7 +26,7 @@ export class ExtHostNotebookEditor {
 		private _selections: vscode.NotebookRange[],
 		private _viewColumn: vscode.ViewColumn | undefined,
 		private readonly viewType: string
-	) { }
+	) {}
 
 	get apiEditor(): vscode.NotebookEditor {
 		if (!this._editor) {

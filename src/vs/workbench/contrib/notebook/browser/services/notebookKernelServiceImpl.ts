@@ -6,7 +6,17 @@
 import { Event, Emitter } from '../../../../../base/common/event.js';
 import { Disposable, IDisposable, toDisposable } from '../../../../../base/common/lifecycle.js';
 import { INotebookKernelSourceAction, INotebookTextModel } from '../../common/notebookCommon.js';
-import { INotebookKernel, ISelectedNotebooksChangeEvent, INotebookKernelMatchResult, INotebookKernelService, INotebookTextModelLike, ISourceAction, INotebookSourceActionChangeEvent, INotebookKernelDetectionTask, IKernelSourceActionProvider } from '../../common/notebookKernelService.js';
+import {
+	INotebookKernel,
+	ISelectedNotebooksChangeEvent,
+	INotebookKernelMatchResult,
+	INotebookKernelService,
+	INotebookTextModelLike,
+	ISourceAction,
+	INotebookSourceActionChangeEvent,
+	INotebookKernelDetectionTask,
+	IKernelSourceActionProvider
+} from '../../common/notebookKernelService.js';
 import { LRUCache, ResourceMap } from '../../../../../base/common/map.js';
 import { IStorageService, StorageScope, StorageTarget } from '../../../../../platform/storage/common/storage.js';
 import { URI } from '../../../../../base/common/uri.js';
@@ -19,7 +29,6 @@ import { Schemas } from '../../../../../base/common/network.js';
 import { getActiveWindow, runWhenWindowIdle } from '../../../../../base/browser/dom.js';
 
 class KernelInfo {
-
 	private static _logicClock = 0;
 
 	readonly kernel: INotebookKernel;
@@ -79,7 +88,6 @@ class SourceAction extends Disposable implements ISourceAction {
 				uri: this.model.uri,
 				$mid: MarshalledId.NotebookActionContext
 			});
-
 		} catch (error) {
 			console.warn(`Kernel source command failed: ${error}`);
 		}
@@ -89,11 +97,9 @@ class SourceAction extends Disposable implements ISourceAction {
 interface IKernelInfoCache {
 	menu: IMenu;
 	actions: [ISourceAction, IDisposable][];
-
 }
 
 export class NotebookKernelService extends Disposable implements INotebookKernelService {
-
 	declare _serviceBrand: undefined;
 
 	private readonly _kernels = new Map<string, KernelInfo>();
@@ -112,7 +118,8 @@ export class NotebookKernelService extends Disposable implements INotebookKernel
 	private readonly _onDidChangeKernelDetectionTasks = this._register(new Emitter<string>());
 	private readonly _kernelSourceActionProviders = new Map<string, IKernelSourceActionProvider[]>();
 
-	readonly onDidChangeSelectedNotebooks: Event<ISelectedNotebooksChangeEvent> = this._onDidChangeNotebookKernelBinding.event;
+	readonly onDidChangeSelectedNotebooks: Event<ISelectedNotebooksChangeEvent> =
+		this._onDidChangeNotebookKernelBinding.event;
 	readonly onDidAddKernel: Event<INotebookKernel> = this._onDidAddKernel.event;
 	readonly onDidRemoveKernel: Event<INotebookKernel> = this._onDidRemoveKernel.event;
 	readonly onDidChangeNotebookAffinity: Event<void> = this._onDidChangeNotebookAffinity.event;
@@ -121,7 +128,6 @@ export class NotebookKernelService extends Disposable implements INotebookKernel
 	readonly onDidNotebookVariablesUpdate: Event<URI> = this._onDidNotebookVariablesChange.event;
 
 	private static _storageNotebookBinding = 'notebook.controller2NotebookBindings';
-
 
 	constructor(
 		@INotebookService private readonly _notebookService: INotebookService,
@@ -134,19 +140,23 @@ export class NotebookKernelService extends Disposable implements INotebookKernel
 		// auto associate kernels to new notebook documents, also emit event when
 		// a notebook has been closed (but don't update the memento)
 		this._register(_notebookService.onDidAddNotebookDocument(this._tryAutoBindNotebook, this));
-		this._register(_notebookService.onWillRemoveNotebookDocument(notebook => {
-			const id = NotebookTextModelLikeId.str(notebook);
-			const kernelId = this._notebookBindings.get(id);
-			if (kernelId && notebook.uri.scheme === Schemas.untitled) {
-				this.selectKernelForNotebook(undefined, notebook);
-			}
-			this._kernelSourceActionsUpdates.get(id)?.dispose();
-			this._kernelSourceActionsUpdates.delete(id);
-		}));
+		this._register(
+			_notebookService.onWillRemoveNotebookDocument(notebook => {
+				const id = NotebookTextModelLikeId.str(notebook);
+				const kernelId = this._notebookBindings.get(id);
+				if (kernelId && notebook.uri.scheme === Schemas.untitled) {
+					this.selectKernelForNotebook(undefined, notebook);
+				}
+				this._kernelSourceActionsUpdates.get(id)?.dispose();
+				this._kernelSourceActionsUpdates.delete(id);
+			})
+		);
 
 		// restore from storage
 		try {
-			const data = JSON.parse(this._storageService.get(NotebookKernelService._storageNotebookBinding, StorageScope.WORKSPACE, '[]'));
+			const data = JSON.parse(
+				this._storageService.get(NotebookKernelService._storageNotebookBinding, StorageScope.WORKSPACE, '[]')
+			);
 			this._notebookBindings.fromJSON(data);
 		} catch {
 			// ignore
@@ -170,9 +180,18 @@ export class NotebookKernelService extends Disposable implements INotebookKernel
 
 	private _persistMementos(): void {
 		this._persistSoonHandle?.dispose();
-		this._persistSoonHandle = runWhenWindowIdle(getActiveWindow(), () => {
-			this._storageService.store(NotebookKernelService._storageNotebookBinding, JSON.stringify(this._notebookBindings), StorageScope.WORKSPACE, StorageTarget.MACHINE);
-		}, 100);
+		this._persistSoonHandle = runWhenWindowIdle(
+			getActiveWindow(),
+			() => {
+				this._storageService.store(
+					NotebookKernelService._storageNotebookBinding,
+					JSON.stringify(this._notebookBindings),
+					StorageScope.WORKSPACE,
+					StorageTarget.MACHINE
+				);
+			},
+			100
+		);
 	}
 
 	private static _score(kernel: INotebookKernel, notebook: INotebookTextModelLike): number {
@@ -186,7 +205,6 @@ export class NotebookKernelService extends Disposable implements INotebookKernel
 	}
 
 	private _tryAutoBindNotebook(notebook: INotebookTextModel, onlyThisKernel?: INotebookKernel): void {
-
 		const id = this._notebookBindings.get(NotebookTextModelLikeId.str(notebook));
 		if (!id) {
 			// no kernel associated
@@ -198,7 +216,11 @@ export class NotebookKernelService extends Disposable implements INotebookKernel
 			return;
 		}
 		if (!onlyThisKernel || existingKernel.kernel === onlyThisKernel) {
-			this._onDidChangeNotebookKernelBinding.fire({ notebook: notebook.uri, oldKernel: undefined, newKernel: existingKernel.kernel.id });
+			this._onDidChangeNotebookKernelBinding.fire({
+				notebook: notebook.uri,
+				oldKernel: undefined,
+				newKernel: existingKernel.kernel.id
+			});
 		}
 	}
 
@@ -226,14 +248,17 @@ export class NotebookKernelService extends Disposable implements INotebookKernel
 			}
 			for (const [key, candidate] of Array.from(this._notebookBindings)) {
 				if (candidate === kernel.id) {
-					this._onDidChangeNotebookKernelBinding.fire({ notebook: NotebookTextModelLikeId.obj(key).uri, oldKernel: kernel.id, newKernel: undefined });
+					this._onDidChangeNotebookKernelBinding.fire({
+						notebook: NotebookTextModelLikeId.obj(key).uri,
+						oldKernel: kernel.id,
+						newKernel: undefined
+					});
 				}
 			}
 		});
 	}
 
 	getMatchingKernel(notebook: INotebookTextModelLike): INotebookKernelMatchResult {
-
 		// all applicable kernels
 		const kernels: { kernel: INotebookKernel; instanceAffinity: number; score: number }[] = [];
 		for (const info of this._kernels.values()) {
@@ -242,13 +267,16 @@ export class NotebookKernelService extends Disposable implements INotebookKernel
 				kernels.push({
 					score,
 					kernel: info.kernel,
-					instanceAffinity: info.notebookPriorities.get(notebook.uri) ?? 1 /* vscode.NotebookControllerPriority.Default */,
+					instanceAffinity:
+						info.notebookPriorities.get(notebook.uri) ?? 1 /* vscode.NotebookControllerPriority.Default */
 				});
 			}
 		}
 
-		kernels
-			.sort((a, b) => b.instanceAffinity - a.instanceAffinity || a.score - b.score || a.kernel.label.localeCompare(b.kernel.label));
+		kernels.sort(
+			(a, b) =>
+				b.instanceAffinity - a.instanceAffinity || a.score - b.score || a.kernel.label.localeCompare(b.kernel.label)
+		);
 		const all = kernels.map(obj => obj.kernel);
 
 		// bound kernel
@@ -265,7 +293,11 @@ export class NotebookKernelService extends Disposable implements INotebookKernel
 			return info.selected;
 		}
 
-		const preferred = info.all.filter(kernel => this._kernels.get(kernel.id)?.notebookPriorities.get(notebook.uri) === 2 /* vscode.NotebookControllerPriority.Preferred */);
+		const preferred = info.all.filter(
+			kernel =>
+				this._kernels.get(kernel.id)?.notebookPriorities.get(notebook.uri) ===
+				2 /* vscode.NotebookControllerPriority.Preferred */
+		);
 		if (preferred.length === 1) {
 			return preferred[0];
 		}
@@ -321,7 +353,10 @@ export class NotebookKernelService extends Disposable implements INotebookKernel
 		return [];
 	}
 
-	getSourceActions(notebook: INotebookTextModelLike, contextKeyService: IContextKeyService | undefined): ISourceAction[] {
+	getSourceActions(
+		notebook: INotebookTextModelLike,
+		contextKeyService: IContextKeyService | undefined
+	): ISourceAction[] {
 		contextKeyService = contextKeyService ?? this._contextKeyService;
 		const id = NotebookTextModelLikeId.str(notebook);
 		const existingInfo = this._kernelSources.get(id);
@@ -343,7 +378,7 @@ export class NotebookKernelService extends Disposable implements INotebookKernel
 					const stateChangeListener = sourceAction.onDidChangeState(() => {
 						this._onDidChangeSourceActions.fire({
 							notebook: document.uri,
-							viewType: document.notebookType,
+							viewType: document.notebookType
 						});
 					});
 					sourceActions.push([sourceAction, stateChangeListener]);
@@ -355,9 +390,12 @@ export class NotebookKernelService extends Disposable implements INotebookKernel
 		};
 
 		this._kernelSourceActionsUpdates.get(id)?.dispose();
-		this._kernelSourceActionsUpdates.set(id, sourceMenu.onDidChange(() => {
-			loadActionsFromMenu(sourceMenu, notebook);
-		}));
+		this._kernelSourceActionsUpdates.set(
+			id,
+			sourceMenu.onDidChange(() => {
+				loadActionsFromMenu(sourceMenu, notebook);
+			})
+		);
 
 		loadActionsFromMenu(sourceMenu, notebook);
 

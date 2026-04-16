@@ -13,7 +13,12 @@ import { ensureNoDisposablesAreLeakedInTestSuite, toResource } from '../../../..
 import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
-import { FileChangesEvent, FileChangeType, FileOperationError, FileOperationResult } from '../../../../../platform/files/common/files.js';
+import {
+	FileChangesEvent,
+	FileChangeType,
+	FileOperationError,
+	FileOperationResult
+} from '../../../../../platform/files/common/files.js';
 import { MockContextKeyService } from '../../../../../platform/keybinding/test/common/mockKeybindingService.js';
 import { UriIdentityService } from '../../../../../platform/uriIdentity/common/uriIdentityService.js';
 import { TestWorkspace } from '../../../../../platform/workspace/test/common/testWorkspace.js';
@@ -23,19 +28,35 @@ import { IEditorGroupsService } from '../../../../services/editor/common/editorG
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
 import { IFilesConfigurationService } from '../../../../services/filesConfiguration/common/filesConfigurationService.js';
 import { TextFileEditorModelManager } from '../../../../services/textfile/common/textFileEditorModelManager.js';
-import { IResolvedTextFileEditorModel, ITextFileService, snapshotToString } from '../../../../services/textfile/common/textfiles.js';
+import {
+	IResolvedTextFileEditorModel,
+	ITextFileService,
+	snapshotToString
+} from '../../../../services/textfile/common/textfiles.js';
 import { UntitledTextEditorInput } from '../../../../services/untitled/common/untitledTextEditorInput.js';
-import { createEditorPart, registerTestFileEditor, registerTestResourceEditor, TestEnvironmentService, TestFilesConfigurationService, TestServiceAccessor, TestTextResourceConfigurationService, workbenchInstantiationService, workbenchTeardown } from '../../../../test/browser/workbenchTestServices.js';
-import { TestContextService, TestFileService, TestMarkerService } from '../../../../test/common/workbenchTestServices.js';
+import {
+	createEditorPart,
+	registerTestFileEditor,
+	registerTestResourceEditor,
+	TestEnvironmentService,
+	TestFilesConfigurationService,
+	TestServiceAccessor,
+	TestTextResourceConfigurationService,
+	workbenchInstantiationService,
+	workbenchTeardown
+} from '../../../../test/browser/workbenchTestServices.js';
+import {
+	TestContextService,
+	TestFileService,
+	TestMarkerService
+} from '../../../../test/common/workbenchTestServices.js';
 import { TextFileEditorTracker } from '../../browser/editors/textFileEditorTracker.js';
 import { FILE_EDITOR_INPUT_ID } from '../../common/files.js';
 
 suite('Files - TextFileEditorTracker', () => {
-
 	const disposables = new DisposableStore();
 
 	class TestTextFileEditorTracker extends TextFileEditorTracker {
-
 		protected override getDirtyTextFileTrackerDelay(): number {
 			return 5; // encapsulated in a method for tests to override
 		}
@@ -50,7 +71,9 @@ suite('Files - TextFileEditorTracker', () => {
 		disposables.clear();
 	});
 
-	async function createTracker(autoSaveEnabled = false): Promise<{ accessor: TestServiceAccessor; cleanup: () => Promise<void> }> {
+	async function createTracker(
+		autoSaveEnabled = false
+	): Promise<{ accessor: TestServiceAccessor; cleanup: () => Promise<void> }> {
 		const instantiationService = workbenchInstantiationService(undefined, disposables);
 
 		const configurationService = new TestConfigurationService();
@@ -64,16 +87,21 @@ suite('Files - TextFileEditorTracker', () => {
 
 		const fileService = disposables.add(new TestFileService());
 
-		instantiationService.stub(IFilesConfigurationService, disposables.add(new TestFilesConfigurationService(
-			<IContextKeyService>instantiationService.createInstance(MockContextKeyService),
-			configurationService,
-			new TestContextService(TestWorkspace),
-			TestEnvironmentService,
-			disposables.add(new UriIdentityService(fileService)),
-			fileService,
-			new TestMarkerService(),
-			new TestTextResourceConfigurationService(configurationService)
-		)));
+		instantiationService.stub(
+			IFilesConfigurationService,
+			disposables.add(
+				new TestFilesConfigurationService(
+					<IContextKeyService>instantiationService.createInstance(MockContextKeyService),
+					configurationService,
+					new TestContextService(TestWorkspace),
+					TestEnvironmentService,
+					disposables.add(new UriIdentityService(fileService)),
+					fileService,
+					new TestMarkerService(),
+					new TestTextResourceConfigurationService(configurationService)
+				)
+			)
+		);
 
 		const part = await createEditorPart(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, part);
@@ -83,7 +111,7 @@ suite('Files - TextFileEditorTracker', () => {
 		instantiationService.stub(IEditorService, editorService);
 
 		const accessor = instantiationService.createInstance(TestServiceAccessor);
-		disposables.add((<TextFileEditorModelManager>accessor.textFileService.files));
+		disposables.add(<TextFileEditorModelManager>accessor.textFileService.files);
 
 		disposables.add(instantiationService.createInstance(TestTextFileEditorTracker));
 
@@ -100,7 +128,7 @@ suite('Files - TextFileEditorTracker', () => {
 
 		const resource = toResource.call(this, '/path/index.txt');
 
-		const model = await accessor.textFileService.files.resolve(resource) as IResolvedTextFileEditorModel;
+		const model = (await accessor.textFileService.files.resolve(resource)) as IResolvedTextFileEditorModel;
 		disposables.add(model);
 
 		model.textEditorModel.setValue('Super Good');
@@ -142,16 +170,28 @@ suite('Files - TextFileEditorTracker', () => {
 		await testDirtyTextFileModelOpensEditorDependingOnAutoSaveSetting(resource, true, true);
 	});
 
-	async function testDirtyTextFileModelOpensEditorDependingOnAutoSaveSetting(resource: URI, autoSave: boolean, error: boolean): Promise<void> {
+	async function testDirtyTextFileModelOpensEditorDependingOnAutoSaveSetting(
+		resource: URI,
+		autoSave: boolean,
+		error: boolean
+	): Promise<void> {
 		const { accessor, cleanup } = await createTracker(autoSave);
 
-		assert.ok(!accessor.editorService.isOpened({ resource, typeId: FILE_EDITOR_INPUT_ID, editorId: DEFAULT_EDITOR_ASSOCIATION.id }));
+		assert.ok(
+			!accessor.editorService.isOpened({
+				resource,
+				typeId: FILE_EDITOR_INPUT_ID,
+				editorId: DEFAULT_EDITOR_ASSOCIATION.id
+			})
+		);
 
 		if (error) {
-			accessor.textFileService.setWriteErrorOnce(new FileOperationError('fail to write', FileOperationResult.FILE_OTHER_ERROR));
+			accessor.textFileService.setWriteErrorOnce(
+				new FileOperationError('fail to write', FileOperationResult.FILE_OTHER_ERROR)
+			);
 		}
 
-		const model = await accessor.textFileService.files.resolve(resource) as IResolvedTextFileEditorModel;
+		const model = (await accessor.textFileService.files.resolve(resource)) as IResolvedTextFileEditorModel;
 		disposables.add(model);
 
 		model.textEditorModel.setValue('Super Good');
@@ -160,13 +200,31 @@ suite('Files - TextFileEditorTracker', () => {
 			await model.save();
 			await timeout(10);
 			if (error) {
-				assert.ok(accessor.editorService.isOpened({ resource, typeId: FILE_EDITOR_INPUT_ID, editorId: DEFAULT_EDITOR_ASSOCIATION.id }));
+				assert.ok(
+					accessor.editorService.isOpened({
+						resource,
+						typeId: FILE_EDITOR_INPUT_ID,
+						editorId: DEFAULT_EDITOR_ASSOCIATION.id
+					})
+				);
 			} else {
-				assert.ok(!accessor.editorService.isOpened({ resource, typeId: FILE_EDITOR_INPUT_ID, editorId: DEFAULT_EDITOR_ASSOCIATION.id }));
+				assert.ok(
+					!accessor.editorService.isOpened({
+						resource,
+						typeId: FILE_EDITOR_INPUT_ID,
+						editorId: DEFAULT_EDITOR_ASSOCIATION.id
+					})
+				);
 			}
 		} else {
 			await awaitEditorOpening(accessor.editorService);
-			assert.ok(accessor.editorService.isOpened({ resource, typeId: FILE_EDITOR_INPUT_ID, editorId: DEFAULT_EDITOR_ASSOCIATION.id }));
+			assert.ok(
+				accessor.editorService.isOpened({
+					resource,
+					typeId: FILE_EDITOR_INPUT_ID,
+					editorId: DEFAULT_EDITOR_ASSOCIATION.id
+				})
+			);
 		}
 
 		await cleanup();
@@ -183,7 +241,10 @@ suite('Files - TextFileEditorTracker', () => {
 	async function testUntitledEditor(autoSaveEnabled: boolean): Promise<void> {
 		const { accessor, cleanup } = await createTracker(autoSaveEnabled);
 
-		const untitledTextEditor = await accessor.textEditorService.resolveTextEditor({ resource: undefined, forceUntitled: true }) as UntitledTextEditorInput;
+		const untitledTextEditor = (await accessor.textEditorService.resolveTextEditor({
+			resource: undefined,
+			forceUntitled: true
+		})) as UntitledTextEditorInput;
 		const model = disposables.add(await untitledTextEditor.resolve());
 
 		assert.ok(!accessor.editorService.isOpened(untitledTextEditor));
@@ -205,7 +266,12 @@ suite('Files - TextFileEditorTracker', () => {
 
 		const resource = toResource.call(this, '/path/index.txt');
 
-		await accessor.editorService.openEditor(await accessor.textEditorService.resolveTextEditor({ resource, options: { override: DEFAULT_EDITOR_ASSOCIATION.id } }));
+		await accessor.editorService.openEditor(
+			await accessor.textEditorService.resolveTextEditor({
+				resource,
+				options: { override: DEFAULT_EDITOR_ASSOCIATION.id }
+			})
+		);
 
 		accessor.hostService.setFocus(false);
 		accessor.hostService.setFocus(true);

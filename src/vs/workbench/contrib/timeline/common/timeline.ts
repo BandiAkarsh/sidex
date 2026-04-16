@@ -21,7 +21,6 @@ export function toKey(extension: ExtensionIdentifier | string, source: string) {
 export const TimelinePaneId = 'timeline';
 
 export interface TimelineItem {
-
 	/**
 	 * The handle of the item must be unique across all the
 	 * timeline items provided by this source.
@@ -56,7 +55,6 @@ export interface TimelineItem {
 }
 
 export interface TimelineChangeEvent {
-
 	/**
 	 * The identifier of the timeline provider this event is from.
 	 */
@@ -82,7 +80,6 @@ export interface TimelineOptions {
 }
 
 export interface Timeline {
-
 	/**
 	 * The identifier of the timeline provider this timeline is from.
 	 */
@@ -107,7 +104,6 @@ export interface TimelineSource {
 }
 
 export interface TimelineProviderDescriptor {
-
 	/**
 	 * An identifier of the source of the timeline items. This can be used to filter sources.
 	 */
@@ -149,7 +145,12 @@ export interface ITimelineService {
 
 	getSources(): TimelineSource[];
 
-	getTimeline(id: string, uri: URI, options: TimelineOptions, tokenSource: CancellationTokenSource): TimelineRequest | undefined;
+	getTimeline(
+		id: string,
+		uri: URI,
+		options: TimelineOptions,
+		tokenSource: CancellationTokenSource
+	): TimelineRequest | undefined;
 
 	setUri(uri: URI): void;
 }

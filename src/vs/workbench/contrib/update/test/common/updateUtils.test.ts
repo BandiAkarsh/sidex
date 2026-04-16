@@ -7,7 +7,18 @@ import assert from 'assert';
 import * as sinon from 'sinon';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { Downloading, StateType } from '../../../../../platform/update/common/update.js';
-import { computeDownloadSpeed, computeDownloadTimeRemaining, computeProgressPercent, computeUpdateInfoVersion, formatBytes, formatDate, formatTimeRemaining, getUpdateInfoUrl, isMajorMinorVersionChange, tryParseDate } from '../../common/updateUtils.js';
+import {
+	computeDownloadSpeed,
+	computeDownloadTimeRemaining,
+	computeProgressPercent,
+	computeUpdateInfoVersion,
+	formatBytes,
+	formatDate,
+	formatTimeRemaining,
+	getUpdateInfoUrl,
+	isMajorMinorVersionChange,
+	tryParseDate
+} from '../../common/updateUtils.js';
 
 suite('UpdateUtils', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
@@ -92,7 +103,6 @@ suite('UpdateUtils', () => {
 			assert.strictEqual(computeDownloadTimeRemaining(DownloadingState(downloaded50MB, total100MB, now - 50000)), 50);
 		});
 	});
-
 
 	suite('computeDownloadSpeed', () => {
 		test('returns undefined for invalid or incomplete input', () => {

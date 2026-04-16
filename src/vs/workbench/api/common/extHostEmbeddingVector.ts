@@ -4,7 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IExtensionDescription } from '../../../platform/extensions/common/extensions.js';
-import { ExtHostAiEmbeddingVectorShape, IMainContext, MainContext, MainThreadAiEmbeddingVectorShape } from './extHost.protocol.js';
+import {
+	ExtHostAiEmbeddingVectorShape,
+	IMainContext,
+	MainContext,
+	MainThreadAiEmbeddingVectorShape
+} from './extHost.protocol.js';
 import type { CancellationToken, EmbeddingVectorProvider } from 'vscode';
 import { Disposable } from './extHostTypes.js';
 
@@ -14,9 +19,7 @@ export class ExtHostAiEmbeddingVector implements ExtHostAiEmbeddingVectorShape {
 
 	private readonly _proxy: MainThreadAiEmbeddingVectorShape;
 
-	constructor(
-		mainContext: IMainContext
-	) {
+	constructor(mainContext: IMainContext) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadAiEmbeddingVector);
 	}
 
@@ -37,7 +40,11 @@ export class ExtHostAiEmbeddingVector implements ExtHostAiEmbeddingVectorShape {
 		return result;
 	}
 
-	registerEmbeddingVectorProvider(extension: IExtensionDescription, model: string, provider: EmbeddingVectorProvider): Disposable {
+	registerEmbeddingVectorProvider(
+		extension: IExtensionDescription,
+		model: string,
+		provider: EmbeddingVectorProvider
+	): Disposable {
 		const handle = this._nextHandle;
 		this._nextHandle++;
 		this._AiEmbeddingVectorProviders.set(handle, provider);

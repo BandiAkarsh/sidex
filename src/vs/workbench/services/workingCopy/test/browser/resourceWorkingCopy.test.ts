@@ -18,7 +18,6 @@ import { runWithFakedTimers } from '../../../../../base/test/common/timeTravelSc
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('ResourceWorkingCopy', function () {
-
 	class TestResourceWorkingCopy extends ResourceWorkingCopy {
 		name = 'testName';
 		typeId = 'testTypeId';
@@ -26,11 +25,16 @@ suite('ResourceWorkingCopy', function () {
 		onDidChangeDirty = Event.None;
 		onDidChangeContent = Event.None;
 		onDidSave = Event.None;
-		isDirty(): boolean { return false; }
-		async backup(token: CancellationToken): Promise<IWorkingCopyBackup> { throw new Error('Method not implemented.'); }
-		async save(options?: ISaveOptions): Promise<boolean> { return false; }
-		async revert(options?: IRevertOptions): Promise<void> { }
-
+		isDirty(): boolean {
+			return false;
+		}
+		async backup(token: CancellationToken): Promise<IWorkingCopyBackup> {
+			throw new Error('Method not implemented.');
+		}
+		async save(options?: ISaveOptions): Promise<boolean> {
+			return false;
+		}
+		async revert(options?: IRevertOptions): Promise<void> {}
 	}
 
 	const disposables = new DisposableStore();
@@ -78,9 +82,11 @@ suite('ResourceWorkingCopy', function () {
 		assert.strictEqual(workingCopy.isDisposed(), false);
 
 		let disposedEvent = false;
-		disposables.add(workingCopy.onWillDispose(() => {
-			disposedEvent = true;
-		}));
+		disposables.add(
+			workingCopy.onWillDispose(() => {
+				disposedEvent = true;
+			})
+		);
 
 		workingCopy.dispose();
 

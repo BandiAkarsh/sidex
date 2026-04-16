@@ -95,9 +95,11 @@ pub fn read_dir(path: String) -> Result<Vec<DirEntry>, String> {
     }
 
     result.sort_unstable_by(|a, b| {
-        b.is_dir
-            .cmp(&a.is_dir)
-            .then_with(|| a.name.to_ascii_lowercase().cmp(&b.name.to_ascii_lowercase()))
+        b.is_dir.cmp(&a.is_dir).then_with(|| {
+            a.name
+                .to_ascii_lowercase()
+                .cmp(&b.name.to_ascii_lowercase())
+        })
     });
 
     Ok(result)
@@ -106,7 +108,8 @@ pub fn read_dir(path: String) -> Result<Vec<DirEntry>, String> {
 #[tauri::command]
 pub fn stat(path: String) -> Result<FileStat, String> {
     validate_path(&path)?;
-    let metadata = fs::symlink_metadata(&path).map_err(|e| format!("Failed to stat '{}': {}", path, e))?;
+    let metadata =
+        fs::symlink_metadata(&path).map_err(|e| format!("Failed to stat '{}': {}", path, e))?;
 
     let modified = metadata
         .modified()

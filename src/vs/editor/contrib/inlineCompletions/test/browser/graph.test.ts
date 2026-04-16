@@ -102,17 +102,12 @@ suite('DirectedGraph', () => {
 		const result = graph.removeCycles();
 
 		assert.strictEqual(result.foundCycles.length, 1);
-		assert.ok(
-			result.foundCycles.includes('a') || result.foundCycles.includes('b')
-		);
+		assert.ok(result.foundCycles.includes('a') || result.foundCycles.includes('b'));
 
 		// After removing cycles, one of the edges should be removed
 		const aOutgoing = graph.getOutgoing('a');
 		const bOutgoing = graph.getOutgoing('b');
-		assert.ok(
-			(aOutgoing.length === 0 && bOutgoing.length === 1) ||
-			(aOutgoing.length === 1 && bOutgoing.length === 0)
-		);
+		assert.ok((aOutgoing.length === 0 && bOutgoing.length === 1) || (aOutgoing.length === 1 && bOutgoing.length === 0));
 	});
 
 	test('removeCycles - self loop', () => {
@@ -188,14 +183,8 @@ suite('DirectedGraph', () => {
 		const cOutgoing = graph.getOutgoing('c');
 		const dOutgoing = graph.getOutgoing('d');
 
-		assert.ok(
-			(aOutgoing.length === 0 && bOutgoing.length === 1) ||
-			(aOutgoing.length === 1 && bOutgoing.length === 0)
-		);
-		assert.ok(
-			(cOutgoing.length === 0 && dOutgoing.length === 1) ||
-			(cOutgoing.length === 1 && dOutgoing.length === 0)
-		);
+		assert.ok((aOutgoing.length === 0 && bOutgoing.length === 1) || (aOutgoing.length === 1 && bOutgoing.length === 0));
+		assert.ok((cOutgoing.length === 0 && dOutgoing.length === 1) || (cOutgoing.length === 1 && dOutgoing.length === 0));
 	});
 
 	test('getOutgoing - non-existent node', () => {

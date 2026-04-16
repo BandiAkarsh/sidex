@@ -16,15 +16,17 @@ import { Selection } from '../../../../editor/common/core/selection.js';
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 
 export class ToggleColumnSelectionAction extends Action2 {
-
 	static readonly ID = 'editor.action.toggleColumnSelection';
 
 	constructor() {
 		super({
 			id: ToggleColumnSelectionAction.ID,
 			title: {
-				...localize2('toggleColumnSelection', "Toggle Column Selection Mode"),
-				mnemonicTitle: localize({ key: 'miColumnSelection', comment: ['&& denotes a mnemonic'] }, "Column &&Selection Mode"),
+				...localize2('toggleColumnSelection', 'Toggle Column Selection Mode'),
+				mnemonicTitle: localize(
+					{ key: 'miColumnSelection', comment: ['&& denotes a mnemonic'] },
+					'Column &&Selection Mode'
+				)
 			},
 			f1: true,
 			toggled: ContextKeyExpr.equals('config.editor.columnSelection', true),
@@ -44,7 +46,14 @@ export class ToggleColumnSelectionAction extends Action2 {
 		const codeEditor = this._getCodeEditor(codeEditorService);
 		await configurationService.updateValue('editor.columnSelection', !oldValue);
 		const newValue = configurationService.getValue('editor.columnSelection');
-		if (!codeEditor || codeEditor !== this._getCodeEditor(codeEditorService) || oldValue === newValue || !codeEditor.hasModel() || typeof oldValue !== 'boolean' || typeof newValue !== 'boolean') {
+		if (
+			!codeEditor ||
+			codeEditor !== this._getCodeEditor(codeEditorService) ||
+			oldValue === newValue ||
+			!codeEditor.hasModel() ||
+			typeof oldValue !== 'boolean' ||
+			typeof newValue !== 'boolean'
+		) {
 			return;
 		}
 		const viewModel = codeEditor._getViewModel();
@@ -68,12 +77,26 @@ export class ToggleColumnSelectionAction extends Action2 {
 			});
 		} else {
 			const columnSelectData = viewModel.getCursorColumnSelectData();
-			const fromViewColumn = viewModel.cursorConfig.columnFromVisibleColumn(viewModel, columnSelectData.fromViewLineNumber, columnSelectData.fromViewVisualColumn);
-			const fromPosition = viewModel.coordinatesConverter.convertViewPositionToModelPosition(new Position(columnSelectData.fromViewLineNumber, fromViewColumn));
-			const toViewColumn = viewModel.cursorConfig.columnFromVisibleColumn(viewModel, columnSelectData.toViewLineNumber, columnSelectData.toViewVisualColumn);
-			const toPosition = viewModel.coordinatesConverter.convertViewPositionToModelPosition(new Position(columnSelectData.toViewLineNumber, toViewColumn));
+			const fromViewColumn = viewModel.cursorConfig.columnFromVisibleColumn(
+				viewModel,
+				columnSelectData.fromViewLineNumber,
+				columnSelectData.fromViewVisualColumn
+			);
+			const fromPosition = viewModel.coordinatesConverter.convertViewPositionToModelPosition(
+				new Position(columnSelectData.fromViewLineNumber, fromViewColumn)
+			);
+			const toViewColumn = viewModel.cursorConfig.columnFromVisibleColumn(
+				viewModel,
+				columnSelectData.toViewLineNumber,
+				columnSelectData.toViewVisualColumn
+			);
+			const toPosition = viewModel.coordinatesConverter.convertViewPositionToModelPosition(
+				new Position(columnSelectData.toViewLineNumber, toViewColumn)
+			);
 
-			codeEditor.setSelection(new Selection(fromPosition.lineNumber, fromPosition.column, toPosition.lineNumber, toPosition.column));
+			codeEditor.setSelection(
+				new Selection(fromPosition.lineNumber, fromPosition.column, toPosition.lineNumber, toPosition.column)
+			);
 		}
 	}
 

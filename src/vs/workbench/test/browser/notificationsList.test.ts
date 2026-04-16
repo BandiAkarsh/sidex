@@ -14,7 +14,6 @@ import { MockKeybindingService } from '../../../platform/keybinding/test/common/
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../base/test/common/utils.js';
 
 suite('NotificationsList AccessibilityProvider', () => {
-
 	const noFilter: INotificationsFilter = { global: NotificationsFilter.OFF, sources: new Map() };
 	let configurationService: IConfigurationService;
 	let keybindingService: IKeybindingService;
@@ -38,7 +37,10 @@ suite('NotificationsList AccessibilityProvider', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('getAriaLabel includes severity prefix for Error notifications', () => {
-		const notification = NotificationViewItem.create({ severity: Severity.Error, message: 'Something went wrong' }, noFilter)!;
+		const notification = NotificationViewItem.create(
+			{ severity: Severity.Error, message: 'Something went wrong' },
+			noFilter
+		)!;
 		createdNotifications.push(notification);
 		const ariaLabel = accessibilityProvider.getAriaLabel(notification);
 
@@ -48,17 +50,26 @@ suite('NotificationsList AccessibilityProvider', () => {
 	});
 
 	test('getAriaLabel includes severity prefix for Warning notifications', () => {
-		const notification = NotificationViewItem.create({ severity: Severity.Warning, message: 'This is a warning' }, noFilter)!;
+		const notification = NotificationViewItem.create(
+			{ severity: Severity.Warning, message: 'This is a warning' },
+			noFilter
+		)!;
 		createdNotifications.push(notification);
 		const ariaLabel = accessibilityProvider.getAriaLabel(notification);
 
-		assert.ok(ariaLabel.startsWith('Warning: '), `Expected aria label to start with "Warning: ", but got: ${ariaLabel}`);
+		assert.ok(
+			ariaLabel.startsWith('Warning: '),
+			`Expected aria label to start with "Warning: ", but got: ${ariaLabel}`
+		);
 		assert.ok(ariaLabel.includes('This is a warning'), 'Expected aria label to include original message');
 		assert.ok(ariaLabel.includes('notification'), 'Expected aria label to include "notification"');
 	});
 
 	test('getAriaLabel includes severity prefix for Info notifications', () => {
-		const notification = NotificationViewItem.create({ severity: Severity.Info, message: 'Information message' }, noFilter)!;
+		const notification = NotificationViewItem.create(
+			{ severity: Severity.Info, message: 'Information message' },
+			noFilter
+		)!;
 		createdNotifications.push(notification);
 		const ariaLabel = accessibilityProvider.getAriaLabel(notification);
 
@@ -68,11 +79,14 @@ suite('NotificationsList AccessibilityProvider', () => {
 	});
 
 	test('getAriaLabel includes source when present', () => {
-		const notification = NotificationViewItem.create({
-			severity: Severity.Error,
-			message: 'Error with source',
-			source: 'TestExtension'
-		}, noFilter)!;
+		const notification = NotificationViewItem.create(
+			{
+				severity: Severity.Error,
+				message: 'Error with source',
+				source: 'TestExtension'
+			},
+			noFilter
+		)!;
 		createdNotifications.push(notification);
 		const ariaLabel = accessibilityProvider.getAriaLabel(notification);
 
@@ -84,9 +98,18 @@ suite('NotificationsList AccessibilityProvider', () => {
 
 	test('severity prefix consistency', () => {
 		// Test that the severity prefixes are consistent with the ARIA alerts
-		const errorNotification = NotificationViewItem.create({ severity: Severity.Error, message: 'Error message' }, noFilter)!;
-		const warningNotification = NotificationViewItem.create({ severity: Severity.Warning, message: 'Warning message' }, noFilter)!;
-		const infoNotification = NotificationViewItem.create({ severity: Severity.Info, message: 'Info message' }, noFilter)!;
+		const errorNotification = NotificationViewItem.create(
+			{ severity: Severity.Error, message: 'Error message' },
+			noFilter
+		)!;
+		const warningNotification = NotificationViewItem.create(
+			{ severity: Severity.Warning, message: 'Warning message' },
+			noFilter
+		)!;
+		const infoNotification = NotificationViewItem.create(
+			{ severity: Severity.Info, message: 'Info message' },
+			noFilter
+		)!;
 
 		createdNotifications.push(errorNotification, warningNotification, infoNotification);
 

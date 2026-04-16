@@ -37,7 +37,7 @@ suite('AiContributionFeature', () => {
 		extensionId: undefined,
 		mode: undefined,
 		requestId: undefined,
-		sessionId: undefined,
+		sessionId: undefined
 	});
 
 	const userEdit = EditSources.cursor({ kind: 'type' });
@@ -46,13 +46,18 @@ suite('AiContributionFeature', () => {
 		nes: false,
 		requestUuid: 'test-uuid',
 		languageId: 'plaintext',
-		correlationId: undefined,
+		correlationId: undefined
 	});
 
 	function setup(): void {
 		disposables = new DisposableStore();
-		const instantiationService = disposables.add(new TestInstantiationService(new ServiceCollection(), false, undefined, true));
-		instantiationService.stubInstance(DiffService, { computeDiff: async (original, modified) => computeStringDiff(original, modified, { maxComputationTimeMs: 500 }, 'advanced') });
+		const instantiationService = disposables.add(
+			new TestInstantiationService(new ServiceCollection(), false, undefined, true)
+		);
+		instantiationService.stubInstance(DiffService, {
+			computeDiff: async (original, modified) =>
+				computeStringDiff(original, modified, { maxComputationTimeMs: 500 }, 'advanced')
+		});
 		instantiationService.stubInstance(UriVisibilityProvider, { isVisible: () => true });
 		instantiationService.stub(ILogService, new NullLogService());
 
@@ -62,7 +67,11 @@ suite('AiContributionFeature', () => {
 	}
 
 	function hasAiContributions(uris: URI[], level: 'chatAndAgent' | 'all'): boolean {
-		return CommandsRegistry.getCommand('_aiEdits.hasAiContributions')!.handler(undefined!, uris, level) as unknown as boolean;
+		return CommandsRegistry.getCommand('_aiEdits.hasAiContributions')!.handler(
+			undefined!,
+			uris,
+			level
+		) as unknown as boolean;
 	}
 
 	function clearAiContributions(uris: URI[]): void {
@@ -73,145 +82,155 @@ suite('AiContributionFeature', () => {
 		CommandsRegistry.getCommand('_aiEdits.clearAllAiContributions')!.handler(undefined!);
 	}
 
-	test('no contributions initially', () => runWithFakedTimers({}, async () => {
-		setup();
-		const d = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
-		await timeout(1500);
-		assert.strictEqual(hasAiContributions([d.uri], 'all'), false);
-		assert.strictEqual(hasAiContributions([d.uri], 'chatAndAgent'), false);
-		disposables.dispose();
-	}));
+	test('no contributions initially', () =>
+		runWithFakedTimers({}, async () => {
+			setup();
+			const d = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
+			await timeout(1500);
+			assert.strictEqual(hasAiContributions([d.uri], 'all'), false);
+			assert.strictEqual(hasAiContributions([d.uri], 'chatAndAgent'), false);
+			disposables.dispose();
+		}));
 
-	test('detects chat AI edits', () => runWithFakedTimers({}, async () => {
-		setup();
-		const d = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
-		await timeout(1500);
+	test('detects chat AI edits', () =>
+		runWithFakedTimers({}, async () => {
+			setup();
+			const d = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
+			await timeout(1500);
 
-		d.applyEdit(StringEditWithReason.replace(d.findRange('hello'), 'world', chatEdit));
-		await timeout(1500);
+			d.applyEdit(StringEditWithReason.replace(d.findRange('hello'), 'world', chatEdit));
+			await timeout(1500);
 
-		assert.strictEqual(hasAiContributions([d.uri], 'all'), true);
-		assert.strictEqual(hasAiContributions([d.uri], 'chatAndAgent'), true);
-		disposables.dispose();
-	}));
+			assert.strictEqual(hasAiContributions([d.uri], 'all'), true);
+			assert.strictEqual(hasAiContributions([d.uri], 'chatAndAgent'), true);
+			disposables.dispose();
+		}));
 
-	test('detects inline completion AI edits at all level only', () => runWithFakedTimers({}, async () => {
-		setup();
-		const d = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
-		await timeout(1500);
+	test('detects inline completion AI edits at all level only', () =>
+		runWithFakedTimers({}, async () => {
+			setup();
+			const d = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
+			await timeout(1500);
 
-		d.applyEdit(StringEditWithReason.replace(d.findRange('hello'), 'world', inlineCompletionEdit));
-		await timeout(1500);
+			d.applyEdit(StringEditWithReason.replace(d.findRange('hello'), 'world', inlineCompletionEdit));
+			await timeout(1500);
 
-		assert.strictEqual(hasAiContributions([d.uri], 'all'), true);
-		assert.strictEqual(hasAiContributions([d.uri], 'chatAndAgent'), false);
-		disposables.dispose();
-	}));
+			assert.strictEqual(hasAiContributions([d.uri], 'all'), true);
+			assert.strictEqual(hasAiContributions([d.uri], 'chatAndAgent'), false);
+			disposables.dispose();
+		}));
 
-	test('does not detect user edits as AI', () => runWithFakedTimers({}, async () => {
-		setup();
-		const d = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
-		await timeout(1500);
+	test('does not detect user edits as AI', () =>
+		runWithFakedTimers({}, async () => {
+			setup();
+			const d = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
+			await timeout(1500);
 
-		d.applyEdit(StringEditWithReason.replace(d.findRange('hello'), 'world', userEdit));
-		await timeout(1500);
+			d.applyEdit(StringEditWithReason.replace(d.findRange('hello'), 'world', userEdit));
+			await timeout(1500);
 
-		assert.strictEqual(hasAiContributions([d.uri], 'all'), false);
-		assert.strictEqual(hasAiContributions([d.uri], 'chatAndAgent'), false);
-		disposables.dispose();
-	}));
+			assert.strictEqual(hasAiContributions([d.uri], 'all'), false);
+			assert.strictEqual(hasAiContributions([d.uri], 'chatAndAgent'), false);
+			disposables.dispose();
+		}));
 
-	test('clear resets contributions for specific resources', () => runWithFakedTimers({}, async () => {
-		setup();
-		const dA = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
-		const dB = disposables.add(workspace.createDocument({ uri: fileB, initialValue: 'world' }, undefined));
-		await timeout(1500);
+	test('clear resets contributions for specific resources', () =>
+		runWithFakedTimers({}, async () => {
+			setup();
+			const dA = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
+			const dB = disposables.add(workspace.createDocument({ uri: fileB, initialValue: 'world' }, undefined));
+			await timeout(1500);
 
-		dA.applyEdit(StringEditWithReason.replace(dA.findRange('hello'), 'foo', chatEdit));
-		dB.applyEdit(StringEditWithReason.replace(dB.findRange('world'), 'bar', chatEdit));
-		await timeout(1500);
+			dA.applyEdit(StringEditWithReason.replace(dA.findRange('hello'), 'foo', chatEdit));
+			dB.applyEdit(StringEditWithReason.replace(dB.findRange('world'), 'bar', chatEdit));
+			await timeout(1500);
 
-		assert.strictEqual(hasAiContributions([dA.uri], 'all'), true);
-		assert.strictEqual(hasAiContributions([dB.uri], 'all'), true);
+			assert.strictEqual(hasAiContributions([dA.uri], 'all'), true);
+			assert.strictEqual(hasAiContributions([dB.uri], 'all'), true);
 
-		clearAiContributions([dA.uri]);
+			clearAiContributions([dA.uri]);
 
-		assert.strictEqual(hasAiContributions([dA.uri], 'all'), false);
-		assert.strictEqual(hasAiContributions([dB.uri], 'all'), true);
-		disposables.dispose();
-	}));
+			assert.strictEqual(hasAiContributions([dA.uri], 'all'), false);
+			assert.strictEqual(hasAiContributions([dB.uri], 'all'), true);
+			disposables.dispose();
+		}));
 
-	test('clearAll resets all contributions', () => runWithFakedTimers({}, async () => {
-		setup();
-		const dA = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
-		const dB = disposables.add(workspace.createDocument({ uri: fileB, initialValue: 'world' }, undefined));
-		await timeout(1500);
+	test('clearAll resets all contributions', () =>
+		runWithFakedTimers({}, async () => {
+			setup();
+			const dA = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
+			const dB = disposables.add(workspace.createDocument({ uri: fileB, initialValue: 'world' }, undefined));
+			await timeout(1500);
 
-		dA.applyEdit(StringEditWithReason.replace(dA.findRange('hello'), 'foo', chatEdit));
-		dB.applyEdit(StringEditWithReason.replace(dB.findRange('world'), 'bar', chatEdit));
-		await timeout(1500);
+			dA.applyEdit(StringEditWithReason.replace(dA.findRange('hello'), 'foo', chatEdit));
+			dB.applyEdit(StringEditWithReason.replace(dB.findRange('world'), 'bar', chatEdit));
+			await timeout(1500);
 
-		clearAllAiContributions();
+			clearAllAiContributions();
 
-		assert.strictEqual(hasAiContributions([dA.uri], 'all'), false);
-		assert.strictEqual(hasAiContributions([dB.uri], 'all'), false);
-		disposables.dispose();
-	}));
+			assert.strictEqual(hasAiContributions([dA.uri], 'all'), false);
+			assert.strictEqual(hasAiContributions([dB.uri], 'all'), false);
+			disposables.dispose();
+		}));
 
-	test('tracks new edits after clear', () => runWithFakedTimers({}, async () => {
-		setup();
-		const d = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
-		await timeout(1500);
+	test('tracks new edits after clear', () =>
+		runWithFakedTimers({}, async () => {
+			setup();
+			const d = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
+			await timeout(1500);
 
-		d.applyEdit(StringEditWithReason.replace(d.findRange('hello'), 'world', chatEdit));
-		await timeout(1500);
+			d.applyEdit(StringEditWithReason.replace(d.findRange('hello'), 'world', chatEdit));
+			await timeout(1500);
 
-		clearAiContributions([d.uri]);
-		assert.strictEqual(hasAiContributions([d.uri], 'all'), false);
+			clearAiContributions([d.uri]);
+			assert.strictEqual(hasAiContributions([d.uri], 'all'), false);
 
-		d.applyEdit(StringEditWithReason.replace(d.findRange('world'), 'again', chatEdit));
-		await timeout(1500);
+			d.applyEdit(StringEditWithReason.replace(d.findRange('world'), 'again', chatEdit));
+			await timeout(1500);
 
-		assert.strictEqual(hasAiContributions([d.uri], 'all'), true);
-		disposables.dispose();
-	}));
+			assert.strictEqual(hasAiContributions([d.uri], 'all'), true);
+			disposables.dispose();
+		}));
 
-	test('cleans up tracker when document is closed', () => runWithFakedTimers({}, async () => {
-		setup();
-		const d = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
-		await timeout(1500);
+	test('cleans up tracker when document is closed', () =>
+		runWithFakedTimers({}, async () => {
+			setup();
+			const d = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
+			await timeout(1500);
 
-		d.applyEdit(StringEditWithReason.replace(d.findRange('hello'), 'world', chatEdit));
-		await timeout(1500);
+			d.applyEdit(StringEditWithReason.replace(d.findRange('hello'), 'world', chatEdit));
+			await timeout(1500);
 
-		assert.strictEqual(hasAiContributions([d.uri], 'all'), true);
+			assert.strictEqual(hasAiContributions([d.uri], 'all'), true);
 
-		d.dispose();
-		await timeout(1500);
+			d.dispose();
+			await timeout(1500);
 
-		assert.strictEqual(hasAiContributions([fileA], 'all'), false);
-		disposables.dispose();
-	}));
+			assert.strictEqual(hasAiContributions([fileA], 'all'), false);
+			disposables.dispose();
+		}));
 
-	test('returns false for unknown URIs', () => runWithFakedTimers({}, async () => {
-		setup();
-		assert.strictEqual(hasAiContributions([URI.parse('file:///unknown.ts')], 'all'), false);
-		disposables.dispose();
-	}));
+	test('returns false for unknown URIs', () =>
+		runWithFakedTimers({}, async () => {
+			setup();
+			assert.strictEqual(hasAiContributions([URI.parse('file:///unknown.ts')], 'all'), false);
+			disposables.dispose();
+		}));
 
-	test('checks multiple resources', () => runWithFakedTimers({}, async () => {
-		setup();
-		const dA = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
-		disposables.add(workspace.createDocument({ uri: fileB, initialValue: 'world' }, undefined));
-		await timeout(1500);
+	test('checks multiple resources', () =>
+		runWithFakedTimers({}, async () => {
+			setup();
+			const dA = disposables.add(workspace.createDocument({ uri: fileA, initialValue: 'hello' }, undefined));
+			disposables.add(workspace.createDocument({ uri: fileB, initialValue: 'world' }, undefined));
+			await timeout(1500);
 
-		dA.applyEdit(StringEditWithReason.replace(dA.findRange('hello'), 'foo', chatEdit));
-		await timeout(1500);
+			dA.applyEdit(StringEditWithReason.replace(dA.findRange('hello'), 'foo', chatEdit));
+			await timeout(1500);
 
-		// Returns true if any of the resources has AI contributions
-		assert.strictEqual(hasAiContributions([fileA, fileB], 'all'), true);
-		assert.strictEqual(hasAiContributions([fileB, fileA], 'all'), true);
-		assert.strictEqual(hasAiContributions([fileB], 'all'), false);
-		disposables.dispose();
-	}));
+			// Returns true if any of the resources has AI contributions
+			assert.strictEqual(hasAiContributions([fileA, fileB], 'all'), true);
+			assert.strictEqual(hasAiContributions([fileB, fileA], 'all'), true);
+			assert.strictEqual(hasAiContributions([fileB], 'all'), false);
+			disposables.dispose();
+		}));
 });

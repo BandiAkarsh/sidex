@@ -10,10 +10,16 @@ import { URI } from '../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { NullLogService } from '../../../log/common/log.js';
 import { IWorkspaceIdentifier } from '../../../workspace/common/workspace.js';
-import { IRecentFolder, IRecentlyOpened, IRecentWorkspace, isRecentFolder, restoreRecentlyOpened, toStoreData } from '../../common/workspaces.js';
+import {
+	IRecentFolder,
+	IRecentlyOpened,
+	IRecentWorkspace,
+	isRecentFolder,
+	restoreRecentlyOpened,
+	toStoreData
+} from '../../common/workspaces.js';
 
 suite('History Storage', () => {
-
 	function toWorkspace(uri: URI): IWorkspaceIdentifier {
 		return {
 			id: '1234',
@@ -24,7 +30,11 @@ suite('History Storage', () => {
 		assert.strictEqual(u1 && u1.toString(), u2 && u2.toString(), message);
 	}
 
-	function assertEqualWorkspace(w1: IWorkspaceIdentifier | undefined, w2: IWorkspaceIdentifier | undefined, message?: string): void {
+	function assertEqualWorkspace(
+		w1: IWorkspaceIdentifier | undefined,
+		w2: IWorkspaceIdentifier | undefined,
+		message?: string
+	): void {
 		if (!w1 || !w2) {
 			assert.strictEqual(w1, w2, message);
 			return;
@@ -103,7 +113,10 @@ suite('History Storage', () => {
 		assertRestoring(ro, 'labels');
 		ro = {
 			files: [{ label: 'abc', remoteAuthority: 'test', fileUri: testRemoteFileURI }],
-			workspaces: [{ label: 'def', remoteAuthority: 'test', workspace: toWorkspace(testWSPath) }, { folderUri: testRemoteFolderURI, remoteAuthority: 'test' }]
+			workspaces: [
+				{ label: 'def', remoteAuthority: 'test', workspace: toWorkspace(testWSPath) },
+				{ folderUri: testRemoteFolderURI, remoteAuthority: 'test' }
+			]
 		};
 		assertRestoring(ro, 'authority');
 	});
@@ -137,7 +150,12 @@ suite('History Storage', () => {
 			files: [{ label: 'def', fileUri: URI.parse('file:///home/user/.config/code-oss-dev/storage.json') }],
 			workspaces: [
 				{ folderUri: URI.parse('foo://bar/23/43'), remoteAuthority: 'test+test' },
-				{ workspace: { id: '53b714b46ef1a2d4346568b4f591028c', configPath: URI.parse('file:///home/user/workspaces/testing/custom.code-workspace') } },
+				{
+					workspace: {
+						id: '53b714b46ef1a2d4346568b4f591028c',
+						configPath: URI.parse('file:///home/user/workspaces/testing/custom.code-workspace')
+					}
+				},
 				{ label: 'abc', folderUri: URI.parse('file:///home/user/workspaces/testing/folding') }
 			]
 		};
@@ -148,18 +166,22 @@ suite('History Storage', () => {
 	test('toStoreData drops label if it matches path', () => {
 		const actual = toStoreData({
 			workspaces: [],
-			files: [{
-				fileUri: URI.parse('file:///foo/bar/test.txt'),
-				label: '/foo/bar/test.txt',
-				remoteAuthority: undefined
-			}]
+			files: [
+				{
+					fileUri: URI.parse('file:///foo/bar/test.txt'),
+					label: '/foo/bar/test.txt',
+					remoteAuthority: undefined
+				}
+			]
 		});
 		assert.deepStrictEqual(actual, {
-			entries: [{
-				fileUri: 'file:///foo/bar/test.txt',
-				label: undefined,
-				remoteAuthority: undefined
-			}]
+			entries: [
+				{
+					fileUri: 'file:///foo/bar/test.txt',
+					label: undefined,
+					remoteAuthority: undefined
+				}
+			]
 		});
 	});
 

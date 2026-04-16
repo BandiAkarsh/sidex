@@ -6,10 +6,22 @@
 import { localize, localize2 } from '../../../../nls.js';
 import { IInstantiationService, ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
-import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../../common/contributions.js';
-import { IEditorSerializer, EditorExtensions, IEditorFactoryRegistry, GroupIdentifier } from '../../../common/editor.js';
+import {
+	IWorkbenchContribution,
+	registerWorkbenchContribution2,
+	WorkbenchPhase
+} from '../../../common/contributions.js';
+import {
+	IEditorSerializer,
+	EditorExtensions,
+	IEditorFactoryRegistry,
+	GroupIdentifier
+} from '../../../common/editor.js';
 import { EditorInput } from '../../../common/editor/editorInput.js';
-import { IEditorResolverService, RegisteredEditorPriority } from '../../../services/editor/common/editorResolverService.js';
+import {
+	IEditorResolverService,
+	RegisteredEditorPriority
+} from '../../../services/editor/common/editorResolverService.js';
 import { ProcessExplorerEditorInput } from './processExplorerEditorInput.js';
 import { Action2, MenuId, MenuRegistry, registerAction2 } from '../../../../platform/actions/common/actions.js';
 import { Categories } from '../../../../platform/action/common/actionCommonCategories.js';
@@ -25,7 +37,6 @@ import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextke
 //#region --- process explorer
 
 class ProcessExplorerEditorContribution implements IWorkbenchContribution {
-
 	static readonly ID = 'workbench.contrib.processExplorerEditor';
 
 	constructor(
@@ -36,7 +47,7 @@ class ProcessExplorerEditorContribution implements IWorkbenchContribution {
 			`${ProcessExplorerEditorInput.RESOURCE.scheme}:**/**`,
 			{
 				id: ProcessExplorerEditorInput.ID,
-				label: localize('promptOpenWith.processExplorer.displayName', "Process Explorer"),
+				label: localize('promptOpenWith.processExplorer.displayName', 'Process Explorer'),
 				priority: RegisteredEditorPriority.exclusive
 			},
 			{
@@ -57,10 +68,13 @@ class ProcessExplorerEditorContribution implements IWorkbenchContribution {
 	}
 }
 
-registerWorkbenchContribution2(ProcessExplorerEditorContribution.ID, ProcessExplorerEditorContribution, WorkbenchPhase.BlockStartup);
+registerWorkbenchContribution2(
+	ProcessExplorerEditorContribution.ID,
+	ProcessExplorerEditorContribution,
+	WorkbenchPhase.BlockStartup
+);
 
 class ProcessExplorerEditorInputSerializer implements IEditorSerializer {
-
 	canSerialize(editorInput: EditorInput): boolean {
 		return true;
 	}
@@ -74,7 +88,10 @@ class ProcessExplorerEditorInputSerializer implements IEditorSerializer {
 	}
 }
 
-Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer(ProcessExplorerEditorInput.ID, ProcessExplorerEditorInputSerializer);
+Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer(
+	ProcessExplorerEditorInput.ID,
+	ProcessExplorerEditorInputSerializer
+);
 
 //#endregion
 
@@ -87,7 +104,6 @@ interface IProcessExplorerWindowState {
 }
 
 class OpenProcessExplorer extends Action2 {
-
 	static readonly ID = 'workbench.action.openProcessExplorer';
 
 	private static readonly STATE_KEY = 'workbench.processExplorerWindowState';
@@ -109,18 +125,21 @@ class OpenProcessExplorer extends Action2 {
 		const auxiliaryWindowService = accessor.get(IAuxiliaryWindowService);
 		const storageService = accessor.get(IStorageService);
 
-		const pane = await editorService.openEditor({
-			resource: ProcessExplorerEditorInput.RESOURCE,
-			options: {
-				pinned: true,
-				revealIfOpened: true,
-				auxiliary: {
-					...this.loadState(storageService),
-					compact: true,
-					alwaysOnTop: true
+		const pane = await editorService.openEditor(
+			{
+				resource: ProcessExplorerEditorInput.RESOURCE,
+				options: {
+					pinned: true,
+					revealIfOpened: true,
+					auxiliary: {
+						...this.loadState(storageService),
+						compact: true,
+						alwaysOnTop: true
+					}
 				}
-			}
-		}, AUX_WINDOW_GROUP);
+			},
+			AUX_WINDOW_GROUP
+		);
 
 		if (pane) {
 			const listener = pane.input?.onWillDispose(() => {
@@ -143,7 +162,12 @@ class OpenProcessExplorer extends Action2 {
 		}
 	}
 
-	private saveState(group: GroupIdentifier, storageService: IStorageService, editorGroupService: IEditorGroupsService, auxiliaryWindowService: IAuxiliaryWindowService): void {
+	private saveState(
+		group: GroupIdentifier,
+		storageService: IStorageService,
+		editorGroupService: IEditorGroupsService,
+		auxiliaryWindowService: IAuxiliaryWindowService
+	): void {
 		const auxiliaryWindow = auxiliaryWindowService.getWindow(editorGroupService.getPart(group).windowId);
 		if (!auxiliaryWindow) {
 			return;
@@ -154,7 +178,12 @@ class OpenProcessExplorer extends Action2 {
 			return;
 		}
 
-		storageService.store(OpenProcessExplorer.STATE_KEY, JSON.stringify({ bounds }), StorageScope.APPLICATION, StorageTarget.MACHINE);
+		storageService.store(
+			OpenProcessExplorer.STATE_KEY,
+			JSON.stringify({ bounds }),
+			StorageScope.APPLICATION,
+			StorageTarget.MACHINE
+		);
 	}
 }
 
@@ -164,7 +193,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarHelpMenu, {
 	group: '5_tools',
 	command: {
 		id: OpenProcessExplorer.ID,
-		title: localize({ key: 'miOpenProcessExplorerer', comment: ['&& denotes a mnemonic'] }, "Open &&Process Explorer")
+		title: localize({ key: 'miOpenProcessExplorerer', comment: ['&& denotes a mnemonic'] }, 'Open &&Process Explorer')
 	},
 	when: supported,
 	order: 2

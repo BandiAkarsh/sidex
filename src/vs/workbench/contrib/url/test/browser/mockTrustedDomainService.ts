@@ -11,8 +11,7 @@ import { isURLDomainTrusted } from '../../../../../platform/url/common/trustedDo
 export class MockTrustedDomainService implements ITrustedDomainService {
 	_serviceBrand: undefined;
 
-	constructor(private readonly _trustedDomains: string[] = []) {
-	}
+	constructor(private readonly _trustedDomains: string[] = []) {}
 
 	readonly onDidChangeTrustedDomains: Event<void> = Event.None;
 

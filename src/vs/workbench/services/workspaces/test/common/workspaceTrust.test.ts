@@ -14,14 +14,25 @@ import { NullLogService } from '../../../../../platform/log/common/log.js';
 import { IRemoteAuthorityResolverService } from '../../../../../platform/remote/common/remoteAuthorityResolver.js';
 import { IStorageService, StorageScope, StorageTarget } from '../../../../../platform/storage/common/storage.js';
 import { IWorkspaceContextService } from '../../../../../platform/workspace/common/workspace.js';
-import { IWorkspaceTrustEnablementService, IWorkspaceTrustInfo } from '../../../../../platform/workspace/common/workspaceTrust.js';
+import {
+	IWorkspaceTrustEnablementService,
+	IWorkspaceTrustInfo
+} from '../../../../../platform/workspace/common/workspaceTrust.js';
 import { Workspace } from '../../../../../platform/workspace/test/common/testWorkspace.js';
 import { Memento } from '../../../../common/memento.js';
 import { IWorkbenchEnvironmentService } from '../../../environment/common/environmentService.js';
 import { IUriIdentityService } from '../../../../../platform/uriIdentity/common/uriIdentity.js';
 import { UriIdentityService } from '../../../../../platform/uriIdentity/common/uriIdentityService.js';
-import { WorkspaceTrustEnablementService, WorkspaceTrustManagementService, WORKSPACE_TRUST_STORAGE_KEY } from '../../common/workspaceTrust.js';
-import { TestContextService, TestStorageService, TestWorkspaceTrustEnablementService } from '../../../../test/common/workbenchTestServices.js';
+import {
+	WorkspaceTrustEnablementService,
+	WorkspaceTrustManagementService,
+	WORKSPACE_TRUST_STORAGE_KEY
+} from '../../common/workspaceTrust.js';
+import {
+	TestContextService,
+	TestStorageService,
+	TestWorkspaceTrustEnablementService
+} from '../../../../test/common/workbenchTestServices.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { Mutable } from '../../../../../base/common/types.js';
 
@@ -45,7 +56,10 @@ suite('Workspace Trust', () => {
 		const uriIdentityService = store.add(new UriIdentityService(fileService));
 
 		instantiationService.stub(IUriIdentityService, uriIdentityService);
-		instantiationService.stub(IRemoteAuthorityResolverService, new class extends mock<IRemoteAuthorityResolverService>() { });
+		instantiationService.stub(
+			IRemoteAuthorityResolverService,
+			new (class extends mock<IRemoteAuthorityResolverService>() {})()
+		);
 	});
 
 	suite('Enablement', () => {
@@ -108,7 +122,12 @@ suite('Workspace Trust', () => {
 		test('empty workspace - trusted, open trusted file', async () => {
 			await configurationService.setUserConfiguration('security', getUserSettings(true, true));
 			const trustInfo: IWorkspaceTrustInfo = { uriTrustInfo: [{ uri: URI.parse('file:///Folder'), trusted: true }] };
-			storageService.store(WORKSPACE_TRUST_STORAGE_KEY, JSON.stringify(trustInfo), StorageScope.APPLICATION, StorageTarget.MACHINE);
+			storageService.store(
+				WORKSPACE_TRUST_STORAGE_KEY,
+				JSON.stringify(trustInfo),
+				StorageScope.APPLICATION,
+				StorageTarget.MACHINE
+			);
 
 			environmentService.filesToOpenOrCreate = [{ fileUri: URI.parse('file:///Folder/file.txt') }];
 			instantiationService.stub(IWorkbenchEnvironmentService, { ...environmentService });
@@ -132,7 +151,9 @@ suite('Workspace Trust', () => {
 		});
 
 		async function initializeTestObject(): Promise<WorkspaceTrustManagementService> {
-			const workspaceTrustManagementService = store.add(instantiationService.createInstance(WorkspaceTrustManagementService));
+			const workspaceTrustManagementService = store.add(
+				instantiationService.createInstance(WorkspaceTrustManagementService)
+			);
 			await workspaceTrustManagementService.workspaceTrustInitialized;
 
 			return workspaceTrustManagementService;

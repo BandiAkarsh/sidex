@@ -72,20 +72,20 @@ const enum TokenType {
 	// Scalar values (unquoted, single-quoted, double-quoted)
 	Scalar,
 	// Structural tokens
-	Colon,           // ':'
-	Dash,            // '- '
-	Comma,           // ','
-	FlowMapStart,    // '{'
-	FlowMapEnd,      // '}'
-	FlowSeqStart,    // '['
-	FlowSeqEnd,      // ']'
+	Colon, // ':'
+	Dash, // '- '
+	Comma, // ','
+	FlowMapStart, // '{'
+	FlowMapEnd, // '}'
+	FlowSeqStart, // '['
+	FlowSeqEnd, // ']'
 	// Whitespace / structure
 	Newline,
-	Indent,          // leading whitespace at start of line (carries the indent level)
+	Indent, // leading whitespace at start of line (carries the indent level)
 	Comment,
-	DocumentStart,  // '---'
-	DocumentEnd,    // '...'
-	EOF,
+	DocumentStart, // '---'
+	DocumentEnd, // '...'
+	EOF
 }
 
 interface Token {
@@ -114,8 +114,8 @@ function makeToken(
 		endOffset,
 		rawValue: extra?.rawValue ?? '',
 		value: extra?.value ?? '',
-		format: extra?.format ?? 'none' as Token['format'],
-		indent: extra?.indent ?? 0,
+		format: extra?.format ?? ('none' as Token['format']),
+		indent: extra?.indent ?? 0
 	};
 }
 
@@ -130,7 +130,7 @@ class YamlScanner {
 	// After the first key: value colon, subsequent ': ' on the same line is part of the scalar value.
 	private seenBlockColon = false;
 
-	constructor(private readonly input: string) { }
+	constructor(private readonly input: string) {}
 
 	scan(): Token[] {
 		while (this.pos < this.input.length) {
@@ -268,7 +268,7 @@ class YamlScanner {
 				// flow mapping, or flow sequence) is a value indicator even without trailing space
 				this.tokens.push(makeToken(TokenType.Colon, this.pos, this.pos + 1));
 				this.pos++;
-			} else if (ch === '\'' || ch === '"') {
+			} else if (ch === "'" || ch === '"') {
 				this.scanQuotedScalar(ch);
 			} else if ((ch === '|' || ch === '>') && this.flowDepth === 0 && this.isBlockScalarStart()) {
 				this.scanBlockScalar(ch as '|' | '>');
@@ -289,11 +289,17 @@ class YamlScanner {
 	private isBlockColon(): boolean {
 		// In block context, after the first key-value colon on a line,
 		// subsequent ': ' is part of the scalar value, not a mapping indicator.
-		if (this.seenBlockColon && this.flowDepth === 0) { return false; }
+		if (this.seenBlockColon && this.flowDepth === 0) {
+			return false;
+		}
 		const next = this.input[this.pos + 1];
-		if (next === undefined || next === ' ' || next === '\t' || next === '\n' || next === '\r') { return true; }
+		if (next === undefined || next === ' ' || next === '\t' || next === '\n' || next === '\r') {
+			return true;
+		}
 		// Flow indicators after colon only count inside flow context
-		if (this.flowDepth > 0 && (next === ',' || next === '}' || next === ']')) { return true; }
+		if (this.flowDepth > 0 && (next === ',' || next === '}' || next === ']')) {
+			return true;
+		}
 		return false;
 	}
 
@@ -305,14 +311,18 @@ class YamlScanner {
 				continue;
 			}
 			// Quoted scalar or flow collection end bracket
-			if (t.type === TokenType.Scalar && t.format !== 'none') { return true; }
-			if (t.type === TokenType.FlowMapEnd || t.type === TokenType.FlowSeqEnd) { return true; }
+			if (t.type === TokenType.Scalar && t.format !== 'none') {
+				return true;
+			}
+			if (t.type === TokenType.FlowMapEnd || t.type === TokenType.FlowSeqEnd) {
+				return true;
+			}
 			return false;
 		}
 		return false;
 	}
 
-	private scanQuotedScalar(quote: '\'' | '"'): void {
+	private scanQuotedScalar(quote: "'" | '"'): void {
 		const start = this.pos;
 		this.pos++; // skip opening quote
 		let value = '';
@@ -324,19 +334,21 @@ class YamlScanner {
 			const ch = this.input[this.pos];
 			if (ch === quote) {
 				// In single-quoted strings, '' is an escaped single quote
-				if (quote === '\'' && this.input[this.pos + 1] === '\'') {
-					value += '\'';
+				if (quote === "'" && this.input[this.pos + 1] === "'") {
+					value += "'";
 					this.pos += 2;
 					trailingLiteralWs = 0;
 					continue;
 				}
 				this.pos++; // skip closing quote
 				const rawValue = this.input.substring(start, this.pos);
-				this.tokens.push(makeToken(TokenType.Scalar, start, this.pos, {
-					rawValue,
-					value,
-					format: quote === '\'' ? 'single' : 'double',
-				}));
+				this.tokens.push(
+					makeToken(TokenType.Scalar, start, this.pos, {
+						rawValue,
+						value,
+						format: quote === "'" ? 'single' : 'double'
+					})
+				);
 				return;
 			}
 
@@ -353,20 +365,48 @@ class YamlScanner {
 					continue;
 				}
 				switch (next) {
-					case 'n': value += '\n'; break;
-					case 't': value += '\t'; break;
-					case '\\': value += '\\'; break;
-					case '"': value += '"'; break;
-					case '/': value += '/'; break;
-					case 'r': value += '\r'; break;
-					case '0': value += '\0'; break;
-					case 'a': value += '\x07'; break;
-					case 'b': value += '\b'; break;
-					case 'e': value += '\x1b'; break;
-					case 'v': value += '\v'; break;
-					case 'f': value += '\f'; break;
-					case ' ': value += ' '; break;
-					case '_': value += '\xa0'; break;
+					case 'n':
+						value += '\n';
+						break;
+					case 't':
+						value += '\t';
+						break;
+					case '\\':
+						value += '\\';
+						break;
+					case '"':
+						value += '"';
+						break;
+					case '/':
+						value += '/';
+						break;
+					case 'r':
+						value += '\r';
+						break;
+					case '0':
+						value += '\0';
+						break;
+					case 'a':
+						value += '\x07';
+						break;
+					case 'b':
+						value += '\b';
+						break;
+					case 'e':
+						value += '\x1b';
+						break;
+					case 'v':
+						value += '\v';
+						break;
+					case 'f':
+						value += '\f';
+						break;
+					case ' ':
+						value += ' ';
+						break;
+					case '_':
+						value += '\xa0';
+						break;
 					case 'x': {
 						// \xNN - 2-digit hex escape
 						const hex = this.input.substring(this.pos + 2, this.pos + 4);
@@ -409,7 +449,9 @@ class YamlScanner {
 						trailingLiteralWs = 0;
 						continue;
 					}
-					default: value += '\\' + (next ?? ''); break;
+					default:
+						value += '\\' + (next ?? '');
+						break;
 				}
 				this.pos += 2;
 				trailingLiteralWs = 0;
@@ -463,11 +505,13 @@ class YamlScanner {
 
 		// Unterminated string - emit what we have
 		const rawValue = this.input.substring(start, this.pos);
-		this.tokens.push(makeToken(TokenType.Scalar, start, this.pos, {
-			rawValue,
-			value,
-			format: quote === '\'' ? 'single' : 'double',
-		}));
+		this.tokens.push(
+			makeToken(TokenType.Scalar, start, this.pos, {
+				rawValue,
+				value,
+				format: quote === "'" ? 'single' : 'double'
+			})
+		);
 	}
 
 	private scanUnquotedScalar(): void {
@@ -477,14 +521,24 @@ class YamlScanner {
 		while (this.pos < this.input.length) {
 			const ch = this.input[this.pos];
 			// Stop at newline
-			if (ch === '\n' || ch === '\r') { break; }
+			if (ch === '\n' || ch === '\r') {
+				break;
+			}
 			// Stop at flow indicators (only inside flow collections)
-			if (this.flowDepth > 0 && (ch === ',' || ch === '}' || ch === ']')) { break; }
-			if (this.flowDepth > 0 && (ch === '{' || ch === '[')) { break; }
+			if (this.flowDepth > 0 && (ch === ',' || ch === '}' || ch === ']')) {
+				break;
+			}
+			if (this.flowDepth > 0 && (ch === '{' || ch === '[')) {
+				break;
+			}
 			// Stop at ': ' or ':' at end-of-line (mapping value indicator)
-			if (ch === ':' && this.isBlockColon()) { break; }
+			if (ch === ':' && this.isBlockColon()) {
+				break;
+			}
 			// Stop at ' #' (comment)
-			if (ch === '#' && this.pos > start && (this.input[this.pos - 1] === ' ' || this.input[this.pos - 1] === '\t')) { break; }
+			if (ch === '#' && this.pos > start && (this.input[this.pos - 1] === ' ' || this.input[this.pos - 1] === '\t')) {
+				break;
+			}
 
 			this.pos++;
 			// Track the last non-whitespace position to trim trailing whitespace
@@ -494,11 +548,13 @@ class YamlScanner {
 		}
 
 		const rawValue = this.input.substring(start, end);
-		this.tokens.push(makeToken(TokenType.Scalar, start, end, {
-			rawValue,
-			value: rawValue,
-			format: 'none',
-		}));
+		this.tokens.push(
+			makeToken(TokenType.Scalar, start, end, {
+				rawValue,
+				value: rawValue,
+				format: 'none'
+			})
+		);
 	}
 
 	/**
@@ -510,14 +566,24 @@ class YamlScanner {
 		// Skip optional indentation indicator (digit 1-9) and chomping indicator (+/-)
 		while (p < this.input.length) {
 			const c = this.input[p];
-			if (c >= '1' && c <= '9') { p++; continue; }
-			if (c === '+' || c === '-') { p++; continue; }
+			if (c >= '1' && c <= '9') {
+				p++;
+				continue;
+			}
+			if (c === '+' || c === '-') {
+				p++;
+				continue;
+			}
 			break;
 		}
 		// Skip optional whitespace
-		while (p < this.input.length && (this.input[p] === ' ' || this.input[p] === '\t')) { p++; }
+		while (p < this.input.length && (this.input[p] === ' ' || this.input[p] === '\t')) {
+			p++;
+		}
 		// Must be at newline, EOF, or comment
-		if (p >= this.input.length) { return true; }
+		if (p >= this.input.length) {
+			return true;
+		}
 		const c = this.input[p];
 		return c === '\n' || c === '\r' || c === '#';
 	}
@@ -617,8 +683,7 @@ class YamlScanner {
 				const c2 = this.input[this.pos + 2];
 				const c3 = this.input[this.pos + 3];
 				const isTerm = c3 === undefined || c3 === ' ' || c3 === '\t' || c3 === '\n' || c3 === '\r';
-				if ((c0 === '-' && c1 === '-' && c2 === '-' && isTerm) ||
-					(c0 === '.' && c1 === '.' && c2 === '.' && isTerm)) {
+				if ((c0 === '-' && c1 === '-' && c2 === '-' && isTerm) || (c0 === '.' && c1 === '.' && c2 === '.' && isTerm)) {
 					this.pos = lineStart;
 					break;
 				}
@@ -745,11 +810,13 @@ class YamlScanner {
 		}
 
 		const rawValue = this.input.substring(start, this.pos);
-		this.tokens.push(makeToken(TokenType.Scalar, start, this.pos, {
-			rawValue,
-			value,
-			format: style === '|' ? 'literal' : 'folded',
-		}));
+		this.tokens.push(
+			makeToken(TokenType.Scalar, start, this.pos, {
+				rawValue,
+				value,
+				format: style === '|' ? 'literal' : 'folded'
+			})
+		);
 	}
 
 	/**
@@ -762,13 +829,17 @@ class YamlScanner {
 	private getParentBlockIndent(blockScalarPos: number): number {
 		for (let i = this.tokens.length - 1; i >= 0; i--) {
 			const t = this.tokens[i];
-			if (t.type === TokenType.Newline || t.type === TokenType.Comment || t.type === TokenType.Indent) { continue; }
+			if (t.type === TokenType.Newline || t.type === TokenType.Comment || t.type === TokenType.Indent) {
+				continue;
+			}
 			if (t.type === TokenType.Colon) {
 				// Block scalar is a mapping value. The parent indentation
 				// is the column of the mapping key (the scalar before the colon).
 				for (let j = i - 1; j >= 0; j--) {
 					const kt = this.tokens[j];
-					if (kt.type === TokenType.Newline || kt.type === TokenType.Comment || kt.type === TokenType.Indent) { continue; }
+					if (kt.type === TokenType.Newline || kt.type === TokenType.Comment || kt.type === TokenType.Indent) {
+						continue;
+					}
 					// Found the key token - return its column
 					return this.getColumnAt(kt.startOffset);
 				}
@@ -779,7 +850,9 @@ class YamlScanner {
 				return this.getColumnAt(t.startOffset);
 			}
 			// Document root - content at indent 0 is valid
-			if (t.type === TokenType.DocumentStart) { return -1; }
+			if (t.type === TokenType.DocumentStart) {
+				return -1;
+			}
 			// For any other token, use 0
 			break;
 		}
@@ -804,10 +877,12 @@ class YamlScanner {
 		while (this.pos < this.input.length && this.input[this.pos] !== '\n' && this.input[this.pos] !== '\r') {
 			this.pos++;
 		}
-		this.tokens.push(makeToken(TokenType.Comment, start, this.pos, {
-			rawValue: this.input.substring(start, this.pos),
-			value: this.input.substring(start, this.pos),
-		}));
+		this.tokens.push(
+			makeToken(TokenType.Comment, start, this.pos, {
+				rawValue: this.input.substring(start, this.pos),
+				value: this.input.substring(start, this.pos)
+			})
+		);
 	}
 
 	private scanNewline(): void {
@@ -830,7 +905,9 @@ class YamlScanner {
 
 	/** Advance past a newline sequence (\r\n, \n, or \r). Returns true if a newline was consumed. */
 	private consumeNewline(): boolean {
-		if (this.pos >= this.input.length) { return false; }
+		if (this.pos >= this.input.length) {
+			return false;
+		}
 		if (this.input[this.pos] === '\r' && this.input[this.pos + 1] === '\n') {
 			this.pos += 2;
 			return true;
@@ -856,8 +933,8 @@ class YamlParser {
 		private readonly tokens: Token[],
 		private readonly input: string,
 		private readonly errors: YamlParseError[],
-		private readonly options: ParseOptions,
-	) { }
+		private readonly options: ParseOptions
+	) {}
 
 	parse(): YamlNode | undefined {
 		this.skipNewlinesAndComments();
@@ -940,8 +1017,12 @@ class YamlParser {
 		// Flow collections (also check past indent)
 		const flowToken = token.type === TokenType.Indent ? this.peek(1) : token;
 		if (flowToken.type === TokenType.FlowMapStart || flowToken.type === TokenType.FlowSeqStart) {
-			if (token.type === TokenType.Indent) { this.advance(); }
-			if (flowToken.type === TokenType.FlowMapStart) { return this.parseFlowMap(); }
+			if (token.type === TokenType.Indent) {
+				this.advance();
+			}
+			if (flowToken.type === TokenType.FlowMapStart) {
+				return this.parseFlowMap();
+			}
 			return this.parseFlowSeq();
 		}
 
@@ -979,10 +1060,14 @@ class YamlParser {
 	/** Check if tokens at current position look like a mapping entry (key: value) */
 	private looksLikeMapping(): boolean {
 		let offset = 0;
-		if (this.peek(offset).type === TokenType.Indent) { offset++; }
+		if (this.peek(offset).type === TokenType.Indent) {
+			offset++;
+		}
 		if (this.peek(offset).type === TokenType.Scalar) {
 			offset++;
-			if (this.peek(offset).type === TokenType.Colon) { return true; }
+			if (this.peek(offset).type === TokenType.Colon) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -1148,7 +1233,7 @@ class YamlParser {
 			rawValue: this.input.substring(firstToken.startOffset, endOffset),
 			startOffset: firstToken.startOffset,
 			endOffset,
-			format: 'none',
+			format: 'none'
 		};
 	}
 
@@ -1170,33 +1255,41 @@ class YamlParser {
 
 		while (this.currentToken().type !== TokenType.EOF) {
 			this.skipNewlinesAndComments();
-			if (this.currentToken().type === TokenType.EOF) { break; }
+			if (this.currentToken().type === TokenType.EOF) {
+				break;
+			}
 
 			const indent = this.currentIndent();
-			if (indent < baseIndent) { break; }
+			if (indent < baseIndent) {
+				break;
+			}
 			if (indent !== baseIndent) {
 				if (indent > baseIndent) {
 					this.emitError(
 						localize('unexpectedIndentation', 'Unexpected indentation (expected {0}, got {1})', baseIndent, indent),
 						this.currentToken().startOffset,
 						this.currentToken().endOffset,
-						'unexpected-indentation',
+						'unexpected-indentation'
 					);
 				} else {
 					break;
 				}
 			}
-			if (!this.looksLikeMapping()) { break; }
+			if (!this.looksLikeMapping()) {
+				break;
+			}
 
 			const entry = this.parseMappingEntry(baseIndent);
-			if (!entry) { break; }
+			if (!entry) {
+				break;
+			}
 
 			if (!this.options.allowDuplicateKeys && seenKeys.has(entry.key.value)) {
 				this.emitError(
 					localize('duplicateKey', 'Duplicate key: "{0}"', entry.key.value),
 					entry.key.startOffset,
 					entry.key.endOffset,
-					'duplicate-key',
+					'duplicate-key'
 				);
 			}
 			seenKeys.add(entry.key.value);
@@ -1235,8 +1328,12 @@ class YamlParser {
 		const next = this.currentToken();
 
 		// Same-line flow collections
-		if (next.type === TokenType.FlowMapStart) { return this.parseFlowMap(); }
-		if (next.type === TokenType.FlowSeqStart) { return this.parseFlowSeq(); }
+		if (next.type === TokenType.FlowMapStart) {
+			return this.parseFlowMap();
+		}
+		if (next.type === TokenType.FlowSeqStart) {
+			return this.parseFlowSeq();
+		}
 
 		// Same-line scalar (may be multiline with continuation)
 		if (next.type === TokenType.Scalar) {
@@ -1258,7 +1355,12 @@ class YamlParser {
 
 		if (afterNewline.type === TokenType.EOF) {
 			// Missing value at end of input
-			this.emitError(localize('missingValue', 'Missing value'), colonToken.startOffset, colonToken.endOffset, 'missing-value');
+			this.emitError(
+				localize('missingValue', 'Missing value'),
+				colonToken.startOffset,
+				colonToken.endOffset,
+				'missing-value'
+			);
 			return this.makeEmptyScalar(colonToken.endOffset);
 		}
 
@@ -1272,7 +1374,12 @@ class YamlParser {
 
 		if (nextIndent <= baseIndent) {
 			// No deeper indentation → missing value
-			this.emitError(localize('missingValue', 'Missing value'), colonToken.startOffset, colonToken.endOffset, 'missing-value');
+			this.emitError(
+				localize('missingValue', 'Missing value'),
+				colonToken.startOffset,
+				colonToken.endOffset,
+				'missing-value'
+			);
 			return this.makeEmptyScalar(colonToken.endOffset);
 		}
 
@@ -1290,7 +1397,9 @@ class YamlParser {
 
 		while (this.currentToken().type !== TokenType.EOF) {
 			this.skipNewlinesAndComments();
-			if (this.currentToken().type === TokenType.EOF) { break; }
+			if (this.currentToken().type === TokenType.EOF) {
+				break;
+			}
 
 			// For the first item, the dash may be on the same line (no Indent token).
 			// Compute the actual column to check against baseIndent.
@@ -1302,7 +1411,9 @@ class YamlParser {
 			}
 			isFirstItem = false;
 
-			if (indent < baseIndent) { break; }
+			if (indent < baseIndent) {
+				break;
+			}
 
 			if (indent !== baseIndent) {
 				if (indent > baseIndent) {
@@ -1310,7 +1421,7 @@ class YamlParser {
 						localize('unexpectedIndentation', 'Unexpected indentation (expected {0}, got {1})', baseIndent, indent),
 						this.currentToken().startOffset,
 						this.currentToken().endOffset,
-						'unexpected-indentation',
+						'unexpected-indentation'
 					);
 				} else {
 					break;
@@ -1318,7 +1429,9 @@ class YamlParser {
 			}
 
 			const contentToken = this.peekPastIndent();
-			if (contentToken.type !== TokenType.Dash) { break; }
+			if (contentToken.type !== TokenType.Dash) {
+				break;
+			}
 
 			// Skip indent
 			if (this.currentToken().type === TokenType.Indent) {
@@ -1346,8 +1459,12 @@ class YamlParser {
 		}
 
 		// Flow collections on same line
-		if (next.type === TokenType.FlowMapStart) { return this.parseFlowMap(); }
-		if (next.type === TokenType.FlowSeqStart) { return this.parseFlowSeq(); }
+		if (next.type === TokenType.FlowMapStart) {
+			return this.parseFlowMap();
+		}
+		if (next.type === TokenType.FlowSeqStart) {
+			return this.parseFlowSeq();
+		}
 
 		// Nested sequence on same line (e.g., '- - value')
 		if (next.type === TokenType.Dash) {
@@ -1371,14 +1488,24 @@ class YamlParser {
 		// Value on next line
 		this.skipNewlinesAndComments();
 		if (this.currentToken().type === TokenType.EOF) {
-			this.emitError(localize('missingSeqItemValue', 'Missing sequence item value'), dashToken.startOffset, dashToken.endOffset, 'missing-value');
+			this.emitError(
+				localize('missingSeqItemValue', 'Missing sequence item value'),
+				dashToken.startOffset,
+				dashToken.endOffset,
+				'missing-value'
+			);
 			return this.makeEmptyScalar(dashToken.endOffset);
 		}
 
 		const nextIndent = this.currentIndent();
 		if (nextIndent <= baseIndent) {
 			// Empty item (just a dash)
-			this.emitError(localize('missingSeqItemValue', 'Missing sequence item value'), dashToken.startOffset, dashToken.endOffset, 'missing-value');
+			this.emitError(
+				localize('missingSeqItemValue', 'Missing sequence item value'),
+				dashToken.startOffset,
+				dashToken.endOffset,
+				'missing-value'
+			);
 			return this.makeEmptyScalar(dashToken.endOffset);
 		}
 
@@ -1408,7 +1535,12 @@ class YamlParser {
 			if (this.currentToken().type === TokenType.Scalar) {
 				key = this.parseFlowScalar();
 			} else {
-				this.emitError(localize('expectedMappingKey', 'Expected mapping key'), this.currentToken().startOffset, this.currentToken().endOffset, 'expected-key');
+				this.emitError(
+					localize('expectedMappingKey', 'Expected mapping key'),
+					this.currentToken().startOffset,
+					this.currentToken().endOffset,
+					'expected-key'
+				);
 				break;
 			}
 
@@ -1442,7 +1574,12 @@ class YamlParser {
 		if (endToken.type === TokenType.FlowMapEnd) {
 			this.advance();
 		} else {
-			this.emitError(localize('expectedFlowMapEnd', 'Expected "}"'), endToken.startOffset, endToken.endOffset, 'expected-flow-map-end');
+			this.emitError(
+				localize('expectedFlowMapEnd', 'Expected "}"'),
+				endToken.startOffset,
+				endToken.endOffset,
+				'expected-flow-map-end'
+			);
 		}
 
 		return {
@@ -1450,7 +1587,7 @@ class YamlParser {
 			properties,
 			style: 'flow',
 			startOffset: startToken.startOffset,
-			endOffset: endToken.type === TokenType.FlowMapEnd ? endToken.endOffset : endToken.startOffset,
+			endOffset: endToken.type === TokenType.FlowMapEnd ? endToken.endOffset : endToken.startOffset
 		};
 	}
 
@@ -1471,7 +1608,12 @@ class YamlParser {
 			} else if (this.currentToken().type === TokenType.Scalar) {
 				item = this.parseFlowScalar();
 			} else {
-				this.emitError(localize('unexpectedTokenInFlowSeq', 'Unexpected token in flow sequence'), this.currentToken().startOffset, this.currentToken().endOffset, 'unexpected-token');
+				this.emitError(
+					localize('unexpectedTokenInFlowSeq', 'Unexpected token in flow sequence'),
+					this.currentToken().startOffset,
+					this.currentToken().endOffset,
+					'unexpected-token'
+				);
 				this.advance();
 				continue;
 			}
@@ -1489,7 +1631,12 @@ class YamlParser {
 		if (endToken.type === TokenType.FlowSeqEnd) {
 			this.advance();
 		} else {
-			this.emitError(localize('expectedFlowSeqEnd', 'Expected "]"'), endToken.startOffset, endToken.endOffset, 'expected-flow-seq-end');
+			this.emitError(
+				localize('expectedFlowSeqEnd', 'Expected "]"'),
+				endToken.startOffset,
+				endToken.endOffset,
+				'expected-flow-seq-end'
+			);
 		}
 
 		return {
@@ -1497,7 +1644,7 @@ class YamlParser {
 			items,
 			style: 'flow',
 			startOffset: startToken.startOffset,
-			endOffset: endToken.type === TokenType.FlowSeqEnd ? endToken.endOffset : endToken.startOffset,
+			endOffset: endToken.type === TokenType.FlowSeqEnd ? endToken.endOffset : endToken.startOffset
 		};
 	}
 
@@ -1532,7 +1679,9 @@ class YamlParser {
 				}
 			}
 
-			if (!hasNewline || p >= this.tokens.length) { break; }
+			if (!hasNewline || p >= this.tokens.length) {
+				break;
+			}
 
 			const nextToken = this.tokens[p];
 			if (nextToken.type === TokenType.Scalar && nextToken.format === 'none') {
@@ -1551,7 +1700,7 @@ class YamlParser {
 			rawValue: this.input.substring(token.startOffset, endOffset),
 			startOffset: token.startOffset,
 			endOffset,
-			format: 'none',
+			format: 'none'
 		};
 	}
 
@@ -1587,7 +1736,7 @@ class YamlParser {
 			rawValue: token.rawValue,
 			startOffset: token.startOffset,
 			endOffset: token.endOffset,
-			format: token.format,
+			format: token.format
 		};
 	}
 
@@ -1598,7 +1747,7 @@ class YamlParser {
 			rawValue: '',
 			startOffset: offset,
 			endOffset: offset,
-			format: 'none',
+			format: 'none'
 		};
 	}
 }

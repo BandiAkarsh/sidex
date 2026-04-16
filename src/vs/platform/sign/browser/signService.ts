@@ -47,7 +47,7 @@ export class SignService extends AbstractSignService implements ISignService {
 			return {
 				createNewMessage: arg => v.createNewMessage(arg),
 				validate: arg => v.validate(arg),
-				dispose: () => v.free(),
+				dispose: () => v.free()
 			};
 		});
 	}
@@ -66,17 +66,27 @@ export class SignService extends AbstractSignService implements ISignService {
 
 				// todo@connor4312: there seems to be a bug(?) in vscode-loader with
 				// require() not resolving in web once the script loads, so check manually
-				checkInterval.cancelAndSet(() => {
-					if (typeof vsda_web !== 'undefined') {
-						resolve();
-					}
-				}, 50, mainWindow);
-			}).finally(() => checkInterval.dispose()),
+				checkInterval.cancelAndSet(
+					() => {
+						if (typeof vsda_web !== 'undefined') {
+							resolve();
+						}
+					},
+					50,
+					mainWindow
+				);
+			}).finally(() => checkInterval.dispose())
 		]);
 
 		const keyBytes = new TextEncoder().encode(this.productService.serverLicense?.join('\n') || '');
 		for (let i = 0; i + STEP_SIZE < keyBytes.length; i += STEP_SIZE) {
-			const key = await crypto.subtle.importKey('raw', keyBytes.slice(i + IV_SIZE, i + IV_SIZE + KEY_SIZE), { name: 'AES-CBC' }, false, ['decrypt']);
+			const key = await crypto.subtle.importKey(
+				'raw',
+				keyBytes.slice(i + IV_SIZE, i + IV_SIZE + KEY_SIZE),
+				{ name: 'AES-CBC' },
+				false,
+				['decrypt']
+			);
 			wasm = await crypto.subtle.decrypt({ name: 'AES-CBC', iv: keyBytes.slice(i, i + IV_SIZE) }, key, wasm);
 		}
 

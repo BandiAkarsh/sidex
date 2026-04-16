@@ -9,12 +9,14 @@ import { URI } from '../../../../base/common/uri.js';
 import { ICustomEditorModel, ICustomEditorModelManager } from './customEditor.js';
 
 export class CustomEditorModelManager implements ICustomEditorModelManager {
-
-	private readonly _references = new Map<string, {
-		readonly viewType: string;
-		readonly model: Promise<ICustomEditorModel>;
-		counter: number;
-	}>();
+	private readonly _references = new Map<
+		string,
+		{
+			readonly viewType: string;
+			readonly model: Promise<ICustomEditorModel>;
+			counter: number;
+		}
+	>();
 
 	public async getAllModels(resource: URI): Promise<ICustomEditorModel[]> {
 		const keyStart = `${resource.toString()}@@@`;
@@ -50,12 +52,16 @@ export class CustomEditorModelManager implements ICustomEditorModelManager {
 						entry.model.then(x => x.dispose());
 						this._references.delete(key);
 					}
-				}),
+				})
 			};
 		});
 	}
 
-	public add(resource: URI, viewType: string, model: Promise<ICustomEditorModel>): Promise<IReference<ICustomEditorModel>> {
+	public add(
+		resource: URI,
+		viewType: string,
+		model: Promise<ICustomEditorModel>
+	): Promise<IReference<ICustomEditorModel>> {
 		const key = this.key(resource, viewType);
 		const existing = this._references.get(key);
 		if (existing) {

@@ -26,7 +26,6 @@ interface INotebookEditorDescriptorDto {
 }
 
 export class NotebookProviderInfo {
-
 	readonly extension?: ExtensionIdentifier;
 	readonly id: string;
 	readonly displayName: string;
@@ -46,12 +45,13 @@ export class NotebookProviderInfo {
 		this.extension = descriptor.extension;
 		this.id = descriptor.id;
 		this.displayName = descriptor.displayName;
-		this._selectors = descriptor.selectors?.map(selector => ({
-			include: selector.filenamePattern,
-			exclude: selector.excludeFileNamePattern || ''
-		}))
-			|| (descriptor as unknown as INotebookEditorDescriptorDto)._selectors
-			|| [];
+		this._selectors =
+			descriptor.selectors?.map(selector => ({
+				include: selector.filenamePattern,
+				exclude: selector.excludeFileNamePattern || ''
+			})) ||
+			(descriptor as unknown as INotebookEditorDescriptorDto)._selectors ||
+			[];
 		this.priority = descriptor.priority;
 		this.providerDisplayName = descriptor.providerDisplayName;
 		this._options = {
@@ -113,7 +113,6 @@ export class NotebookProviderInfo {
 	}
 
 	private static _possibleFileEnding(selector: NotebookSelector): string | undefined {
-
 		const pattern = /^.*(\.[a-zA-Z0-9_-]+)$/;
 
 		let candidate: string | undefined;

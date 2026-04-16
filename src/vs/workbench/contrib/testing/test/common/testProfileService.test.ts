@@ -3,8 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
-
 import assert from 'assert';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
@@ -29,10 +27,7 @@ suite('Workbench - TestProfileService', () => {
 	setup(() => {
 		idCounter = 0;
 		ds = new DisposableStore();
-		t = ds.add(new TestProfileService(
-			new MockContextKeyService(),
-			ds.add(new TestStorageService()),
-		));
+		t = ds.add(new TestProfileService(new MockContextKeyService(), ds.add(new TestStorageService())));
 	});
 
 	const addProfile = (profile: Partial<ITestRunProfile>) => {
@@ -45,7 +40,7 @@ suite('Workbench - TestProfileService', () => {
 			hasConfigurationHandler: false,
 			tag: null,
 			supportsContinuousRun: false,
-			...profile,
+			...profile
 		};
 
 		t.addProfile(upcastPartial<IMainThreadTestController>({ id: 'ctrlId' }), p);
@@ -53,7 +48,10 @@ suite('Workbench - TestProfileService', () => {
 	};
 
 	const assertGroupDefaults = (group: TestRunProfileBitset, expected: ITestRunProfile[]) => {
-		assert.deepStrictEqual(t.getGroupDefaultProfiles(group).map(p => p.label), expected.map(e => e.label));
+		assert.deepStrictEqual(
+			t.getGroupDefaultProfiles(group).map(p => p.label),
+			expected.map(e => e.label)
+		);
 	};
 
 	const expectProfiles = (expected: ITestRunProfile[], actual: string[]) => {

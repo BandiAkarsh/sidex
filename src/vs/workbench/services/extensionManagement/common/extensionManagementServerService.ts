@@ -4,7 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { localize } from '../../../../nls.js';
-import { ExtensionInstallLocation, IExtensionManagementServer, IExtensionManagementServerService } from './extensionManagement.js';
+import {
+	ExtensionInstallLocation,
+	IExtensionManagementServer,
+	IExtensionManagementServerService
+} from './extensionManagement.js';
 import { IRemoteAgentService } from '../../remote/common/remoteAgentService.js';
 import { Schemas } from '../../../../base/common/network.js';
 import { IChannel } from '../../../../base/parts/ipc/common/ipc.js';
@@ -17,7 +21,6 @@ import { IExtension } from '../../../../platform/extensions/common/extensions.js
 import { RemoteExtensionManagementService } from './remoteExtensionManagementService.js';
 
 export class ExtensionManagementServerService implements IExtensionManagementServerService {
-
 	declare readonly _serviceBrand: undefined;
 
 	readonly localExtensionManagementServer: IExtensionManagementServer | null = null;
@@ -27,15 +30,23 @@ export class ExtensionManagementServerService implements IExtensionManagementSer
 	constructor(
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
 		@ILabelService labelService: ILabelService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		const remoteAgentConnection = remoteAgentService.getConnection();
 		if (remoteAgentConnection) {
-			const extensionManagementService = instantiationService.createInstance(RemoteExtensionManagementService, remoteAgentConnection.getChannel<IChannel>('extensions'));
+			const extensionManagementService = instantiationService.createInstance(
+				RemoteExtensionManagementService,
+				remoteAgentConnection.getChannel<IChannel>('extensions')
+			);
 			this.remoteExtensionManagementServer = {
 				id: 'remote',
 				extensionManagementService,
-				get label() { return labelService.getHostLabel(Schemas.vscodeRemote, remoteAgentConnection.remoteAuthority) || localize('remote', "Remote"); },
+				get label() {
+					return (
+						labelService.getHostLabel(Schemas.vscodeRemote, remoteAgentConnection.remoteAuthority) ||
+						localize('remote', 'Remote')
+					);
+				}
 			};
 		}
 		if (isWeb) {
@@ -43,7 +54,7 @@ export class ExtensionManagementServerService implements IExtensionManagementSer
 			this.webExtensionManagementServer = {
 				id: 'web',
 				extensionManagementService,
-				label: localize('browser', "Browser"),
+				label: localize('browser', 'Browser')
 			};
 		}
 	}
@@ -60,7 +71,9 @@ export class ExtensionManagementServerService implements IExtensionManagementSer
 
 	getExtensionInstallLocation(extension: IExtension): ExtensionInstallLocation | null {
 		const server = this.getExtensionManagementServer(extension);
-		return server === this.remoteExtensionManagementServer ? ExtensionInstallLocation.Remote : ExtensionInstallLocation.Web;
+		return server === this.remoteExtensionManagementServer
+			? ExtensionInstallLocation.Remote
+			: ExtensionInstallLocation.Web;
 	}
 }
 

@@ -5,7 +5,13 @@
 
 import { Emitter } from '../../../../../base/common/event.js';
 import { Disposable } from '../../../../../base/common/lifecycle.js';
-import { NotebookCellStateChangedEvent, NotebookLayoutChangedEvent, NotebookMetadataChangedEvent, NotebookViewEvent, NotebookViewEventType } from '../notebookViewEvents.js';
+import {
+	NotebookCellStateChangedEvent,
+	NotebookLayoutChangedEvent,
+	NotebookMetadataChangedEvent,
+	NotebookViewEvent,
+	NotebookViewEventType
+} from '../notebookViewEvents.js';
 
 export class NotebookEventDispatcher extends Disposable {
 	private readonly _onDidChangeLayout = this._register(new Emitter<NotebookLayoutChangedEvent>());
@@ -35,4 +41,3 @@ export class NotebookEventDispatcher extends Disposable {
 		}
 	}
 }
-

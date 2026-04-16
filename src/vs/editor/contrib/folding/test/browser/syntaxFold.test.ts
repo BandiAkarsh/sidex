@@ -17,10 +17,16 @@ interface IndentRange {
 }
 
 class TestFoldingRangeProvider implements FoldingRangeProvider {
-	constructor(private model: ITextModel, private ranges: IndentRange[]) {
-	}
+	constructor(
+		private model: ITextModel,
+		private ranges: IndentRange[]
+	) {}
 
-	provideFoldingRanges(model: ITextModel, context: FoldingContext, token: CancellationToken): ProviderResult<FoldingRange[]> {
+	provideFoldingRanges(
+		model: ITextModel,
+		context: FoldingContext,
+		token: CancellationToken
+	): ProviderResult<FoldingRange[]> {
 		if (model === this.model) {
 			return this.ranges;
 		}
@@ -37,37 +43,37 @@ suite('Syntax folding', () => {
 
 	test('Limit by nesting level', async () => {
 		const lines = [
-			/* 1*/	'{',
-			/* 2*/	'  A',
-			/* 3*/	'  {',
-			/* 4*/	'    {',
-			/* 5*/	'      B',
-			/* 6*/	'    }',
-			/* 7*/	'    {',
-			/* 8*/	'      A',
-			/* 9*/	'      {',
-			/* 10*/	'         A',
-			/* 11*/	'      }',
-			/* 12*/	'      {',
-			/* 13*/	'        {',
-			/* 14*/	'          {',
-			/* 15*/	'             A',
-			/* 16*/	'          }',
-			/* 17*/	'        }',
-			/* 18*/	'      }',
-			/* 19*/	'    }',
-			/* 20*/	'  }',
-			/* 21*/	'}',
-			/* 22*/	'{',
-			/* 23*/	'  A',
-			/* 24*/	'}',
+			/* 1*/ '{',
+			/* 2*/ '  A',
+			/* 3*/ '  {',
+			/* 4*/ '    {',
+			/* 5*/ '      B',
+			/* 6*/ '    }',
+			/* 7*/ '    {',
+			/* 8*/ '      A',
+			/* 9*/ '      {',
+			/* 10*/ '         A',
+			/* 11*/ '      }',
+			/* 12*/ '      {',
+			/* 13*/ '        {',
+			/* 14*/ '          {',
+			/* 15*/ '             A',
+			/* 16*/ '          }',
+			/* 17*/ '        }',
+			/* 18*/ '      }',
+			/* 19*/ '    }',
+			/* 20*/ '  }',
+			/* 21*/ '}',
+			/* 22*/ '{',
+			/* 23*/ '  A',
+			/* 24*/ '}'
 		];
 
-		const r1 = r(1, 20);  //0
-		const r2 = r(3, 19);  //1
-		const r3 = r(4, 5);   //2
-		const r4 = r(7, 18);  //2
-		const r5 = r(9, 10);  //3
+		const r1 = r(1, 20); //0
+		const r2 = r(3, 19); //1
+		const r3 = r(4, 5); //2
+		const r4 = r(7, 18); //2
+		const r5 = r(9, 10); //3
 		const r6 = r(12, 17); //4
 		const r7 = r(13, 16); //5
 		const r8 = r(14, 15); //6
@@ -79,8 +85,11 @@ suite('Syntax folding', () => {
 
 		async function assertLimit(maxEntries: number, expectedRanges: IndentRange[], message: string) {
 			let reported: number | false = false;
-			const foldingRangesLimit: FoldingLimitReporter = { limit: maxEntries, update: (computed, limited) => reported = limited };
-			const syntaxRangeProvider = new SyntaxRangeProvider(model, providers, () => { }, foldingRangesLimit, undefined);
+			const foldingRangesLimit: FoldingLimitReporter = {
+				limit: maxEntries,
+				update: (computed, limited) => (reported = limited)
+			};
+			const syntaxRangeProvider = new SyntaxRangeProvider(model, providers, () => {}, foldingRangesLimit, undefined);
 			try {
 				const indentRanges = await syntaxRangeProvider.compute(CancellationToken.None);
 				const actual: IndentRange[] = [];
@@ -94,7 +103,6 @@ suite('Syntax folding', () => {
 			} finally {
 				syntaxRangeProvider.dispose();
 			}
-
 		}
 
 		await assertLimit(1000, [r1, r2, r3, r4, r5, r6, r7, r8, r9], '1000');

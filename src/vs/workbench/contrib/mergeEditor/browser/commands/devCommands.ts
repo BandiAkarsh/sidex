@@ -28,10 +28,10 @@ export class MergeEditorCopyContentsToJSON extends Action2 {
 		super({
 			id: 'merge.dev.copyContentsJson',
 			category: MERGE_EDITOR_CATEGORY,
-			title: localize2('merge.dev.copyState', "Copy Merge Editor State as JSON"),
+			title: localize2('merge.dev.copyState', 'Copy Merge Editor State as JSON'),
 			icon: Codicon.layoutCentered,
 			f1: true,
-			precondition: ctxIsMergeEditor,
+			precondition: ctxIsMergeEditor
 		});
 	}
 
@@ -43,7 +43,7 @@ export class MergeEditorCopyContentsToJSON extends Action2 {
 		if (!(activeEditorPane instanceof MergeEditor)) {
 			notificationService.info({
 				name: localize('mergeEditor.name', 'Merge Editor'),
-				message: localize('mergeEditor.noActiveMergeEditor', "No active merge editor")
+				message: localize('mergeEditor.noActiveMergeEditor', 'No active merge editor')
 			});
 			return;
 		}
@@ -57,14 +57,14 @@ export class MergeEditorCopyContentsToJSON extends Action2 {
 			input1: model.input1.textModel.getValue(),
 			input2: model.input2.textModel.getValue(),
 			result: model.resultTextModel.getValue(),
-			initialResult: model.getInitialResultValue(),
+			initialResult: model.getInitialResultValue()
 		};
 		const jsonStr = JSON.stringify(contents, undefined, 4);
 		clipboardService.writeText(jsonStr);
 
 		notificationService.info({
 			name: localize('mergeEditor.name', 'Merge Editor'),
-			message: localize('mergeEditor.successfullyCopiedMergeEditorContents', "Successfully copied merge editor state"),
+			message: localize('mergeEditor.successfullyCopiedMergeEditorContents', 'Successfully copied merge editor state')
 		});
 	}
 }
@@ -74,10 +74,10 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 		super({
 			id: 'merge.dev.saveContentsToFolder',
 			category: MERGE_EDITOR_CATEGORY,
-			title: localize2('merge.dev.saveContentsToFolder', "Save Merge Editor State to Folder"),
+			title: localize2('merge.dev.saveContentsToFolder', 'Save Merge Editor State to Folder'),
 			icon: Codicon.layoutCentered,
 			f1: true,
-			precondition: ctxIsMergeEditor,
+			precondition: ctxIsMergeEditor
 		});
 	}
 
@@ -91,7 +91,7 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 		if (!(activeEditorPane instanceof MergeEditor)) {
 			notificationService.info({
 				name: localize('mergeEditor.name', 'Merge Editor'),
-				message: localize('mergeEditor.noActiveMergeEditor', "No active merge editor")
+				message: localize('mergeEditor.noActiveMergeEditor', 'No active merge editor')
 			});
 			return;
 		}
@@ -122,12 +122,15 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 			write('input1', model.input1.textModel.getValue()),
 			write('input2', model.input2.textModel.getValue()),
 			write('result', model.resultTextModel.getValue()),
-			write('initialResult', model.getInitialResultValue()),
+			write('initialResult', model.getInitialResultValue())
 		]);
 
 		notificationService.info({
 			name: localize('mergeEditor.name', 'Merge Editor'),
-			message: localize('mergeEditor.successfullySavedMergeEditorContentsToFolder', "Successfully saved merge editor state to folder"),
+			message: localize(
+				'mergeEditor.successfullySavedMergeEditorContentsToFolder',
+				'Successfully saved merge editor state to folder'
+			)
 		});
 	}
 }
@@ -137,7 +140,7 @@ export class MergeEditorLoadContentsFromFolder extends Action2 {
 		super({
 			id: 'merge.dev.loadContentsFromFolder',
 			category: MERGE_EDITOR_CATEGORY,
-			title: localize2('merge.dev.loadContentsFromFolder', "Load Merge Editor State from Folder"),
+			title: localize2('merge.dev.loadContentsFromFolder', 'Load Merge Editor State from Folder'),
 			icon: Codicon.layoutCentered,
 			f1: true
 		});
@@ -186,7 +189,7 @@ export class MergeEditorLoadContentsFromFolder extends Action2 {
 			base: { resource: baseUri },
 			input1: { resource: input1Uri, label: 'Input 1', description: 'Input 1', detail: '(from file)' },
 			input2: { resource: input2Uri, label: 'Input 2', description: 'Input 2', detail: '(from file)' },
-			result: { resource: resultUri },
+			result: { resource: resultUri }
 		};
 		editorService.openEditor(input);
 	}
@@ -196,6 +199,12 @@ async function promptOpenInitial(quickInputService: IQuickInputService, resultSt
 	if (resultStateOverride) {
 		return resultStateOverride === 'initial';
 	}
-	const result = await quickInputService.pick([{ label: 'result', result: false }, { label: 'initial result', result: true }], { canPickMany: false });
+	const result = await quickInputService.pick(
+		[
+			{ label: 'result', result: false },
+			{ label: 'initial result', result: true }
+		],
+		{ canPickMany: false }
+	);
 	return result?.result;
 }

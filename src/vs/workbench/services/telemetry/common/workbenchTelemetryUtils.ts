@@ -18,10 +18,12 @@ export function experimentsEnabled(
 	productService: IProductService,
 	environmentService: IWorkbenchEnvironmentService
 ): boolean {
-	return getTelemetryLevel(configurationService) === TelemetryLevel.USAGE &&
+	return (
+		getTelemetryLevel(configurationService) === TelemetryLevel.USAGE &&
 		!!productService.tasConfig &&
 		!environmentService.disableExperiments &&
 		!environmentService.extensionTestsLocationURI &&
 		!environmentService.enableSmokeTestDriver &&
-		configurationService.getValue('workbench.enableExperiments') === true;
+		configurationService.getValue('workbench.enableExperiments') === true
+	);
 }

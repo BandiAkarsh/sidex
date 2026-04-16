@@ -11,10 +11,16 @@ import { timeout } from '../../../../../../base/common/async.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
 import { TestConfigurationService } from '../../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { NullLogService } from '../../../../../../platform/log/common/log.js';
-import { TerminalCapability, type ICommandDetectionCapability } from '../../../../../../platform/terminal/common/capabilities/capabilities.js';
+import {
+	TerminalCapability,
+	type ICommandDetectionCapability
+} from '../../../../../../platform/terminal/common/capabilities/capabilities.js';
 import type { TerminalCapabilityStore } from '../../../../../../platform/terminal/common/capabilities/terminalCapabilityStore.js';
 import { ShellIntegrationAddon } from '../../../../../../platform/terminal/common/xterm/shellIntegrationAddon.js';
-import { workbenchInstantiationService, type TestTerminalConfigurationService } from '../../../../../test/browser/workbenchTestServices.js';
+import {
+	workbenchInstantiationService,
+	type TestTerminalConfigurationService
+} from '../../../../../test/browser/workbenchTestServices.js';
 import { ITerminalConfigurationService } from '../../../../terminal/browser/terminal.js';
 import { TestXtermLogger } from '../../../../../../platform/terminal/test/common/terminalTestHelpers.js';
 
@@ -104,23 +110,29 @@ const recordedTestCases: RecordedTestCase[] = [
 		finalAssertions: (commandDetection: ICommandDetectionCapability | undefined) => {
 			// Prompt input model doesn't work for p10k yet
 			// Assert a single command has completed
-			deepStrictEqual(commandDetection!.commands.map(e => e.command), ['']);
+			deepStrictEqual(
+				commandDetection!.commands.map(e => e.command),
+				['']
+			);
 		}
-	},
+	}
 ];
-function assertCommandDetectionState(commandDetection: ICommandDetectionCapability | undefined, commands: string[], promptInput: string) {
+function assertCommandDetectionState(
+	commandDetection: ICommandDetectionCapability | undefined,
+	commands: string[],
+	promptInput: string
+) {
 	if (!commandDetection) {
 		fail('Command detection must be set');
 	}
-	deepStrictEqual(commandDetection!.commands.map(e => e.command), commands);
+	deepStrictEqual(
+		commandDetection!.commands.map(e => e.command),
+		commands
+	);
 	strictEqual(commandDetection!.promptInputModel.getCombinedString(), promptInput);
 }
 
-type RecordedSessionEvent = (
-	IRecordedSessionTerminalEvent |
-	IRecordedSessionCommandEvent |
-	IRecordedSessionResizeEvent
-);
+type RecordedSessionEvent = IRecordedSessionTerminalEvent | IRecordedSessionCommandEvent | IRecordedSessionResizeEvent;
 
 interface IRecordedSessionTerminalEvent {
 	type: 'output' | 'input' | 'sendText' | 'promptInputChange';
@@ -146,20 +158,28 @@ suite('Terminal Contrib Shell Integration Recordings', () => {
 
 	setup(async () => {
 		const terminalConfig = {
-			integrated: {
-			}
+			integrated: {}
 		};
-		const instantiationService = workbenchInstantiationService({
-			configurationService: () => new TestConfigurationService({
-				files: { autoSave: false },
-				terminal: terminalConfig,
-				editor: { fontSize: 14, fontFamily: 'Arial', lineHeight: 12, fontWeight: 'bold' }
-			})
-		}, store);
-		const terminalConfigurationService = instantiationService.get(ITerminalConfigurationService) as TestTerminalConfigurationService;
+		const instantiationService = workbenchInstantiationService(
+			{
+				configurationService: () =>
+					new TestConfigurationService({
+						files: { autoSave: false },
+						terminal: terminalConfig,
+						editor: { fontSize: 14, fontFamily: 'Arial', lineHeight: 12, fontWeight: 'bold' }
+					})
+			},
+			store
+		);
+		const terminalConfigurationService = instantiationService.get(
+			ITerminalConfigurationService
+		) as TestTerminalConfigurationService;
 		terminalConfigurationService.setConfig(terminalConfig as unknown as Partial<ITerminalConfiguration>);
-		const shellIntegrationAddon = store.add(new ShellIntegrationAddon('', true, undefined, NullTelemetryService, new NullLogService));
-		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
+		const shellIntegrationAddon = store.add(
+			new ShellIntegrationAddon('', true, undefined, NullTelemetryService, new NullLogService())
+		);
+		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js'))
+			.Terminal;
 		xterm = store.add(new TerminalCtor({ allowProposedApi: true, logger: TestXtermLogger }));
 		capabilities = shellIntegrationAddon.capabilities;
 		const testContainer = document.createElement('div');
@@ -193,15 +213,17 @@ suite('Terminal Contrib Shell Integration Recordings', () => {
 						if (event.data.includes('\x1b]633;B')) {
 							// If the output contains the command start sequence, allow time for the prompt to get
 							// adjusted.
-							promises.push(new Promise<void>(r => {
-								const commandDetection = capabilities.get(TerminalCapability.CommandDetection)!;
-								if (commandDetection) {
-									const d = commandDetection.onCommandStarted(() => {
-										d.dispose();
-										r();
-									});
-								}
-							}));
+							promises.push(
+								new Promise<void>(r => {
+									const commandDetection = capabilities.get(TerminalCapability.CommandDetection)!;
+									if (commandDetection) {
+										const d = commandDetection.onCommandStarted(() => {
+											d.dispose();
+											r();
+										});
+									}
+								})
+							);
 						}
 						promises.push(new Promise<void>(r => xterm.write(event.data, () => r())));
 						await Promise.all(promises);
@@ -221,7 +243,11 @@ suite('Terminal Contrib Shell Integration Recordings', () => {
 						const promptInputModel = capabilities.get(TerminalCapability.CommandDetection)?.promptInputModel;
 						if (promptInputModel && promptInputModel.getCombinedString() !== event.data) {
 							await Promise.race([
-								await timeout(1000).then(() => { throw new Error(`Prompt input change timed out current="${promptInputModel.getCombinedString()}", expected="${event.data}"`); }),
+								await timeout(1000).then(() => {
+									throw new Error(
+										`Prompt input change timed out current="${promptInputModel.getCombinedString()}", expected="${event.data}"`
+									);
+								}),
 								await new Promise<void>(r => {
 									const d = promptInputModel.onDidChangeInput(() => {
 										if (promptInputModel.getCombinedString() === event.data) {

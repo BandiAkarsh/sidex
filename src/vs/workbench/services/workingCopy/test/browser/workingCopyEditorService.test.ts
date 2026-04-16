@@ -11,11 +11,16 @@ import { EditorService } from '../../../editor/browser/editorService.js';
 import { IEditorGroupsService } from '../../../editor/common/editorGroupsService.js';
 import { UntitledTextEditorInput } from '../../../untitled/common/untitledTextEditorInput.js';
 import { IWorkingCopyEditorHandler, WorkingCopyEditorService } from '../../common/workingCopyEditorService.js';
-import { createEditorPart, registerTestResourceEditor, TestEditorService, TestServiceAccessor, workbenchInstantiationService } from '../../../../test/browser/workbenchTestServices.js';
+import {
+	createEditorPart,
+	registerTestResourceEditor,
+	TestEditorService,
+	TestServiceAccessor,
+	workbenchInstantiationService
+} from '../../../../test/browser/workbenchTestServices.js';
 import { TestWorkingCopy } from '../../../../test/common/workbenchTestServices.js';
 
 suite('WorkingCopyEditorService', () => {
-
 	const disposables = new DisposableStore();
 
 	setup(() => {
@@ -30,14 +35,18 @@ suite('WorkingCopyEditorService', () => {
 		const service = disposables.add(new WorkingCopyEditorService(disposables.add(new TestEditorService())));
 
 		let handlerEvent: IWorkingCopyEditorHandler | undefined = undefined;
-		disposables.add(service.onDidRegisterHandler(handler => {
-			handlerEvent = handler;
-		}));
+		disposables.add(
+			service.onDidRegisterHandler(handler => {
+				handlerEvent = handler;
+			})
+		);
 
 		const editorHandler: IWorkingCopyEditorHandler = {
 			handles: workingCopy => false,
 			isOpen: () => false,
-			createEditor: workingCopy => { throw new Error(); }
+			createEditor: workingCopy => {
+				throw new Error();
+			}
 		};
 
 		disposables.add(service.registerHandler(editorHandler));
@@ -65,13 +74,25 @@ suite('WorkingCopyEditorService', () => {
 		const editorHandler: IWorkingCopyEditorHandler = {
 			handles: workingCopy => workingCopy === testWorkingCopy,
 			isOpen: (workingCopy, editor) => workingCopy === testWorkingCopy,
-			createEditor: workingCopy => { throw new Error(); }
+			createEditor: workingCopy => {
+				throw new Error();
+			}
 		};
 
 		disposables.add(service.registerHandler(editorHandler));
 
-		const editor1 = disposables.add(instantiationService.createInstance(UntitledTextEditorInput, accessor.untitledTextEditorService.create({ initialValue: 'foo' })));
-		const editor2 = disposables.add(instantiationService.createInstance(UntitledTextEditorInput, accessor.untitledTextEditorService.create({ initialValue: 'foo' })));
+		const editor1 = disposables.add(
+			instantiationService.createInstance(
+				UntitledTextEditorInput,
+				accessor.untitledTextEditorService.create({ initialValue: 'foo' })
+			)
+		);
+		const editor2 = disposables.add(
+			instantiationService.createInstance(
+				UntitledTextEditorInput,
+				accessor.untitledTextEditorService.create({ initialValue: 'foo' })
+			)
+		);
 
 		await editorService.openEditors([{ editor: editor1 }, { editor: editor2 }]);
 

@@ -18,7 +18,6 @@ const MODAL_SIDEBAR_DEFAULT_WIDTH = 220;
  * logic in ModalEditorPart without requiring DOM or instantiation services.
  */
 class TestModalEditorSidebarHost extends Disposable {
-
 	private readonly _onDidResize = this._register(new Emitter<void>());
 	readonly onDidResize = this._onDidResize.event;
 
@@ -27,23 +26,33 @@ class TestModalEditorSidebarHost extends Disposable {
 	private readonly contentDisposable = this._register(new MutableDisposable());
 
 	private _sidebarWidth = MODAL_SIDEBAR_DEFAULT_WIDTH;
-	get sidebarWidth(): number { return this._sidebarWidth; }
+	get sidebarWidth(): number {
+		return this._sidebarWidth;
+	}
 
 	private _hasSidebar = false;
-	get hasSidebar(): boolean { return this._hasSidebar; }
+	get hasSidebar(): boolean {
+		return this._hasSidebar;
+	}
 
 	private _sidebarVisible = true;
-	get sidebarVisible(): boolean { return this._sidebarVisible; }
+	get sidebarVisible(): boolean {
+		return this._sidebarVisible;
+	}
 
 	private _renderCount = 0;
-	get renderCount(): number { return this._renderCount; }
+	get renderCount(): number {
+		return this._renderCount;
+	}
 
 	/** Container width the modal occupies (simulates container.clientWidth). */
 	containerWidth = 800;
 
 	/** Remembered sidebar width from previous modal session (mirrors editorPart.sidebarWidth). */
 	private _customWidth: number | undefined;
-	get customWidth(): number | undefined { return this._customWidth; }
+	get customWidth(): number | undefined {
+		return this._customWidth;
+	}
 
 	constructor(customWidth?: number, sidebarHidden?: boolean) {
 		super();
@@ -103,7 +112,10 @@ class TestModalEditorSidebarHost extends Disposable {
 
 	clampWidth(modalWidth: number): void {
 		if (this._sidebarWidth + MODAL_MIN_WIDTH > modalWidth) {
-			this._sidebarWidth = Math.min(MODAL_SIDEBAR_DEFAULT_WIDTH, Math.max(MODAL_SIDEBAR_MIN_WIDTH, modalWidth - MODAL_MIN_WIDTH));
+			this._sidebarWidth = Math.min(
+				MODAL_SIDEBAR_DEFAULT_WIDTH,
+				Math.max(MODAL_SIDEBAR_MIN_WIDTH, modalWidth - MODAL_MIN_WIDTH)
+			);
 			this._customWidth = undefined;
 			this._onDidResize.fire();
 		}
@@ -136,14 +148,16 @@ class TestModalEditorSidebarHost extends Disposable {
 
 function stubSidebarContent(): IModalEditorSidebar {
 	return {
-		render: (_container: unknown, _onDidLayout: Event<{ readonly height: number; readonly width: number }>): IDisposable => {
-			return { dispose: () => { } };
+		render: (
+			_container: unknown,
+			_onDidLayout: Event<{ readonly height: number; readonly width: number }>
+		): IDisposable => {
+			return { dispose: () => {} };
 		}
 	};
 }
 
 suite('Modal Editor Sidebar', () => {
-
 	const disposables = new DisposableStore();
 
 	teardown(() => disposables.clear());
@@ -180,13 +194,20 @@ suite('Modal Editor Sidebar', () => {
 
 		let firstDisposed = false;
 		const firstContent: IModalEditorSidebar = {
-			render: () => ({ dispose: () => { firstDisposed = true; } })
+			render: () => ({
+				dispose: () => {
+					firstDisposed = true;
+				}
+			})
 		};
 		host.addSidebar(firstContent);
 
 		let secondRendered = false;
 		const secondContent: IModalEditorSidebar = {
-			render: () => { secondRendered = true; return { dispose: () => { } }; }
+			render: () => {
+				secondRendered = true;
+				return { dispose: () => {} };
+			}
 		};
 		host.updateSidebarContent(secondContent);
 
@@ -280,7 +301,11 @@ suite('Modal Editor Sidebar', () => {
 		host.addSidebar(stubSidebarContent());
 
 		let fired = false;
-		disposables.add(host.onDidResize(() => { fired = true; }));
+		disposables.add(
+			host.onDidResize(() => {
+				fired = true;
+			})
+		);
 
 		host.resizeSidebar(10);
 
@@ -385,7 +410,11 @@ suite('Modal Editor Sidebar', () => {
 		host.addSidebar(stubSidebarContent());
 
 		let fired = false;
-		disposables.add(host.onDidResize(() => { fired = true; }));
+		disposables.add(
+			host.onDidResize(() => {
+				fired = true;
+			})
+		);
 
 		host.clampWidth(600);
 
@@ -397,7 +426,11 @@ suite('Modal Editor Sidebar', () => {
 		host.addSidebar(stubSidebarContent());
 
 		let fired = false;
-		disposables.add(host.onDidResize(() => { fired = true; }));
+		disposables.add(
+			host.onDidResize(() => {
+				fired = true;
+			})
+		);
 
 		host.clampWidth(1000);
 
@@ -479,7 +512,11 @@ suite('Modal Editor Sidebar', () => {
 		host.addSidebar(stubSidebarContent());
 
 		let fired = false;
-		disposables.add(host.onDidResize(() => { fired = true; }));
+		disposables.add(
+			host.onDidResize(() => {
+				fired = true;
+			})
+		);
 
 		host.toggleSidebarVisible();
 

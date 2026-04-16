@@ -12,24 +12,24 @@ import { IExtensionManagementService } from '../../../../../platform/extensionMa
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { KeyCode } from '../../../../../base/common/keyCodes.js';
 import { KeybindingWeight } from '../../../../../platform/keybinding/common/keybindingsRegistry.js';
-import { EnablementState, IWorkbenchExtensionEnablementService } from '../../../../services/extensionManagement/common/extensionManagement.js';
+import {
+	EnablementState,
+	IWorkbenchExtensionEnablementService
+} from '../../../../services/extensionManagement/common/extensionManagement.js';
 import { HasSpeechProvider, SpeechToTextInProgress } from '../../../speech/common/speechService.js';
 import { registerActiveInstanceAction, sharedWhenClause } from '../../../terminal/browser/terminalActions.js';
 import { TerminalCommandId } from '../../../terminal/common/terminal.js';
 import { TerminalContextKeys } from '../../../terminal/common/terminalContextKey.js';
 import { TerminalVoiceSession } from './terminalVoice.js';
 
-const VOICE_CATEGORY = localize2('voiceCategory', "Voice");
+const VOICE_CATEGORY = localize2('voiceCategory', 'Voice');
 
 export function registerTerminalVoiceActions() {
 	registerActiveInstanceAction({
 		id: TerminalCommandId.StartVoice,
-		title: localize2('workbench.action.terminal.startDictation', "Start Dictation in Terminal"),
+		title: localize2('workbench.action.terminal.startDictation', 'Start Dictation in Terminal'),
 		category: VOICE_CATEGORY,
-		precondition: ContextKeyExpr.and(
-			SpeechToTextInProgress.toNegated(),
-			sharedWhenClause.terminalAvailable
-		),
+		precondition: ContextKeyExpr.and(SpeechToTextInProgress.toNegated(), sharedWhenClause.terminalAvailable),
 		f1: true,
 		icon: Codicon.mic,
 		run: async (activeInstance, c, accessor) => {
@@ -50,25 +50,28 @@ export function registerTerminalVoiceActions() {
 			let message: string;
 			let primaryButton: string;
 			if (extensionIsDisabled) {
-				message = localize('terminal.voice.enableSpeechExtension', "Would you like to enable the speech extension?");
-				primaryButton = localize('enableExtension', "Enable Extension");
+				message = localize('terminal.voice.enableSpeechExtension', 'Would you like to enable the speech extension?');
+				primaryButton = localize('enableExtension', 'Enable Extension');
 				run = () => workbenchExtensionEnablementService.setEnablement([extension], EnablementState.EnabledWorkspace);
 			} else {
-				message = localize('terminal.voice.installSpeechExtension', "Would you like to install 'VS Code Speech' extension from 'Microsoft'?");
+				message = localize(
+					'terminal.voice.installSpeechExtension',
+					"Would you like to install 'VS Code Speech' extension from 'Microsoft'?"
+				);
 				run = () => commandService.executeCommand('workbench.extensions.installExtension', 'ms-vscode.vscode-speech');
-				primaryButton = localize('installExtension', "Install Extension");
+				primaryButton = localize('installExtension', 'Install Extension');
 			}
-			const detail = localize('terminal.voice.detail', "Microphone support requires this extension.");
+			const detail = localize('terminal.voice.detail', 'Microphone support requires this extension.');
 			const confirmed = await dialogService.confirm({ message, primaryButton, type: 'info', detail });
 			if (confirmed.confirmed) {
 				await run();
 			}
-		},
+		}
 	});
 
 	registerActiveInstanceAction({
 		id: TerminalCommandId.StopVoice,
-		title: localize2('workbench.action.terminal.stopDictation', "Stop Dictation in Terminal"),
+		title: localize2('workbench.action.terminal.stopDictation', 'Stop Dictation in Terminal'),
 		category: VOICE_CATEGORY,
 		precondition: TerminalContextKeys.terminalDictationInProgress,
 		f1: true,

@@ -5,8 +5,18 @@
 
 import { URI } from '../../../../base/common/uri.js';
 import { mock } from '../../../../base/test/common/mock.js';
-import { ComponentFixtureContext, createEditorServices, createTextModel, defineComponentFixture, defineThemedFixtureGroup, registerWorkbenchServices } from './fixtureUtils.js';
-import { CodeEditorWidget, ICodeEditorWidgetOptions } from '../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
+import {
+	ComponentFixtureContext,
+	createEditorServices,
+	createTextModel,
+	defineComponentFixture,
+	defineThemedFixtureGroup,
+	registerWorkbenchServices
+} from './fixtureUtils.js';
+import {
+	CodeEditorWidget,
+	ICodeEditorWidgetOptions
+} from '../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
 import { LayoutData, ReferenceWidget } from '../../../../editor/contrib/gotoSymbol/browser/peek/referencesWidget.js';
 import { ReferencesModel } from '../../../../editor/contrib/gotoSymbol/browser/referencesModel.js';
 import * as peekView from '../../../../editor/contrib/peekView/browser/peekView.js';
@@ -48,61 +58,63 @@ function renderPeekReference({ container, disposableStore, theme }: ComponentFix
 
 	const instantiationService = createEditorServices(disposableStore, {
 		colorTheme: theme,
-		additionalServices: (reg) => {
+		additionalServices: reg => {
 			registerWorkbenchServices(reg);
 			reg.define(IListService, ListService);
-			reg.defineInstance(peekView.IPeekViewService, new class extends mock<peekView.IPeekViewService>() {
-				declare readonly _serviceBrand: undefined;
-				override addExclusiveWidget(_editor: ICodeEditor, _widget: peekView.PeekViewWidget) { }
-			});
-			reg.defineInstance(ITextModelService, new class extends mock<ITextModelService>() {
-				declare readonly _serviceBrand: undefined;
-				override async createModelReference(): Promise<never> {
-					throw new Error('Not implemented in fixture');
-				}
-				override canHandleResource() { return false; }
-				override registerTextModelContentProvider() { return { dispose: () => { } }; }
-			});
-		},
+			reg.defineInstance(
+				peekView.IPeekViewService,
+				new (class extends mock<peekView.IPeekViewService>() {
+					declare readonly _serviceBrand: undefined;
+					override addExclusiveWidget(_editor: ICodeEditor, _widget: peekView.PeekViewWidget) {}
+				})()
+			);
+			reg.defineInstance(
+				ITextModelService,
+				new (class extends mock<ITextModelService>() {
+					declare readonly _serviceBrand: undefined;
+					override async createModelReference(): Promise<never> {
+						throw new Error('Not implemented in fixture');
+					}
+					override canHandleResource() {
+						return false;
+					}
+					override registerTextModelContentProvider() {
+						return { dispose: () => {} };
+					}
+				})()
+			);
+		}
 	});
 
 	const uri = URI.parse('inmemory://peek-fixture.ts');
-	const textModel = disposableStore.add(createTextModel(
-		instantiationService,
-		SAMPLE_CODE,
-		uri,
-		'typescript'
-	));
+	const textModel = disposableStore.add(createTextModel(instantiationService, SAMPLE_CODE, uri, 'typescript'));
 
 	const editorWidgetOptions: ICodeEditorWidgetOptions = {
 		contributions: []
 	};
 
-	const editor = disposableStore.add(instantiationService.createInstance(
-		CodeEditorWidget,
-		container,
-		{
-			automaticLayout: true,
-			minimap: { enabled: false },
-			lineNumbers: 'on',
-			scrollBeyondLastLine: false,
-			fontSize: 14,
-			cursorBlinking: 'solid',
-		},
-		editorWidgetOptions
-	));
+	const editor = disposableStore.add(
+		instantiationService.createInstance(
+			CodeEditorWidget,
+			container,
+			{
+				automaticLayout: true,
+				minimap: { enabled: false },
+				lineNumbers: 'on',
+				scrollBeyondLastLine: false,
+				fontSize: 14,
+				cursorBlinking: 'solid'
+			},
+			editorWidgetOptions
+		)
+	);
 
 	editor.setModel(textModel);
 	editor.focus();
 
 	const layoutData: LayoutData = { ratio: 0.7, heightInLines: 10 };
 
-	const referenceWidget = instantiationService.createInstance(
-		ReferenceWidget,
-		editor,
-		true,
-		layoutData,
-	);
+	const referenceWidget = instantiationService.createInstance(ReferenceWidget, editor, true, layoutData);
 	disposableStore.add(referenceWidget);
 
 	const range = { startLineNumber: 3, startColumn: 10, endLineNumber: 3, endColumn: 21 };
@@ -113,7 +125,7 @@ function renderPeekReference({ container, disposableStore, theme }: ComponentFix
 	const links = [
 		{ uri, range: { startLineNumber: 3, startColumn: 10, endLineNumber: 3, endColumn: 21 } },
 		{ uri, range: { startLineNumber: 16, startColumn: 26, endLineNumber: 16, endColumn: 37 } },
-		{ uri, range: { startLineNumber: 20, startColumn: 1, endLineNumber: 20, endColumn: 5 } },
+		{ uri, range: { startLineNumber: 20, startColumn: 1, endLineNumber: 20, endColumn: 5 } }
 	];
 
 	const model = new ReferencesModel(links, 'processFile');
@@ -123,6 +135,6 @@ function renderPeekReference({ container, disposableStore, theme }: ComponentFix
 
 export default defineThemedFixtureGroup({
 	PeekReferences: defineComponentFixture({
-		render: renderPeekReference,
-	}),
+		render: renderPeekReference
+	})
 });

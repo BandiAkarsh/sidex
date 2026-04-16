@@ -44,15 +44,15 @@ export interface IEditSessionsStorageService {
 }
 
 export const IEditSessionsLogService = createDecorator<IEditSessionsLogService>('IEditSessionsLogService');
-export interface IEditSessionsLogService extends ILogService { }
+export interface IEditSessionsLogService extends ILogService {}
 
 export enum ChangeType {
 	Addition = 1,
-	Deletion = 2,
+	Deletion = 2
 }
 
 export enum FileType {
-	File = 1,
+	File = 1
 }
 
 interface Addition {
@@ -97,7 +97,11 @@ export const EDIT_SESSIONS_CONTAINER_ID = 'workbench.view.editSessions';
 export const EDIT_SESSIONS_DATA_VIEW_ID = 'workbench.views.editSessions.data';
 export const EDIT_SESSIONS_TITLE: ILocalizedString = localize2('cloud changes', 'Cloud Changes');
 
-export const EDIT_SESSIONS_VIEW_ICON = registerIcon('edit-sessions-view-icon', Codicon.cloudDownload, localize('editSessionViewIcon', 'View icon of the cloud changes view.'));
+export const EDIT_SESSIONS_VIEW_ICON = registerIcon(
+	'edit-sessions-view-icon',
+	Codicon.cloudDownload,
+	localize('editSessionViewIcon', 'View icon of the cloud changes view.')
+);
 
 export const EDIT_SESSIONS_SHOW_VIEW = new RawContextKey<boolean>('editSessionsShowView', false);
 

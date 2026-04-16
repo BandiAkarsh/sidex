@@ -13,7 +13,12 @@ import { EndOfLinePreference, ITextModel } from '../../../../../editor/common/mo
 import { createModelServices, createTextModel } from '../../../../../editor/test/common/testTextModel.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { NullTelemetryService } from '../../../../../platform/telemetry/common/telemetryUtils.js';
-import { IMergeDiffComputer, IMergeDiffComputerResult, toLineRange, toRangeMapping } from '../../browser/model/diffComputer.js';
+import {
+	IMergeDiffComputer,
+	IMergeDiffComputerResult,
+	toLineRange,
+	toRangeMapping
+} from '../../browser/model/diffComputer.js';
 import { DetailedLineRangeMapping } from '../../browser/model/mapping.js';
 import { MergeEditorModel } from '../../browser/model/mergeEditorModel.js';
 import { MergeEditorTelemetry } from '../../browser/telemetry.js';
@@ -25,31 +30,25 @@ suite('merge editor model', () => {
 	test('prepend line', async () => {
 		await testMergeModel(
 			{
-				'languageId': 'plaintext',
-				'base': 'line1\nline2',
-				'input1': '0\nline1\nline2',
-				'input2': '0\nline1\nline2',
-				'result': ''
+				languageId: 'plaintext',
+				base: 'line1\nline2',
+				input1: '0\nline1\nline2',
+				input2: '0\nline1\nline2',
+				result: ''
 			},
 			model => {
 				assert.deepStrictEqual(model.getProjections(), {
 					base: ['⟦⟧₀line1', 'line2'],
 					input1: ['⟦0', '⟧₀line1', 'line2'],
 					input2: ['⟦0', '⟧₀line1', 'line2'],
-					result: ['⟦⟧{unrecognized}₀'],
+					result: ['⟦⟧{unrecognized}₀']
 				});
 
 				model.toggleConflict(0, 1);
-				assert.deepStrictEqual(
-					{ result: model.getResult() },
-					{ result: '0\nline1\nline2' }
-				);
+				assert.deepStrictEqual({ result: model.getResult() }, { result: '0\nline1\nline2' });
 
 				model.toggleConflict(0, 2);
-				assert.deepStrictEqual(
-					{ result: model.getResult() },
-					({ result: '0\n0\nline1\nline2' })
-				);
+				assert.deepStrictEqual({ result: model.getResult() }, { result: '0\n0\nline1\nline2' });
 			}
 		);
 	});
@@ -57,31 +56,25 @@ suite('merge editor model', () => {
 	test('empty base', async () => {
 		await testMergeModel(
 			{
-				'languageId': 'plaintext',
-				'base': '',
-				'input1': 'input1',
-				'input2': 'input2',
-				'result': ''
+				languageId: 'plaintext',
+				base: '',
+				input1: 'input1',
+				input2: 'input2',
+				result: ''
 			},
 			model => {
 				assert.deepStrictEqual(model.getProjections(), {
 					base: ['⟦⟧₀'],
 					input1: ['⟦input1⟧₀'],
 					input2: ['⟦input2⟧₀'],
-					result: ['⟦⟧{base}₀'],
+					result: ['⟦⟧{base}₀']
 				});
 
 				model.toggleConflict(0, 1);
-				assert.deepStrictEqual(
-					{ result: model.getResult() },
-					({ result: 'input1' })
-				);
+				assert.deepStrictEqual({ result: model.getResult() }, { result: 'input1' });
 
 				model.toggleConflict(0, 2);
-				assert.deepStrictEqual(
-					{ result: model.getResult() },
-					({ result: 'input2' })
-				);
+				assert.deepStrictEqual({ result: model.getResult() }, { result: 'input2' });
 			}
 		);
 	});
@@ -89,71 +82,43 @@ suite('merge editor model', () => {
 	test('can merge word changes', async () => {
 		await testMergeModel(
 			{
-				'languageId': 'plaintext',
-				'base': 'hello',
-				'input1': 'hallo',
-				'input2': 'helloworld',
-				'result': ''
+				languageId: 'plaintext',
+				base: 'hello',
+				input1: 'hallo',
+				input2: 'helloworld',
+				result: ''
 			},
 			model => {
 				assert.deepStrictEqual(model.getProjections(), {
 					base: ['⟦hello⟧₀'],
 					input1: ['⟦hallo⟧₀'],
 					input2: ['⟦helloworld⟧₀'],
-					result: ['⟦⟧{unrecognized}₀'],
+					result: ['⟦⟧{unrecognized}₀']
 				});
 
 				model.toggleConflict(0, 1);
 				model.toggleConflict(0, 2);
 
-				assert.deepStrictEqual(
-					{ result: model.getResult() },
-					{ result: 'halloworld' }
-				);
+				assert.deepStrictEqual({ result: model.getResult() }, { result: 'halloworld' });
 			}
 		);
-
 	});
 
 	test('can combine insertions at end of document', async () => {
 		await testMergeModel(
 			{
-				'languageId': 'plaintext',
-				'base': 'Zürich\nBern\nBasel\nChur\nGenf\nThun',
-				'input1': 'Zürich\nBern\nChur\nDavos\nGenf\nThun\nfunction f(b:boolean) {}',
-				'input2': 'Zürich\nBern\nBasel (FCB)\nChur\nGenf\nThun\nfunction f(a:number) {}',
-				'result': 'Zürich\nBern\nBasel\nChur\nDavos\nGenf\nThun'
+				languageId: 'plaintext',
+				base: 'Zürich\nBern\nBasel\nChur\nGenf\nThun',
+				input1: 'Zürich\nBern\nChur\nDavos\nGenf\nThun\nfunction f(b:boolean) {}',
+				input2: 'Zürich\nBern\nBasel (FCB)\nChur\nGenf\nThun\nfunction f(a:number) {}',
+				result: 'Zürich\nBern\nBasel\nChur\nDavos\nGenf\nThun'
 			},
 			model => {
 				assert.deepStrictEqual(model.getProjections(), {
 					base: ['Zürich', 'Bern', '⟦Basel', '⟧₀Chur', '⟦⟧₁Genf', 'Thun⟦⟧₂'],
-					input1: [
-						'Zürich',
-						'Bern',
-						'⟦⟧₀Chur',
-						'⟦Davos',
-						'⟧₁Genf',
-						'Thun',
-						'⟦function f(b:boolean) {}⟧₂',
-					],
-					input2: [
-						'Zürich',
-						'Bern',
-						'⟦Basel (FCB)',
-						'⟧₀Chur',
-						'⟦⟧₁Genf',
-						'Thun',
-						'⟦function f(a:number) {}⟧₂',
-					],
-					result: [
-						'Zürich',
-						'Bern',
-						'⟦Basel',
-						'⟧{base}₀Chur',
-						'⟦Davos',
-						'⟧{1✓}₁Genf',
-						'Thun⟦⟧{base}₂',
-					],
+					input1: ['Zürich', 'Bern', '⟦⟧₀Chur', '⟦Davos', '⟧₁Genf', 'Thun', '⟦function f(b:boolean) {}⟧₂'],
+					input2: ['Zürich', 'Bern', '⟦Basel (FCB)', '⟧₀Chur', '⟦⟧₁Genf', 'Thun', '⟦function f(a:number) {}⟧₂'],
+					result: ['Zürich', 'Bern', '⟦Basel', '⟧{base}₀Chur', '⟦Davos', '⟧{1✓}₁Genf', 'Thun⟦⟧{base}₂']
 				});
 
 				model.toggleConflict(2, 1);
@@ -162,8 +127,7 @@ suite('merge editor model', () => {
 				assert.deepStrictEqual(
 					{ result: model.getResult() },
 					{
-						result:
-							'Zürich\nBern\nBasel\nChur\nDavos\nGenf\nThun\nfunction f(b:boolean) {}\nfunction f(a:number) {}',
+						result: 'Zürich\nBern\nBasel\nChur\nDavos\nGenf\nThun\nfunction f(b:boolean) {}\nfunction f(a:number) {}'
 					}
 				);
 			}
@@ -173,11 +137,11 @@ suite('merge editor model', () => {
 	test('conflicts are reset', async () => {
 		await testMergeModel(
 			{
-				'languageId': 'typescript',
-				'base': `import { h } from 'vs/base/browser/dom';\nimport { Disposable, IDisposable } from 'vs/base/common/lifecycle';\nimport { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditorWidget';\nimport { EditorOption } from 'vs/editor/common/config/editorOptions';\nimport { autorun, IReader, observableFromEvent, ObservableValue } from 'vs/workbench/contrib/audioCues/browser/observable';\nimport { LineRange } from 'vs/workbench/contrib/mergeEditor/browser/model/lineRange';\n`,
-				'input1': `import { h } from 'vs/base/browser/dom';\nimport { Disposable, IDisposable } from 'vs/base/common/lifecycle';\nimport { observableSignalFromEvent } from 'vs/base/common/observable';\nimport { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditorWidget';\nimport { autorun, IReader, observableFromEvent } from 'vs/workbench/contrib/audioCues/browser/observable';\nimport { LineRange } from 'vs/workbench/contrib/mergeEditor/browser/model/lineRange';\n`,
-				'input2': `import { h } from 'vs/base/browser/dom';\nimport { Disposable, IDisposable } from 'vs/base/common/lifecycle';\nimport { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditorWidget';\nimport { autorun, IReader, observableFromEvent, ObservableValue } from 'vs/workbench/contrib/audioCues/browser/observable';\nimport { LineRange } from 'vs/workbench/contrib/mergeEditor/browser/model/lineRange';\n`,
-				'result': `import { h } from 'vs/base/browser/dom';\r\nimport { Disposable, IDisposable } from 'vs/base/common/lifecycle';\r\nimport { observableSignalFromEvent } from 'vs/base/common/observable';\r\nimport { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditorWidget';\r\n<<<<<<< Updated upstream\r\nimport { autorun, IReader, observableFromEvent, ObservableValue } from 'vs/workbench/contrib/audioCues/browser/observable';\r\n=======\r\nimport { autorun, IReader, observableFromEvent } from 'vs/workbench/contrib/audioCues/browser/observable';\r\n>>>>>>> Stashed changes\r\nimport { LineRange } from 'vs/workbench/contrib/mergeEditor/browser/model/lineRange';\r\n`
+				languageId: 'typescript',
+				base: `import { h } from 'vs/base/browser/dom';\nimport { Disposable, IDisposable } from 'vs/base/common/lifecycle';\nimport { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditorWidget';\nimport { EditorOption } from 'vs/editor/common/config/editorOptions';\nimport { autorun, IReader, observableFromEvent, ObservableValue } from 'vs/workbench/contrib/audioCues/browser/observable';\nimport { LineRange } from 'vs/workbench/contrib/mergeEditor/browser/model/lineRange';\n`,
+				input1: `import { h } from 'vs/base/browser/dom';\nimport { Disposable, IDisposable } from 'vs/base/common/lifecycle';\nimport { observableSignalFromEvent } from 'vs/base/common/observable';\nimport { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditorWidget';\nimport { autorun, IReader, observableFromEvent } from 'vs/workbench/contrib/audioCues/browser/observable';\nimport { LineRange } from 'vs/workbench/contrib/mergeEditor/browser/model/lineRange';\n`,
+				input2: `import { h } from 'vs/base/browser/dom';\nimport { Disposable, IDisposable } from 'vs/base/common/lifecycle';\nimport { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditorWidget';\nimport { autorun, IReader, observableFromEvent, ObservableValue } from 'vs/workbench/contrib/audioCues/browser/observable';\nimport { LineRange } from 'vs/workbench/contrib/mergeEditor/browser/model/lineRange';\n`,
+				result: `import { h } from 'vs/base/browser/dom';\r\nimport { Disposable, IDisposable } from 'vs/base/common/lifecycle';\r\nimport { observableSignalFromEvent } from 'vs/base/common/observable';\r\nimport { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditorWidget';\r\n<<<<<<< Updated upstream\r\nimport { autorun, IReader, observableFromEvent, ObservableValue } from 'vs/workbench/contrib/audioCues/browser/observable';\r\n=======\r\nimport { autorun, IReader, observableFromEvent } from 'vs/workbench/contrib/audioCues/browser/observable';\r\n>>>>>>> Stashed changes\r\nimport { LineRange } from 'vs/workbench/contrib/mergeEditor/browser/model/lineRange';\r\n`
 			},
 			model => {
 				assert.deepStrictEqual(model.getProjections(), {
@@ -188,7 +152,7 @@ suite('merge editor model', () => {
 						`⟦import { EditorOption } from 'vs/editor/common/config/editorOptions';`,
 						`import { autorun, IReader, observableFromEvent, ObservableValue } from 'vs/workbench/contrib/audioCues/browser/observable';`,
 						`⟧₁import { LineRange } from 'vs/workbench/contrib/mergeEditor/browser/model/lineRange';`,
-						'',
+						''
 					],
 					input1: [
 						`import { h } from 'vs/base/browser/dom';`,
@@ -197,7 +161,7 @@ suite('merge editor model', () => {
 						`⟧₀import { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditorWidget';`,
 						`⟦import { autorun, IReader, observableFromEvent } from 'vs/workbench/contrib/audioCues/browser/observable';`,
 						`⟧₁import { LineRange } from 'vs/workbench/contrib/mergeEditor/browser/model/lineRange';`,
-						'',
+						''
 					],
 					input2: [
 						`import { h } from 'vs/base/browser/dom';`,
@@ -205,7 +169,7 @@ suite('merge editor model', () => {
 						`⟦⟧₀import { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditorWidget';`,
 						`⟦import { autorun, IReader, observableFromEvent, ObservableValue } from 'vs/workbench/contrib/audioCues/browser/observable';`,
 						`⟧₁import { LineRange } from 'vs/workbench/contrib/mergeEditor/browser/model/lineRange';`,
-						'',
+						''
 					],
 					result: [
 						`import { h } from 'vs/base/browser/dom';`,
@@ -218,8 +182,8 @@ suite('merge editor model', () => {
 						`import { autorun, IReader, observableFromEvent } from 'vs/workbench/contrib/audioCues/browser/observable';`,
 						'>>>>>>> Stashed changes',
 						`⟧{unrecognized}₁import { LineRange } from 'vs/workbench/contrib/mergeEditor/browser/model/lineRange';`,
-						'',
-					],
+						''
+					]
 				});
 			}
 		);
@@ -228,30 +192,28 @@ suite('merge editor model', () => {
 	test('auto-solve equal edits', async () => {
 		await testMergeModel(
 			{
-				'languageId': 'javascript',
-				'base': `const { readFileSync } = require('fs');\n\nlet paths = process.argv.slice(2);\nmain(paths);\n\nfunction main(paths) {\n    // print the welcome message\n    printMessage();\n\n    let data = getLineCountInfo(paths);\n    console.log("Lines: " + data.totalLineCount);\n}\n\n/**\n * Prints the welcome message\n*/\nfunction printMessage() {\n    console.log("Welcome To Line Counter");\n}\n\n/**\n * @param {string[]} paths\n*/\nfunction getLineCountInfo(paths) {\n    let lineCounts = paths.map(path => ({ path, count: getLinesLength(readFileSync(path, 'utf8')) }));\n    return {\n        totalLineCount: lineCounts.reduce((acc, { count }) => acc + count, 0),\n        lineCounts,\n    };\n}\n\n/**\n * @param {string} str\n */\nfunction getLinesLength(str) {\n    return str.split('\\n').length;\n}\n`,
-				'input1': `const { readFileSync } = require('fs');\n\nlet paths = process.argv.slice(2);\nmain(paths);\n\nfunction main(paths) {\n    // print the welcome message\n    printMessage();\n\n    const data = getLineCountInfo(paths);\n    console.log("Lines: " + data.totalLineCount);\n}\n\nfunction printMessage() {\n    console.log("Welcome To Line Counter");\n}\n\n/**\n * @param {string[]} paths\n*/\nfunction getLineCountInfo(paths) {\n    let lineCounts = paths.map(path => ({ path, count: getLinesLength(readFileSync(path, 'utf8')) }));\n    return {\n        totalLineCount: lineCounts.reduce((acc, { count }) => acc + count, 0),\n        lineCounts,\n    };\n}\n\n/**\n * @param {string} str\n */\nfunction getLinesLength(str) {\n    return str.split('\\n').length;\n}\n`,
-				'input2': `const { readFileSync } = require('fs');\n\nlet paths = process.argv.slice(2);\nrun(paths);\n\nfunction run(paths) {\n    // print the welcome message\n    printMessage();\n\n    const data = getLineCountInfo(paths);\n    console.log("Lines: " + data.totalLineCount);\n}\n\nfunction printMessage() {\n    console.log("Welcome To Line Counter");\n}\n\n/**\n * @param {string[]} paths\n*/\nfunction getLineCountInfo(paths) {\n    let lineCounts = paths.map(path => ({ path, count: getLinesLength(readFileSync(path, 'utf8')) }));\n    return {\n        totalLineCount: lineCounts.reduce((acc, { count }) => acc + count, 0),\n        lineCounts,\n    };\n}\n\n/**\n * @param {string} str\n */\nfunction getLinesLength(str) {\n    return str.split('\\n').length;\n}\n`,
-				'result': '<<<<<<< uiae\n>>>>>>> Stashed changes',
-				resetResult: true,
+				languageId: 'javascript',
+				base: `const { readFileSync } = require('fs');\n\nlet paths = process.argv.slice(2);\nmain(paths);\n\nfunction main(paths) {\n    // print the welcome message\n    printMessage();\n\n    let data = getLineCountInfo(paths);\n    console.log("Lines: " + data.totalLineCount);\n}\n\n/**\n * Prints the welcome message\n*/\nfunction printMessage() {\n    console.log("Welcome To Line Counter");\n}\n\n/**\n * @param {string[]} paths\n*/\nfunction getLineCountInfo(paths) {\n    let lineCounts = paths.map(path => ({ path, count: getLinesLength(readFileSync(path, 'utf8')) }));\n    return {\n        totalLineCount: lineCounts.reduce((acc, { count }) => acc + count, 0),\n        lineCounts,\n    };\n}\n\n/**\n * @param {string} str\n */\nfunction getLinesLength(str) {\n    return str.split('\\n').length;\n}\n`,
+				input1: `const { readFileSync } = require('fs');\n\nlet paths = process.argv.slice(2);\nmain(paths);\n\nfunction main(paths) {\n    // print the welcome message\n    printMessage();\n\n    const data = getLineCountInfo(paths);\n    console.log("Lines: " + data.totalLineCount);\n}\n\nfunction printMessage() {\n    console.log("Welcome To Line Counter");\n}\n\n/**\n * @param {string[]} paths\n*/\nfunction getLineCountInfo(paths) {\n    let lineCounts = paths.map(path => ({ path, count: getLinesLength(readFileSync(path, 'utf8')) }));\n    return {\n        totalLineCount: lineCounts.reduce((acc, { count }) => acc + count, 0),\n        lineCounts,\n    };\n}\n\n/**\n * @param {string} str\n */\nfunction getLinesLength(str) {\n    return str.split('\\n').length;\n}\n`,
+				input2: `const { readFileSync } = require('fs');\n\nlet paths = process.argv.slice(2);\nrun(paths);\n\nfunction run(paths) {\n    // print the welcome message\n    printMessage();\n\n    const data = getLineCountInfo(paths);\n    console.log("Lines: " + data.totalLineCount);\n}\n\nfunction printMessage() {\n    console.log("Welcome To Line Counter");\n}\n\n/**\n * @param {string[]} paths\n*/\nfunction getLineCountInfo(paths) {\n    let lineCounts = paths.map(path => ({ path, count: getLinesLength(readFileSync(path, 'utf8')) }));\n    return {\n        totalLineCount: lineCounts.reduce((acc, { count }) => acc + count, 0),\n        lineCounts,\n    };\n}\n\n/**\n * @param {string} str\n */\nfunction getLinesLength(str) {\n    return str.split('\\n').length;\n}\n`,
+				result: '<<<<<<< uiae\n>>>>>>> Stashed changes',
+				resetResult: true
 			},
 			async model => {
 				await model.mergeModel.reset();
 
-				assert.deepStrictEqual(model.getResult(), `const { readFileSync } = require('fs');\n\nlet paths = process.argv.slice(2);\nrun(paths);\n\nfunction run(paths) {\n    // print the welcome message\n    printMessage();\n\n    const data = getLineCountInfo(paths);\n    console.log("Lines: " + data.totalLineCount);\n}\n\nfunction printMessage() {\n    console.log("Welcome To Line Counter");\n}\n\n/**\n * @param {string[]} paths\n*/\nfunction getLineCountInfo(paths) {\n    let lineCounts = paths.map(path => ({ path, count: getLinesLength(readFileSync(path, 'utf8')) }));\n    return {\n        totalLineCount: lineCounts.reduce((acc, { count }) => acc + count, 0),\n        lineCounts,\n    };\n}\n\n/**\n * @param {string} str\n */\nfunction getLinesLength(str) {\n    return str.split('\\n').length;\n}\n`);
+				assert.deepStrictEqual(
+					model.getResult(),
+					`const { readFileSync } = require('fs');\n\nlet paths = process.argv.slice(2);\nrun(paths);\n\nfunction run(paths) {\n    // print the welcome message\n    printMessage();\n\n    const data = getLineCountInfo(paths);\n    console.log("Lines: " + data.totalLineCount);\n}\n\nfunction printMessage() {\n    console.log("Welcome To Line Counter");\n}\n\n/**\n * @param {string[]} paths\n*/\nfunction getLineCountInfo(paths) {\n    let lineCounts = paths.map(path => ({ path, count: getLinesLength(readFileSync(path, 'utf8')) }));\n    return {\n        totalLineCount: lineCounts.reduce((acc, { count }) => acc + count, 0),\n        lineCounts,\n    };\n}\n\n/**\n * @param {string} str\n */\nfunction getLinesLength(str) {\n    return str.split('\\n').length;\n}\n`
+				);
 			}
 		);
 	});
 });
 
-async function testMergeModel(
-	options: MergeModelOptions,
-	fn: (model: MergeModelInterface) => void
-): Promise<void> {
+async function testMergeModel(options: MergeModelOptions, fn: (model: MergeModelInterface) => void): Promise<void> {
 	const disposables = new DisposableStore();
-	const modelInterface = disposables.add(
-		new MergeModelInterface(options, createModelServices(disposables))
-	);
+	const modelInterface = disposables.add(new MergeModelInterface(options, createModelServices(disposables)));
 	await modelInterface.mergeModel.onInitialized;
 	await fn(modelInterface);
 	disposables.dispose();
@@ -268,7 +230,11 @@ interface MergeModelOptions {
 
 function toSmallNumbersDec(value: number): string {
 	const smallNumbers = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'];
-	return value.toString().split('').map(c => smallNumbers[parseInt(c)]).join('');
+	return value
+		.toString()
+		.split('')
+		.map(c => smallNumbers[parseInt(c)])
+		.join('');
 }
 
 class MergeModelInterface extends Disposable {
@@ -282,20 +248,27 @@ class MergeModelInterface extends Disposable {
 		const resultTextModel = this._register(createTextModel(options.result, options.languageId));
 
 		const diffComputer: IMergeDiffComputer = {
-			async computeDiff(textModel1: ITextModel, textModel2: ITextModel, reader: IReader): Promise<IMergeDiffComputerResult> {
-				const result = await linesDiffComputers.getLegacy().computeDiff(
-					textModel1.getLinesContent(),
-					textModel2.getLinesContent(),
-					{ ignoreTrimWhitespace: false, maxComputationTimeMs: 10000, computeMoves: false }
-				);
-				const changes = result.changes.map(c =>
-					new DetailedLineRangeMapping(
-						toLineRange(c.original),
-						textModel1,
-						toLineRange(c.modified),
-						textModel2,
-						c.innerChanges?.map(ic => toRangeMapping(ic)).filter(isDefined)
-					)
+			async computeDiff(
+				textModel1: ITextModel,
+				textModel2: ITextModel,
+				reader: IReader
+			): Promise<IMergeDiffComputerResult> {
+				const result = await linesDiffComputers
+					.getLegacy()
+					.computeDiff(textModel1.getLinesContent(), textModel2.getLinesContent(), {
+						ignoreTrimWhitespace: false,
+						maxComputationTimeMs: 10000,
+						computeMoves: false
+					});
+				const changes = result.changes.map(
+					c =>
+						new DetailedLineRangeMapping(
+							toLineRange(c.original),
+							textModel1,
+							toLineRange(c.modified),
+							textModel2,
+							c.innerChanges?.map(ic => toRangeMapping(ic)).filter(isDefined)
+						)
 				);
 				return {
 					diffs: changes
@@ -303,27 +276,30 @@ class MergeModelInterface extends Disposable {
 			}
 		};
 
-		this.mergeModel = this._register(instantiationService.createInstance(MergeEditorModel,
-			baseTextModel,
-			{
-				textModel: input1TextModel,
-				description: '',
-				detail: '',
-				title: '',
-			},
-			{
-				textModel: input2TextModel,
-				description: '',
-				detail: '',
-				title: '',
-			},
-			resultTextModel,
-			diffComputer,
-			{
-				resetResult: options.resetResult || false
-			},
-			new MergeEditorTelemetry(NullTelemetryService),
-		));
+		this.mergeModel = this._register(
+			instantiationService.createInstance(
+				MergeEditorModel,
+				baseTextModel,
+				{
+					textModel: input1TextModel,
+					description: '',
+					detail: '',
+					title: ''
+				},
+				{
+					textModel: input2TextModel,
+					description: '',
+					detail: '',
+					title: ''
+				},
+				resultTextModel,
+				diffComputer,
+				{
+					resetResult: options.resetResult || false
+				},
+				new MergeEditorTelemetry(NullTelemetryService)
+			)
+		);
 	}
 
 	getProjections(): unknown {
@@ -332,10 +308,12 @@ class MergeModelInterface extends Disposable {
 			label: string;
 		}
 		function applyRanges(textModel: ITextModel, ranges: LabeledRange[]): void {
-			textModel.applyEdits(ranges.map(({ range, label }) => ({
-				range: range,
-				text: `⟦${textModel.getValueInRange(range)}⟧${label}`,
-			})));
+			textModel.applyEdits(
+				ranges.map(({ range, label }) => ({
+					range: range,
+					text: `⟦${textModel.getValueInRange(range)}⟧${label}`
+				}))
+			);
 		}
 		const baseRanges = this.mergeModel.modifiedBaseRanges.get();
 
@@ -344,7 +322,7 @@ class MergeModelInterface extends Disposable {
 			baseTextModel,
 			baseRanges.map<LabeledRange>((r, idx) => ({
 				range: r.baseRange.toExclusiveRange(),
-				label: toSmallNumbersDec(idx),
+				label: toSmallNumbersDec(idx)
 			}))
 		);
 
@@ -353,7 +331,7 @@ class MergeModelInterface extends Disposable {
 			input1TextModel,
 			baseRanges.map<LabeledRange>((r, idx) => ({
 				range: r.input1Range.toExclusiveRange(),
-				label: toSmallNumbersDec(idx),
+				label: toSmallNumbersDec(idx)
 			}))
 		);
 
@@ -362,7 +340,7 @@ class MergeModelInterface extends Disposable {
 			input2TextModel,
 			baseRanges.map<LabeledRange>((r, idx) => ({
 				range: r.input2Range.toExclusiveRange(),
-				label: toSmallNumbersDec(idx),
+				label: toSmallNumbersDec(idx)
 			}))
 		);
 
@@ -371,7 +349,7 @@ class MergeModelInterface extends Disposable {
 			resultTextModel,
 			baseRanges.map<LabeledRange>((r, idx) => ({
 				range: this.mergeModel.getLineRangeInResult(r.baseRange).toExclusiveRange(),
-				label: `{${this.mergeModel.getState(r).get()}}${toSmallNumbersDec(idx)}`,
+				label: `{${this.mergeModel.getState(r).get()}}${toSmallNumbersDec(idx)}`
 			}))
 		);
 
@@ -379,7 +357,7 @@ class MergeModelInterface extends Disposable {
 			base: baseTextModel.getValue(EndOfLinePreference.LF).split('\n'),
 			input1: input1TextModel.getValue(EndOfLinePreference.LF).split('\n'),
 			input2: input2TextModel.getValue(EndOfLinePreference.LF).split('\n'),
-			result: resultTextModel.getValue(EndOfLinePreference.LF).split('\n'),
+			result: resultTextModel.getValue(EndOfLinePreference.LF).split('\n')
 		};
 		baseTextModel.dispose();
 		input1TextModel.dispose();

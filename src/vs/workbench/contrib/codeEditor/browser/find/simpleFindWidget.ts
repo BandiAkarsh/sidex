@@ -13,7 +13,13 @@ import { KeyCode } from '../../../../../base/common/keyCodes.js';
 import { IDisposable } from '../../../../../base/common/lifecycle.js';
 import { FindReplaceState, INewFindReplaceState } from '../../../../../editor/contrib/find/browser/findState.js';
 import { IMessage as InputBoxMessage } from '../../../../../base/browser/ui/inputbox/inputBox.js';
-import { SimpleButton, findPreviousMatchIcon, findNextMatchIcon, NLS_NO_RESULTS, NLS_MATCHES_LOCATION } from '../../../../../editor/contrib/find/browser/findWidget.js';
+import {
+	SimpleButton,
+	findPreviousMatchIcon,
+	findNextMatchIcon,
+	NLS_NO_RESULTS,
+	NLS_MATCHES_LOCATION
+} from '../../../../../editor/contrib/find/browser/findWidget.js';
 import { IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
 import { IContextViewService } from '../../../../../platform/contextview/browser/contextView.js';
 import { ContextScopedFindInput } from '../../../../../platform/history/browser/contextScopedHistoryWidget.js';
@@ -24,18 +30,23 @@ import { IKeybindingService } from '../../../../../platform/keybinding/common/ke
 import { showHistoryKeybindingHint } from '../../../../../platform/history/browser/historyWidgetKeybindingHint.js';
 import { status } from '../../../../../base/browser/ui/aria/aria.js';
 import { defaultInputBoxStyles, defaultToggleStyles } from '../../../../../platform/theme/browser/defaultStyles.js';
-import { ISashEvent, IVerticalSashLayoutProvider, Orientation, Sash } from '../../../../../base/browser/ui/sash/sash.js';
+import {
+	ISashEvent,
+	IVerticalSashLayoutProvider,
+	Orientation,
+	Sash
+} from '../../../../../base/browser/ui/sash/sash.js';
 import { registerColor } from '../../../../../platform/theme/common/colorRegistry.js';
 import type { IHoverService } from '../../../../../platform/hover/browser/hover.js';
 import type { IHoverLifecycleOptions } from '../../../../../base/browser/ui/hover/hover.js';
 import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
 import { IAccessibilityService } from '../../../../../platform/accessibility/common/accessibility.js';
 
-const NLS_FIND_INPUT_LABEL = nls.localize('label.find', "Find");
-const NLS_FIND_INPUT_PLACEHOLDER = nls.localize('placeholder.find', "Find");
-const NLS_PREVIOUS_MATCH_BTN_LABEL = nls.localize('label.previousMatchButton', "Previous Match");
-const NLS_NEXT_MATCH_BTN_LABEL = nls.localize('label.nextMatchButton', "Next Match");
-const NLS_CLOSE_BTN_LABEL = nls.localize('label.closeButton', "Close");
+const NLS_FIND_INPUT_LABEL = nls.localize('label.find', 'Find');
+const NLS_FIND_INPUT_PLACEHOLDER = nls.localize('placeholder.find', 'Find');
+const NLS_PREVIOUS_MATCH_BTN_LABEL = nls.localize('label.previousMatchButton', 'Previous Match');
+const NLS_NEXT_MATCH_BTN_LABEL = nls.localize('label.nextMatchButton', 'Next Match');
+const NLS_CLOSE_BTN_LABEL = nls.localize('label.closeButton', 'Close');
 
 interface IFindOptions {
 	showCommonFindToggles?: boolean;
@@ -89,99 +100,139 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
 		hoverService: IHoverService,
 		private readonly _keybindingService: IKeybindingService,
 		private readonly _configurationService: IConfigurationService,
-		private readonly _accessibilityService: IAccessibilityService,
+		private readonly _accessibilityService: IAccessibilityService
 	) {
 		super();
 
 		this.state = this._register(new FindReplaceState());
 		this._matchesLimit = options.matchesLimit ?? Number.MAX_SAFE_INTEGER;
 
-		this._findInput = this._register(new ContextScopedFindInput(null, contextViewService, {
-			label: NLS_FIND_INPUT_LABEL,
-			placeholder: NLS_FIND_INPUT_PLACEHOLDER,
-			validation: (value: string): InputBoxMessage | null => {
-				if (value.length === 0 || !this._findInput.getRegex()) {
-					return null;
-				}
-				try {
-					new RegExp(value);
-					return null;
-				} catch (e) {
-					this._foundMatch = false;
-					this.updateButtons(this._foundMatch);
-					return { content: e.message };
-				}
-			},
-			showCommonFindToggles: options.showCommonFindToggles,
-			appendCaseSensitiveLabel: options.appendCaseSensitiveActionId ? this._getKeybinding(options.appendCaseSensitiveActionId) : undefined,
-			appendRegexLabel: options.appendRegexActionId ? this._getKeybinding(options.appendRegexActionId) : undefined,
-			appendWholeWordsLabel: options.appendWholeWordsActionId ? this._getKeybinding(options.appendWholeWordsActionId) : undefined,
-			showHistoryHint: () => showHistoryKeybindingHint(_keybindingService),
-			inputBoxStyles: defaultInputBoxStyles,
-			toggleStyles: defaultToggleStyles
-		}, contextKeyService));
+		this._findInput = this._register(
+			new ContextScopedFindInput(
+				null,
+				contextViewService,
+				{
+					label: NLS_FIND_INPUT_LABEL,
+					placeholder: NLS_FIND_INPUT_PLACEHOLDER,
+					validation: (value: string): InputBoxMessage | null => {
+						if (value.length === 0 || !this._findInput.getRegex()) {
+							return null;
+						}
+						try {
+							new RegExp(value);
+							return null;
+						} catch (e) {
+							this._foundMatch = false;
+							this.updateButtons(this._foundMatch);
+							return { content: e.message };
+						}
+					},
+					showCommonFindToggles: options.showCommonFindToggles,
+					appendCaseSensitiveLabel: options.appendCaseSensitiveActionId
+						? this._getKeybinding(options.appendCaseSensitiveActionId)
+						: undefined,
+					appendRegexLabel: options.appendRegexActionId ? this._getKeybinding(options.appendRegexActionId) : undefined,
+					appendWholeWordsLabel: options.appendWholeWordsActionId
+						? this._getKeybinding(options.appendWholeWordsActionId)
+						: undefined,
+					showHistoryHint: () => showHistoryKeybindingHint(_keybindingService),
+					inputBoxStyles: defaultInputBoxStyles,
+					toggleStyles: defaultToggleStyles
+				},
+				contextKeyService
+			)
+		);
 		// Find History with update delayer
 		this._updateHistoryDelayer = this._register(new Delayer<void>(500));
 
-		this._register(this._findInput.onInput(async (e) => {
-			if (!options.checkImeCompletionState || !this._findInput.isImeSessionInProgress) {
-				this._foundMatch = this._onInputChanged();
-				if (options.showResultCount) {
-					await this.updateResultCount();
+		this._register(
+			this._findInput.onInput(async e => {
+				if (!options.checkImeCompletionState || !this._findInput.isImeSessionInProgress) {
+					this._foundMatch = this._onInputChanged();
+					if (options.showResultCount) {
+						await this.updateResultCount();
+					}
+					this.updateButtons(this._foundMatch);
+					this.focusFindBox();
+					this._delayedUpdateHistory();
 				}
-				this.updateButtons(this._foundMatch);
-				this.focusFindBox();
-				this._delayedUpdateHistory();
-			}
-		}));
+			})
+		);
 
 		this._findInput.setRegex(!!this.state.isRegex);
 		this._findInput.setCaseSensitive(!!this.state.matchCase);
 		this._findInput.setWholeWords(!!this.state.wholeWord);
 
-		this._register(this._findInput.onDidOptionChange(() => {
-			this.state.change({
-				isRegex: this._findInput.getRegex(),
-				wholeWord: this._findInput.getWholeWords(),
-				matchCase: this._findInput.getCaseSensitive()
-			}, true);
-		}));
+		this._register(
+			this._findInput.onDidOptionChange(() => {
+				this.state.change(
+					{
+						isRegex: this._findInput.getRegex(),
+						wholeWord: this._findInput.getWholeWords(),
+						matchCase: this._findInput.getCaseSensitive()
+					},
+					true
+				);
+			})
+		);
 
-		this._register(this.state.onFindReplaceStateChange(() => {
-			this._findInput.setRegex(this.state.isRegex);
-			this._findInput.setWholeWords(this.state.wholeWord);
-			this._findInput.setCaseSensitive(this.state.matchCase);
-			this.findFirst();
-		}));
+		this._register(
+			this.state.onFindReplaceStateChange(() => {
+				this._findInput.setRegex(this.state.isRegex);
+				this._findInput.setWholeWords(this.state.wholeWord);
+				this._findInput.setCaseSensitive(this.state.matchCase);
+				this.findFirst();
+			})
+		);
 
 		const hoverLifecycleOptions: IHoverLifecycleOptions = { groupId: 'simple-find-widget' };
 
-		this.prevBtn = this._register(new SimpleButton({
-			label: NLS_PREVIOUS_MATCH_BTN_LABEL + (options.previousMatchActionId ? this._getKeybinding(options.previousMatchActionId) : ''),
-			icon: findPreviousMatchIcon,
-			hoverLifecycleOptions,
-			onTrigger: () => {
-				this.find(true);
-			}
-		}, hoverService));
+		this.prevBtn = this._register(
+			new SimpleButton(
+				{
+					label:
+						NLS_PREVIOUS_MATCH_BTN_LABEL +
+						(options.previousMatchActionId ? this._getKeybinding(options.previousMatchActionId) : ''),
+					icon: findPreviousMatchIcon,
+					hoverLifecycleOptions,
+					onTrigger: () => {
+						this.find(true);
+					}
+				},
+				hoverService
+			)
+		);
 
-		this.nextBtn = this._register(new SimpleButton({
-			label: NLS_NEXT_MATCH_BTN_LABEL + (options.nextMatchActionId ? this._getKeybinding(options.nextMatchActionId) : ''),
-			icon: findNextMatchIcon,
-			hoverLifecycleOptions,
-			onTrigger: () => {
-				this.find(false);
-			}
-		}, hoverService));
+		this.nextBtn = this._register(
+			new SimpleButton(
+				{
+					label:
+						NLS_NEXT_MATCH_BTN_LABEL +
+						(options.nextMatchActionId ? this._getKeybinding(options.nextMatchActionId) : ''),
+					icon: findNextMatchIcon,
+					hoverLifecycleOptions,
+					onTrigger: () => {
+						this.find(false);
+					}
+				},
+				hoverService
+			)
+		);
 
-		const closeBtn = this._register(new SimpleButton({
-			label: NLS_CLOSE_BTN_LABEL + (options.closeWidgetActionId ? this._getKeybinding(options.closeWidgetActionId) : ''),
-			icon: widgetClose,
-			hoverLifecycleOptions,
-			onTrigger: () => {
-				this.hide();
-			}
-		}, hoverService));
+		const closeBtn = this._register(
+			new SimpleButton(
+				{
+					label:
+						NLS_CLOSE_BTN_LABEL + (options.closeWidgetActionId ? this._getKeybinding(options.closeWidgetActionId) : ''),
+					icon: widgetClose,
+					hoverLifecycleOptions,
+					onTrigger: () => {
+						this.hide();
+					}
+				},
+				hoverService
+			)
+		);
 
 		this._innerDomNode = document.createElement('div');
 		this._innerDomNode.classList.add('simple-find-part');
@@ -211,29 +262,36 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
 		this._register(this._findInputFocusTracker.onDidFocus(this._onFindInputFocusTrackerFocus.bind(this)));
 		this._register(this._findInputFocusTracker.onDidBlur(this._onFindInputFocusTrackerBlur.bind(this)));
 
-		this._register(dom.addDisposableListener(this._innerDomNode, 'click', (event) => {
-			event.stopPropagation();
-		}));
+		this._register(
+			dom.addDisposableListener(this._innerDomNode, 'click', event => {
+				event.stopPropagation();
+			})
+		);
 
 		if (options?.showResultCount) {
 			this._domNode.classList.add('result-count');
 			this._matchesCount = document.createElement('div');
 			this._matchesCount.className = 'matchesCount';
 			this._findInput.domNode.insertAdjacentElement('afterend', this._matchesCount);
-			this._register(this._findInput.onDidChange(async () => {
-				await this.updateResultCount();
-			}));
-			this._register(this._findInput.onDidOptionChange(async () => {
-				this._foundMatch = this._onInputChanged();
-				await this.updateResultCount();
-				this.focusFindBox();
-				this._delayedUpdateHistory();
-			}));
+			this._register(
+				this._findInput.onDidChange(async () => {
+					await this.updateResultCount();
+				})
+			);
+			this._register(
+				this._findInput.onDidOptionChange(async () => {
+					this._foundMatch = this._onInputChanged();
+					await this.updateResultCount();
+					this.focusFindBox();
+					this._delayedUpdateHistory();
+				})
+			);
 		}
 
 		let initialMinWidth = options?.initialWidth;
 		if (initialMinWidth) {
-			initialMinWidth = initialMinWidth < SIMPLE_FIND_WIDGET_INITIAL_WIDTH ? SIMPLE_FIND_WIDGET_INITIAL_WIDTH : initialMinWidth;
+			initialMinWidth =
+				initialMinWidth < SIMPLE_FIND_WIDGET_INITIAL_WIDTH ? SIMPLE_FIND_WIDGET_INITIAL_WIDTH : initialMinWidth;
 			this._domNode.style.width = `${initialMinWidth}px`;
 		}
 
@@ -242,27 +300,35 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
 			let originalWidth = _initialMinWidth;
 
 			// sash
-			const resizeSash = this._register(new Sash(this._innerDomNode, this, { orientation: Orientation.VERTICAL, size: 1 }));
-			this._register(resizeSash.onDidStart(() => {
-				originalWidth = parseFloat(dom.getComputedStyle(this._domNode).width);
-			}));
+			const resizeSash = this._register(
+				new Sash(this._innerDomNode, this, { orientation: Orientation.VERTICAL, size: 1 })
+			);
+			this._register(
+				resizeSash.onDidStart(() => {
+					originalWidth = parseFloat(dom.getComputedStyle(this._domNode).width);
+				})
+			);
 
-			this._register(resizeSash.onDidChange((e: ISashEvent) => {
-				const width = originalWidth + e.startX - e.currentX;
-				if (width < _initialMinWidth) {
-					return;
-				}
-				this._domNode.style.width = `${width}px`;
-			}));
+			this._register(
+				resizeSash.onDidChange((e: ISashEvent) => {
+					const width = originalWidth + e.startX - e.currentX;
+					if (width < _initialMinWidth) {
+						return;
+					}
+					this._domNode.style.width = `${width}px`;
+				})
+			);
 
-			this._register(resizeSash.onDidReset(e => {
-				const currentWidth = parseFloat(dom.getComputedStyle(this._domNode).width);
-				if (currentWidth === _initialMinWidth) {
-					this._domNode.style.width = '100%';
-				} else {
-					this._domNode.style.width = `${_initialMinWidth}px`;
-				}
-			}));
+			this._register(
+				resizeSash.onDidReset(e => {
+					const currentWidth = parseFloat(dom.getComputedStyle(this._domNode).width);
+					if (currentWidth === _initialMinWidth) {
+						this._domNode.style.width = '100%';
+					} else {
+						this._domNode.style.width = `${_initialMinWidth}px`;
+					}
+				})
+			);
 		}
 	}
 
@@ -361,11 +427,14 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
 			this._innerDomNode.classList.remove('visible-transition');
 			this._innerDomNode.setAttribute('aria-hidden', 'true');
 			// Need to delay toggling visibility until after Transition, then visibility hidden - removes from tabIndex list
-			setTimeout(() => {
-				this._isVisible = false;
-				this.updateButtons(this._foundMatch);
-				this._innerDomNode.classList.remove('visible', 'suppress-transition');
-			}, animated ? 200 : 0);
+			setTimeout(
+				() => {
+					this._isVisible = false;
+					this.updateButtons(this._foundMatch);
+					this._innerDomNode.classList.remove('visible', 'suppress-transition');
+				},
+				animated ? 200 : 0
+			);
 		}
 	}
 
@@ -426,7 +495,7 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
 
 		const count = await this._getResultCount();
 		this._matchesCount.textContent = '';
-		const showRedOutline = (this.inputValue.length > 0 && count?.resultCount === 0);
+		const showRedOutline = this.inputValue.length > 0 && count?.resultCount === 0;
 		this._matchesCount.classList.toggle('no-results', showRedOutline);
 		let label = '';
 		if (count?.resultCount) {
@@ -463,10 +532,15 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
 
 		// Include accessibility help hint on first reveal when screen reader is active
 		// Note: Using raw string for setting ID - this setting may not be registered yet
-		if (!this._accessibilityHelpHintAnnounced && this._configurationService.getValue('accessibility.verbosity.find') && this._accessibilityService.isScreenReaderOptimized()) {
+		if (
+			!this._accessibilityHelpHintAnnounced &&
+			this._configurationService.getValue('accessibility.verbosity.find') &&
+			this._accessibilityService.isScreenReaderOptimized()
+		) {
 			const keybinding = this._keybindingService.lookupKeybinding('editor.action.accessibilityHelp')?.getAriaLabel();
 			if (keybinding) {
-				findLabel += ', ' + nls.localize('accessibilityHelpHintInLabel', "Press {0} for accessibility help", keybinding);
+				findLabel +=
+					', ' + nls.localize('accessibilityHelpHintInLabel', 'Press {0} for accessibility help', keybinding);
 				this._accessibilityHelpHintAnnounced = true;
 
 				// Reset to plain label after delay to avoid repeated announcement on focus changes
@@ -484,11 +558,11 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
 
 	private _announceSearchResults(label: string, searchString?: string): string {
 		if (!searchString) {
-			return nls.localize('ariaSearchNoInput', "Enter search input");
+			return nls.localize('ariaSearchNoInput', 'Enter search input');
 		}
 		if (label === NLS_NO_RESULTS) {
 			return searchString === ''
-				? nls.localize('ariaSearchNoResultEmpty', "{0} found", label)
+				? nls.localize('ariaSearchNoResultEmpty', '{0} found', label)
 				: nls.localize('ariaSearchNoResult', "{0} found for '{1}'", label, searchString);
 		}
 
@@ -496,9 +570,15 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
 	}
 }
 
-export const simpleFindWidgetSashBorder = registerColor('simpleFindWidget.sashBorder', { dark: '#454545', light: '#C8C8C8', hcDark: '#6FC3DF', hcLight: '#0F4A85' }, nls.localize('simpleFindWidget.sashBorder', 'Border color of the sash border.'));
+export const simpleFindWidgetSashBorder = registerColor(
+	'simpleFindWidget.sashBorder',
+	{ dark: '#454545', light: '#C8C8C8', hcDark: '#6FC3DF', hcLight: '#0F4A85' },
+	nls.localize('simpleFindWidget.sashBorder', 'Border color of the sash border.')
+);
 
 registerThemingParticipant((theme, collector) => {
 	const resizeBorderBackground = theme.getColor(simpleFindWidgetSashBorder);
-	collector.addRule(`.monaco-workbench .simple-find-part .monaco-sash { background-color: ${resizeBorderBackground}; border-color: ${resizeBorderBackground} }`);
+	collector.addRule(
+		`.monaco-workbench .simple-find-part .monaco-sash { background-color: ${resizeBorderBackground}; border-color: ${resizeBorderBackground} }`
+	);
 });

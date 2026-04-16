@@ -51,8 +51,11 @@ export interface CallHierarchySession {
 }
 
 export interface CallHierarchyProvider {
-
-	prepareCallHierarchy(document: ITextModel, position: IPosition, token: CancellationToken): ProviderResult<CallHierarchySession>;
+	prepareCallHierarchy(
+		document: ITextModel,
+		position: IPosition,
+		token: CancellationToken
+	): ProviderResult<CallHierarchySession>;
 
 	provideIncomingCalls(item: CallHierarchyItem, token: CancellationToken): ProviderResult<IncomingCall[]>;
 
@@ -61,10 +64,12 @@ export interface CallHierarchyProvider {
 
 export const CallHierarchyProviderRegistry = new LanguageFeatureRegistry<CallHierarchyProvider>();
 
-
 export class CallHierarchyModel {
-
-	static async create(model: ITextModel, position: IPosition, token: CancellationToken): Promise<CallHierarchyModel | undefined> {
+	static async create(
+		model: ITextModel,
+		position: IPosition,
+		token: CancellationToken
+	): Promise<CallHierarchyModel | undefined> {
 		const [provider] = CallHierarchyProviderRegistry.ordered(model);
 		if (!provider) {
 			return undefined;
@@ -73,7 +78,12 @@ export class CallHierarchyModel {
 		if (!session) {
 			return undefined;
 		}
-		return new CallHierarchyModel(session.roots.reduce((p, c) => p + c._sessionId, ''), provider, session.roots, new RefCountedDisposable(session));
+		return new CallHierarchyModel(
+			session.roots.reduce((p, c) => p + c._sessionId, ''),
+			provider,
+			session.roots,
+			new RefCountedDisposable(session)
+		);
 	}
 
 	readonly root: CallHierarchyItem;
@@ -82,7 +92,7 @@ export class CallHierarchyModel {
 		readonly id: string,
 		readonly provider: CallHierarchyProvider,
 		readonly roots: CallHierarchyItem[],
-		readonly ref: RefCountedDisposable,
+		readonly ref: RefCountedDisposable
 	) {
 		this.root = roots[0];
 	}
@@ -93,11 +103,11 @@ export class CallHierarchyModel {
 
 	fork(item: CallHierarchyItem): CallHierarchyModel {
 		const that = this;
-		return new class extends CallHierarchyModel {
+		return new (class extends CallHierarchyModel {
 			constructor() {
 				super(that.id, that.provider, [item], that.ref.acquire());
 			}
-		};
+		})();
 	}
 
 	async resolveIncomingCalls(item: CallHierarchyItem, token: CancellationToken): Promise<IncomingCall[]> {
@@ -158,7 +168,6 @@ CommandsRegistry.registerCommand('_executePrepareCallHierarchy', async (accessor
 			}
 		});
 		return [model.root];
-
 	} finally {
 		textModelReference?.dispose();
 	}

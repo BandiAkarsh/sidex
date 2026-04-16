@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 import assert from 'assert';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
@@ -16,7 +15,6 @@ import { CellEditType, CellKind } from '../../common/notebookCommon.js';
 import { createNotebookCellList, setupInstantiationService, withTestNotebook } from './testNotebookEditor.js';
 
 suite('NotebookRangeMap', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('empty', () => {
@@ -80,10 +78,28 @@ suite('NotebookRangeMap', () => {
 
 	test('delete', () => {
 		const rangeMap = new NotebookCellsLayout();
-		rangeMap.splice(0, 0, [five, five, five, five, five,
-			five, five, five, five, five,
-			five, five, five, five, five,
-			five, five, five, five, five]);
+		rangeMap.splice(0, 0, [
+			five,
+			five,
+			five,
+			five,
+			five,
+			five,
+			five,
+			five,
+			five,
+			five,
+			five,
+			five,
+			five,
+			five,
+			five,
+			five,
+			five,
+			five,
+			five,
+			five
+		]);
 		assert.strictEqual(rangeMap.size, 100);
 		assert.strictEqual(rangeMap.count, 20);
 
@@ -120,8 +136,7 @@ suite('NotebookRangeMap', () => {
 
 	test('insert & delete #2', () => {
 		const rangeMap = new NotebookCellsLayout();
-		rangeMap.splice(0, 0, [one, one, one, one, one,
-			one, one, one, one, one]);
+		rangeMap.splice(0, 0, [one, one, one, one, one, one, one, one, one, one]);
 		rangeMap.splice(2, 6);
 		assert.strictEqual(rangeMap.count, 4);
 		assert.strictEqual(rangeMap.size, 4);
@@ -129,10 +144,28 @@ suite('NotebookRangeMap', () => {
 
 	test('insert & delete #3', () => {
 		const rangeMap = new NotebookCellsLayout();
-		rangeMap.splice(0, 0, [one, one, one, one, one,
-			one, one, one, one, one,
-			two, two, two, two, two,
-			two, two, two, two, two]);
+		rangeMap.splice(0, 0, [
+			one,
+			one,
+			one,
+			one,
+			one,
+			one,
+			one,
+			one,
+			one,
+			one,
+			two,
+			two,
+			two,
+			two,
+			two,
+			two,
+			two,
+			two,
+			two,
+			two
+		]);
 		rangeMap.splice(8, 4);
 		assert.strictEqual(rangeMap.count, 16);
 		assert.strictEqual(rangeMap.size, 24);
@@ -140,10 +173,28 @@ suite('NotebookRangeMap', () => {
 
 	test('insert & delete #4', () => {
 		const rangeMap = new NotebookCellsLayout();
-		rangeMap.splice(0, 0, [one, one, one, one, one,
-			one, one, one, one, one,
-			two, two, two, two, two,
-			two, two, two, two, two]);
+		rangeMap.splice(0, 0, [
+			one,
+			one,
+			one,
+			one,
+			one,
+			one,
+			one,
+			one,
+			one,
+			one,
+			two,
+			two,
+			two,
+			two,
+			two,
+			two,
+			two,
+			two,
+			two,
+			two
+		]);
 		rangeMap.splice(5, 0, [three, three, three, three, three]);
 		assert.strictEqual(rangeMap.count, 25);
 		assert.strictEqual(rangeMap.size, 45);
@@ -241,7 +292,6 @@ suite('NotebookRangeMap', () => {
 });
 
 suite('NotebookRangeMap with top padding', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('empty', () => {
@@ -345,7 +395,15 @@ suite('NotebookRangeMap with whitesspaces', () => {
 
 	test('simple', () => {
 		const rangeMap = new NotebookCellsLayout(0);
-		rangeMap.splice(0, 0, [{ size: 479 }, { size: 163 }, { size: 182 }, { size: 106 }, { size: 106 }, { size: 106 }, { size: 87 }]);
+		rangeMap.splice(0, 0, [
+			{ size: 479 },
+			{ size: 163 },
+			{ size: 182 },
+			{ size: 106 },
+			{ size: 106 },
+			{ size: 106 },
+			{ size: 87 }
+		]);
 
 		const start = rangeMap.indexAt(650);
 		const end = rangeMap.indexAfter(650 + 890 - 1);
@@ -407,7 +465,7 @@ suite('NotebookRangeMap with whitesspaces', () => {
 					editorViewStates: [null, null, null, null, null],
 					cellTotalHeights: [50, 100, 50, 100, 50],
 					collapsedInputCells: {},
-					collapsedOutputCells: {},
+					collapsedOutputCells: {}
 				});
 
 				const cellList = createNotebookCellList(instantiationService, disposables);
@@ -433,9 +491,14 @@ suite('NotebookRangeMap with whitesspaces', () => {
 					assert.strictEqual(cellList.getElementTop(2), 170);
 
 					const textModel = editor.textModel;
-					textModel.applyEdits([
-						{ editType: CellEditType.Replace, index: 0, count: 1, cells: [] },
-					], true, undefined, () => undefined, undefined, true);
+					textModel.applyEdits(
+						[{ editType: CellEditType.Replace, index: 0, count: 1, cells: [] }],
+						true,
+						undefined,
+						() => undefined,
+						undefined,
+						true
+					);
 
 					assert.strictEqual(cellList.getElementTop(0), 20);
 					assert.strictEqual(cellList.getElementTop(1), 120);
@@ -443,7 +506,8 @@ suite('NotebookRangeMap with whitesspaces', () => {
 
 					accessor.removeZone(id);
 				});
-			});
+			}
+		);
 	});
 
 	test('Multiple Whitespaces', async function () {
@@ -462,7 +526,7 @@ suite('NotebookRangeMap with whitesspaces', () => {
 					editorViewStates: [null, null, null, null, null],
 					cellTotalHeights: [50, 100, 50, 100, 50],
 					collapsedInputCells: {},
-					collapsedOutputCells: {},
+					collapsedOutputCells: {}
 				});
 
 				const cellList = createNotebookCellList(instantiationService, disposables);
@@ -508,7 +572,8 @@ suite('NotebookRangeMap with whitesspaces', () => {
 					assert.strictEqual(cellList.scrollHeight, 350);
 					assert.strictEqual(cellList.getElementTop(3), 200);
 				});
-			});
+			}
+		);
 	});
 
 	test('Multiple Whitespaces 2', async function () {
@@ -527,7 +592,7 @@ suite('NotebookRangeMap with whitesspaces', () => {
 					editorViewStates: [null, null, null, null, null],
 					cellTotalHeights: [50, 100, 50, 100, 50],
 					collapsedInputCells: {},
-					collapsedOutputCells: {},
+					collapsedOutputCells: {}
 				});
 
 				const cellList = createNotebookCellList(instantiationService, disposables);
@@ -560,7 +625,8 @@ suite('NotebookRangeMap with whitesspaces', () => {
 					accessor.removeZone(first);
 					accessor.removeZone(second);
 				});
-			});
+			}
+		);
 	});
 
 	test('Multiple Whitespaces 3', async function () {
@@ -579,7 +645,7 @@ suite('NotebookRangeMap with whitesspaces', () => {
 					editorViewStates: [null, null, null, null, null],
 					cellTotalHeights: [50, 100, 50, 100, 50],
 					collapsedInputCells: {},
-					collapsedOutputCells: {},
+					collapsedOutputCells: {}
 				});
 
 				const cellList = createNotebookCellList(instantiationService, disposables);
@@ -612,7 +678,8 @@ suite('NotebookRangeMap with whitesspaces', () => {
 					accessor.removeZone(first);
 					accessor.removeZone(second);
 				});
-			});
+			}
+		);
 	});
 
 	// test('Multiple Whitespaces 4', async function () {
@@ -692,7 +759,7 @@ suite('NotebookRangeMap with whitesspaces', () => {
 					editorViewStates: [null, null, null, null, null],
 					cellTotalHeights: [50, 100, 50, 100, 50],
 					collapsedInputCells: {},
-					collapsedOutputCells: {},
+					collapsedOutputCells: {}
 				});
 
 				const cellList = createNotebookCellList(instantiationService, disposables);
@@ -758,9 +825,7 @@ suite('NotebookRangeMap with whitesspaces', () => {
 					foldingModel.attachViewModel(viewModel);
 					foldingModel.applyMemento([{ start: 2, end: 3 }]);
 					viewModel.updateFoldingRanges(foldingModel.regions);
-					assert.deepStrictEqual(viewModel.getHiddenRanges(), [
-						{ start: 3, end: 3 }
-					]);
+					assert.deepStrictEqual(viewModel.getHiddenRanges(), [{ start: 3, end: 3 }]);
 					cellList.setHiddenAreas(viewModel.getHiddenRanges(), true);
 					assert.strictEqual(cellList.scrollHeight, 250);
 
@@ -790,9 +855,7 @@ suite('NotebookRangeMap with whitesspaces', () => {
 					foldingModel.attachViewModel(viewModel);
 					foldingModel.applyMemento([{ start: 2, end: 3 }]);
 					viewModel.updateFoldingRanges(foldingModel.regions);
-					assert.deepStrictEqual(viewModel.getHiddenRanges(), [
-						{ start: 3, end: 3 }
-					]);
+					assert.deepStrictEqual(viewModel.getHiddenRanges(), [{ start: 3, end: 3 }]);
 					cellList.setHiddenAreas(viewModel.getHiddenRanges(), true);
 					assert.strictEqual(cellList.scrollHeight, 270);
 
@@ -822,9 +885,7 @@ suite('NotebookRangeMap with whitesspaces', () => {
 					foldingModel.attachViewModel(viewModel);
 					foldingModel.applyMemento([{ start: 0, end: 1 }]);
 					viewModel.updateFoldingRanges(foldingModel.regions);
-					assert.deepStrictEqual(viewModel.getHiddenRanges(), [
-						{ start: 1, end: 1 }
-					]);
+					assert.deepStrictEqual(viewModel.getHiddenRanges(), [{ start: 1, end: 1 }]);
 					cellList.setHiddenAreas(viewModel.getHiddenRanges(), true);
 					assert.strictEqual(cellList.scrollHeight, 270);
 
@@ -838,7 +899,8 @@ suite('NotebookRangeMap with whitesspaces', () => {
 					accessor.removeZone(id);
 					assert.strictEqual(cellList.scrollHeight, 350);
 				});
-			});
+			}
+		);
 	});
 
 	test('Whitespace with multiple viewzones at same position', async function () {
@@ -857,7 +919,7 @@ suite('NotebookRangeMap with whitesspaces', () => {
 					editorViewStates: [null, null, null, null, null],
 					cellTotalHeights: [50, 100, 50, 100, 50],
 					collapsedInputCells: {},
-					collapsedOutputCells: {},
+					collapsedOutputCells: {}
 				});
 
 				const cellList = createNotebookCellList(instantiationService, disposables);
@@ -892,12 +954,12 @@ suite('NotebookRangeMap with whitesspaces', () => {
 					assert.strictEqual(cellList.getElementTop(3), 240);
 					assert.strictEqual(cellList.getElementTop(4), 340);
 
-
 					accessor.removeZone(first);
 					assert.strictEqual(cellList.scrollHeight, 370);
 					accessor.removeZone(second);
 					assert.strictEqual(cellList.scrollHeight, 350);
 				});
-			});
+			}
+		);
 	});
 });

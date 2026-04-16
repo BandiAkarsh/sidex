@@ -24,9 +24,14 @@ suite('TestCoverage', () => {
 	setup(() => {
 		sandbox = createSandbox();
 		coverageAccessor = {
-			getCoverageDetails: sandbox.stub().resolves([]),
+			getCoverageDetails: sandbox.stub().resolves([])
 		};
-		testCoverage = new TestCoverage({} as LiveTestResult, 'taskId', upcastDeepPartial<IUriIdentityService>({ extUri: upcastPartial({ ignorePathCasing: () => true }) }), coverageAccessor);
+		testCoverage = new TestCoverage(
+			{} as LiveTestResult,
+			'taskId',
+			upcastDeepPartial<IUriIdentityService>({ extUri: upcastPartial({ ignorePathCasing: () => true }) }),
+			coverageAccessor
+		);
 	});
 
 	teardown(() => {
@@ -39,7 +44,7 @@ suite('TestCoverage', () => {
 			uri: URI.file('/path/to/file'),
 			statement: { covered: 10, total: 20 },
 			branch: { covered: 5, total: 10 },
-			declaration: { covered: 2, total: 5 },
+			declaration: { covered: 2, total: 5 }
 		};
 
 		testCoverage.append(raw1, undefined);
@@ -48,7 +53,7 @@ suite('TestCoverage', () => {
 			id: '1',
 			uri: URI.file('/path/to/file2'),
 			statement: { covered: 5, total: 10 },
-			branch: { covered: 1, total: 5 },
+			branch: { covered: 1, total: 5 }
 		};
 
 		testCoverage.append(raw2, undefined);
@@ -86,7 +91,7 @@ suite('TestCoverage', () => {
 			uri: URI.file('/path/to/file'),
 			statement: { covered: 12, total: 24 },
 			branch: { covered: 7, total: 10 },
-			declaration: { covered: 2, total: 5 },
+			declaration: { covered: 2, total: 5 }
 		};
 
 		testCoverage.append(raw3, undefined);
@@ -104,28 +109,15 @@ suite('TestCoverage', () => {
 
 	test('should emit changes', async () => {
 		const changes: string[][] = [];
-		ds.add(onObservableChange(testCoverage.didAddCoverage, value =>
-			changes.push(value.map(v => v.value!.uri.toString()))));
+		ds.add(
+			onObservableChange(testCoverage.didAddCoverage, value => changes.push(value.map(v => v.value!.uri.toString())))
+		);
 
 		addTests();
 
 		assert.deepStrictEqual(changes, [
-			[
-				'file:///',
-				'file:///',
-				'file:///',
-				'file:///path',
-				'file:///path/to',
-				'file:///path/to/file',
-			],
-			[
-				'file:///',
-				'file:///',
-				'file:///',
-				'file:///path',
-				'file:///path/to',
-				'file:///path/to/file2',
-			],
+			['file:///', 'file:///', 'file:///', 'file:///path', 'file:///path/to', 'file:///path/to/file'],
+			['file:///', 'file:///', 'file:///', 'file:///path', 'file:///path/to', 'file:///path/to/file2']
 		]);
 	});
 });

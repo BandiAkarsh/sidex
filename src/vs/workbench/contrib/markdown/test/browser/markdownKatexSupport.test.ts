@@ -11,19 +11,20 @@ import { assertSnapshot } from '../../../../../base/test/common/snapshot.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { MarkedKatexSupport } from '../../browser/markedKatexSupport.js';
 
-
 suite('Markdown Katex Support Test', () => {
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 
 	async function renderMarkdownWithKatex(str: string) {
 		const katex = await MarkedKatexSupport.loadExtension(getWindow(document), {});
-		const rendered = store.add(renderMarkdown(new MarkdownString(str), {
-			sanitizerConfig: MarkedKatexSupport.getSanitizerOptions({
-				allowedTags: basicMarkupHtmlTags,
-				allowedAttributes: defaultAllowedAttrs,
-			}),
-			markedExtensions: [katex],
-		}));
+		const rendered = store.add(
+			renderMarkdown(new MarkdownString(str), {
+				sanitizerConfig: MarkedKatexSupport.getSanitizerOptions({
+					allowedTags: basicMarkupHtmlTags,
+					allowedAttributes: defaultAllowedAttrs
+				}),
+				markedExtensions: [katex]
+			})
+		);
 		return rendered;
 	}
 
@@ -40,18 +41,17 @@ suite('Markdown Katex Support Test', () => {
 	});
 
 	test('Should support blocks immediately after paragraph', async () => {
-		const rendered = await renderMarkdownWithKatex([
-			'Block example:',
-			'$$',
-			'\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}',
-			'$$',
-		].join('\n'));
+		const rendered = await renderMarkdownWithKatex(
+			['Block example:', '$$', '\\int_{-\\infty}^{\\infty} e^{-x^2} dx = \\sqrt{\\pi}', '$$'].join('\n')
+		);
 		assert.ok(rendered.element.innerHTML.includes('katex'));
 		await assertSnapshot(rendered.element.innerHTML);
 	});
 
 	test('Should not render math when dollar sign is preceded by word character', async () => {
-		const rendered = await renderMarkdownWithKatex('for ($i = 1; $i -le 20; $i++) { echo "hello world"; Start-Sleep 1 }');
+		const rendered = await renderMarkdownWithKatex(
+			'for ($i = 1; $i -le 20; $i++) { echo "hello world"; Start-Sleep 1 }'
+		);
 		assert.ok(!rendered.element.innerHTML.includes('katex'));
 		await assertSnapshot(rendered.element.innerHTML);
 	});
@@ -75,9 +75,10 @@ suite('Markdown Katex Support Test', () => {
 	});
 
 	test('Should not render math when dollar signs appear in jQuery expressions', async () => {
-		const rendered = await renderMarkdownWithKatex('$.getJSON, $.ajax, $.get and $("#dialogDetalleZona").dialog(...) / $("#dialogDetallePDC").dialog(...)');
+		const rendered = await renderMarkdownWithKatex(
+			'$.getJSON, $.ajax, $.get and $("#dialogDetalleZona").dialog(...) / $("#dialogDetallePDC").dialog(...)'
+		);
 		assert.ok(!rendered.element.innerHTML.includes('katex'));
 		await assertSnapshot(rendered.element.innerHTML);
 	});
 });
-

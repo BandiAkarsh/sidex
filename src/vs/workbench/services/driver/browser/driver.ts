@@ -3,7 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { getClientArea, getTopLeftOffset, isHTMLDivElement, isHTMLTextAreaElement } from '../../../../base/browser/dom.js';
+import {
+	getClientArea,
+	getTopLeftOffset,
+	isHTMLDivElement,
+	isHTMLTextAreaElement
+} from '../../../../base/browser/dom.js';
 import { mainWindow } from '../../../../base/browser/window.js';
 import { coalesce } from '../../../../base/common/arrays.js';
 import { language, locale } from '../../../../base/common/platform.js';
@@ -20,14 +25,12 @@ import { ILifecycleService, LifecyclePhase } from '../../lifecycle/common/lifecy
 import type { Terminal as XtermTerminal } from '@xterm/xterm';
 
 export class BrowserWindowDriver implements IWindowDriver {
-
 	constructor(
 		@IFileService private readonly fileService: IFileService,
 		@IEnvironmentService private readonly environmentService: IEnvironmentService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@ILogService private readonly logService: ILogService
-	) {
-	}
+	) {}
 
 	async getLogs(): Promise<ILogFile[]> {
 		return getLogs(this.fileService, this.environmentService);
@@ -67,13 +70,17 @@ export class BrowserWindowDriver implements IWindowDriver {
 			while (el) {
 				const tagName = el.tagName;
 				const id = el.id ? `#${el.id}` : '';
-				const classes = coalesce(el.className.split(/\s+/g).map(c => c.trim())).map(c => `.${c}`).join('');
+				const classes = coalesce(el.className.split(/\s+/g).map(c => c.trim()))
+					.map(c => `.${c}`)
+					.join('');
 				chain.unshift(`${tagName}${id}${classes}`);
 
 				el = el.parentElement;
 			}
 
-			throw new Error(`Active element not found. Current active element is '${chain.join(' > ')}'. Looking for ${selector}`);
+			throw new Error(
+				`Active element not found. Current active element is '${chain.join(' > ')}'. Looking for ${selector}`
+			);
 		}
 
 		return true;
@@ -164,7 +171,7 @@ export class BrowserWindowDriver implements IWindowDriver {
 			element.value = newValue;
 			element.setSelectionRange(newStart, newStart);
 
-			const event = new Event('input', { 'bubbles': true, 'cancelable': true });
+			const event = new Event('input', { bubbles: true, cancelable: true });
 			element.dispatchEvent(event);
 		}
 	}
@@ -220,7 +227,7 @@ export class BrowserWindowDriver implements IWindowDriver {
 		}
 
 		// eslint-disable-next-line local/code-no-any-casts, @typescript-eslint/no-explicit-any
-		const xterm = (element as any).xterm as (XtermTerminal | undefined);
+		const xterm = (element as any).xterm as XtermTerminal | undefined;
 
 		if (!xterm) {
 			throw new Error(`Xterm not found: ${selector}`);
@@ -244,7 +251,10 @@ export class BrowserWindowDriver implements IWindowDriver {
 		});
 	}
 
-	protected async _getElementXY(selector: string, offset?: { x: number; y: number }): Promise<{ x: number; y: number }> {
+	protected async _getElementXY(
+		selector: string,
+		offset?: { x: number; y: number }
+	): Promise<{ x: number; y: number }> {
 		// eslint-disable-next-line no-restricted-syntax
 		const element = mainWindow.document.querySelector(selector);
 
@@ -260,8 +270,8 @@ export class BrowserWindowDriver implements IWindowDriver {
 			x = left + offset.x;
 			y = top + offset.y;
 		} else {
-			x = left + (width / 2);
-			y = top + (height / 2);
+			x = left + width / 2;
+			y = top + height / 2;
 		}
 
 		x = Math.round(x);

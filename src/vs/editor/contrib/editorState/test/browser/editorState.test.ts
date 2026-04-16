@@ -20,15 +20,13 @@ interface IStubEditorState {
 }
 
 suite('Editor Core - Editor State', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	const allFlags = (
-		CodeEditorStateFlag.Value
-		| CodeEditorStateFlag.Selection
-		| CodeEditorStateFlag.Position
-		| CodeEditorStateFlag.Scroll
-	);
+	const allFlags =
+		CodeEditorStateFlag.Value |
+		CodeEditorStateFlag.Selection |
+		CodeEditorStateFlag.Position |
+		CodeEditorStateFlag.Scroll;
 
 	test('empty editor state should be valid', () => {
 		const result = validate({}, {});
@@ -45,41 +43,28 @@ suite('Editor Core - Editor State', () => {
 	});
 
 	test('different model versions should be invalid', () => {
-		const result = validate(
-			{ model: { version: 1 } },
-			{ model: { version: 2 } }
-		);
+		const result = validate({ model: { version: 1 } }, { model: { version: 2 } });
 
 		assert.strictEqual(result, false);
 	});
 
 	test('different positions should be invalid', () => {
-		const result = validate(
-			{ position: new Position(1, 2) },
-			{ position: new Position(2, 3) }
-		);
+		const result = validate({ position: new Position(1, 2) }, { position: new Position(2, 3) });
 
 		assert.strictEqual(result, false);
 	});
 
 	test('different selections should be invalid', () => {
-		const result = validate(
-			{ selection: new Selection(1, 2, 3, 4) },
-			{ selection: new Selection(5, 2, 3, 4) }
-		);
+		const result = validate({ selection: new Selection(1, 2, 3, 4) }, { selection: new Selection(5, 2, 3, 4) });
 
 		assert.strictEqual(result, false);
 	});
 
 	test('different scroll positions should be invalid', () => {
-		const result = validate(
-			{ scroll: { left: 1, top: 2 } },
-			{ scroll: { left: 3, top: 2 } }
-		);
+		const result = validate({ scroll: { left: 1, top: 2 } }, { scroll: { left: 3, top: 2 } });
 
 		assert.strictEqual(result, false);
 	});
-
 
 	function validate(source: IStubEditorState, target: IStubEditorState) {
 		const sourceEditor = createEditor(source),
@@ -91,7 +76,9 @@ suite('Editor Core - Editor State', () => {
 	}
 
 	function createEditor({ model, position, selection, scroll }: IStubEditorState = {}): ICodeEditor {
-		const mappedModel = model ? { uri: model.uri ? model.uri : URI.parse('http://dummy.org'), getVersionId: () => model.version } : null;
+		const mappedModel = model
+			? { uri: model.uri ? model.uri : URI.parse('http://dummy.org'), getVersionId: () => model.version }
+			: null;
 
 		return {
 			// eslint-disable-next-line local/code-no-any-casts
@@ -102,5 +89,4 @@ suite('Editor Core - Editor State', () => {
 			getScrollTop: (): number | undefined => scroll && scroll.top
 		} as ICodeEditor;
 	}
-
 });

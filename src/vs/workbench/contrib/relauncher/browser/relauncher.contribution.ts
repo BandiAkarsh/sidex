@@ -9,15 +9,33 @@ import { isLinux, isMacintosh, isNative } from '../../../../base/common/platform
 import { isEqual } from '../../../../base/common/resources.js';
 import { URI } from '../../../../base/common/uri.js';
 import { localize } from '../../../../nls.js';
-import { ConfigurationTarget, IConfigurationChangeEvent, IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
+import {
+	ConfigurationTarget,
+	IConfigurationChangeEvent,
+	IConfigurationService
+} from '../../../../platform/configuration/common/configuration.js';
 import { IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
-import { IUserDataSyncEnablementService, IUserDataSyncService } from '../../../../platform/userDataSync/common/nullUserDataSync.js';
+import {
+	IUserDataSyncEnablementService,
+	IUserDataSyncService
+} from '../../../../platform/userDataSync/common/nullUserDataSync.js';
 import { SyncStatus } from '../../../services/userDataSync/common/userDataSync.js';
-import { IWindowsConfiguration, IWindowSettings, MenuSettings, MenuStyleConfiguration, TitleBarSetting, TitlebarStyle } from '../../../../platform/window/common/window.js';
+import {
+	IWindowsConfiguration,
+	IWindowSettings,
+	MenuSettings,
+	MenuStyleConfiguration,
+	TitleBarSetting,
+	TitlebarStyle
+} from '../../../../platform/window/common/window.js';
 import { IWorkspaceContextService, WorkbenchState } from '../../../../platform/workspace/common/workspace.js';
-import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from '../../../common/contributions.js';
+import {
+	IWorkbenchContribution,
+	IWorkbenchContributionsRegistry,
+	Extensions as WorkbenchExtensions
+} from '../../../common/contributions.js';
 import { IWorkbenchEnvironmentService } from '../../../services/environment/common/environmentService.js';
 import { IExtensionService } from '../../../services/extensions/common/extensions.js';
 import { IHostService } from '../../../services/host/browser/host.js';
@@ -38,7 +56,6 @@ interface IConfiguration extends IWindowsConfiguration {
 }
 
 export class SettingsChangeRelauncher extends Disposable implements IWorkbenchContribution {
-
 	private static SETTINGS = [
 		TitleBarSetting.TITLE_BAR_STYLE,
 		MenuSettings.MenuStyle,
@@ -115,9 +132,12 @@ export class SettingsChangeRelauncher extends Disposable implements IWorkbenchCo
 
 		const config = this.configurationService.getValue<IConfiguration>();
 		if (isNative) {
-
 			// Titlebar style
-			processChanged((config.window.titleBarStyle === TitlebarStyle.NATIVE || config.window.titleBarStyle === TitlebarStyle.CUSTOM) && this.titleBarStyle.handleChange(config.window?.titleBarStyle));
+			processChanged(
+				(config.window.titleBarStyle === TitlebarStyle.NATIVE ||
+					config.window.titleBarStyle === TitlebarStyle.CUSTOM) &&
+					this.titleBarStyle.handleChange(config.window?.titleBarStyle)
+			);
 
 			// Windows/Linux: Menu style
 			processChanged(!isMacintosh && this.menuStyle.handleChange(config.window?.menuStyle));
@@ -138,7 +158,11 @@ export class SettingsChangeRelauncher extends Disposable implements IWorkbenchCo
 			processChanged(this.updateMode.handleChange(config.update?.mode));
 
 			// On linux turning on accessibility support will also pass this flag to the chrome renderer, thus a restart is required
-			if (isLinux && typeof config.editor?.accessibilitySupport === 'string' && config.editor.accessibilitySupport !== this.accessibilitySupport) {
+			if (
+				isLinux &&
+				typeof config.editor?.accessibilitySupport === 'string' &&
+				config.editor.accessibilitySupport !== this.accessibilitySupport
+			) {
 				this.accessibilitySupport = config.editor.accessibilitySupport;
 				if (this.accessibilitySupport === 'on') {
 					changed = true;
@@ -159,31 +183,50 @@ export class SettingsChangeRelauncher extends Disposable implements IWorkbenchCo
 		processChanged(this.experimentsEnabled.handleChange(config.workbench?.enableExperiments));
 
 		// Profiles
-		processChanged(this.productService.quality !== 'stable' && this.enablePPEExtensionsGallery.handleChange(config._extensionsGallery?.enablePPE));
+		processChanged(
+			this.productService.quality !== 'stable' &&
+				this.enablePPEExtensionsGallery.handleChange(config._extensionsGallery?.enablePPE)
+		);
 
 		// Enable Feedback
 		processChanged(this.telemetryFeedbackEnabled.handleChange(config.telemetry?.feedback?.enabled));
 
 		// Extension Unification (only when turning on)
-		processChanged(this.extensionUnificationEnabled.handleChange(config.chat?.extensionUnification?.enabled) && config.chat?.extensionUnification?.enabled === true);
+		processChanged(
+			this.extensionUnificationEnabled.handleChange(config.chat?.extensionUnification?.enabled) &&
+				config.chat?.extensionUnification?.enabled === true
+		);
 
 		if (askToRelaunch && changed && this.hostService.hasFocus) {
 			this.doConfirm(
-				isNative ?
-					localize('relaunchSettingMessage', "A setting has changed that requires a restart to take effect.") :
-					localize('relaunchSettingMessageWeb', "A setting has changed that requires a reload to take effect."),
-				isNative ?
-					localize('relaunchSettingDetail', "Press the restart button to restart {0} and enable the setting.", this.productService.nameLong) :
-					localize('relaunchSettingDetailWeb', "Press the reload button to reload {0} and enable the setting.", this.productService.nameLong),
-				isNative ?
-					localize({ key: 'restart', comment: ['&& denotes a mnemonic'] }, "&&Restart") :
-					localize({ key: 'restartWeb', comment: ['&& denotes a mnemonic'] }, "&&Reload"),
+				isNative
+					? localize('relaunchSettingMessage', 'A setting has changed that requires a restart to take effect.')
+					: localize('relaunchSettingMessageWeb', 'A setting has changed that requires a reload to take effect.'),
+				isNative
+					? localize(
+							'relaunchSettingDetail',
+							'Press the restart button to restart {0} and enable the setting.',
+							this.productService.nameLong
+						)
+					: localize(
+							'relaunchSettingDetailWeb',
+							'Press the reload button to reload {0} and enable the setting.',
+							this.productService.nameLong
+						),
+				isNative
+					? localize({ key: 'restart', comment: ['&& denotes a mnemonic'] }, '&&Restart')
+					: localize({ key: 'restartWeb', comment: ['&& denotes a mnemonic'] }, '&&Reload'),
 				() => this.hostService.restart()
 			);
 		}
 	}
 
-	private async doConfirm(message: string, detail: string, primaryButton: string, confirmedFn: () => void): Promise<void> {
+	private async doConfirm(
+		message: string,
+		detail: string,
+		primaryButton: string,
+		confirmedFn: () => void
+	): Promise<void> {
 		const { confirmed } = await this.dialogService.confirm({ message, detail, primaryButton });
 		if (confirmed) {
 			confirmedFn();
@@ -197,12 +240,13 @@ interface TypeNameToType {
 }
 
 class ChangeObserver<T> {
-
-	static create<TTypeName extends 'boolean' | 'string'>(typeName: TTypeName): ChangeObserver<TypeNameToType[TTypeName]> {
+	static create<TTypeName extends 'boolean' | 'string'>(
+		typeName: TTypeName
+	): ChangeObserver<TypeNameToType[TTypeName]> {
 		return new ChangeObserver(typeName);
 	}
 
-	constructor(private readonly typeName: string) { }
+	constructor(private readonly typeName: string) {}
 
 	private lastValue: T | undefined = undefined;
 
@@ -220,7 +264,6 @@ class ChangeObserver<T> {
 }
 
 export class WorkspaceChangeExtHostRelauncher extends Disposable implements IWorkbenchContribution {
-
 	private firstFolderResource?: URI;
 	private extensionHostRestarter: RunOnceScheduler;
 
@@ -230,53 +273,60 @@ export class WorkspaceChangeExtHostRelauncher extends Disposable implements IWor
 		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
 		@IExtensionService extensionService: IExtensionService,
 		@IHostService hostService: IHostService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService
 	) {
 		super();
 
-		this.extensionHostRestarter = this._register(new RunOnceScheduler(async () => {
-			if (!!environmentService.extensionTestsLocationURI) {
-				return; // no restart when in tests: see https://github.com/microsoft/vscode/issues/66936
-			}
-
-			if (environmentService.isSessionsWindow) {
-				return; // no restart for sessions window
-			}
-
-			if (environmentService.remoteAuthority) {
-				hostService.reload(); // TODO@aeschli, workaround
-			} else if (isNative) {
-				const stopped = await extensionService.stopExtensionHosts(localize('restartExtensionHost.reason', "Changing workspace folders"));
-				if (stopped) {
-					extensionService.startExtensionHosts();
+		this.extensionHostRestarter = this._register(
+			new RunOnceScheduler(async () => {
+				if (!!environmentService.extensionTestsLocationURI) {
+					return; // no restart when in tests: see https://github.com/microsoft/vscode/issues/66936
 				}
-			}
-		}, 10));
 
-		this.contextService.getCompleteWorkspace()
-			.then(workspace => {
-				this.firstFolderResource = workspace.folders.length > 0 ? workspace.folders[0].uri : undefined;
-				this.handleWorkbenchState();
-				this._register(this.contextService.onDidChangeWorkbenchState(() => setTimeout(() => this.handleWorkbenchState())));
-			});
+				if (environmentService.isSessionsWindow) {
+					return; // no restart for sessions window
+				}
 
-		this._register(toDisposable(() => {
-			this.onDidChangeWorkspaceFoldersUnbind?.dispose();
-		}));
+				if (environmentService.remoteAuthority) {
+					hostService.reload(); // TODO@aeschli, workaround
+				} else if (isNative) {
+					const stopped = await extensionService.stopExtensionHosts(
+						localize('restartExtensionHost.reason', 'Changing workspace folders')
+					);
+					if (stopped) {
+						extensionService.startExtensionHosts();
+					}
+				}
+			}, 10)
+		);
+
+		this.contextService.getCompleteWorkspace().then(workspace => {
+			this.firstFolderResource = workspace.folders.length > 0 ? workspace.folders[0].uri : undefined;
+			this.handleWorkbenchState();
+			this._register(
+				this.contextService.onDidChangeWorkbenchState(() => setTimeout(() => this.handleWorkbenchState()))
+			);
+		});
+
+		this._register(
+			toDisposable(() => {
+				this.onDidChangeWorkspaceFoldersUnbind?.dispose();
+			})
+		);
 	}
 
 	private handleWorkbenchState(): void {
-
 		// React to folder changes when we are in workspace state
 		if (this.contextService.getWorkbenchState() === WorkbenchState.WORKSPACE) {
-
 			// Update our known first folder path if we entered workspace
 			const workspace = this.contextService.getWorkspace();
 			this.firstFolderResource = workspace.folders.length > 0 ? workspace.folders[0].uri : undefined;
 
 			// Install workspace folder listener
 			if (!this.onDidChangeWorkspaceFoldersUnbind) {
-				this.onDidChangeWorkspaceFoldersUnbind = this.contextService.onDidChangeWorkspaceFolders(() => this.onDidChangeWorkspaceFolders());
+				this.onDidChangeWorkspaceFoldersUnbind = this.contextService.onDidChangeWorkspaceFolders(() =>
+					this.onDidChangeWorkspaceFolders()
+				);
 			}
 		}
 

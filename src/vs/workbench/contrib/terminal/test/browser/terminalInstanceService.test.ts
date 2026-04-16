@@ -27,22 +27,22 @@ suite('Workbench - TerminalInstanceService', () => {
 			deepStrictEqual(terminalInstanceService.convertProfileToShellLaunchConfig(undefined), {});
 		});
 		test('should return the same shell launch config when provided', () => {
+			deepStrictEqual(terminalInstanceService.convertProfileToShellLaunchConfig({}), {});
+			deepStrictEqual(terminalInstanceService.convertProfileToShellLaunchConfig({ executable: '/foo' }), {
+				executable: '/foo'
+			});
 			deepStrictEqual(
-				terminalInstanceService.convertProfileToShellLaunchConfig({}),
-				{}
-			);
-			deepStrictEqual(
-				terminalInstanceService.convertProfileToShellLaunchConfig({ executable: '/foo' }),
-				{ executable: '/foo' }
-			);
-			deepStrictEqual(
-				terminalInstanceService.convertProfileToShellLaunchConfig({ executable: '/foo', cwd: '/bar', args: ['a', 'b'] }),
+				terminalInstanceService.convertProfileToShellLaunchConfig({
+					executable: '/foo',
+					cwd: '/bar',
+					args: ['a', 'b']
+				}),
 				{ executable: '/foo', cwd: '/bar', args: ['a', 'b'] }
 			);
-			deepStrictEqual(
-				terminalInstanceService.convertProfileToShellLaunchConfig({ executable: '/foo' }, '/bar'),
-				{ executable: '/foo', cwd: '/bar' }
-			);
+			deepStrictEqual(terminalInstanceService.convertProfileToShellLaunchConfig({ executable: '/foo' }, '/bar'), {
+				executable: '/foo',
+				cwd: '/bar'
+			});
 			deepStrictEqual(
 				terminalInstanceService.convertProfileToShellLaunchConfig({ executable: '/foo', cwd: '/bar' }, '/baz'),
 				{ executable: '/foo', cwd: '/baz' }
@@ -67,15 +67,18 @@ suite('Workbench - TerminalInstanceService', () => {
 			);
 			const icon = URI.file('/icon');
 			deepStrictEqual(
-				terminalInstanceService.convertProfileToShellLaunchConfig({
-					profileName: 'abc',
-					path: '/foo',
-					isDefault: true,
-					args: ['a', 'b'],
-					color: 'color',
-					env: { test: 'TEST' },
-					icon
-				} as ITerminalProfile, '/bar'),
+				terminalInstanceService.convertProfileToShellLaunchConfig(
+					{
+						profileName: 'abc',
+						path: '/foo',
+						isDefault: true,
+						args: ['a', 'b'],
+						color: 'color',
+						env: { test: 'TEST' },
+						icon
+					} as ITerminalProfile,
+					'/bar'
+				),
 				{
 					args: ['a', 'b'],
 					color: 'color',

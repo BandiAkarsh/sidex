@@ -7,13 +7,17 @@ import { Extensions, IConfigurationRegistry } from '../../../../platform/configu
 import { Registry } from '../../../../platform/registry/common/platform.js';
 import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from '../../../common/contributions.js';
 import { LifecyclePhase } from '../../../services/lifecycle/common/lifecycle.js';
-import { CodeActionsContribution, editorConfiguration, notebookEditorConfiguration } from './codeActionsContribution.js';
+import {
+	CodeActionsContribution,
+	editorConfiguration,
+	notebookEditorConfiguration
+} from './codeActionsContribution.js';
 
-Registry.as<IConfigurationRegistry>(Extensions.Configuration)
-	.registerConfiguration(editorConfiguration);
+Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerConfiguration(editorConfiguration);
 
-Registry.as<IConfigurationRegistry>(Extensions.Configuration)
-	.registerConfiguration(notebookEditorConfiguration);
+Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerConfiguration(notebookEditorConfiguration);
 
-Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench)
-	.registerWorkbenchContribution(CodeActionsContribution, LifecyclePhase.Eventually);
+Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(
+	CodeActionsContribution,
+	LifecyclePhase.Eventually
+);

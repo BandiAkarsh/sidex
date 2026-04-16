@@ -25,14 +25,13 @@ import { setupInstantiationService } from './testNotebookEditor.js';
 import { SnapshotContext } from '../../../../services/workingCopy/common/fileWorkingCopy.js';
 
 suite('NotebookFileWorkingCopyModel', function () {
-
 	let disposables: DisposableStore;
 	let instantiationService: TestInstantiationService;
 	const configurationService = new TestConfigurationService();
-	const telemetryService = new class extends mock<ITelemetryService>() {
-		override publicLogError2() { }
-	};
-	const logservice = new class extends mock<ILogService>() { };
+	const telemetryService = new (class extends mock<ITelemetryService>() {
+		override publicLogError2() {}
+	})();
+	const logservice = new (class extends mock<ILogService>() {})();
 
 	teardown(() => disposables.dispose());
 
@@ -44,66 +43,92 @@ suite('NotebookFileWorkingCopyModel', function () {
 	});
 
 	test('no transient output is send to serializer', async function () {
-
-		const notebook = instantiationService.createInstance(NotebookTextModel,
+		const notebook = instantiationService.createInstance(
+			NotebookTextModel,
 			'notebook',
 			URI.file('test'),
-			[{ cellKind: CellKind.Code, language: 'foo', mime: 'foo', source: 'foo', outputs: [{ outputId: 'id', outputs: [{ mime: Mimes.text, data: VSBuffer.fromString('Hello Out') }] }] }],
+			[
+				{
+					cellKind: CellKind.Code,
+					language: 'foo',
+					mime: 'foo',
+					source: 'foo',
+					outputs: [{ outputId: 'id', outputs: [{ mime: Mimes.text, data: VSBuffer.fromString('Hello Out') }] }]
+				}
+			],
 			{},
 			{ transientCellMetadata: {}, transientDocumentMetadata: {}, cellContentMetadata: {}, transientOutputs: false }
 		);
 
-		{ // transient output
+		{
+			// transient output
 			let callCount = 0;
-			const model = disposables.add(new NotebookFileWorkingCopyModel(
-				notebook,
-				mockNotebookService(notebook,
-					new class extends mock<INotebookSerializer>() {
-						override options: TransientOptions = { transientOutputs: true, transientCellMetadata: {}, transientDocumentMetadata: {}, cellContentMetadata: {} };
-						override async notebookToData(notebook: NotebookData) {
-							callCount += 1;
-							assert.strictEqual(notebook.cells.length, 1);
-							assert.strictEqual(notebook.cells[0].outputs.length, 0);
-							return VSBuffer.fromString('');
-						}
-					}
-				),
-				configurationService,
-				telemetryService,
-				logservice
-			));
+			const model = disposables.add(
+				new NotebookFileWorkingCopyModel(
+					notebook,
+					mockNotebookService(
+						notebook,
+						new (class extends mock<INotebookSerializer>() {
+							override options: TransientOptions = {
+								transientOutputs: true,
+								transientCellMetadata: {},
+								transientDocumentMetadata: {},
+								cellContentMetadata: {}
+							};
+							override async notebookToData(notebook: NotebookData) {
+								callCount += 1;
+								assert.strictEqual(notebook.cells.length, 1);
+								assert.strictEqual(notebook.cells[0].outputs.length, 0);
+								return VSBuffer.fromString('');
+							}
+						})()
+					),
+					configurationService,
+					telemetryService,
+					logservice
+				)
+			);
 
 			await model.snapshot(SnapshotContext.Save, CancellationToken.None);
 			assert.strictEqual(callCount, 1);
 		}
 
-		{ // NOT transient output
+		{
+			// NOT transient output
 			let callCount = 0;
-			const model = disposables.add(new NotebookFileWorkingCopyModel(
-				notebook,
-				mockNotebookService(notebook,
-					new class extends mock<INotebookSerializer>() {
-						override options: TransientOptions = { transientOutputs: false, transientCellMetadata: {}, transientDocumentMetadata: {}, cellContentMetadata: {} };
-						override async notebookToData(notebook: NotebookData) {
-							callCount += 1;
-							assert.strictEqual(notebook.cells.length, 1);
-							assert.strictEqual(notebook.cells[0].outputs.length, 1);
-							return VSBuffer.fromString('');
-						}
-					}
-				),
-				configurationService,
-				telemetryService,
-				logservice
-			));
+			const model = disposables.add(
+				new NotebookFileWorkingCopyModel(
+					notebook,
+					mockNotebookService(
+						notebook,
+						new (class extends mock<INotebookSerializer>() {
+							override options: TransientOptions = {
+								transientOutputs: false,
+								transientCellMetadata: {},
+								transientDocumentMetadata: {},
+								cellContentMetadata: {}
+							};
+							override async notebookToData(notebook: NotebookData) {
+								callCount += 1;
+								assert.strictEqual(notebook.cells.length, 1);
+								assert.strictEqual(notebook.cells[0].outputs.length, 1);
+								return VSBuffer.fromString('');
+							}
+						})()
+					),
+					configurationService,
+					telemetryService,
+					logservice
+				)
+			);
 			await model.snapshot(SnapshotContext.Save, CancellationToken.None);
 			assert.strictEqual(callCount, 1);
 		}
 	});
 
 	test('no transient metadata is send to serializer', async function () {
-
-		const notebook = instantiationService.createInstance(NotebookTextModel,
+		const notebook = instantiationService.createInstance(
+			NotebookTextModel,
 			'notebook',
 			URI.file('test'),
 			[{ cellKind: CellKind.Code, language: 'foo', mime: 'foo', source: 'foo', outputs: [] }],
@@ -113,109 +138,153 @@ suite('NotebookFileWorkingCopyModel', function () {
 
 		disposables.add(notebook);
 
-		{ // transient
+		{
+			// transient
 			let callCount = 0;
-			const model = disposables.add(new NotebookFileWorkingCopyModel(
-				notebook,
-				mockNotebookService(notebook,
-					new class extends mock<INotebookSerializer>() {
-						override options: TransientOptions = { transientOutputs: true, transientCellMetadata: {}, transientDocumentMetadata: { bar: true }, cellContentMetadata: {} };
-						override async notebookToData(notebook: NotebookData) {
-							callCount += 1;
-							assert.strictEqual(notebook.metadata.foo, 123);
-							assert.strictEqual(notebook.metadata.bar, undefined);
-							return VSBuffer.fromString('');
-						}
-					}
-				),
-				configurationService,
-				telemetryService,
-				logservice
-			));
+			const model = disposables.add(
+				new NotebookFileWorkingCopyModel(
+					notebook,
+					mockNotebookService(
+						notebook,
+						new (class extends mock<INotebookSerializer>() {
+							override options: TransientOptions = {
+								transientOutputs: true,
+								transientCellMetadata: {},
+								transientDocumentMetadata: { bar: true },
+								cellContentMetadata: {}
+							};
+							override async notebookToData(notebook: NotebookData) {
+								callCount += 1;
+								assert.strictEqual(notebook.metadata.foo, 123);
+								assert.strictEqual(notebook.metadata.bar, undefined);
+								return VSBuffer.fromString('');
+							}
+						})()
+					),
+					configurationService,
+					telemetryService,
+					logservice
+				)
+			);
 
 			await model.snapshot(SnapshotContext.Save, CancellationToken.None);
 			assert.strictEqual(callCount, 1);
 		}
 
-		{ // NOT transient
+		{
+			// NOT transient
 			let callCount = 0;
-			const model = disposables.add(new NotebookFileWorkingCopyModel(
-				notebook,
-				mockNotebookService(notebook,
-					new class extends mock<INotebookSerializer>() {
-						override options: TransientOptions = { transientOutputs: false, transientCellMetadata: {}, transientDocumentMetadata: {}, cellContentMetadata: {} };
-						override async notebookToData(notebook: NotebookData) {
-							callCount += 1;
-							assert.strictEqual(notebook.metadata.foo, 123);
-							assert.strictEqual(notebook.metadata.bar, 456);
-							return VSBuffer.fromString('');
-						}
-					}
-				),
-				configurationService,
-				telemetryService,
-				logservice
-
-			));
+			const model = disposables.add(
+				new NotebookFileWorkingCopyModel(
+					notebook,
+					mockNotebookService(
+						notebook,
+						new (class extends mock<INotebookSerializer>() {
+							override options: TransientOptions = {
+								transientOutputs: false,
+								transientCellMetadata: {},
+								transientDocumentMetadata: {},
+								cellContentMetadata: {}
+							};
+							override async notebookToData(notebook: NotebookData) {
+								callCount += 1;
+								assert.strictEqual(notebook.metadata.foo, 123);
+								assert.strictEqual(notebook.metadata.bar, 456);
+								return VSBuffer.fromString('');
+							}
+						})()
+					),
+					configurationService,
+					telemetryService,
+					logservice
+				)
+			);
 			await model.snapshot(SnapshotContext.Save, CancellationToken.None);
 			assert.strictEqual(callCount, 1);
 		}
 	});
 
 	test('no transient cell metadata is send to serializer', async function () {
-
-		const notebook = instantiationService.createInstance(NotebookTextModel,
+		const notebook = instantiationService.createInstance(
+			NotebookTextModel,
 			'notebook',
 			URI.file('test'),
-			[{ cellKind: CellKind.Code, language: 'foo', mime: 'foo', source: 'foo', outputs: [], metadata: { foo: 123, bar: 456 } }],
+			[
+				{
+					cellKind: CellKind.Code,
+					language: 'foo',
+					mime: 'foo',
+					source: 'foo',
+					outputs: [],
+					metadata: { foo: 123, bar: 456 }
+				}
+			],
 			{},
-			{ transientCellMetadata: {}, transientDocumentMetadata: {}, cellContentMetadata: {}, transientOutputs: false, }
+			{ transientCellMetadata: {}, transientDocumentMetadata: {}, cellContentMetadata: {}, transientOutputs: false }
 		);
 		disposables.add(notebook);
 
-		{ // transient
+		{
+			// transient
 			let callCount = 0;
-			const model = disposables.add(new NotebookFileWorkingCopyModel(
-				notebook,
-				mockNotebookService(notebook,
-					new class extends mock<INotebookSerializer>() {
-						override options: TransientOptions = { transientOutputs: true, transientDocumentMetadata: {}, transientCellMetadata: { bar: true }, cellContentMetadata: {} };
-						override async notebookToData(notebook: NotebookData) {
-							callCount += 1;
-							assert.strictEqual(notebook.cells[0].metadata!.foo, 123);
-							assert.strictEqual(notebook.cells[0].metadata!.bar, undefined);
-							return VSBuffer.fromString('');
-						}
-					}
-				),
-				configurationService,
-				telemetryService,
-				logservice
-			));
+			const model = disposables.add(
+				new NotebookFileWorkingCopyModel(
+					notebook,
+					mockNotebookService(
+						notebook,
+						new (class extends mock<INotebookSerializer>() {
+							override options: TransientOptions = {
+								transientOutputs: true,
+								transientDocumentMetadata: {},
+								transientCellMetadata: { bar: true },
+								cellContentMetadata: {}
+							};
+							override async notebookToData(notebook: NotebookData) {
+								callCount += 1;
+								assert.strictEqual(notebook.cells[0].metadata!.foo, 123);
+								assert.strictEqual(notebook.cells[0].metadata!.bar, undefined);
+								return VSBuffer.fromString('');
+							}
+						})()
+					),
+					configurationService,
+					telemetryService,
+					logservice
+				)
+			);
 
 			await model.snapshot(SnapshotContext.Save, CancellationToken.None);
 			assert.strictEqual(callCount, 1);
 		}
 
-		{ // NOT transient
+		{
+			// NOT transient
 			let callCount = 0;
-			const model = disposables.add(new NotebookFileWorkingCopyModel(
-				notebook,
-				mockNotebookService(notebook,
-					new class extends mock<INotebookSerializer>() {
-						override options: TransientOptions = { transientOutputs: false, transientCellMetadata: {}, transientDocumentMetadata: {}, cellContentMetadata: {} };
-						override async notebookToData(notebook: NotebookData) {
-							callCount += 1;
-							assert.strictEqual(notebook.cells[0].metadata!.foo, 123);
-							assert.strictEqual(notebook.cells[0].metadata!.bar, 456);
-							return VSBuffer.fromString('');
-						}
-					}
-				),
-				configurationService,
-				telemetryService,
-				logservice
-			));
+			const model = disposables.add(
+				new NotebookFileWorkingCopyModel(
+					notebook,
+					mockNotebookService(
+						notebook,
+						new (class extends mock<INotebookSerializer>() {
+							override options: TransientOptions = {
+								transientOutputs: false,
+								transientCellMetadata: {},
+								transientDocumentMetadata: {},
+								cellContentMetadata: {}
+							};
+							override async notebookToData(notebook: NotebookData) {
+								callCount += 1;
+								assert.strictEqual(notebook.cells[0].metadata!.foo, 123);
+								assert.strictEqual(notebook.cells[0].metadata!.bar, 456);
+								return VSBuffer.fromString('');
+							}
+						})()
+					),
+					configurationService,
+					telemetryService,
+					logservice
+				)
+			);
 			await model.snapshot(SnapshotContext.Save, CancellationToken.None);
 			assert.strictEqual(callCount, 1);
 		}
@@ -223,36 +292,57 @@ suite('NotebookFileWorkingCopyModel', function () {
 
 	test('Notebooks with outputs beyond the size threshold will throw for backup snapshots', async function () {
 		const outputLimit = 100;
-		await configurationService.setUserConfiguration(NotebookSetting.outputBackupSizeLimit, outputLimit * 1.0 / 1024);
-		const largeOutput: IOutputDto = { outputId: '123', outputs: [{ mime: Mimes.text, data: VSBuffer.fromString('a'.repeat(outputLimit + 1)) }] };
-		const notebook = instantiationService.createInstance(NotebookTextModel,
+		await configurationService.setUserConfiguration(NotebookSetting.outputBackupSizeLimit, (outputLimit * 1.0) / 1024);
+		const largeOutput: IOutputDto = {
+			outputId: '123',
+			outputs: [{ mime: Mimes.text, data: VSBuffer.fromString('a'.repeat(outputLimit + 1)) }]
+		};
+		const notebook = instantiationService.createInstance(
+			NotebookTextModel,
 			'notebook',
 			URI.file('test'),
-			[{ cellKind: CellKind.Code, language: 'foo', mime: 'foo', source: 'foo', outputs: [largeOutput], metadata: { foo: 123, bar: 456 } }],
+			[
+				{
+					cellKind: CellKind.Code,
+					language: 'foo',
+					mime: 'foo',
+					source: 'foo',
+					outputs: [largeOutput],
+					metadata: { foo: 123, bar: 456 }
+				}
+			],
 			{},
-			{ transientCellMetadata: {}, transientDocumentMetadata: {}, cellContentMetadata: {}, transientOutputs: false, }
+			{ transientCellMetadata: {}, transientDocumentMetadata: {}, cellContentMetadata: {}, transientOutputs: false }
 		);
 		disposables.add(notebook);
 
 		let callCount = 0;
-		const model = disposables.add(new NotebookFileWorkingCopyModel(
-			notebook,
-			mockNotebookService(notebook,
-				new class extends mock<INotebookSerializer>() {
-					override options: TransientOptions = { transientOutputs: true, transientDocumentMetadata: {}, transientCellMetadata: { bar: true }, cellContentMetadata: {} };
-					override async notebookToData(notebook: NotebookData) {
-						callCount += 1;
-						assert.strictEqual(notebook.cells[0].metadata!.foo, 123);
-						assert.strictEqual(notebook.cells[0].metadata!.bar, undefined);
-						return VSBuffer.fromString('');
-					}
-				},
-				configurationService
-			),
-			configurationService,
-			telemetryService,
-			logservice
-		));
+		const model = disposables.add(
+			new NotebookFileWorkingCopyModel(
+				notebook,
+				mockNotebookService(
+					notebook,
+					new (class extends mock<INotebookSerializer>() {
+						override options: TransientOptions = {
+							transientOutputs: true,
+							transientDocumentMetadata: {},
+							transientCellMetadata: { bar: true },
+							cellContentMetadata: {}
+						};
+						override async notebookToData(notebook: NotebookData) {
+							callCount += 1;
+							assert.strictEqual(notebook.cells[0].metadata!.foo, 123);
+							assert.strictEqual(notebook.cells[0].metadata!.bar, undefined);
+							return VSBuffer.fromString('');
+						}
+					})(),
+					configurationService
+				),
+				configurationService,
+				telemetryService,
+				logservice
+			)
+		);
 
 		try {
 			await model.snapshot(SnapshotContext.Backup, CancellationToken.None);
@@ -263,39 +353,44 @@ suite('NotebookFileWorkingCopyModel', function () {
 
 		await model.snapshot(SnapshotContext.Save, CancellationToken.None);
 		assert.strictEqual(callCount, 1);
-
 	});
 
 	test('Notebook model will not return a save delegate if the serializer has not been retreived', async function () {
-		const notebook = instantiationService.createInstance(NotebookTextModel,
+		const notebook = instantiationService.createInstance(
+			NotebookTextModel,
 			'notebook',
 			URI.file('test'),
-			[{ cellKind: CellKind.Code, language: 'foo', mime: 'foo', source: 'foo', outputs: [], metadata: { foo: 123, bar: 456 } }],
+			[
+				{
+					cellKind: CellKind.Code,
+					language: 'foo',
+					mime: 'foo',
+					source: 'foo',
+					outputs: [],
+					metadata: { foo: 123, bar: 456 }
+				}
+			],
 			{},
-			{ transientCellMetadata: {}, transientDocumentMetadata: {}, cellContentMetadata: {}, transientOutputs: false, }
+			{ transientCellMetadata: {}, transientDocumentMetadata: {}, cellContentMetadata: {}, transientOutputs: false }
 		);
 		disposables.add(notebook);
 
-		const serializer = new class extends mock<INotebookSerializer>() {
+		const serializer = new (class extends mock<INotebookSerializer>() {
 			override save(): Promise<IFileStatWithMetadata> {
 				return Promise.resolve({ name: 'savedFile' } as IFileStatWithMetadata);
 			}
-		};
+		})();
 
-		let resolveSerializer: (serializer: INotebookSerializer) => void = () => { };
+		let resolveSerializer: (serializer: INotebookSerializer) => void = () => {};
 		const serializerPromise = new Promise<INotebookSerializer>(resolve => {
 			resolveSerializer = resolve;
 		});
 		const notebookService = mockNotebookService(notebook, serializerPromise);
 		configurationService.setUserConfiguration(NotebookSetting.remoteSaving, true);
 
-		const model = disposables.add(new NotebookFileWorkingCopyModel(
-			notebook,
-			notebookService,
-			configurationService,
-			telemetryService,
-			logservice
-		));
+		const model = disposables.add(
+			new NotebookFileWorkingCopyModel(notebook, notebookService, configurationService, telemetryService, logservice)
+		);
 
 		// the save method should not be set if the serializer is not yet resolved
 		const notExist = model.save;
@@ -309,41 +404,45 @@ suite('NotebookFileWorkingCopyModel', function () {
 	});
 });
 
-function mockNotebookService(notebook: NotebookTextModel, notebookSerializer: Promise<INotebookSerializer> | INotebookSerializer, configurationService: TestConfigurationService = new TestConfigurationService()): INotebookService {
-	return new class extends mock<INotebookService>() {
+function mockNotebookService(
+	notebook: NotebookTextModel,
+	notebookSerializer: Promise<INotebookSerializer> | INotebookSerializer,
+	configurationService: TestConfigurationService = new TestConfigurationService()
+): INotebookService {
+	return new (class extends mock<INotebookService>() {
 		private serializer: INotebookSerializer | undefined = undefined;
 		override async withNotebookDataProvider(viewType: string): Promise<SimpleNotebookProviderInfo> {
 			this.serializer = await notebookSerializer;
-			return new SimpleNotebookProviderInfo(
-				notebook.viewType,
-				this.serializer,
-				{
-					id: new ExtensionIdentifier('test'),
-					location: undefined
-				}
-			);
+			return new SimpleNotebookProviderInfo(notebook.viewType, this.serializer, {
+				id: new ExtensionIdentifier('test'),
+				location: undefined
+			});
 		}
 		override tryGetDataProviderSync(viewType: string): SimpleNotebookProviderInfo | undefined {
 			if (!this.serializer) {
 				return undefined;
 			}
-			return new SimpleNotebookProviderInfo(
-				notebook.viewType,
-				this.serializer,
-				{
-					id: new ExtensionIdentifier('test'),
-					location: undefined
-				}
-			);
+			return new SimpleNotebookProviderInfo(notebook.viewType, this.serializer, {
+				id: new ExtensionIdentifier('test'),
+				location: undefined
+			});
 		}
-		override async createNotebookTextDocumentSnapshot(uri: URI, context: SnapshotContext, token: CancellationToken): Promise<VSBufferReadableStream> {
+		override async createNotebookTextDocumentSnapshot(
+			uri: URI,
+			context: SnapshotContext,
+			token: CancellationToken
+		): Promise<VSBufferReadableStream> {
 			const info = await this.withNotebookDataProvider(notebook.viewType);
 			const serializer = info.serializer;
 			const outputSizeLimit = configurationService.getValue<number>(NotebookSetting.outputBackupSizeLimit) ?? 1024;
-			const data: NotebookData = notebook.createSnapshot({ context: context, outputSizeLimit: outputSizeLimit, transientOptions: serializer.options });
+			const data: NotebookData = notebook.createSnapshot({
+				context: context,
+				outputSizeLimit: outputSizeLimit,
+				transientOptions: serializer.options
+			});
 			const bytes = await serializer.notebookToData(data);
 
 			return bufferToStream(bytes);
 		}
-	};
+	})();
 }

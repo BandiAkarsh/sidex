@@ -4,7 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ServicesAccessor } from '../../../../editor/browser/editorExtensions.js';
-import { AccessibleViewType, AccessibleContentProvider, AccessibleViewProviderId } from '../../../../platform/accessibility/browser/accessibleView.js';
+import {
+	AccessibleViewType,
+	AccessibleContentProvider,
+	AccessibleViewProviderId
+} from '../../../../platform/accessibility/browser/accessibleView.js';
 import { IAccessibleViewImplementation } from '../../../../platform/accessibility/browser/accessibleViewRegistry.js';
 import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
 import { IEditorService } from '../../../services/editor/common/editorService.js';
@@ -44,11 +48,13 @@ export function getAccessibleOutputProvider(editorService: IEditorService) {
 					return new AccessibleContentProvider(
 						AccessibleViewProviderId.Notebook,
 						{ type: AccessibleViewType.View },
-						() => { return outputContent; },
+						() => {
+							return outputContent;
+						},
 						() => {
 							editorControl.activeCodeEditor?.focus();
 						},
-						AccessibilityVerbositySettingId.ReplEditor,
+						AccessibilityVerbositySettingId.ReplEditor
 					);
 				}
 			}

@@ -8,8 +8,18 @@ import { Emitter } from '../../../../base/common/event.js';
 import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { Disposable, MutableDisposable } from '../../../../base/common/lifecycle.js';
 import { IWorkbenchContribution } from '../../../common/contributions.js';
-import { ITimelineService, Timeline, TimelineChangeEvent, TimelineItem, TimelineOptions, TimelineProvider } from '../../timeline/common/timeline.js';
-import { IWorkingCopyHistoryEntry, IWorkingCopyHistoryService } from '../../../services/workingCopy/common/workingCopyHistory.js';
+import {
+	ITimelineService,
+	Timeline,
+	TimelineChangeEvent,
+	TimelineItem,
+	TimelineOptions,
+	TimelineProvider
+} from '../../timeline/common/timeline.js';
+import {
+	IWorkingCopyHistoryEntry,
+	IWorkingCopyHistoryService
+} from '../../../services/workingCopy/common/workingCopyHistory.js';
 import { URI } from '../../../../base/common/uri.js';
 import { IPathService } from '../../../services/path/common/pathService.js';
 import { API_OPEN_DIFF_EDITOR_COMMAND_ID } from '../../../browser/parts/editor/editorCommands.js';
@@ -20,20 +30,23 @@ import { SaveSourceRegistry } from '../../../common/editor.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { COMPARE_WITH_FILE_LABEL, toDiffEditorArguments } from './localHistoryCommands.js';
 import { MarkdownString } from '../../../../base/common/htmlContent.js';
-import { getLocalHistoryDateFormatter, LOCAL_HISTORY_ICON_ENTRY, LOCAL_HISTORY_MENU_CONTEXT_VALUE } from './localHistory.js';
+import {
+	getLocalHistoryDateFormatter,
+	LOCAL_HISTORY_ICON_ENTRY,
+	LOCAL_HISTORY_MENU_CONTEXT_VALUE
+} from './localHistory.js';
 import { Schemas } from '../../../../base/common/network.js';
 import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
 import { getVirtualWorkspaceAuthority } from '../../../../platform/workspace/common/virtualWorkspace.js';
 
 export class LocalHistoryTimeline extends Disposable implements IWorkbenchContribution, TimelineProvider {
-
 	static readonly ID = 'workbench.contrib.localHistoryTimeline';
 
 	private static readonly LOCAL_HISTORY_ENABLED_SETTINGS_KEY = 'workbench.localHistory.enabled';
 
 	readonly id = 'timeline.localHistory';
 
-	readonly label = localize('localHistory', "Local History");
+	readonly label = localize('localHistory', 'Local History');
 
 	readonly scheme = '*'; // we try to show local history for all schemes if possible
 
@@ -58,12 +71,16 @@ export class LocalHistoryTimeline extends Disposable implements IWorkbenchContri
 	}
 
 	private registerComponents(): void {
-
 		// Timeline (if enabled)
 		this.updateTimelineRegistration();
 
 		// File Service Provider
-		this._register(this.fileService.registerProvider(LocalHistoryFileSystemProvider.SCHEMA, new LocalHistoryFileSystemProvider(this.fileService)));
+		this._register(
+			this.fileService.registerProvider(
+				LocalHistoryFileSystemProvider.SCHEMA,
+				new LocalHistoryFileSystemProvider(this.fileService)
+			)
+		);
 	}
 
 	private updateTimelineRegistration(): void {
@@ -75,25 +92,39 @@ export class LocalHistoryTimeline extends Disposable implements IWorkbenchContri
 	}
 
 	private registerListeners(): void {
-
 		// History changes
 		this._register(this.workingCopyHistoryService.onDidAddEntry(e => this.onDidChangeWorkingCopyHistoryEntry(e.entry)));
-		this._register(this.workingCopyHistoryService.onDidChangeEntry(e => this.onDidChangeWorkingCopyHistoryEntry(e.entry)));
-		this._register(this.workingCopyHistoryService.onDidReplaceEntry(e => this.onDidChangeWorkingCopyHistoryEntry(e.entry)));
-		this._register(this.workingCopyHistoryService.onDidRemoveEntry(e => this.onDidChangeWorkingCopyHistoryEntry(e.entry)));
-		this._register(this.workingCopyHistoryService.onDidRemoveEntries(() => this.onDidChangeWorkingCopyHistoryEntry(undefined /* all entries */)));
-		this._register(this.workingCopyHistoryService.onDidMoveEntries(() => this.onDidChangeWorkingCopyHistoryEntry(undefined /* all entries */)));
+		this._register(
+			this.workingCopyHistoryService.onDidChangeEntry(e => this.onDidChangeWorkingCopyHistoryEntry(e.entry))
+		);
+		this._register(
+			this.workingCopyHistoryService.onDidReplaceEntry(e => this.onDidChangeWorkingCopyHistoryEntry(e.entry))
+		);
+		this._register(
+			this.workingCopyHistoryService.onDidRemoveEntry(e => this.onDidChangeWorkingCopyHistoryEntry(e.entry))
+		);
+		this._register(
+			this.workingCopyHistoryService.onDidRemoveEntries(() =>
+				this.onDidChangeWorkingCopyHistoryEntry(undefined /* all entries */)
+			)
+		);
+		this._register(
+			this.workingCopyHistoryService.onDidMoveEntries(() =>
+				this.onDidChangeWorkingCopyHistoryEntry(undefined /* all entries */)
+			)
+		);
 
 		// Configuration changes
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(LocalHistoryTimeline.LOCAL_HISTORY_ENABLED_SETTINGS_KEY)) {
-				this.updateTimelineRegistration();
-			}
-		}));
+		this._register(
+			this.configurationService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration(LocalHistoryTimeline.LOCAL_HISTORY_ENABLED_SETTINGS_KEY)) {
+					this.updateTimelineRegistration();
+				}
+			})
+		);
 	}
 
 	private onDidChangeWorkingCopyHistoryEntry(entry: IWorkingCopyHistoryEntry | undefined): void {
-
 		// Re-emit as timeline change event
 		this._onDidChange.fire({
 			id: this.id,
@@ -125,13 +156,13 @@ export class LocalHistoryTimeline extends Disposable implements IWorkbenchContri
 			// - preserve the path
 			resource = URI.from({
 				scheme: this.pathService.defaultUriScheme,
-				authority: this.environmentService.remoteAuthority ?? getVirtualWorkspaceAuthority(this.contextService.getWorkspace()),
+				authority:
+					this.environmentService.remoteAuthority ?? getVirtualWorkspaceAuthority(this.contextService.getWorkspace()),
 				path: uri.path
 			});
 		}
 
 		if (resource) {
-
 			// Retrieve from working copy history
 			const entries = await this.workingCopyHistoryService.getEntries(resource, token);
 
@@ -151,7 +182,10 @@ export class LocalHistoryTimeline extends Disposable implements IWorkbenchContri
 		return {
 			handle: entry.id,
 			label: SaveSourceRegistry.getSourceLabel(entry.source),
-			tooltip: new MarkdownString(`$(history) ${getLocalHistoryDateFormatter().format(entry.timestamp)}\n\n${SaveSourceRegistry.getSourceLabel(entry.source)}${entry.sourceDescription ? ` (${entry.sourceDescription})` : ``}`, { supportThemeIcons: true }),
+			tooltip: new MarkdownString(
+				`$(history) ${getLocalHistoryDateFormatter().format(entry.timestamp)}\n\n${SaveSourceRegistry.getSourceLabel(entry.source)}${entry.sourceDescription ? ` (${entry.sourceDescription})` : ``}`,
+				{ supportThemeIcons: true }
+			),
 			source: this.id,
 			timestamp: entry.timestamp,
 			themeIcon: LOCAL_HISTORY_ICON_ENTRY,

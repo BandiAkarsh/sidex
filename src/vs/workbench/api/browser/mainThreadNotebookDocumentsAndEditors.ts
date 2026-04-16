@@ -13,13 +13,24 @@ import { NotebookDto } from './mainThreadNotebookDto.js';
 import { MainThreadNotebookEditors } from './mainThreadNotebookEditors.js';
 import { extHostCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
 import { editorGroupToColumn } from '../../services/editor/common/editorGroupColumn.js';
-import { getNotebookEditorFromEditorPane, IActiveNotebookEditor, INotebookEditor } from '../../contrib/notebook/browser/notebookBrowser.js';
+import {
+	getNotebookEditorFromEditorPane,
+	IActiveNotebookEditor,
+	INotebookEditor
+} from '../../contrib/notebook/browser/notebookBrowser.js';
 import { INotebookEditorService } from '../../contrib/notebook/browser/services/notebookEditorService.js';
 import { NotebookTextModel } from '../../contrib/notebook/common/model/notebookTextModel.js';
 import { INotebookService } from '../../contrib/notebook/common/notebookService.js';
 import { IEditorGroupsService } from '../../services/editor/common/editorGroupsService.js';
 import { IEditorService } from '../../services/editor/common/editorService.js';
-import { ExtHostContext, ExtHostNotebookShape, INotebookDocumentsAndEditorsDelta, INotebookEditorAddData, INotebookModelAddedData, MainContext } from '../common/extHost.protocol.js';
+import {
+	ExtHostContext,
+	ExtHostNotebookShape,
+	INotebookDocumentsAndEditorsDelta,
+	INotebookEditorAddData,
+	INotebookModelAddedData,
+	MainContext
+} from '../common/extHost.protocol.js';
 import { SerializableObjectWithBuffers } from '../../services/extensions/common/proxyIdentifier.js';
 
 interface INotebookAndEditorDelta {
@@ -54,9 +65,10 @@ class NotebookAndEditorState {
 			addedEditors: editorDelta.added,
 			removedEditors: editorDelta.removed.map(removed => removed.getId()),
 			newActiveEditor: newActiveEditor,
-			visibleEditors: visibleEditorDelta.added.length === 0 && visibleEditorDelta.removed.length === 0
-				? undefined
-				: [...after.visibleEditors].map(editor => editor[0])
+			visibleEditors:
+				visibleEditorDelta.added.length === 0 && visibleEditorDelta.removed.length === 0
+					? undefined
+					: [...after.visibleEditors].map(editor => editor[0])
 		};
 	}
 
@@ -72,7 +84,6 @@ class NotebookAndEditorState {
 
 @extHostCustomer
 export class MainThreadNotebooksAndEditors {
-
 	// private readonly _onDidAddNotebooks = new Emitter<NotebookTextModel[]>();
 	// private readonly _onDidRemoveNotebooks = new Emitter<URI[]>();
 	// private readonly _onDidAddEditors = new Emitter<IActiveNotebookEditor[]>();
@@ -100,7 +111,7 @@ export class MainThreadNotebooksAndEditors {
 		@INotebookEditorService private readonly _notebookEditorService: INotebookEditorService,
 		@IEditorService private readonly _editorService: IEditorService,
 		@IEditorGroupsService private readonly _editorGroupService: IEditorGroupsService,
-		@ILogService private readonly _logService: ILogService,
+		@ILogService private readonly _logService: ILogService
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostNotebook);
 
@@ -127,10 +138,13 @@ export class MainThreadNotebooksAndEditors {
 	}
 
 	private _handleEditorAdd(editor: INotebookEditor): void {
-		this._editorListeners.set(editor.getId(), combinedDisposable(
-			editor.onDidChangeModel(() => this._updateState()),
-			editor.onDidFocusWidget(() => this._updateState(editor)),
-		));
+		this._editorListeners.set(
+			editor.getId(),
+			combinedDisposable(
+				editor.onDidChangeModel(() => this._updateState()),
+				editor.onDidFocusWidget(() => this._updateState(editor))
+			)
+		);
 		this._updateState();
 	}
 
@@ -140,7 +154,6 @@ export class MainThreadNotebooksAndEditors {
 	}
 
 	private _updateState(focusedEditor?: INotebookEditor): void {
-
 		const editors = new Map<string, IActiveNotebookEditor>();
 		const visibleEditorsMap = new Map<string, IActiveNotebookEditor>();
 
@@ -158,7 +171,11 @@ export class MainThreadNotebooksAndEditors {
 			activeEditor = focusedEditor.getId();
 		}
 		if (activeEditor && !editors.has(activeEditor)) {
-			this._logService.trace('MainThreadNotebooksAndEditors#_updateState: active editor is not in editors list', activeEditor, editors.keys());
+			this._logService.trace(
+				'MainThreadNotebooksAndEditors#_updateState: active editor is not in editors list',
+				activeEditor,
+				editors.keys()
+			);
 			activeEditor = null;
 		}
 
@@ -169,7 +186,12 @@ export class MainThreadNotebooksAndEditors {
 			}
 		}
 
-		const newState = new NotebookAndEditorState(new Set(this._notebookService.listNotebookDocuments()), editors, activeEditor, visibleEditorsMap);
+		const newState = new NotebookAndEditorState(
+			new Set(this._notebookService.listNotebookDocuments()),
+			editors,
+			activeEditor,
+			visibleEditorsMap
+		);
 		this._onDelta(NotebookAndEditorState.delta(this._currentState, newState));
 		this._currentState = newState;
 	}
@@ -185,7 +207,7 @@ export class MainThreadNotebooksAndEditors {
 			newActiveEditor: delta.newActiveEditor,
 			visibleEditors: delta.visibleEditors,
 			addedDocuments: delta.addedDocuments.map(MainThreadNotebooksAndEditors._asModelAddData),
-			addedEditors: delta.addedEditors.map(this._asEditorAddData, this),
+			addedEditors: delta.addedEditors.map(this._asEditorAddData, this)
 		};
 
 		// send to extension FIRST
@@ -231,7 +253,6 @@ export class MainThreadNotebooksAndEditors {
 	}
 
 	private _asEditorAddData(add: IActiveNotebookEditor): INotebookEditorAddData {
-
 		const pane = this._editorService.visibleEditorPanes.find(pane => getNotebookEditorFromEditorPane(pane) === add);
 
 		return {

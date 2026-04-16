@@ -40,7 +40,7 @@ const unixLinks: (string | { link: string; resource: URI })[] = [
 	{ link: './$foo', resource: URI.file('/parent/cwd/$foo') },
 	{ link: '../foo', resource: URI.file('/parent/foo') },
 	{ link: 'foo/bar', resource: URI.file('/parent/cwd/foo/bar') },
-	{ link: 'foo/bar+more', resource: URI.file('/parent/cwd/foo/bar+more') },
+	{ link: 'foo/bar+more', resource: URI.file('/parent/cwd/foo/bar+more') }
 ];
 
 const windowsLinks: (string | { link: string; resource: URI })[] = [
@@ -68,7 +68,7 @@ const windowsLinks: (string | { link: string; resource: URI })[] = [
 	{ link: 'foo\\bar', resource: URI.file('C:\\Parent\\Cwd\\foo\\bar') },
 	{ link: 'foo\\[bar].baz', resource: URI.file('C:\\Parent\\Cwd\\foo\\[bar].baz') },
 	{ link: 'foo\\[bar]\\baz', resource: URI.file('C:\\Parent\\Cwd\\foo\\[bar]\\baz') },
-	{ link: 'foo\\bar+more', resource: URI.file('C:\\Parent\\Cwd\\foo\\bar+more') },
+	{ link: 'foo\\bar+more', resource: URI.file('C:\\Parent\\Cwd\\foo\\bar+more') }
 ];
 
 interface LinkFormatInfo {
@@ -99,7 +99,7 @@ const supportedLinkFormats: LinkFormatInfo[] = [
 
 	// @@ ... <to-file-range> @@ content...       [#182878]   (tests check the entire line, so they don't include the line content at the end of the last @@)
 	{ urlFormat: '+++ b/{0}\r\n@@ -7,6 +{1},7 @@', line: '5' },
-	{ urlFormat: '+++ b/{0}\r\n@@ -1,1 +1,1 @@\r\nfoo\r\nbar\r\n@@ -7,6 +{1},7 @@', line: '5' },
+	{ urlFormat: '+++ b/{0}\r\n@@ -1,1 +1,1 @@\r\nfoo\r\nbar\r\n@@ -7,6 +{1},7 @@', line: '5' }
 ];
 
 suite('Workbench - TerminalMultiLineLinkDetector', () => {
@@ -115,7 +115,7 @@ suite('Workbench - TerminalMultiLineLinkDetector', () => {
 	async function assertLinks(
 		type: TerminalBuiltinLinkType,
 		text: string,
-		expected: ({ uri: URI; range: [number, number][] })[]
+		expected: { uri: URI; range: [number, number][] }[]
 	) {
 		let to;
 		const race = await Promise.race([
@@ -135,7 +135,15 @@ suite('Workbench - TerminalMultiLineLinkDetector', () => {
 		for (const line of lines) {
 			lineCount += Math.max(Math.ceil(line.length / 80), 1);
 		}
-		await assertLinks(TerminalBuiltinLinkType.LocalFile, link, [{ uri, range: [[1, lineCount], [lastLine.length, lineCount]] }]);
+		await assertLinks(TerminalBuiltinLinkType.LocalFile, link, [
+			{
+				uri,
+				range: [
+					[1, lineCount],
+					[lastLine.length, lineCount]
+				]
+			}
+		]);
 	}
 
 	setup(async () => {
@@ -145,7 +153,7 @@ suite('Workbench - TerminalMultiLineLinkDetector', () => {
 		instantiationService.stub(IFileService, {
 			async stat(resource) {
 				if (!validResources.map(e => e.path).includes(resource.path)) {
-					throw new Error('Doesn\'t exist');
+					throw new Error("Doesn't exist");
 				}
 				return createFileStat(resource);
 			}
@@ -154,19 +162,25 @@ suite('Workbench - TerminalMultiLineLinkDetector', () => {
 		resolver = instantiationService.createInstance(TerminalLinkResolver);
 		validResources = [];
 
-		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
+		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js'))
+			.Terminal;
 		xterm = new TerminalCtor({ allowProposedApi: true, cols: 80, rows: 30, logger: TestXtermLogger });
 	});
 
 	suite('macOS/Linux', () => {
 		setup(() => {
-			detector = instantiationService.createInstance(TerminalMultiLineLinkDetector, xterm, {
-				initialCwd: '/parent/cwd',
-				os: OperatingSystem.Linux,
-				remoteAuthority: undefined,
-				userHome: '/home',
-				backend: undefined
-			}, resolver);
+			detector = instantiationService.createInstance(
+				TerminalMultiLineLinkDetector,
+				xterm,
+				{
+					initialCwd: '/parent/cwd',
+					os: OperatingSystem.Linux,
+					remoteAuthority: undefined,
+					userHome: '/home',
+					backend: undefined
+				},
+				resolver
+			);
 		});
 
 		for (const l of unixLinks) {
@@ -190,12 +204,17 @@ suite('Workbench - TerminalMultiLineLinkDetector', () => {
 	if (isWindows) {
 		suite('Windows', () => {
 			setup(() => {
-				detector = instantiationService.createInstance(TerminalMultiLineLinkDetector, xterm, {
-					initialCwd: 'C:\\Parent\\Cwd',
-					os: OperatingSystem.Windows,
-					remoteAuthority: undefined,
-					userHome: 'C:\\Home',
-				}, resolver);
+				detector = instantiationService.createInstance(
+					TerminalMultiLineLinkDetector,
+					xterm,
+					{
+						initialCwd: 'C:\\Parent\\Cwd',
+						os: OperatingSystem.Windows,
+						remoteAuthority: undefined,
+						userHome: 'C:\\Home'
+					},
+					resolver
+				);
 			});
 
 			for (const l of windowsLinks) {

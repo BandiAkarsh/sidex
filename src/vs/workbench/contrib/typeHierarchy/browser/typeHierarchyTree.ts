@@ -21,7 +21,7 @@ export class Type {
 		readonly item: TypeHierarchyItem,
 		readonly model: TypeHierarchyModel,
 		readonly parent: Type | undefined
-	) { }
+	) {}
 
 	static compare(a: Type, b: Type): number {
 		let res = compare(a.item.uri.toString(), b.item.uri.toString());
@@ -33,10 +33,7 @@ export class Type {
 }
 
 export class DataSource implements IAsyncDataSource<TypeHierarchyModel, Type> {
-
-	constructor(
-		public getDirection: () => TypeHierarchyDirection,
-	) { }
+	constructor(public getDirection: () => TypeHierarchyDirection) {}
 
 	hasChildren(): boolean {
 		return true;
@@ -51,36 +48,24 @@ export class DataSource implements IAsyncDataSource<TypeHierarchyModel, Type> {
 
 		if (this.getDirection() === TypeHierarchyDirection.Supertypes) {
 			return (await model.provideSupertypes(item, CancellationToken.None)).map(item => {
-				return new Type(
-					item,
-					model,
-					element
-				);
+				return new Type(item, model, element);
 			});
 		} else {
 			return (await model.provideSubtypes(item, CancellationToken.None)).map(item => {
-				return new Type(
-					item,
-					model,
-					element
-				);
+				return new Type(item, model, element);
 			});
 		}
 	}
 }
 
 export class Sorter implements ITreeSorter<Type> {
-
 	compare(element: Type, otherElement: Type): number {
 		return Type.compare(element, otherElement);
 	}
 }
 
 export class IdentityProvider implements IIdentityProvider<Type> {
-
-	constructor(
-		public getDirection: () => TypeHierarchyDirection
-	) { }
+	constructor(public getDirection: () => TypeHierarchyDirection) {}
 
 	getId(element: Type): { toString(): string } {
 		let res = this.getDirection() + JSON.stringify(element.item.uri) + JSON.stringify(element.item.range);
@@ -95,11 +80,10 @@ class TypeRenderingTemplate {
 	constructor(
 		readonly icon: HTMLDivElement,
 		readonly label: IconLabel
-	) { }
+	) {}
 }
 
 export class TypeRenderer implements ITreeRenderer<Type, FuzzyScore, TypeRenderingTemplate> {
-
 	static readonly id = 'TypeRenderer';
 
 	templateId: string = TypeRenderer.id;
@@ -115,12 +99,16 @@ export class TypeRenderer implements ITreeRenderer<Type, FuzzyScore, TypeRenderi
 	renderElement(node: ITreeNode<Type, FuzzyScore>, _index: number, template: TypeRenderingTemplate): void {
 		const { element, filterData } = node;
 		const deprecated = element.item.tags?.includes(SymbolTag.Deprecated);
-		template.icon.classList.add('inline', 'codicon-colored', ...ThemeIcon.asClassNameArray(SymbolKinds.toIcon(element.item.kind)));
-		template.label.setLabel(
-			element.item.name,
-			element.item.detail,
-			{ labelEscapeNewLines: true, matches: createMatches(filterData), strikethrough: deprecated }
+		template.icon.classList.add(
+			'inline',
+			'codicon-colored',
+			...ThemeIcon.asClassNameArray(SymbolKinds.toIcon(element.item.kind))
 		);
+		template.label.setLabel(element.item.name, element.item.detail, {
+			labelEscapeNewLines: true,
+			matches: createMatches(filterData),
+			strikethrough: deprecated
+		});
 	}
 	disposeTemplate(template: TypeRenderingTemplate): void {
 		template.label.dispose();
@@ -128,7 +116,6 @@ export class TypeRenderer implements ITreeRenderer<Type, FuzzyScore, TypeRenderi
 }
 
 export class VirtualDelegate implements IListVirtualDelegate<Type> {
-
 	getHeight(_element: Type): number {
 		return 22;
 	}
@@ -139,20 +126,17 @@ export class VirtualDelegate implements IListVirtualDelegate<Type> {
 }
 
 export class AccessibilityProvider implements IListAccessibilityProvider<Type> {
-
-	constructor(
-		public getDirection: () => TypeHierarchyDirection
-	) { }
+	constructor(public getDirection: () => TypeHierarchyDirection) {}
 
 	getWidgetAriaLabel(): string {
-		return localize('tree.aria', "Type Hierarchy");
+		return localize('tree.aria', 'Type Hierarchy');
 	}
 
 	getAriaLabel(element: Type): string | null {
 		if (this.getDirection() === TypeHierarchyDirection.Supertypes) {
-			return localize('supertypes', "supertypes of {0}", element.item.name);
+			return localize('supertypes', 'supertypes of {0}', element.item.name);
 		} else {
-			return localize('subtypes', "subtypes of {0}", element.item.name);
+			return localize('subtypes', 'subtypes of {0}', element.item.name);
 		}
 	}
 }

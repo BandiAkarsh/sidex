@@ -18,7 +18,12 @@ import { IEditorService, PreferredGroup } from '../../../editor/common/editorSer
 import { PreferencesService } from '../../browser/preferencesService.js';
 import { IPreferencesService, ISettingsEditorOptions } from '../../common/preferences.js';
 import { IRemoteAgentService } from '../../../remote/common/remoteAgentService.js';
-import { TestRemoteAgentService, ITestInstantiationService, workbenchInstantiationService, TestEditorService } from '../../../../test/browser/workbenchTestServices.js';
+import {
+	TestRemoteAgentService,
+	ITestInstantiationService,
+	workbenchInstantiationService,
+	TestEditorService
+} from '../../../../test/browser/workbenchTestServices.js';
 import { IEditorOptions } from '../../../../../platform/editor/common/editor.js';
 
 suite('PreferencesService', () => {
@@ -31,7 +36,11 @@ suite('PreferencesService', () => {
 		testInstantiationService = workbenchInstantiationService({}, disposables);
 
 		class TestPreferencesEditorService extends TestEditorService {
-			override async openEditor(editor: EditorInput | IUntypedEditorInput, optionsOrGroup?: IEditorOptions | PreferredGroup, group?: PreferredGroup): Promise<undefined> {
+			override async openEditor(
+				editor: EditorInput | IUntypedEditorInput,
+				optionsOrGroup?: IEditorOptions | PreferredGroup,
+				group?: PreferredGroup
+			): Promise<undefined> {
 				lastOpenEditorOptions = optionsOrGroup as IEditorOptions;
 				// openEditor takes ownership of the input
 				if (isEditorInput(editor)) {
@@ -45,7 +54,7 @@ suite('PreferencesService', () => {
 		testInstantiationService.stub(IJSONEditingService, TestJSONEditingService);
 		testInstantiationService.stub(IRemoteAgentService, TestRemoteAgentService);
 		testInstantiationService.stub(ICommandService, TestCommandService);
-		testInstantiationService.stub(IURLService, { registerHandler: () => { } });
+		testInstantiationService.stub(IURLService, { registerHandler: () => {} });
 
 		// PreferencesService creates a PreferencesEditorInput which depends on IPreferencesService, add the real one, not a stub
 		const collection = new ServiceCollection();

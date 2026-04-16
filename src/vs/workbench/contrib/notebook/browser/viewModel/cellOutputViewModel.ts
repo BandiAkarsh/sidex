@@ -62,7 +62,10 @@ export class CellOutputViewModel extends Disposable implements ICellOutputViewMo
 		return this._outputRawData.outputs.some(output => output.mime !== firstMimeType);
 	}
 
-	resolveMimeTypes(textModel: NotebookTextModel, kernelProvides: readonly string[] | undefined): [readonly IOrderedMimeType[], number] {
+	resolveMimeTypes(
+		textModel: NotebookTextModel,
+		kernelProvides: readonly string[] | undefined
+	): [readonly IOrderedMimeType[], number] {
 		const mimeTypes = this._notebookService.getOutputMimeTypeInfo(textModel, kernelProvides, this.model);
 		const index = mimeTypes.findIndex(mimeType => mimeType.rendererId !== RENDERER_NOT_AVAILABLE && mimeType.isTrusted);
 
@@ -78,7 +81,7 @@ export class CellOutputViewModel extends Disposable implements ICellOutputViewMo
 
 	toRawJSON() {
 		return {
-			outputs: this._outputRawData.outputs,
+			outputs: this._outputRawData.outputs
 			// TODO@rebronix, no id, right?
 		};
 	}

@@ -32,10 +32,10 @@ export class NotebookRunSingleCellInSection extends Action2 {
 		super({
 			id: 'notebook.section.runSingleCell',
 			title: {
-				...localize2('runCell', "Run Cell"),
-				mnemonicTitle: localize({ key: 'mirunCell', comment: ['&& denotes a mnemonic'] }, "&&Run Cell"),
+				...localize2('runCell', 'Run Cell'),
+				mnemonicTitle: localize({ key: 'mirunCell', comment: ['&& denotes a mnemonic'] }, '&&Run Cell')
 			},
-			shortTitle: localize('runCell', "Run Cell"),
+			shortTitle: localize('runCell', 'Run Cell'),
 			icon: icons.executeIcon,
 			menu: [
 				{
@@ -46,7 +46,7 @@ export class NotebookRunSingleCellInSection extends Action2 {
 						NotebookOutlineContext.CellKind.isEqualTo(CellKind.Code),
 						NotebookOutlineContext.OutlineElementTarget.isEqualTo(OutlineTarget.OutlinePane),
 						NotebookOutlineContext.CellHasChildren.toNegated(),
-						NotebookOutlineContext.CellHasHeader.toNegated(),
+						NotebookOutlineContext.CellHasHeader.toNegated()
 					)
 				}
 			]
@@ -67,10 +67,13 @@ export class NotebookRunCellsInSection extends Action2 {
 		super({
 			id: 'notebook.section.runCells',
 			title: {
-				...localize2('runCellsInSection', "Run Cells In Section"),
-				mnemonicTitle: localize({ key: 'mirunCellsInSection', comment: ['&& denotes a mnemonic'] }, "&&Run Cells In Section"),
+				...localize2('runCellsInSection', 'Run Cells In Section'),
+				mnemonicTitle: localize(
+					{ key: 'mirunCellsInSection', comment: ['&& denotes a mnemonic'] },
+					'&&Run Cells In Section'
+				)
 			},
-			shortTitle: localize('runCellsInSection', "Run Cells In Section"),
+			shortTitle: localize('runCellsInSection', 'Run Cells In Section'),
 			icon: icons.executeIcon, // TODO @Yoyokrazy replace this with new icon later
 			menu: [
 				{
@@ -86,7 +89,7 @@ export class NotebookRunCellsInSection extends Action2 {
 						NotebookOutlineContext.CellKind.isEqualTo(CellKind.Markup),
 						NotebookOutlineContext.OutlineElementTarget.isEqualTo(OutlineTarget.OutlinePane),
 						NotebookOutlineContext.CellHasChildren,
-						NotebookOutlineContext.CellHasHeader,
+						NotebookOutlineContext.CellHasHeader
 					)
 				},
 				{
@@ -137,10 +140,10 @@ export class NotebookFoldSection extends Action2 {
 		super({
 			id: 'notebook.section.foldSection',
 			title: {
-				...localize2('foldSection', "Fold Section"),
-				mnemonicTitle: localize({ key: 'mifoldSection', comment: ['&& denotes a mnemonic'] }, "&&Fold Section"),
+				...localize2('foldSection', 'Fold Section'),
+				mnemonicTitle: localize({ key: 'mifoldSection', comment: ['&& denotes a mnemonic'] }, '&&Fold Section')
 			},
-			shortTitle: localize('foldSection', "Fold Section"),
+			shortTitle: localize('foldSection', 'Fold Section'),
 			menu: [
 				{
 					id: MenuId.NotebookOutlineActionMenu,
@@ -181,10 +184,10 @@ export class NotebookExpandSection extends Action2 {
 		super({
 			id: 'notebook.section.expandSection',
 			title: {
-				...localize2('expandSection', "Expand Section"),
-				mnemonicTitle: localize({ key: 'miexpandSection', comment: ['&& denotes a mnemonic'] }, "&&Expand Section"),
+				...localize2('expandSection', 'Expand Section'),
+				mnemonicTitle: localize({ key: 'miexpandSection', comment: ['&& denotes a mnemonic'] }, '&&Expand Section')
 			},
-			shortTitle: localize('expandSection', "Expand Section"),
+			shortTitle: localize('expandSection', 'Expand Section'),
 			menu: [
 				{
 					id: MenuId.NotebookOutlineActionMenu,

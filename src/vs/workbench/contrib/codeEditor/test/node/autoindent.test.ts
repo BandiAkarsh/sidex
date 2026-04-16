@@ -10,16 +10,28 @@ import { DisposableStore, IDisposable } from '../../../../../base/common/lifecyc
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { ILanguageConfigurationService } from '../../../../../editor/common/languages/languageConfigurationRegistry.js';
 import { getReindentEditOperations } from '../../../../../editor/contrib/indentation/common/indentation.js';
-import { IRelaxedTextModelCreationOptions, createModelServices, instantiateTextModel } from '../../../../../editor/test/common/testTextModel.js';
+import {
+	IRelaxedTextModelCreationOptions,
+	createModelServices,
+	instantiateTextModel
+} from '../../../../../editor/test/common/testTextModel.js';
 import { TestInstantiationService } from '../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
-import { ILanguageConfiguration, LanguageConfigurationFileHandler } from '../../common/languageConfigurationExtensionPoint.js';
+import {
+	ILanguageConfiguration,
+	LanguageConfigurationFileHandler
+} from '../../common/languageConfigurationExtensionPoint.js';
 import { parse } from '../../../../../base/common/json.js';
 import { IRange } from '../../../../../editor/common/core/range.js';
 import { ISingleEditOperation } from '../../../../../editor/common/core/editOperation.js';
 import { trimTrailingWhitespace } from '../../../../../editor/common/commands/trimTrailingWhitespaceCommand.js';
 import { execSync } from 'child_process';
 import { ILanguageService } from '../../../../../editor/common/languages/language.js';
-import { EncodedTokenizationResult, IState, ITokenizationSupport, TokenizationRegistry } from '../../../../../editor/common/languages.js';
+import {
+	EncodedTokenizationResult,
+	IState,
+	ITokenizationSupport,
+	TokenizationRegistry
+} from '../../../../../editor/common/languages.js';
 import { NullState } from '../../../../../editor/common/languages/nullTokenize.js';
 import { MetadataConsts, StandardTokenType } from '../../../../../editor/common/encodedTokenAttributes.js';
 import { ITextModel } from '../../../../../editor/common/model.js';
@@ -52,7 +64,10 @@ function registerLanguage(instantiationService: TestInstantiationService, langua
 	return disposables;
 }
 
-function registerLanguageConfiguration(instantiationService: TestInstantiationService, languageId: LanguageId): IDisposable {
+function registerLanguageConfiguration(
+	instantiationService: TestInstantiationService,
+	languageId: LanguageId
+): IDisposable {
 	const languageConfigurationService = instantiationService.get(ILanguageConfigurationService);
 	let configPath: string;
 	switch (languageId) {
@@ -73,7 +88,11 @@ interface StandardTokenTypeData {
 	standardTokenType: StandardTokenType;
 }
 
-function registerTokenizationSupport(instantiationService: TestInstantiationService, tokens: StandardTokenTypeData[][], languageId: LanguageId): IDisposable {
+function registerTokenizationSupport(
+	instantiationService: TestInstantiationService,
+	tokens: StandardTokenTypeData[][],
+	languageId: LanguageId
+): IDisposable {
 	let lineIndex = 0;
 	const languageService = instantiationService.get(ILanguageService);
 	const tokenizationSupport: ITokenizationSupport = {
@@ -86,8 +105,8 @@ function registerTokenizationSupport(instantiationService: TestInstantiationServ
 			for (let i = 0; i < tokensOnLine.length; i++) {
 				result[2 * i] = tokensOnLine[i].startIndex;
 				result[2 * i + 1] =
-					((encodedLanguageId << MetadataConsts.LANGUAGEID_OFFSET)
-						| (tokensOnLine[i].standardTokenType << MetadataConsts.TOKEN_TYPE_OFFSET));
+					(encodedLanguageId << MetadataConsts.LANGUAGEID_OFFSET) |
+					(tokensOnLine[i].standardTokenType << MetadataConsts.TOKEN_TYPE_OFFSET);
 			}
 			return new EncodedTokenizationResult(result, [], state);
 		}
@@ -96,7 +115,6 @@ function registerTokenizationSupport(instantiationService: TestInstantiationServ
 }
 
 suite('Auto-Reindentation - TypeScript/JavaScript', () => {
-
 	const languageId = LanguageId.TypeScript;
 	const options: IRelaxedTextModelCreationOptions = {};
 	let disposables: DisposableStore;
@@ -120,7 +138,6 @@ suite('Auto-Reindentation - TypeScript/JavaScript', () => {
 
 	// Test which can be ran to find cases of incorrect indentation...
 	test.skip('Find Cases of Incorrect Indentation with the Reindent Lines Command', () => {
-
 		// ./scripts/test.sh --inspect --grep='Find Cases of Incorrect Indentation with the Reindent Lines Command' --timeout=15000
 
 		function walkDirectoryAndReindent(directory: string, languageId: string) {
@@ -140,7 +157,9 @@ suite('Auto-Reindentation - TypeScript/JavaScript', () => {
 						tabSize: 4,
 						insertSpaces: false
 					};
-					const model = disposables.add(instantiateTextModel(instantiationService, fileContents, languageId, modelOptions));
+					const model = disposables.add(
+						instantiateTextModel(instantiationService, fileContents, languageId, modelOptions)
+					);
 					const lineCount = model.getLineCount();
 					const editOperations: ISingleEditOperation[] = [];
 					for (let line = 1; line <= lineCount - 1; line++) {
@@ -206,10 +225,7 @@ suite('Auto-Reindentation - TypeScript/JavaScript', () => {
 
 		// increaseIndentPattern: /^.*\{[^}"']*$/ -> /^.*\{[^}"'`]*$/
 
-		const fileContents = [
-			'const foo = `{`;',
-			'    ',
-		].join('\n');
+		const fileContents = ['const foo = `{`;', '    '].join('\n');
 		const tokens: StandardTokenTypeData[][] = [
 			[
 				{ startIndex: 0, standardTokenType: StandardTokenType.Other },
@@ -226,7 +242,8 @@ suite('Auto-Reindentation - TypeScript/JavaScript', () => {
 			],
 			[
 				{ startIndex: 0, standardTokenType: StandardTokenType.Other },
-				{ startIndex: 4, standardTokenType: StandardTokenType.Other }]
+				{ startIndex: 4, standardTokenType: StandardTokenType.Other }
+			]
 		];
 		disposables.add(registerTokenizationSupport(instantiationService, tokens, languageId));
 		const model = disposables.add(instantiateTextModel(instantiationService, fileContents, languageId, options));
@@ -235,10 +252,10 @@ suite('Auto-Reindentation - TypeScript/JavaScript', () => {
 		assert.deepStrictEqual(editOperations.length, 1);
 		const operation = editOperations[0];
 		assert.deepStrictEqual(getIRange(operation.range), {
-			'startLineNumber': 2,
-			'startColumn': 1,
-			'endLineNumber': 2,
-			'endColumn': 5,
+			startLineNumber: 2,
+			startColumn: 1,
+			endLineNumber: 2,
+			endColumn: 5
 		});
 		assert.deepStrictEqual(operation.text, '');
 	});
@@ -253,37 +270,29 @@ suite('Auto-Reindentation - TypeScript/JavaScript', () => {
 		// decreaseIndentPattern: /^(.*\*\/)?\s*\}.*$/ -> /^(.*\*\/)?\s*[\}\]\)].*$/
 		// increaseIndentPattern: /^.*\{[^}"'`]*$/ -> /^.*(\{[^}"'`]*|\([^)"'`]*|\[[^\]"'`]*)$/
 
-		let fileContents = [
-			'function foo(',
-			'    bar: string',
-			'    ){}',
-		].join('\n');
+		let fileContents = ['function foo(', '    bar: string', '    ){}'].join('\n');
 		let model = disposables.add(instantiateTextModel(instantiationService, fileContents, languageId, options));
 		let editOperations = getReindentEditOperations(model, languageConfigurationService, 1, model.getLineCount());
 		assert.deepStrictEqual(editOperations.length, 1);
 		let operation = editOperations[0];
 		assert.deepStrictEqual(getIRange(operation.range), {
-			'startLineNumber': 3,
-			'startColumn': 1,
-			'endLineNumber': 3,
-			'endColumn': 5,
+			startLineNumber: 3,
+			startColumn: 1,
+			endLineNumber: 3,
+			endColumn: 5
 		});
 		assert.deepStrictEqual(operation.text, '');
 
-		fileContents = [
-			'function foo(',
-			'bar: string',
-			'){}',
-		].join('\n');
+		fileContents = ['function foo(', 'bar: string', '){}'].join('\n');
 		model = disposables.add(instantiateTextModel(instantiationService, fileContents, languageId, options));
 		editOperations = getReindentEditOperations(model, languageConfigurationService, 1, model.getLineCount());
 		assert.deepStrictEqual(editOperations.length, 1);
 		operation = editOperations[0];
 		assert.deepStrictEqual(getIRange(operation.range), {
-			'startLineNumber': 2,
-			'startColumn': 1,
-			'endLineNumber': 2,
-			'endColumn': 1,
+			startLineNumber: 2,
+			startColumn: 1,
+			endLineNumber: 2,
+			endColumn: 1
 		});
 		assert.deepStrictEqual(operation.text, '    ');
 	});
@@ -297,26 +306,21 @@ suite('Auto-Reindentation - TypeScript/JavaScript', () => {
 		// explanation: after open brace, do not decrease indent if it is followed on the same line by "<whitespace characters> // <any characters>"
 		// todo@aiday-mar: should also apply for when it follows ( and [
 
-		const fileContents = [
-			`if () { // '`,
-			`x = 4`,
-			`}`
-		].join('\n');
+		const fileContents = [`if () { // '`, `x = 4`, `}`].join('\n');
 		const model = disposables.add(instantiateTextModel(instantiationService, fileContents, languageId, options));
 		const editOperations = getReindentEditOperations(model, languageConfigurationService, 1, model.getLineCount());
 		assert.deepStrictEqual(editOperations.length, 1);
 		const operation = editOperations[0];
 		assert.deepStrictEqual(getIRange(operation.range), {
-			'startLineNumber': 2,
-			'startColumn': 1,
-			'endLineNumber': 2,
-			'endColumn': 1,
+			startLineNumber: 2,
+			startColumn: 1,
+			endLineNumber: 2,
+			endColumn: 1
 		});
 		assert.deepStrictEqual(operation.text, '    ');
 	});
 
 	test('Issue #141816', () => {
-
 		// issue: https://github.com/microsoft/vscode/issues/141816
 		// fix: https://github.com/microsoft/vscode/pull/141997/files
 		// explanation: if (, [, {, is followed by a forward slash then assume we are in a regex pattern, and do not indent
@@ -324,10 +328,7 @@ suite('Auto-Reindentation - TypeScript/JavaScript', () => {
 		// increaseIndentPattern: /^((?!\/\/).)*(\{([^}"'`]*|(\t|[ ])*\/\/.*)|\([^)"'`]*|\[[^\]"'`]*)$/ -> /^((?!\/\/).)*(\{([^}"'`/]*|(\t|[ ])*\/\/.*)|\([^)"'`/]*|\[[^\]"'`/]*)$/
 		// -> Final current increase indent pattern at of writing
 
-		const fileContents = [
-			'const r = /{/;',
-			'   ',
-		].join('\n');
+		const fileContents = ['const r = /{/;', '   '].join('\n');
 		const tokens: StandardTokenTypeData[][] = [
 			[
 				{ startIndex: 0, standardTokenType: StandardTokenType.Other },
@@ -354,10 +355,10 @@ suite('Auto-Reindentation - TypeScript/JavaScript', () => {
 		assert.deepStrictEqual(editOperations.length, 1);
 		const operation = editOperations[0];
 		assert.deepStrictEqual(getIRange(operation.range), {
-			'startLineNumber': 2,
-			'startColumn': 1,
-			'endLineNumber': 2,
-			'endColumn': 4,
+			startLineNumber: 2,
+			startColumn: 1,
+			endLineNumber: 2,
+			endColumn: 4
 		});
 		assert.deepStrictEqual(operation.text, '');
 	});
@@ -373,34 +374,23 @@ suite('Auto-Reindentation - TypeScript/JavaScript', () => {
 		// Negative lookahead: (?! «pattern») matches if pattern does not match what comes after the current location in the input string
 		// The change proposed is to not decrease the indent if there is a multi-line comment ending on the same line before the closing parentheses
 
-		const fileContents = [
-			'function foo() {',
-			'    bar(/*  */)',
-			'};',
-		].join('\n');
+		const fileContents = ['function foo() {', '    bar(/*  */)', '};'].join('\n');
 		const model = disposables.add(instantiateTextModel(instantiationService, fileContents, languageId, options));
 		const editOperations = getReindentEditOperations(model, languageConfigurationService, 1, model.getLineCount());
 		assert.deepStrictEqual(editOperations.length, 0);
 	});
 
 	test('Issue #209859: do not do reindentation for tokens inside of a string', () => {
-
 		// issue: https://github.com/microsoft/vscode/issues/209859
 
 		const tokens: StandardTokenTypeData[][] = [
 			[
 				{ startIndex: 0, standardTokenType: StandardTokenType.Other },
-				{ startIndex: 12, standardTokenType: StandardTokenType.String },
+				{ startIndex: 12, standardTokenType: StandardTokenType.String }
 			],
-			[
-				{ startIndex: 0, standardTokenType: StandardTokenType.String },
-			],
-			[
-				{ startIndex: 0, standardTokenType: StandardTokenType.String },
-			],
-			[
-				{ startIndex: 0, standardTokenType: StandardTokenType.String },
-			]
+			[{ startIndex: 0, standardTokenType: StandardTokenType.String }],
+			[{ startIndex: 0, standardTokenType: StandardTokenType.String }],
+			[{ startIndex: 0, standardTokenType: StandardTokenType.String }]
 		];
 		disposables.add(registerTokenizationSupport(instantiationService, tokens, languageId));
 		const fileContents = [
@@ -418,17 +408,10 @@ suite('Auto-Reindentation - TypeScript/JavaScript', () => {
 	// Failing tests inferred from the current regexes...
 
 	test.skip('Incorrect deindentation after `*/}` string', () => {
-
 		// explanation: If */ was not before the }, the regex does not allow characters before the }, so there would not be an indent
 		// Here since there is */ before the }, the regex allows all the characters before, hence there is a deindent
 
-		const fileContents = [
-			`const obj = {`,
-			`    obj1: {`,
-			`        brace : '*/}'`,
-			`    }`,
-			`}`,
-		].join('\n');
+		const fileContents = [`const obj = {`, `    obj1: {`, `        brace : '*/}'`, `    }`, `}`].join('\n');
 		const model = disposables.add(instantiateTextModel(instantiationService, fileContents, languageId, options));
 		const editOperations = getReindentEditOperations(model, languageConfigurationService, 1, model.getLineCount());
 		assert.deepStrictEqual(editOperations.length, 0);
@@ -437,64 +420,45 @@ suite('Auto-Reindentation - TypeScript/JavaScript', () => {
 	// Failing tests from issues...
 
 	test.skip('Issue #56275', () => {
-
 		// issue: https://github.com/microsoft/vscode/issues/56275
 		// explanation: If */ was not before the }, the regex does not allow characters before the }, so there would not be an indent
 		// Here since there is */ before the }, the regex allows all the characters before, hence there is a deindent
 
-		let fileContents = [
-			'function foo() {',
-			'    var bar = (/b*/);',
-			'}',
-		].join('\n');
+		let fileContents = ['function foo() {', '    var bar = (/b*/);', '}'].join('\n');
 		let model = disposables.add(instantiateTextModel(instantiationService, fileContents, languageId, options));
 		let editOperations = getReindentEditOperations(model, languageConfigurationService, 1, model.getLineCount());
 		assert.deepStrictEqual(editOperations.length, 0);
 
-		fileContents = [
-			'function foo() {',
-			'    var bar = "/b*/)";',
-			'}',
-		].join('\n');
+		fileContents = ['function foo() {', '    var bar = "/b*/)";', '}'].join('\n');
 		model = disposables.add(instantiateTextModel(instantiationService, fileContents, languageId, options));
 		editOperations = getReindentEditOperations(model, languageConfigurationService, 1, model.getLineCount());
 		assert.deepStrictEqual(editOperations.length, 0);
 	});
 
 	test.skip('Issue #116843', () => {
-
 		// issue: https://github.com/microsoft/vscode/issues/116843
 		// related: https://github.com/microsoft/vscode/issues/43244
 		// explanation: When you have an arrow function, you don't have { or }, but you would expect indentation to still be done in that way
 
 		// TODO: requires exploring indent/outdent pairs instead
 
-		const fileContents = [
-			'const add1 = (n) =>',
-			'	n + 1;',
-		].join('\n');
+		const fileContents = ['const add1 = (n) =>', '	n + 1;'].join('\n');
 		const model = disposables.add(instantiateTextModel(instantiationService, fileContents, languageId, options));
 		const editOperations = getReindentEditOperations(model, languageConfigurationService, 1, model.getLineCount());
 		assert.deepStrictEqual(editOperations.length, 0);
 	});
 
 	test.skip('Issue #185252', () => {
-
 		// issue: https://github.com/microsoft/vscode/issues/185252
 		// explanation: Reindenting the comment correctly
 
-		const fileContents = [
-			'/*',
-			' * This is a comment.',
-			' */',
-		].join('\n');
+		const fileContents = ['/*', ' * This is a comment.', ' */'].join('\n');
 		const model = disposables.add(instantiateTextModel(instantiationService, fileContents, languageId, options));
 		const editOperations = getReindentEditOperations(model, languageConfigurationService, 1, model.getLineCount());
 		assert.deepStrictEqual(editOperations.length, 0);
 	});
 
 	test.skip('Issue 43244: incorrect indentation when signature of function call spans several lines', () => {
-
 		// issue: https://github.com/microsoft/vscode/issues/43244
 
 		const fileContents = [
@@ -502,7 +466,7 @@ suite('Auto-Reindentation - TypeScript/JavaScript', () => {
 			'function someFunction() {',
 			'    callSomeOtherFunction(4,',
 			'        5)',
-			'}',
+			'}'
 		].join('\n');
 		const model = disposables.add(instantiateTextModel(instantiationService, fileContents, languageId, options));
 		const editOperations = getReindentEditOperations(model, languageConfigurationService, 1, model.getLineCount());

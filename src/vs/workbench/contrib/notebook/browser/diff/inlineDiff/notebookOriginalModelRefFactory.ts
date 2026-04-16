@@ -7,7 +7,10 @@ import { AsyncReferenceCollection, IReference, ReferenceCollection } from '../..
 import { INotebookService } from '../../../common/notebookService.js';
 import { bufferToStream, VSBuffer } from '../../../../../../base/common/buffer.js';
 import { NotebookTextModel } from '../../../common/model/notebookTextModel.js';
-import { createDecorator, IInstantiationService } from '../../../../../../platform/instantiation/common/instantiation.js';
+import {
+	createDecorator,
+	IInstantiationService
+} from '../../../../../../platform/instantiation/common/instantiation.js';
 import { ITextModelService } from '../../../../../../editor/common/services/resolverService.js';
 import { URI } from '../../../../../../base/common/uri.js';
 
@@ -15,24 +18,29 @@ interface IOriginalURIEntry {
 	readonly originalURI: URI;
 }
 
-
-export const INotebookOriginalModelReferenceFactory = createDecorator<INotebookOriginalModelReferenceFactory>('INotebookOriginalModelReferenceFactory');
+export const INotebookOriginalModelReferenceFactory = createDecorator<INotebookOriginalModelReferenceFactory>(
+	'INotebookOriginalModelReferenceFactory'
+);
 
 export interface INotebookOriginalModelReferenceFactory {
 	readonly _serviceBrand: undefined;
 	getOrCreate(fileEntry: IOriginalURIEntry, viewType: string): Promise<IReference<NotebookTextModel>>;
 }
 
-
 export class OriginalNotebookModelReferenceCollection extends ReferenceCollection<Promise<NotebookTextModel>> {
 	private readonly modelsToDispose = new Set<string>();
-	constructor(@INotebookService private readonly notebookService: INotebookService,
+	constructor(
+		@INotebookService private readonly notebookService: INotebookService,
 		@ITextModelService private readonly modelService: ITextModelService
 	) {
 		super();
 	}
 
-	protected override async createReferencedObject(key: string, fileEntry: IOriginalURIEntry, viewType: string): Promise<NotebookTextModel> {
+	protected override async createReferencedObject(
+		key: string,
+		fileEntry: IOriginalURIEntry,
+		viewType: string
+	): Promise<NotebookTextModel> {
 		this.modelsToDispose.delete(key);
 		const uri = fileEntry.originalURI;
 		const model = this.notebookService.getNotebookTextModel(uri);
@@ -71,10 +79,14 @@ export class OriginalNotebookModelReferenceCollection extends ReferenceCollectio
 
 export class NotebookOriginalModelReferenceFactory implements INotebookOriginalModelReferenceFactory {
 	readonly _serviceBrand: undefined;
-	private _resourceModelCollection: OriginalNotebookModelReferenceCollection & ReferenceCollection<Promise<NotebookTextModel>> /* TS Fail */ | undefined = undefined;
+	private _resourceModelCollection:
+		| (OriginalNotebookModelReferenceCollection & ReferenceCollection<Promise<NotebookTextModel>>) /* TS Fail */
+		| undefined = undefined;
 	private get resourceModelCollection() {
 		if (!this._resourceModelCollection) {
-			this._resourceModelCollection = this.instantiationService.createInstance(OriginalNotebookModelReferenceCollection);
+			this._resourceModelCollection = this.instantiationService.createInstance(
+				OriginalNotebookModelReferenceCollection
+			);
 		}
 
 		return this._resourceModelCollection;
@@ -89,8 +101,7 @@ export class NotebookOriginalModelReferenceFactory implements INotebookOriginalM
 		return this._asyncModelCollection;
 	}
 
-	constructor(@IInstantiationService private readonly instantiationService: IInstantiationService) {
-	}
+	constructor(@IInstantiationService private readonly instantiationService: IInstantiationService) {}
 
 	getOrCreate(fileEntry: IOriginalURIEntry, viewType: string): Promise<IReference<NotebookTextModel>> {
 		return this.asyncModelCollection.acquire(fileEntry.originalURI.toString(), fileEntry, viewType);

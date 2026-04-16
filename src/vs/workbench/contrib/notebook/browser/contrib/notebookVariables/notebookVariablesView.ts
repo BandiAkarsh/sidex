@@ -21,21 +21,50 @@ import { IQuickInputService } from '../../../../../../platform/quickinput/common
 import { IThemeService } from '../../../../../../platform/theme/common/themeService.js';
 import { IViewPaneOptions, ViewPane } from '../../../../../browser/parts/views/viewPane.js';
 import { IViewDescriptorService } from '../../../../../common/views.js';
-import { CONTEXT_VARIABLE_EXTENSIONID, CONTEXT_VARIABLE_INTERFACES, CONTEXT_VARIABLE_LANGUAGE, CONTEXT_VARIABLE_NAME, CONTEXT_VARIABLE_TYPE, CONTEXT_VARIABLE_VALUE } from '../../../../debug/common/debug.js';
-import { IEmptyScope, INotebookScope, INotebookVariableElement, NotebookVariableDataSource } from './notebookVariablesDataSource.js';
-import { NOTEBOOK_TITLE, NotebookVariableAccessibilityProvider, NotebookVariableRenderer, NotebookVariablesDelegate, REPL_TITLE } from './notebookVariablesTree.js';
+import {
+	CONTEXT_VARIABLE_EXTENSIONID,
+	CONTEXT_VARIABLE_INTERFACES,
+	CONTEXT_VARIABLE_LANGUAGE,
+	CONTEXT_VARIABLE_NAME,
+	CONTEXT_VARIABLE_TYPE,
+	CONTEXT_VARIABLE_VALUE
+} from '../../../../debug/common/debug.js';
+import {
+	IEmptyScope,
+	INotebookScope,
+	INotebookVariableElement,
+	NotebookVariableDataSource
+} from './notebookVariablesDataSource.js';
+import {
+	NOTEBOOK_TITLE,
+	NotebookVariableAccessibilityProvider,
+	NotebookVariableRenderer,
+	NotebookVariablesDelegate,
+	REPL_TITLE
+} from './notebookVariablesTree.js';
 import { getNotebookEditorFromEditorPane } from '../../notebookBrowser.js';
 import { NotebookTextModel } from '../../../common/model/notebookTextModel.js';
-import { ICellExecutionStateChangedEvent, IExecutionStateChangedEvent, INotebookExecutionStateService } from '../../../common/notebookExecutionStateService.js';
+import {
+	ICellExecutionStateChangedEvent,
+	IExecutionStateChangedEvent,
+	INotebookExecutionStateService
+} from '../../../common/notebookExecutionStateService.js';
 import { INotebookKernelService } from '../../../common/notebookKernelService.js';
 import { IEditorService } from '../../../../../services/editor/common/editorService.js';
 import { IEditorCloseEvent, IEditorPane } from '../../../../../common/editor.js';
 import { isCompositeNotebookEditorInput } from '../../../common/notebookEditorInput.js';
 
-export type contextMenuArg = { source: string; name: string; type?: string; value?: string; expression?: string; language?: string; extensionId?: string };
+export type contextMenuArg = {
+	source: string;
+	name: string;
+	type?: string;
+	value?: string;
+	expression?: string;
+	language?: string;
+	extensionId?: string;
+};
 
 export class NotebookVariablesView extends ViewPane {
-
 	static readonly ID = 'notebookVariablesView';
 
 	private tree: WorkbenchAsyncDataTree<INotebookScope | IEmptyScope, INotebookVariableElement> | undefined;
@@ -63,12 +92,23 @@ export class NotebookVariablesView extends ViewPane {
 		@IHoverService hoverService: IHoverService,
 		@IMenuService private readonly menuService: IMenuService
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			hoverService
+		);
 
 		this._register(this.editorService.onDidActiveEditorChange(() => this.handleActiveEditorChange()));
 		this._register(this.notebookKernelService.onDidNotebookVariablesUpdate(this.handleVariablesChanged.bind(this)));
 		this._register(this.notebookExecutionStateService.onDidChangeExecution(this.handleExecutionStateChange.bind(this)));
-		this._register(this.editorService.onDidCloseEditor((e) => this.handleCloseEditor(e)));
+		this._register(this.editorService.onDidCloseEditor(e => this.handleCloseEditor(e)));
 
 		this.accessibilityProvider = new NotebookVariableAccessibilityProvider();
 		this.handleActiveEditorChange(false);
@@ -90,8 +130,9 @@ export class NotebookVariablesView extends ViewPane {
 			this.dataSource,
 			{
 				accessibilityProvider: this.accessibilityProvider,
-				identityProvider: { getId: (e: INotebookVariableElement) => e.id },
-			});
+				identityProvider: { getId: (e: INotebookVariableElement) => e.id }
+			}
+		);
 
 		this.tree.layout();
 		if (this.activeNotebook) {
@@ -125,7 +166,10 @@ export class NotebookVariablesView extends ViewPane {
 			[CONTEXT_VARIABLE_LANGUAGE.key, element.language],
 			[CONTEXT_VARIABLE_EXTENSIONID.key, element.extensionId]
 		]);
-		const menuActions = this.menuService.getMenuActions(MenuId.NotebookVariablesContext, overlayedContext, { arg, shouldForwardArgs: true });
+		const menuActions = this.menuService.getMenuActions(MenuId.NotebookVariablesContext, overlayedContext, {
+			arg,
+			shouldForwardArgs: true
+		});
 		const actions = getFlatContextMenuActions(menuActions);
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => e.anchor,
@@ -188,8 +232,7 @@ export class NotebookVariablesView extends ViewPane {
 			// changed === undefined -> excecution ended
 			if (event.changed === undefined) {
 				this.updateScheduler.schedule();
-			}
-			else {
+			} else {
 				this.updateScheduler.cancel();
 			}
 		} else if (!this.getActiveNotebook()) {

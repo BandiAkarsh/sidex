@@ -12,10 +12,17 @@ import { mock } from '../../../../../base/test/common/mock.js';
 import { runWithFakedTimers } from '../../../../../base/test/common/timeTravelScheduler.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { Range } from '../../../../common/core/range.js';
-import { DocumentRangeSemanticTokensProvider, SemanticTokens, SemanticTokensLegend } from '../../../../common/languages.js';
+import {
+	DocumentRangeSemanticTokensProvider,
+	SemanticTokens,
+	SemanticTokensLegend
+} from '../../../../common/languages.js';
 import { ILanguageService } from '../../../../common/languages/language.js';
 import { ITextModel } from '../../../../common/model.js';
-import { ILanguageFeatureDebounceService, LanguageFeatureDebounceService } from '../../../../common/services/languageFeatureDebounce.js';
+import {
+	ILanguageFeatureDebounceService,
+	LanguageFeatureDebounceService
+} from '../../../../common/services/languageFeatureDebounce.js';
 import { ILanguageFeaturesService } from '../../../../common/services/languageFeatures.js';
 import { LanguageFeaturesService } from '../../../../common/services/languageFeaturesService.js';
 import { LanguageService } from '../../../../common/services/languageService.js';
@@ -35,7 +42,6 @@ import { ServiceCollection } from '../../../../../platform/instantiation/common/
 import { TestInstantiationService } from '../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
 
 suite('ViewportSemanticTokens', () => {
-
 	const disposables = new DisposableStore();
 	let languageService: ILanguageService;
 	let languageFeaturesService: ILanguageFeaturesService;
@@ -50,10 +56,10 @@ suite('ViewportSemanticTokens', () => {
 
 		const logService = new NullLogService();
 		const semanticTokensStylingService = new SemanticTokensStylingService(themeService, logService, languageService);
-		const envService = new class extends mock<IEnvironmentService>() {
+		const envService = new (class extends mock<IEnvironmentService>() {
 			override isBuilt: boolean = true;
 			override isExtensionDevelopment: boolean = false;
-		};
+		})();
 		const languageFeatureDebounceService = new LanguageFeatureDebounceService(logService, envService);
 
 		serviceCollection = new ServiceCollection(
@@ -73,7 +79,6 @@ suite('ViewportSemanticTokens', () => {
 
 	test('DocumentRangeSemanticTokens provider onDidChange event should trigger refresh', async () => {
 		await runWithFakedTimers({}, async () => {
-
 			disposables.add(languageService.registerLanguage({ id: 'testMode' }));
 
 			const inFirstCall = new Barrier();
@@ -81,23 +86,32 @@ suite('ViewportSemanticTokens', () => {
 
 			const emitter = new Emitter<void>();
 			let requestCount = 0;
-			disposables.add(languageFeaturesService.documentRangeSemanticTokensProvider.register('testMode', new class implements DocumentRangeSemanticTokensProvider {
-				onDidChange = emitter.event;
-				getLegend(): SemanticTokensLegend {
-					return { tokenTypes: ['class'], tokenModifiers: [] };
-				}
-				async provideDocumentRangeSemanticTokens(model: ITextModel, range: Range, token: CancellationToken): Promise<SemanticTokens | null> {
-					requestCount++;
-					if (requestCount === 1) {
-						inFirstCall.open();
-					} else if (requestCount === 2) {
-						inRefreshCall.open();
-					}
-					return {
-						data: new Uint32Array([0, 1, 1, 1, 1])
-					};
-				}
-			}));
+			disposables.add(
+				languageFeaturesService.documentRangeSemanticTokensProvider.register(
+					'testMode',
+					new (class implements DocumentRangeSemanticTokensProvider {
+						onDidChange = emitter.event;
+						getLegend(): SemanticTokensLegend {
+							return { tokenTypes: ['class'], tokenModifiers: [] };
+						}
+						async provideDocumentRangeSemanticTokens(
+							model: ITextModel,
+							range: Range,
+							token: CancellationToken
+						): Promise<SemanticTokens | null> {
+							requestCount++;
+							if (requestCount === 1) {
+								inFirstCall.open();
+							} else if (requestCount === 2) {
+								inRefreshCall.open();
+							}
+							return {
+								data: new Uint32Array([0, 1, 1, 1, 1])
+							};
+						}
+					})()
+				)
+			);
 
 			const textModel = disposables.add(createTextModel('Hello world', 'testMode'));
 			const editor = disposables.add(createTestCodeEditor(textModel, { serviceCollection }));

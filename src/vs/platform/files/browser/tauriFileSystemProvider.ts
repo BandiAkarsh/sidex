@@ -22,7 +22,7 @@ import {
 	IStat,
 	IWatchOptions,
 	IFileSystemProviderWithFileReadWriteCapability,
-	FilePermission,
+	FilePermission
 } from '../common/files.js';
 
 interface TauriFileStat {
@@ -57,10 +57,8 @@ interface TauriWatchBatch {
 }
 
 export class TauriFileSystemProvider extends Disposable implements IFileSystemProviderWithFileReadWriteCapability {
-
 	readonly capabilities: FileSystemProviderCapabilities =
-		FileSystemProviderCapabilities.FileReadWrite |
-		FileSystemProviderCapabilities.PathCaseSensitive;
+		FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.PathCaseSensitive;
 
 	readonly onDidChangeCapabilities = Event.None;
 
@@ -79,18 +77,24 @@ export class TauriFileSystemProvider extends Disposable implements IFileSystemPr
 	}
 
 	private static toError(err: unknown, resource: URI, code: FileSystemProviderErrorCode): Error {
-		const msg = typeof err === 'string' ? err : (err instanceof Error ? err.message : String(err));
+		const msg = typeof err === 'string' ? err : err instanceof Error ? err.message : String(err);
 		return createFileSystemProviderError(msg, code);
 	}
 
 	private static toFileChangeType(kind: string): FileChangeType | undefined {
 		switch (kind) {
-			case 'created': return FileChangeType.ADDED;
-			case 'modified': return FileChangeType.UPDATED;
-			case 'deleted': return FileChangeType.DELETED;
-			case 'renamed_to': return FileChangeType.ADDED;
-			case 'renamed_from': return FileChangeType.DELETED;
-			default: return undefined;
+			case 'created':
+				return FileChangeType.ADDED;
+			case 'modified':
+				return FileChangeType.UPDATED;
+			case 'deleted':
+				return FileChangeType.DELETED;
+			case 'renamed_to':
+				return FileChangeType.ADDED;
+			case 'renamed_from':
+				return FileChangeType.DELETED;
+			default:
+				return undefined;
 		}
 	}
 
@@ -98,7 +102,7 @@ export class TauriFileSystemProvider extends Disposable implements IFileSystemPr
 		if (this._watchBatchUnlisten) {
 			return;
 		}
-		this._watchBatchUnlisten = await listen<TauriWatchBatch>('watch-batch', (event) => {
+		this._watchBatchUnlisten = await listen<TauriWatchBatch>('watch-batch', event => {
 			const batch = event.payload;
 			if (!batch?.events?.length) {
 				return;
@@ -123,7 +127,7 @@ export class TauriFileSystemProvider extends Disposable implements IFileSystemPr
 		try {
 			raw = await invoke<TauriFileStat>('stat', { path });
 		} catch (err) {
-			const msg = typeof err === 'string' ? err : (err instanceof Error ? err.message : String(err));
+			const msg = typeof err === 'string' ? err : err instanceof Error ? err.message : String(err);
 			const isNotFound = /no such file|not found|ENOENT/i.test(msg);
 			if (!isNotFound) {
 				console.debug('[SideX-FS] stat failed:', path, err);
@@ -145,7 +149,7 @@ export class TauriFileSystemProvider extends Disposable implements IFileSystemPr
 			mtime: raw.modified * 1000,
 			ctime: raw.created * 1000,
 			size: raw.size,
-			permissions: raw.readonly ? FilePermission.Readonly : undefined,
+			permissions: raw.readonly ? FilePermission.Readonly : undefined
 		};
 	}
 
@@ -155,7 +159,7 @@ export class TauriFileSystemProvider extends Disposable implements IFileSystemPr
 		try {
 			entries = await invoke<TauriDirEntry[]>('read_dir', { path });
 		} catch (err) {
-			const msg = typeof err === 'string' ? err : (err instanceof Error ? err.message : String(err));
+			const msg = typeof err === 'string' ? err : err instanceof Error ? err.message : String(err);
 			const isNotFound = /no such file|not found|ENOENT/i.test(msg);
 			if (!isNotFound) {
 				console.debug('[SideX-FS] readdir failed:', path, err);
@@ -228,7 +232,7 @@ export class TauriFileSystemProvider extends Disposable implements IFileSystemPr
 			if (exists) {
 				throw createFileSystemProviderError(
 					`Unable to rename — target '${newPath}' already exists`,
-					FileSystemProviderErrorCode.FileExists,
+					FileSystemProviderErrorCode.FileExists
 				);
 			}
 		}
@@ -253,10 +257,10 @@ export class TauriFileSystemProvider extends Disposable implements IFileSystemPr
 			options: {
 				recursive: opts.recursive,
 				debounce_ms: 100,
-				ignore_patterns: opts.excludes.length > 0 ? opts.excludes : undefined,
-			},
+				ignore_patterns: opts.excludes.length > 0 ? opts.excludes : undefined
+			}
 		}).then(
-			(id) => {
+			id => {
 				if (disposed) {
 					invoke('watch_stop', { id }).catch(() => {});
 					return;

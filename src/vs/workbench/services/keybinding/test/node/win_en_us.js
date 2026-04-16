@@ -350,7 +350,7 @@ define({
 	},
 	Quote: {
 		vkey: 'VK_OEM_7',
-		value: '\'',
+		value: "'",
 		withShift: '"',
 		withAltGr: '',
 		withShiftAltGr: ''

@@ -14,7 +14,6 @@ import { IUndoRedoElement, UndoRedoElementType, UndoRedoGroup } from '../../comm
 import { UndoRedoService } from '../../common/undoRedoService.js';
 
 suite('UndoRedoService', () => {
-
 	function createUndoRedoService(dialogService: IDialogService = new TestDialogService()): UndoRedoService {
 		const notificationService = new TestNotificationService();
 		return new UndoRedoService(dialogService, notificationService);
@@ -36,8 +35,12 @@ suite('UndoRedoService', () => {
 			resource: resource,
 			label: 'typing 1',
 			code: 'typing',
-			undo: () => { undoCall1++; },
-			redo: () => { redoCall1++; }
+			undo: () => {
+				undoCall1++;
+			},
+			redo: () => {
+				redoCall1++;
+			}
 		};
 		service.pushElement(element1);
 
@@ -71,8 +74,12 @@ suite('UndoRedoService', () => {
 			resource: resource,
 			label: 'typing 2',
 			code: 'typing',
-			undo: () => { undoCall2++; },
-			redo: () => { redoCall2++; }
+			undo: () => {
+				undoCall2++;
+			},
+			redo: () => {
+				redoCall2++;
+			}
 		};
 		service.pushElement(element2);
 
@@ -103,8 +110,12 @@ suite('UndoRedoService', () => {
 			resource: resource,
 			label: 'typing 2',
 			code: 'typing',
-			undo: () => { undoCall3++; },
-			redo: () => { redoCall3++; }
+			undo: () => {
+				undoCall3++;
+			},
+			redo: () => {
+				redoCall3++;
+			}
 		};
 		service.pushElement(element3);
 
@@ -136,28 +147,38 @@ suite('UndoRedoService', () => {
 	test('multi resource elements', async () => {
 		const resource1 = URI.file('test1.txt');
 		const resource2 = URI.file('test2.txt');
-		const service = createUndoRedoService(new class extends mock<IDialogService>() {
-			override async prompt<T = any>(prompt: IPrompt<any>) {
-				const result = prompt.buttons?.[0].run({ checkboxChecked: false });
+		const service = createUndoRedoService(
+			new (class extends mock<IDialogService>() {
+				override async prompt<T = any>(prompt: IPrompt<any>) {
+					const result = prompt.buttons?.[0].run({ checkboxChecked: false });
 
-				return { result };
-			}
-			override async confirm() {
-				return {
-					confirmed: true // confirm!
-				};
-			}
-		});
+					return { result };
+				}
+				override async confirm() {
+					return {
+						confirmed: true // confirm!
+					};
+				}
+			})()
+		);
 
-		let undoCall1 = 0, undoCall11 = 0, undoCall12 = 0;
-		let redoCall1 = 0, redoCall11 = 0, redoCall12 = 0;
+		let undoCall1 = 0,
+			undoCall11 = 0,
+			undoCall12 = 0;
+		let redoCall1 = 0,
+			redoCall11 = 0,
+			redoCall12 = 0;
 		const element1: IUndoRedoElement = {
 			type: UndoRedoElementType.Workspace,
 			resources: [resource1, resource2],
 			label: 'typing 1',
 			code: 'typing',
-			undo: () => { undoCall1++; },
-			redo: () => { redoCall1++; },
+			undo: () => {
+				undoCall1++;
+			},
+			redo: () => {
+				redoCall1++;
+			},
 			split: () => {
 				return [
 					{
@@ -165,16 +186,24 @@ suite('UndoRedoService', () => {
 						resource: resource1,
 						label: 'typing 1.1',
 						code: 'typing',
-						undo: () => { undoCall11++; },
-						redo: () => { redoCall11++; }
+						undo: () => {
+							undoCall11++;
+						},
+						redo: () => {
+							redoCall11++;
+						}
 					},
 					{
 						type: UndoRedoElementType.Resource,
 						resource: resource2,
 						label: 'typing 1.2',
 						code: 'typing',
-						undo: () => { undoCall12++; },
-						redo: () => { redoCall12++; }
+						undo: () => {
+							undoCall12++;
+						},
+						redo: () => {
+							redoCall12++;
+						}
 					}
 				];
 			}
@@ -218,7 +247,6 @@ suite('UndoRedoService', () => {
 		assert.strictEqual(service.canRedo(resource2), false);
 		assert.strictEqual(service.hasElements(resource2), true);
 		assert.ok(service.getLastElement(resource2) === element1);
-
 	});
 
 	test('UndoRedoGroup.None uses id 0', () => {
@@ -237,24 +265,24 @@ suite('UndoRedoService', () => {
 			resource: resource,
 			label: 'typing 1',
 			code: 'typing',
-			undo: () => { },
-			redo: () => { }
+			undo: () => {},
+			redo: () => {}
 		};
 		const element2: IUndoRedoElement = {
 			type: UndoRedoElementType.Resource,
 			resource: resource,
 			label: 'typing 2',
 			code: 'typing',
-			undo: () => { },
-			redo: () => { }
+			undo: () => {},
+			redo: () => {}
 		};
 		const element3: IUndoRedoElement = {
 			type: UndoRedoElementType.Resource,
 			resource: resource,
 			label: 'typing 3',
 			code: 'typing',
-			undo: () => { },
-			redo: () => { }
+			undo: () => {},
+			redo: () => {}
 		};
 		service.pushElement(element1);
 		service.pushElement(element2);
@@ -269,16 +297,16 @@ suite('UndoRedoService', () => {
 			resource: resource,
 			label: 'typing 4',
 			code: 'typing',
-			undo: () => { },
-			redo: () => { }
+			undo: () => {},
+			redo: () => {}
 		};
 		const element5: IUndoRedoElement = {
 			type: UndoRedoElementType.Resource,
 			resource: resource,
 			label: 'typing 5',
 			code: 'typing',
-			undo: () => { },
-			redo: () => { }
+			undo: () => {},
+			redo: () => {}
 		};
 		service.pushElement(element4);
 		service.pushElement(element5);

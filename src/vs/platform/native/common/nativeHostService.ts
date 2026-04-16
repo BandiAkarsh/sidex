@@ -9,7 +9,6 @@ import { INativeHostService } from './native.js';
 
 // @ts-expect-error: interface is implemented via proxy
 export class NativeHostService implements INativeHostService {
-
 	declare readonly _serviceBrand: undefined;
 
 	constructor(

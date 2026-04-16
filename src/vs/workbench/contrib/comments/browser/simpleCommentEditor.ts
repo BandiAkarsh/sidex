@@ -4,9 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { EditorOption, IEditorOptions } from '../../../../editor/common/config/editorOptions.js';
-import { EditorAction, EditorContributionInstantiation, EditorExtensionsRegistry, IEditorContributionDescription } from '../../../../editor/browser/editorExtensions.js';
+import {
+	EditorAction,
+	EditorContributionInstantiation,
+	EditorExtensionsRegistry,
+	IEditorContributionDescription
+} from '../../../../editor/browser/editorExtensions.js';
 import { ICodeEditorService } from '../../../../editor/browser/services/codeEditorService.js';
-import { CodeEditorWidget, ICodeEditorWidgetOptions } from '../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
+import {
+	CodeEditorWidget,
+	ICodeEditorWidgetOptions
+} from '../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
 import { IContextKeyService, RawContextKey, IContextKey } from '../../../../platform/contextkey/common/contextkey.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { ICommandService } from '../../../../platform/commands/common/commands.js';
@@ -67,15 +75,27 @@ export class SimpleCommentEditor extends CodeEditorWidget {
 		@IAccessibilityService accessibilityService: IAccessibilityService,
 		@ILanguageConfigurationService languageConfigurationService: ILanguageConfigurationService,
 		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
-		@IUserInteractionService userInteractionService: IUserInteractionService,
+		@IUserInteractionService userInteractionService: IUserInteractionService
 	) {
 		const codeEditorWidgetOptions: ICodeEditorWidgetOptions = {
 			contributions: <IEditorContributionDescription[]>[
-				{ id: MenuPreventer.ID, ctor: MenuPreventer, instantiation: EditorContributionInstantiation.BeforeFirstInteraction },
-				{ id: ContextMenuController.ID, ctor: ContextMenuController, instantiation: EditorContributionInstantiation.BeforeFirstInteraction },
+				{
+					id: MenuPreventer.ID,
+					ctor: MenuPreventer,
+					instantiation: EditorContributionInstantiation.BeforeFirstInteraction
+				},
+				{
+					id: ContextMenuController.ID,
+					ctor: ContextMenuController,
+					instantiation: EditorContributionInstantiation.BeforeFirstInteraction
+				},
 				{ id: SuggestController.ID, ctor: SuggestController, instantiation: EditorContributionInstantiation.Eager },
 				{ id: SnippetController2.ID, ctor: SnippetController2, instantiation: EditorContributionInstantiation.Lazy },
-				{ id: TabCompletionController.ID, ctor: TabCompletionController, instantiation: EditorContributionInstantiation.Eager }, // eager because it needs to define a context key
+				{
+					id: TabCompletionController.ID,
+					ctor: TabCompletionController,
+					instantiation: EditorContributionInstantiation.Eager
+				}, // eager because it needs to define a context key
 				{ id: EditorDictation.ID, ctor: EditorDictation, instantiation: EditorContributionInstantiation.Lazy },
 				...EditorExtensionsRegistry.getSomeEditorContributions([
 					CopyPasteController.ID,
@@ -93,7 +113,21 @@ export class SimpleCommentEditor extends CodeEditorWidget {
 			contextMenuId: MenuId.SimpleEditorContext
 		};
 
-		super(domElement, options, codeEditorWidgetOptions, instantiationService, codeEditorService, commandService, scopedContextKeyService, themeService, notificationService, accessibilityService, languageConfigurationService, languageFeaturesService, userInteractionService);
+		super(
+			domElement,
+			options,
+			codeEditorWidgetOptions,
+			instantiationService,
+			codeEditorService,
+			commandService,
+			scopedContextKeyService,
+			themeService,
+			notificationService,
+			accessibilityService,
+			languageConfigurationService,
+			languageFeaturesService,
+			userInteractionService
+		);
 
 		this._commentEditorFocused = ctxCommentEditorFocused.bindTo(scopedContextKeyService);
 		this._commentEditorEmpty = CommentContextKeys.commentIsEmpty.bindTo(scopedContextKeyService);
@@ -155,15 +189,22 @@ export class SimpleCommentEditor extends CodeEditorWidget {
 	}
 }
 
-export function calculateEditorHeight(parentEditor: LayoutableEditor, editor: ICodeEditor, currentHeight: number): number {
+export function calculateEditorHeight(
+	parentEditor: LayoutableEditor,
+	editor: ICodeEditor,
+	currentHeight: number
+): number {
 	const layoutInfo = editor.getLayoutInfo();
 	const lineHeight = editor.getOption(EditorOption.lineHeight);
-	const contentHeight = (editor._getViewModel()?.getLineCount()! * lineHeight); // Can't just call getContentHeight() because it returns an incorrect, large, value when the editor is first created.
-	if ((contentHeight > layoutInfo.height) ||
-		(contentHeight < layoutInfo.height && currentHeight > MIN_EDITOR_HEIGHT)) {
+	const contentHeight = editor._getViewModel()?.getLineCount()! * lineHeight; // Can't just call getContentHeight() because it returns an incorrect, large, value when the editor is first created.
+	if (contentHeight > layoutInfo.height || (contentHeight < layoutInfo.height && currentHeight > MIN_EDITOR_HEIGHT)) {
 		const linesToAdd = Math.ceil((contentHeight - layoutInfo.height) / lineHeight);
-		const proposedHeight = layoutInfo.height + (lineHeight * linesToAdd);
-		return clamp(proposedHeight, MIN_EDITOR_HEIGHT, clamp(parentEditor.getLayoutInfo().height - 90, MIN_EDITOR_HEIGHT, MAX_EDITOR_HEIGHT));
+		const proposedHeight = layoutInfo.height + lineHeight * linesToAdd;
+		return clamp(
+			proposedHeight,
+			MIN_EDITOR_HEIGHT,
+			clamp(parentEditor.getLayoutInfo().height - 90, MIN_EDITOR_HEIGHT, MAX_EDITOR_HEIGHT)
+		);
 	}
 	return currentHeight;
 }

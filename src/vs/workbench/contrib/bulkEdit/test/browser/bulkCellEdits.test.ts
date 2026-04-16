@@ -20,7 +20,7 @@ suite('BulkCellEdits', function () {
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 
 	async function runTest(inputUri: URI, resolveUri: URI) {
-		const progress: IProgress<void> = { report: _ => { } };
+		const progress: IProgress<void> = { report: _ => {} };
 		const editorService = store.add(new TestEditorService());
 
 		const notebook = mockObject<NotebookTextModel>()();
@@ -31,13 +31,21 @@ suite('BulkCellEdits', function () {
 		notebookEditorModel.isReadonly.returns(false);
 
 		const notebookService = mockObject<INotebookEditorModelResolverService>()();
-		notebookService.resolve.returns({ object: notebookEditorModel, dispose: () => { } });
+		notebookService.resolve.returns({ object: notebookEditorModel, dispose: () => {} });
 
 		const edits = [
 			new ResourceNotebookCellEdit(inputUri, { index: 0, count: 1, editType: CellEditType.Replace, cells: [] })
 		];
 		// eslint-disable-next-line local/code-no-any-casts
-		const bce = new BulkCellEdits(new UndoRedoGroup(), new UndoRedoSource(), progress, CancellationToken.None, edits, editorService, notebookService as any);
+		const bce = new BulkCellEdits(
+			new UndoRedoGroup(),
+			new UndoRedoSource(),
+			progress,
+			CancellationToken.None,
+			edits,
+			editorService,
+			notebookService as any
+		);
 		await bce.apply();
 
 		const resolveArgs = notebookService.resolve.args[0];

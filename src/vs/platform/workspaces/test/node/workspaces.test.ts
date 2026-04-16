@@ -14,7 +14,6 @@ import { flakySuite, getRandomTestPath } from '../../../../base/test/node/testUt
 import { getSingleFolderWorkspaceIdentifier, getWorkspaceIdentifier } from '../../browser/workspaces.js';
 
 flakySuite('Workspaces', () => {
-
 	let testDir: string;
 
 	const tmpDir = os.tmpdir();
@@ -40,7 +39,6 @@ flakySuite('Workspaces', () => {
 	});
 
 	test('workspace identifiers are stable', function () {
-
 		// workspace identifier (local) — IDs are hash-based, just verify they are consistent
 		const id1 = getWorkspaceIdentifier(URI.file('/hello/test')).id;
 		assert.strictEqual(getWorkspaceIdentifier(URI.file('/hello/test')).id, id1);

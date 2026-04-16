@@ -33,7 +33,7 @@ export const fixedEditorOptions: IEditorOptions = {
 		useShadows: true,
 		verticalHasArrows: false,
 		horizontalHasArrows: false,
-		alwaysConsumeMouseWheel: false,
+		alwaysConsumeMouseWheel: false
 	},
 	renderLineHighlightOnlyWhenFocus: true,
 	overviewRulerLanes: 0,

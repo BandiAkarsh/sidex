@@ -10,7 +10,6 @@ import { ICellOutput, IOutputDto, IOutputItemDto, compressOutputItemStreams } fr
 import { isTextStreamMime } from '../../../../../base/common/mime.js';
 
 export class NotebookCellOutputTextModel extends Disposable implements ICellOutput {
-
 	private _onDidChangeData = this._register(new Emitter<void>());
 	onDidChangeData = this._onDidChangeData.event;
 
@@ -41,9 +40,7 @@ export class NotebookCellOutputTextModel extends Disposable implements ICellOutp
 		return this._versionId;
 	}
 
-	constructor(
-		private _rawOutput: IOutputDto
-	) {
+	constructor(private _rawOutput: IOutputDto) {
 		super();
 
 		this._alternativeOutputId = this._rawOutput.outputId;
@@ -133,5 +130,4 @@ export class NotebookCellOutputTextModel extends Disposable implements ICellOutp
 	bumpVersion() {
 		this._versionId = this._versionId + 1;
 	}
-
 }

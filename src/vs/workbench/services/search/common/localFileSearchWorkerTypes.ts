@@ -44,8 +44,20 @@ export interface ILocalFileSearchWorker {
 
 	$cancelQuery(queryId: number): void;
 
-	$listDirectory(handle: IWorkerFileSystemDirectoryHandle, queryProps: IFileQueryProps<UriComponents>, folderQuery: IFolderQuery, ignorePathCasing: boolean, queryId: number): Promise<IWorkerFileSearchComplete>;
-	$searchDirectory(handle: IWorkerFileSystemDirectoryHandle, queryProps: ITextQueryProps<UriComponents>, folderQuery: IFolderQuery, ignorePathCasing: boolean, queryId: number): Promise<IWorkerTextSearchComplete>;
+	$listDirectory(
+		handle: IWorkerFileSystemDirectoryHandle,
+		queryProps: IFileQueryProps<UriComponents>,
+		folderQuery: IFolderQuery,
+		ignorePathCasing: boolean,
+		queryId: number
+	): Promise<IWorkerFileSearchComplete>;
+	$searchDirectory(
+		handle: IWorkerFileSystemDirectoryHandle,
+		queryProps: ITextQueryProps<UriComponents>,
+		folderQuery: IFolderQuery,
+		ignorePathCasing: boolean,
+		queryId: number
+	): Promise<IWorkerTextSearchComplete>;
 }
 
 export abstract class LocalFileSearchWorkerHost {

@@ -16,7 +16,11 @@ import { IQuickInputService } from '../../../../../../platform/quickinput/common
 import { IWorkspaceContextService } from '../../../../../../platform/workspace/common/workspace.js';
 import { CommandDetectionCapability } from '../../../../../../platform/terminal/common/capabilities/commandDetectionCapability.js';
 import { TerminalBuiltinLinkType } from '../../browser/links.js';
-import { TerminalLocalFileLinkOpener, TerminalLocalFolderInWorkspaceLinkOpener, TerminalSearchLinkOpener } from '../../browser/terminalLinkOpeners.js';
+import {
+	TerminalLocalFileLinkOpener,
+	TerminalLocalFolderInWorkspaceLinkOpener,
+	TerminalSearchLinkOpener
+} from '../../browser/terminalLinkOpeners.js';
 import { TerminalCapability } from '../../../../../../platform/terminal/common/capabilities/capabilities.js';
 import { TerminalCapabilityStore } from '../../../../../../platform/terminal/common/capabilities/terminalCapabilityStore.js';
 import { IEditorService } from '../../../../../services/editor/common/editorService.js';
@@ -111,12 +115,16 @@ suite('Workbench - TerminalLinkOpeners', () => {
 					link: editor.resource?.toString()
 				};
 				// Only assert on selection if it's not the default value
-				if (editor.options?.selection && (editor.options.selection.startColumn !== 1 || editor.options.selection.startLineNumber !== 1)) {
+				if (
+					editor.options?.selection &&
+					(editor.options.selection.startColumn !== 1 || editor.options.selection.startLineNumber !== 1)
+				) {
 					activationResult.selection = editor.options.selection;
 				}
 			}
 		} as Partial<IEditorService>);
-		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
+		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js'))
+			.Terminal;
 		xterm = store.add(new TerminalCtor({ allowProposedApi: true, logger: TestXtermLogger }));
 	});
 
@@ -135,26 +143,35 @@ suite('Workbench - TerminalLinkOpeners', () => {
 		test('should open single exact match against cwd when searching if it exists when command detection cwd is available', async () => {
 			localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 			const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-			opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, '/initial/cwd', localFileOpener, localFolderOpener, () => OperatingSystem.Linux);
+			opener = instantiationService.createInstance(
+				TestTerminalSearchLinkOpener,
+				capabilities,
+				'/initial/cwd',
+				localFileOpener,
+				localFolderOpener,
+				() => OperatingSystem.Linux
+			);
 			// Set a fake detected command starting as line 0 to establish the cwd
-			commandDetection.setCommands([new TerminalCommand(xterm, {
-				command: '',
-				commandLineConfidence: 'low',
-				exitCode: 0,
-				commandStartLineContent: '',
-				markProperties: {},
-				isTrusted: true,
-				cwd: '/initial/cwd',
-				timestamp: 0,
-				duration: 0,
-				executedX: undefined,
-				startX: undefined,
-				// eslint-disable-next-line local/code-no-any-casts
-				marker: {
-					line: 0
-				} as Partial<IMarker> as any,
-				id: generateUuid()
-			})]);
+			commandDetection.setCommands([
+				new TerminalCommand(xterm, {
+					command: '',
+					commandLineConfidence: 'low',
+					exitCode: 0,
+					commandStartLineContent: '',
+					markProperties: {},
+					isTrusted: true,
+					cwd: '/initial/cwd',
+					timestamp: 0,
+					duration: 0,
+					executedX: undefined,
+					startX: undefined,
+					// eslint-disable-next-line local/code-no-any-casts
+					marker: {
+						line: 0
+					} as Partial<IMarker> as any,
+					id: generateUuid()
+				})
+			]);
 			fileService.setFiles([
 				URI.from({ scheme: Schemas.file, path: '/initial/cwd/foo/bar.txt' }),
 				URI.from({ scheme: Schemas.file, path: '/initial/cwd/foo2/bar.txt' })
@@ -170,10 +187,17 @@ suite('Workbench - TerminalLinkOpeners', () => {
 			});
 		});
 
-		test('should open single exact match against cwd for paths containing a separator when searching if it exists, even when command detection isn\'t available', async () => {
+		test("should open single exact match against cwd for paths containing a separator when searching if it exists, even when command detection isn't available", async () => {
 			localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 			const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-			opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, '/initial/cwd', localFileOpener, localFolderOpener, () => OperatingSystem.Linux);
+			opener = instantiationService.createInstance(
+				TestTerminalSearchLinkOpener,
+				capabilities,
+				'/initial/cwd',
+				localFileOpener,
+				localFolderOpener,
+				() => OperatingSystem.Linux
+			);
 			fileService.setFiles([
 				URI.from({ scheme: Schemas.file, path: '/initial/cwd/foo/bar.txt' }),
 				URI.from({ scheme: Schemas.file, path: '/initial/cwd/foo2/bar.txt' })
@@ -189,10 +213,17 @@ suite('Workbench - TerminalLinkOpeners', () => {
 			});
 		});
 
-		test('should open single exact match against any folder for paths not containing a separator when there is a single search result, even when command detection isn\'t available', async () => {
+		test("should open single exact match against any folder for paths not containing a separator when there is a single search result, even when command detection isn't available", async () => {
 			localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 			const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-			opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, '/initial/cwd', localFileOpener, localFolderOpener, () => OperatingSystem.Linux);
+			opener = instantiationService.createInstance(
+				TestTerminalSearchLinkOpener,
+				capabilities,
+				'/initial/cwd',
+				localFileOpener,
+				localFolderOpener,
+				() => OperatingSystem.Linux
+			);
 			capabilities.remove(TerminalCapability.CommandDetection);
 			opener.setFileQueryBuilder({ file: () => null! });
 			fileService.setFiles([
@@ -201,9 +232,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 			]);
 			searchService.setSearchResult({
 				messages: [],
-				results: [
-					{ resource: URI.from({ scheme: Schemas.file, path: '/initial/cwd/foo/bar.txt' }) }
-				]
+				results: [{ resource: URI.from({ scheme: Schemas.file, path: '/initial/cwd/foo/bar.txt' }) }]
 			});
 			await opener.open({
 				text: 'bar.txt',
@@ -216,10 +245,17 @@ suite('Workbench - TerminalLinkOpeners', () => {
 			});
 		});
 
-		test('should open single exact match against any folder for paths not containing a separator when there are multiple search results, even when command detection isn\'t available', async () => {
+		test("should open single exact match against any folder for paths not containing a separator when there are multiple search results, even when command detection isn't available", async () => {
 			localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 			const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-			opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, '/initial/cwd', localFileOpener, localFolderOpener, () => OperatingSystem.Linux);
+			opener = instantiationService.createInstance(
+				TestTerminalSearchLinkOpener,
+				capabilities,
+				'/initial/cwd',
+				localFileOpener,
+				localFolderOpener,
+				() => OperatingSystem.Linux
+			);
 			capabilities.remove(TerminalCapability.CommandDetection);
 			opener.setFileQueryBuilder({ file: () => null! });
 			fileService.setFiles([
@@ -246,10 +282,17 @@ suite('Workbench - TerminalLinkOpeners', () => {
 			});
 		});
 
-		test('should not open single exact match for paths not containing a when command detection isn\'t available', async () => {
+		test("should not open single exact match for paths not containing a when command detection isn't available", async () => {
 			localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 			const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-			opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, '/initial/cwd', localFileOpener, localFolderOpener, () => OperatingSystem.Linux);
+			opener = instantiationService.createInstance(
+				TestTerminalSearchLinkOpener,
+				capabilities,
+				'/initial/cwd',
+				localFileOpener,
+				localFolderOpener,
+				() => OperatingSystem.Linux
+			);
 			fileService.setFiles([
 				URI.from({ scheme: Schemas.file, path: '/initial/cwd/foo/bar.txt' }),
 				URI.from({ scheme: Schemas.file, path: '/initial/cwd/foo2/bar.txt' })
@@ -269,7 +312,14 @@ suite('Workbench - TerminalLinkOpeners', () => {
 			setup(() => {
 				localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 				const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-				opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, '', localFileOpener, localFolderOpener, () => OperatingSystem.Linux);
+				opener = instantiationService.createInstance(
+					TestTerminalSearchLinkOpener,
+					capabilities,
+					'',
+					localFileOpener,
+					localFolderOpener,
+					() => OperatingSystem.Linux
+				);
 			});
 
 			test('should apply the cwd to the link only when the file exists and cwdDetection is enabled', async () => {
@@ -281,24 +331,26 @@ suite('Workbench - TerminalLinkOpeners', () => {
 				]);
 
 				// Set a fake detected command starting as line 0 to establish the cwd
-				commandDetection.setCommands([new TerminalCommand(xterm, {
-					command: '',
-					commandLineConfidence: 'low',
-					isTrusted: true,
-					cwd,
-					timestamp: 0,
-					duration: 0,
-					executedX: undefined,
-					startX: undefined,
-					// eslint-disable-next-line local/code-no-any-casts
-					marker: {
-						line: 0
-					} as Partial<IMarker> as any,
-					exitCode: 0,
-					commandStartLineContent: '',
-					markProperties: {},
-					id: generateUuid()
-				})]);
+				commandDetection.setCommands([
+					new TerminalCommand(xterm, {
+						command: '',
+						commandLineConfidence: 'low',
+						isTrusted: true,
+						cwd,
+						timestamp: 0,
+						duration: 0,
+						executedX: undefined,
+						startX: undefined,
+						// eslint-disable-next-line local/code-no-any-casts
+						marker: {
+							line: 0
+						} as Partial<IMarker> as any,
+						exitCode: 0,
+						commandStartLineContent: '',
+						markProperties: {},
+						id: generateUuid()
+					})
+				]);
 				await opener.open({
 					text: 'file.txt',
 					bufferRange: { start: { x: 1, y: 1 }, end: { x: 8, y: 1 } },
@@ -333,10 +385,15 @@ suite('Workbench - TerminalLinkOpeners', () => {
 			test('should extract column and/or line numbers from links in a workspace containing spaces', async () => {
 				localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 				const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-				opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, '/space folder', localFileOpener, localFolderOpener, () => OperatingSystem.Linux);
-				fileService.setFiles([
-					URI.from({ scheme: Schemas.file, path: '/space folder/foo/bar.txt' })
-				]);
+				opener = instantiationService.createInstance(
+					TestTerminalSearchLinkOpener,
+					capabilities,
+					'/space folder',
+					localFileOpener,
+					localFolderOpener,
+					() => OperatingSystem.Linux
+				);
+				fileService.setFiles([URI.from({ scheme: Schemas.file, path: '/space folder/foo/bar.txt' })]);
 				await opener.open({
 					text: './foo/bar.txt:10:5',
 					bufferRange: { start: { x: 1, y: 1 }, end: { x: 8, y: 1 } },
@@ -350,7 +407,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 				await opener.open({
 					text: './foo/bar.txt:10',
@@ -365,17 +422,22 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 			});
 
 			test('should extract column and/or line numbers from links and remove trailing periods', async () => {
 				localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 				const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-				opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, '/folder', localFileOpener, localFolderOpener, () => OperatingSystem.Linux);
-				fileService.setFiles([
-					URI.from({ scheme: Schemas.file, path: '/folder/foo/bar.txt' })
-				]);
+				opener = instantiationService.createInstance(
+					TestTerminalSearchLinkOpener,
+					capabilities,
+					'/folder',
+					localFileOpener,
+					localFolderOpener,
+					() => OperatingSystem.Linux
+				);
+				fileService.setFiles([URI.from({ scheme: Schemas.file, path: '/folder/foo/bar.txt' })]);
 				await opener.open({
 					text: './foo/bar.txt.',
 					bufferRange: { start: { x: 1, y: 1 }, end: { x: 8, y: 1 } },
@@ -383,7 +445,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 				});
 				deepStrictEqual(activationResult, {
 					link: 'file:///folder/foo/bar.txt',
-					source: 'editor',
+					source: 'editor'
 				});
 				await opener.open({
 					text: './foo/bar.txt:10:5.',
@@ -398,7 +460,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 				await opener.open({
 					text: './foo/bar.txt:10.',
@@ -413,19 +475,24 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 			});
 
 			test('should extract column and/or line numbers from links and remove grepped lines', async () => {
 				localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 				const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-				opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, '/folder', localFileOpener, localFolderOpener, () => OperatingSystem.Linux);
-				fileService.setFiles([
-					URI.from({ scheme: Schemas.file, path: '/folder/foo/bar.txt' })
-				]);
+				opener = instantiationService.createInstance(
+					TestTerminalSearchLinkOpener,
+					capabilities,
+					'/folder',
+					localFileOpener,
+					localFolderOpener,
+					() => OperatingSystem.Linux
+				);
+				fileService.setFiles([URI.from({ scheme: Schemas.file, path: '/folder/foo/bar.txt' })]);
 				await opener.open({
-					text: './foo/bar.txt:10:5:import { ILoveVSCode } from \'./foo/bar.ts\';',
+					text: "./foo/bar.txt:10:5:import { ILoveVSCode } from './foo/bar.ts';",
 					bufferRange: { start: { x: 1, y: 1 }, end: { x: 8, y: 1 } },
 					type: TerminalBuiltinLinkType.Search
 				});
@@ -437,10 +504,10 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 				await opener.open({
-					text: './foo/bar.txt:10:import { ILoveVSCode } from \'./foo/bar.ts\';',
+					text: "./foo/bar.txt:10:import { ILoveVSCode } from './foo/bar.ts';",
 					bufferRange: { start: { x: 1, y: 1 }, end: { x: 8, y: 1 } },
 					type: TerminalBuiltinLinkType.Search
 				});
@@ -452,7 +519,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 			});
 
@@ -460,10 +527,15 @@ suite('Workbench - TerminalLinkOpeners', () => {
 			test('should extract column and/or line numbers from links and remove grepped lines incl singular spaces', async () => {
 				localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 				const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-				opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, '/folder', localFileOpener, localFolderOpener, () => OperatingSystem.Linux);
-				fileService.setFiles([
-					URI.from({ scheme: Schemas.file, path: '/folder/foo/bar.txt' })
-				]);
+				opener = instantiationService.createInstance(
+					TestTerminalSearchLinkOpener,
+					capabilities,
+					'/folder',
+					localFileOpener,
+					localFolderOpener,
+					() => OperatingSystem.Linux
+				);
+				fileService.setFiles([URI.from({ scheme: Schemas.file, path: '/folder/foo/bar.txt' })]);
 				await opener.open({
 					text: './foo/bar.txt:10:5: ',
 					bufferRange: { start: { x: 1, y: 1 }, end: { x: 8, y: 1 } },
@@ -477,7 +549,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 				await opener.open({
 					text: './foo/bar.txt:10: ',
@@ -492,17 +564,22 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 			});
 
 			test('should extract line numbers from links and remove ruby stack traces', async () => {
 				localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 				const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-				opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, '/folder', localFileOpener, localFolderOpener, () => OperatingSystem.Linux);
-				fileService.setFiles([
-					URI.from({ scheme: Schemas.file, path: '/folder/foo/bar.rb' })
-				]);
+				opener = instantiationService.createInstance(
+					TestTerminalSearchLinkOpener,
+					capabilities,
+					'/folder',
+					localFileOpener,
+					localFolderOpener,
+					() => OperatingSystem.Linux
+				);
+				fileService.setFiles([URI.from({ scheme: Schemas.file, path: '/folder/foo/bar.rb' })]);
 				await opener.open({
 					text: './foo/bar.rb:30:in `<main>`',
 					bufferRange: { start: { x: 1, y: 1 }, end: { x: 8, y: 1 } },
@@ -516,14 +593,21 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 30,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 			});
 
 			test('should not misinterpret ISO 8601 timestamps as line:column numbers', async () => {
 				localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 				const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-				opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, '/folder', localFileOpener, localFolderOpener, () => OperatingSystem.Linux);
+				opener = instantiationService.createInstance(
+					TestTerminalSearchLinkOpener,
+					capabilities,
+					'/folder',
+					localFileOpener,
+					localFolderOpener,
+					() => OperatingSystem.Linux
+				);
 				// Intentionally not set the file so it does not get picked up as localFile.
 				fileService.setFiles([]);
 				await opener.open({
@@ -546,9 +630,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 				});
 
 				// Test when file exists, and there are preceding arguments
-				fileService.setFiles([
-					URI.from({ scheme: Schemas.file, path: '/folder/test-2025-04-28T14:30:00+02:00.log' })
-				]);
+				fileService.setFiles([URI.from({ scheme: Schemas.file, path: '/folder/test-2025-04-28T14:30:00+02:00.log' })]);
 				await opener.open({
 					text: './test-2025-04-28T14:30:00+02:00.log',
 					bufferRange: { start: { x: 10, y: 1 }, end: { x: 45, y: 1 } },
@@ -559,48 +641,60 @@ suite('Workbench - TerminalLinkOpeners', () => {
 					source: 'editor'
 				});
 			});
-
-
 		});
 
 		suite('Windows', () => {
 			setup(() => {
 				localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 				const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-				opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, '', localFileOpener, localFolderOpener, () => OperatingSystem.Windows);
+				opener = instantiationService.createInstance(
+					TestTerminalSearchLinkOpener,
+					capabilities,
+					'',
+					localFileOpener,
+					localFolderOpener,
+					() => OperatingSystem.Windows
+				);
 			});
 
 			test('should apply the cwd to the link only when the file exists and cwdDetection is enabled', async () => {
 				localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 				const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-				opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, 'c:\\Users', localFileOpener, localFolderOpener, () => OperatingSystem.Windows);
+				opener = instantiationService.createInstance(
+					TestTerminalSearchLinkOpener,
+					capabilities,
+					'c:\\Users',
+					localFileOpener,
+					localFolderOpener,
+					() => OperatingSystem.Windows
+				);
 
 				const cwd = 'c:\\Users\\home\\folder';
 				const absoluteFile = 'c:\\Users\\home\\folder\\file.txt';
 
-				fileService.setFiles([
-					URI.file('/c:/Users/home/folder/file.txt')
-				]);
+				fileService.setFiles([URI.file('/c:/Users/home/folder/file.txt')]);
 
 				// Set a fake detected command starting as line 0 to establish the cwd
-				commandDetection.setCommands([new TerminalCommand(xterm, {
-					exitCode: 0,
-					commandStartLineContent: '',
-					markProperties: {},
-					command: '',
-					commandLineConfidence: 'low',
-					isTrusted: true,
-					cwd,
-					executedX: undefined,
-					startX: undefined,
-					timestamp: 0,
-					duration: 0,
-					// eslint-disable-next-line local/code-no-any-casts
-					marker: {
-						line: 0
-					} as Partial<IMarker> as any,
-					id: generateUuid()
-				})]);
+				commandDetection.setCommands([
+					new TerminalCommand(xterm, {
+						exitCode: 0,
+						commandStartLineContent: '',
+						markProperties: {},
+						command: '',
+						commandLineConfidence: 'low',
+						isTrusted: true,
+						cwd,
+						executedX: undefined,
+						startX: undefined,
+						timestamp: 0,
+						duration: 0,
+						// eslint-disable-next-line local/code-no-any-casts
+						marker: {
+							line: 0
+						} as Partial<IMarker> as any,
+						id: generateUuid()
+					})
+				]);
 				await opener.open({
 					text: 'file.txt',
 					bufferRange: { start: { x: 1, y: 1 }, end: { x: 8, y: 1 } },
@@ -635,10 +729,15 @@ suite('Workbench - TerminalLinkOpeners', () => {
 			test('should extract column and/or line numbers from links in a workspace containing spaces', async () => {
 				localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 				const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-				opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, 'c:/space folder', localFileOpener, localFolderOpener, () => OperatingSystem.Windows);
-				fileService.setFiles([
-					URI.from({ scheme: Schemas.file, path: 'c:/space folder/foo/bar.txt' })
-				]);
+				opener = instantiationService.createInstance(
+					TestTerminalSearchLinkOpener,
+					capabilities,
+					'c:/space folder',
+					localFileOpener,
+					localFolderOpener,
+					() => OperatingSystem.Windows
+				);
+				fileService.setFiles([URI.from({ scheme: Schemas.file, path: 'c:/space folder/foo/bar.txt' })]);
 				await opener.open({
 					text: './foo/bar.txt:10:5',
 					bufferRange: { start: { x: 1, y: 1 }, end: { x: 8, y: 1 } },
@@ -652,7 +751,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 				await opener.open({
 					text: './foo/bar.txt:10',
@@ -667,7 +766,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 				await opener.open({
 					text: '.\\foo\\bar.txt:10:5',
@@ -682,7 +781,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 				await opener.open({
 					text: '.\\foo\\bar.txt:10',
@@ -697,17 +796,22 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 			});
 
 			test('should extract column and/or line numbers from links and remove trailing periods', async () => {
 				localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 				const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-				opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, 'c:/folder', localFileOpener, localFolderOpener, () => OperatingSystem.Windows);
-				fileService.setFiles([
-					URI.from({ scheme: Schemas.file, path: 'c:/folder/foo/bar.txt' })
-				]);
+				opener = instantiationService.createInstance(
+					TestTerminalSearchLinkOpener,
+					capabilities,
+					'c:/folder',
+					localFileOpener,
+					localFolderOpener,
+					() => OperatingSystem.Windows
+				);
+				fileService.setFiles([URI.from({ scheme: Schemas.file, path: 'c:/folder/foo/bar.txt' })]);
 				await opener.open({
 					text: './foo/bar.txt.',
 					bufferRange: { start: { x: 1, y: 1 }, end: { x: 8, y: 1 } },
@@ -715,7 +819,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 				});
 				deepStrictEqual(activationResult, {
 					link: 'file:///c%3A/folder/foo/bar.txt',
-					source: 'editor',
+					source: 'editor'
 				});
 				await opener.open({
 					text: './foo/bar.txt:10:5.',
@@ -730,7 +834,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 				await opener.open({
 					text: './foo/bar.txt:10.',
@@ -745,7 +849,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 				await opener.open({
 					text: '.\\foo\\bar.txt.',
@@ -754,7 +858,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 				});
 				deepStrictEqual(activationResult, {
 					link: 'file:///c%3A/folder/foo/bar.txt',
-					source: 'editor',
+					source: 'editor'
 				});
 				await opener.open({
 					text: '.\\foo\\bar.txt:2:5.',
@@ -769,7 +873,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 2,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 				await opener.open({
 					text: '.\\foo\\bar.txt:2.',
@@ -784,19 +888,24 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 2,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 			});
 
 			test('should extract column and/or line numbers from links and remove grepped lines', async () => {
 				localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 				const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-				opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, 'c:/folder', localFileOpener, localFolderOpener, () => OperatingSystem.Windows);
-				fileService.setFiles([
-					URI.from({ scheme: Schemas.file, path: 'c:/folder/foo/bar.txt' })
-				]);
+				opener = instantiationService.createInstance(
+					TestTerminalSearchLinkOpener,
+					capabilities,
+					'c:/folder',
+					localFileOpener,
+					localFolderOpener,
+					() => OperatingSystem.Windows
+				);
+				fileService.setFiles([URI.from({ scheme: Schemas.file, path: 'c:/folder/foo/bar.txt' })]);
 				await opener.open({
-					text: './foo/bar.txt:10:5:import { ILoveVSCode } from \'./foo/bar.ts\';',
+					text: "./foo/bar.txt:10:5:import { ILoveVSCode } from './foo/bar.ts';",
 					bufferRange: { start: { x: 1, y: 1 }, end: { x: 8, y: 1 } },
 					type: TerminalBuiltinLinkType.Search
 				});
@@ -808,10 +917,10 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 				await opener.open({
-					text: './foo/bar.txt:10:import { ILoveVSCode } from \'./foo/bar.ts\';',
+					text: "./foo/bar.txt:10:import { ILoveVSCode } from './foo/bar.ts';",
 					bufferRange: { start: { x: 1, y: 1 }, end: { x: 8, y: 1 } },
 					type: TerminalBuiltinLinkType.Search
 				});
@@ -823,10 +932,10 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 				await opener.open({
-					text: '.\\foo\\bar.txt:10:5:import { ILoveVSCode } from \'./foo/bar.ts\';',
+					text: ".\\foo\\bar.txt:10:5:import { ILoveVSCode } from './foo/bar.ts';",
 					bufferRange: { start: { x: 1, y: 1 }, end: { x: 8, y: 1 } },
 					type: TerminalBuiltinLinkType.Search
 				});
@@ -838,10 +947,10 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 				await opener.open({
-					text: '.\\foo\\bar.txt:10:import { ILoveVSCode } from \'./foo/bar.ts\';',
+					text: ".\\foo\\bar.txt:10:import { ILoveVSCode } from './foo/bar.ts';",
 					bufferRange: { start: { x: 1, y: 1 }, end: { x: 8, y: 1 } },
 					type: TerminalBuiltinLinkType.Search
 				});
@@ -853,7 +962,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 			});
 
@@ -861,10 +970,15 @@ suite('Workbench - TerminalLinkOpeners', () => {
 			test('should extract column and/or line numbers from links and remove grepped lines incl singular spaces', async () => {
 				localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 				const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-				opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, 'c:/folder', localFileOpener, localFolderOpener, () => OperatingSystem.Windows);
-				fileService.setFiles([
-					URI.from({ scheme: Schemas.file, path: 'c:/folder/foo/bar.txt' })
-				]);
+				opener = instantiationService.createInstance(
+					TestTerminalSearchLinkOpener,
+					capabilities,
+					'c:/folder',
+					localFileOpener,
+					localFolderOpener,
+					() => OperatingSystem.Windows
+				);
+				fileService.setFiles([URI.from({ scheme: Schemas.file, path: 'c:/folder/foo/bar.txt' })]);
 				await opener.open({
 					text: './foo/bar.txt:10:5: ',
 					bufferRange: { start: { x: 1, y: 1 }, end: { x: 8, y: 1 } },
@@ -878,7 +992,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 				await opener.open({
 					text: './foo/bar.txt:10: ',
@@ -893,7 +1007,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 				await opener.open({
 					text: '.\\foo\\bar.txt:10:5: ',
@@ -908,7 +1022,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 				await opener.open({
 					text: '.\\foo\\bar.txt:10: ',
@@ -923,17 +1037,22 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 10,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 			});
 
 			test('should extract line numbers from links and remove ruby stack traces', async () => {
 				localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 				const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-				opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, 'c:/folder', localFileOpener, localFolderOpener, () => OperatingSystem.Windows);
-				fileService.setFiles([
-					URI.from({ scheme: Schemas.file, path: 'c:/folder/foo/bar.rb' })
-				]);
+				opener = instantiationService.createInstance(
+					TestTerminalSearchLinkOpener,
+					capabilities,
+					'c:/folder',
+					localFileOpener,
+					localFolderOpener,
+					() => OperatingSystem.Windows
+				);
+				fileService.setFiles([URI.from({ scheme: Schemas.file, path: 'c:/folder/foo/bar.rb' })]);
 				await opener.open({
 					text: './foo/bar.rb:30:in `<main>`',
 					bufferRange: { start: { x: 1, y: 1 }, end: { x: 8, y: 1 } },
@@ -947,7 +1066,7 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 30,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 				await opener.open({
 					text: '.\\foo\\bar.rb:30:in `<main>`',
@@ -962,14 +1081,21 @@ suite('Workbench - TerminalLinkOpeners', () => {
 						startLineNumber: 30,
 						endColumn: undefined,
 						endLineNumber: undefined
-					},
+					}
 				});
 			});
 
 			test('should not misinterpret ISO 8601 timestamps as line:column numbers', async () => {
 				localFileOpener = instantiationService.createInstance(TerminalLocalFileLinkOpener);
 				const localFolderOpener = instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
-				opener = instantiationService.createInstance(TestTerminalSearchLinkOpener, capabilities, 'c:/folder', localFileOpener, localFolderOpener, () => OperatingSystem.Windows);
+				opener = instantiationService.createInstance(
+					TestTerminalSearchLinkOpener,
+					capabilities,
+					'c:/folder',
+					localFileOpener,
+					localFolderOpener,
+					() => OperatingSystem.Windows
+				);
 				// Intentionally not set the file so it does not get picked up as localFile.
 				fileService.setFiles([]);
 				await opener.open({

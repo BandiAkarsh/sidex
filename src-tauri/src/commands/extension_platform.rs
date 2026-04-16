@@ -626,10 +626,7 @@ pub fn scan_extensions(app: &AppHandle, paths: &[PathBuf]) -> Vec<ExtensionManif
         disable_ids.insert(id.to_string());
     }
 
-    let disable_prefixes = vec![
-        "anysphere.cursor",
-        "cursor.",
-    ];
+    let disable_prefixes = vec!["anysphere.cursor", "cursor."];
 
     let mut by_id: HashMap<String, ExtensionManifest> = HashMap::new();
     for search_path in paths {
@@ -751,9 +748,7 @@ pub fn build_init_data(
             },
             workspace_storage_home: UriComponents {
                 scheme: "file".to_string(),
-                path: path_to_uri_path(&data_dir
-                    .join("workspaceStorage")
-                    .to_string_lossy()),
+                path: path_to_uri_path(&data_dir.join("workspaceStorage").to_string_lossy()),
                 authority: String::new(),
             },
             extension_development_location_uri: None,

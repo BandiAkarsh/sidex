@@ -12,7 +12,6 @@ import { workbenchInstantiationService } from '../../../../test/browser/workbenc
 import { TestInstantiationService } from '../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
 
 suite('Logs Parsing', () => {
-
 	const disposables = ensureNoDisposablesAreLeakedInTestSuite();
 
 	let instantiationService: TestInstantiationService;
@@ -82,11 +81,7 @@ suite('Logs Parsing', () => {
 	});
 
 	test('should parse timestamp correctly', () => {
-		const timestamps = [
-			'2023-01-01 00:00:00.000',
-			'2023-12-31 23:59:59.999',
-			'2023-06-15 12:30:45.500'
-		];
+		const timestamps = ['2023-01-01 00:00:00.000', '2023-12-31 23:59:59.999', '2023-06-15 12:30:45.500'];
 
 		for (const timestamp of timestamps) {
 			const model = createModel(`${timestamp} [info] Test message`);
@@ -96,11 +91,9 @@ suite('Logs Parsing', () => {
 	});
 
 	test('should handle last line of file', () => {
-		const model = createModel([
-			'2023-10-15 14:30:45.123 [info] First message',
-			'2023-10-15 14:30:45.124 [info] Last message',
-			''
-		].join('\n'));
+		const model = createModel(
+			['2023-10-15 14:30:45.123 [info] First message', '2023-10-15 14:30:45.124 [info] Last message', ''].join('\n')
+		);
 
 		let actual = parseLogEntryAt(model, 1);
 		assert.strictEqual(actual?.timestamp, new Date('2023-10-15 14:30:45.123').getTime());
@@ -135,10 +128,11 @@ suite('Logs Parsing', () => {
 		assert.strictEqual(entry?.logLevel, LogLevel.Info);
 		assert.strictEqual(entry?.category, undefined);
 		assert.strictEqual(model.getValueInRange(entry?.range), text);
-
 	});
 
 	function createModel(content: string): TextModel {
-		return disposables.add(instantiationService.createInstance(TextModel, content, 'log', TextModel.DEFAULT_CREATION_OPTIONS, null));
+		return disposables.add(
+			instantiationService.createInstance(TextModel, content, 'log', TextModel.DEFAULT_CREATION_OPTIONS, null)
+		);
 	}
 });

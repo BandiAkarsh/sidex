@@ -6,7 +6,10 @@
 import { Disposable, IDisposable } from '../../../../../../base/common/lifecycle.js';
 import { URI } from '../../../../../../base/common/uri.js';
 import * as nls from '../../../../../../nls.js';
-import { IConfigurationChangeEvent, IConfigurationService } from '../../../../../../platform/configuration/common/configuration.js';
+import {
+	IConfigurationChangeEvent,
+	IConfigurationService
+} from '../../../../../../platform/configuration/common/configuration.js';
 import { IContextKey, IContextKeyService } from '../../../../../../platform/contextkey/common/contextkey.js';
 import { SyncDescriptor } from '../../../../../../platform/instantiation/common/descriptors.js';
 import { Registry } from '../../../../../../platform/registry/common/platform.js';
@@ -44,9 +47,9 @@ export class NotebookVariables extends Disposable implements IWorkbenchContribut
 		this.viewEnabled = NOTEBOOK_VARIABLE_VIEW_ENABLED.bindTo(contextKeyService);
 
 		this.listeners.push(this.editorService.onDidActiveEditorChange(() => this.handleInitEvent()));
-		this.listeners.push(this.notebookExecutionStateService.onDidChangeExecution((e) => this.handleInitEvent(e.notebook)));
+		this.listeners.push(this.notebookExecutionStateService.onDidChangeExecution(e => this.handleInitEvent(e.notebook)));
 
-		this.configListener = configurationService.onDidChangeConfiguration((e) => this.handleConfigChange(e));
+		this.configListener = configurationService.onDidChangeConfiguration(e => this.handleConfigChange(e));
 	}
 
 	private handleConfigChange(e: IConfigurationChangeEvent) {
@@ -71,9 +74,9 @@ export class NotebookVariables extends Disposable implements IWorkbenchContribut
 	}
 
 	private hasVariableProvider(notebookUri?: URI) {
-		const notebook = notebookUri ?
-			this.notebookDocumentService.getNotebookTextModel(notebookUri) :
-			getNotebookEditorFromEditorPane(this.editorService.activeEditorPane)?.getViewModel()?.notebookDocument;
+		const notebook = notebookUri
+			? this.notebookDocumentService.getNotebookTextModel(notebookUri)
+			: getNotebookEditorFromEditorPane(this.editorService.activeEditorPane)?.getViewModel()?.notebookDocument;
 		return notebook && this.notebookKernelService.getMatchingKernel(notebook).selected?.hasVariableProvider;
 	}
 
@@ -83,9 +86,16 @@ export class NotebookVariables extends Disposable implements IWorkbenchContribut
 		if (debugViewContainer) {
 			const viewsRegistry = Registry.as<IViewsRegistry>(Extensions.ViewsRegistry);
 			const viewDescriptor = {
-				id: 'workbench.notebook.variables', name: nls.localize2('notebookVariables', "Notebook Variables"),
-				containerIcon: variablesViewIcon, ctorDescriptor: new SyncDescriptor(NotebookVariablesView),
-				order: 50, weight: 5, canToggleVisibility: true, canMoveView: true, collapsed: false, when: NOTEBOOK_VARIABLE_VIEW_ENABLED
+				id: 'workbench.notebook.variables',
+				name: nls.localize2('notebookVariables', 'Notebook Variables'),
+				containerIcon: variablesViewIcon,
+				ctorDescriptor: new SyncDescriptor(NotebookVariablesView),
+				order: 50,
+				weight: 5,
+				canToggleVisibility: true,
+				canMoveView: true,
+				collapsed: false,
+				when: NOTEBOOK_VARIABLE_VIEW_ENABLED
 			};
 
 			viewsRegistry.registerViews([viewDescriptor], debugViewContainer);
@@ -100,5 +110,4 @@ export class NotebookVariables extends Disposable implements IWorkbenchContribut
 		this.listeners.forEach(listener => listener.dispose());
 		this.configListener.dispose();
 	}
-
 }

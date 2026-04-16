@@ -5,7 +5,13 @@
 
 import { Emitter } from '../../../../../base/common/event.js';
 import { Disposable, IDisposable } from '../../../../../base/common/lifecycle.js';
-import { AuthenticationSession, AuthenticationSessionAccount, IAuthenticationProvider, IAuthenticationService, IAuthenticationExtensionsService } from '../../common/authentication.js';
+import {
+	AuthenticationSession,
+	AuthenticationSessionAccount,
+	IAuthenticationProvider,
+	IAuthenticationService,
+	IAuthenticationExtensionsService
+} from '../../common/authentication.js';
 import { IAuthenticationUsageService } from '../../browser/authenticationUsageService.js';
 import { IAuthenticationAccessService } from '../../browser/authenticationAccessService.js';
 
@@ -110,7 +116,13 @@ export class TestUsageService extends BaseTestService implements IAuthentication
 		return this.data.get(this.getKey(providerId, accountName)) || [];
 	}
 
-	addAccountUsage(providerId: string, accountName: string, scopes: readonly string[], extensionId: string, extensionName: string): void {
+	addAccountUsage(
+		providerId: string,
+		accountName: string,
+		scopes: readonly string[],
+		extensionId: string,
+		extensionName: string
+	): void {
 		this.trackCall('addAccountUsage', providerId, accountName, scopes, extensionId, extensionName);
 		const key = this.getKey(providerId, accountName);
 		const usages = this.data.get(key) || [];
@@ -124,8 +136,10 @@ export class TestUsageService extends BaseTestService implements IAuthentication
 	}
 
 	// Stub implementations for missing methods
-	async initializeExtensionUsageCache(): Promise<void> { }
-	async extensionUsesAuth(extensionId: string): Promise<boolean> { return false; }
+	async initializeExtensionUsageCache(): Promise<void> {}
+	async extensionUsesAuth(extensionId: string): Promise<boolean> {
+		return false;
+	}
 }
 
 export class TestAccessService extends BaseTestService implements IAuthenticationAccessService {
@@ -192,13 +206,19 @@ export class TestExtensionsService extends TestPreferencesService implements IAu
 	declare readonly _serviceBrand: undefined;
 
 	// Stub implementations for methods we don't test
-	updateSessionPreference(): void { }
-	getSessionPreference(): string | undefined { return undefined; }
-	removeSessionPreference(): void { }
-	selectSession(): Promise<any> { return Promise.resolve(createSession()); }
-	requestSessionAccess(): void { }
-	requestNewSession(): Promise<void> { return Promise.resolve(); }
-	updateNewSessionRequests(): void { }
+	updateSessionPreference(): void {}
+	getSessionPreference(): string | undefined {
+		return undefined;
+	}
+	removeSessionPreference(): void {}
+	selectSession(): Promise<any> {
+		return Promise.resolve(createSession());
+	}
+	requestSessionAccess(): void {}
+	requestNewSession(): Promise<void> {
+		return Promise.resolve();
+	}
+	updateNewSessionRequests(): void {}
 }
 
 /**
@@ -245,20 +265,40 @@ export class TestAuthenticationService extends BaseTestService implements IAuthe
 	}
 
 	// All other methods are stubs since we don't test them
-	get declaredProviders(): any[] { return []; }
-	isDynamicAuthenticationProvider(): boolean { return false; }
-	async getSessions(): Promise<readonly AuthenticationSession[]> { return []; }
-	async createSession(): Promise<AuthenticationSession> { return createSession(); }
-	async removeSession(): Promise<void> { }
-	manageTrustedExtensionsForAccount(): void { }
-	async removeAccountSessions(): Promise<void> { }
-	registerDeclaredAuthenticationProvider(): void { }
-	unregisterDeclaredAuthenticationProvider(): void { }
-	unregisterAuthenticationProvider(): void { }
-	registerAuthenticationProviderHostDelegate(): IDisposable { return { dispose: () => { } }; }
-	createDynamicAuthenticationProvider(): Promise<any> { return Promise.resolve(undefined); }
-	async requestNewSession(): Promise<AuthenticationSession> { return createSession(); }
-	async getSession(): Promise<AuthenticationSession | undefined> { return createSession(); }
-	getOrActivateProviderIdForServer(): Promise<string | undefined> { return Promise.resolve(undefined); }
-	supportsHeimdallConnection(): boolean { return false; }
+	get declaredProviders(): any[] {
+		return [];
+	}
+	isDynamicAuthenticationProvider(): boolean {
+		return false;
+	}
+	async getSessions(): Promise<readonly AuthenticationSession[]> {
+		return [];
+	}
+	async createSession(): Promise<AuthenticationSession> {
+		return createSession();
+	}
+	async removeSession(): Promise<void> {}
+	manageTrustedExtensionsForAccount(): void {}
+	async removeAccountSessions(): Promise<void> {}
+	registerDeclaredAuthenticationProvider(): void {}
+	unregisterDeclaredAuthenticationProvider(): void {}
+	unregisterAuthenticationProvider(): void {}
+	registerAuthenticationProviderHostDelegate(): IDisposable {
+		return { dispose: () => {} };
+	}
+	createDynamicAuthenticationProvider(): Promise<any> {
+		return Promise.resolve(undefined);
+	}
+	async requestNewSession(): Promise<AuthenticationSession> {
+		return createSession();
+	}
+	async getSession(): Promise<AuthenticationSession | undefined> {
+		return createSession();
+	}
+	getOrActivateProviderIdForServer(): Promise<string | undefined> {
+		return Promise.resolve(undefined);
+	}
+	supportsHeimdallConnection(): boolean {
+		return false;
+	}
 }

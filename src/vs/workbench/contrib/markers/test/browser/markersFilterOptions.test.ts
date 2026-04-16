@@ -14,7 +14,6 @@ import { NullLogService } from '../../../../../platform/log/common/log.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('MarkersFilterOptions', () => {
-
 	let instantiationService: TestInstantiationService;
 	let uriIdentityService: IUriIdentityService;
 
@@ -76,7 +75,14 @@ suite('MarkersFilterOptions', () => {
 	});
 
 	test('complex filter with multiple source filters and text', () => {
-		const filterOptions = new FilterOptions('text1 @source:eslint @source:ts text2', [], true, true, true, uriIdentityService);
+		const filterOptions = new FilterOptions(
+			'text1 @source:eslint @source:ts text2',
+			[],
+			true,
+			true,
+			true,
+			uriIdentityService
+		);
 		assert.deepStrictEqual(filterOptions.includeSourceFilters, ['eslint', 'ts']);
 		assert.deepStrictEqual(filterOptions.excludeSourceFilters, []);
 		assert.strictEqual(filterOptions.textFilter.text, 'text1 text2');
@@ -157,12 +163,26 @@ suite('MarkersFilterOptions', () => {
 	});
 
 	test('mixed quoted and unquoted sources (OR logic)', () => {
-		const filterOptions = new FilterOptions('@source:"hello world" @source:eslint @source:ts', [], true, true, true, uriIdentityService);
+		const filterOptions = new FilterOptions(
+			'@source:"hello world" @source:eslint @source:ts',
+			[],
+			true,
+			true,
+			true,
+			uriIdentityService
+		);
 		assert.deepStrictEqual(filterOptions.includeSourceFilters, ['hello world', 'eslint', 'ts']);
 	});
 
 	test('multiple quoted sources (OR logic)', () => {
-		const filterOptions = new FilterOptions('@source:"hello world" @source:"foo bar"', [], true, true, true, uriIdentityService);
+		const filterOptions = new FilterOptions(
+			'@source:"hello world" @source:"foo bar"',
+			[],
+			true,
+			true,
+			true,
+			uriIdentityService
+		);
 		assert.deepStrictEqual(filterOptions.includeSourceFilters, ['hello world', 'foo bar']);
 	});
 
@@ -178,7 +198,14 @@ suite('MarkersFilterOptions', () => {
 	});
 
 	test('complex filter with quoted and unquoted mixed', () => {
-		const filterOptions = new FilterOptions('@source:"TypeScript Compiler" @source:eslint !@source:"My Extension" text', [], true, true, true, uriIdentityService);
+		const filterOptions = new FilterOptions(
+			'@source:"TypeScript Compiler" @source:eslint !@source:"My Extension" text',
+			[],
+			true,
+			true,
+			true,
+			uriIdentityService
+		);
 		assert.deepStrictEqual(filterOptions.includeSourceFilters, ['typescript compiler', 'eslint']);
 		assert.deepStrictEqual(filterOptions.excludeSourceFilters, ['my extension']);
 		assert.strictEqual(filterOptions.textFilter.text, 'text');
@@ -224,7 +251,14 @@ suite('MarkersFilterOptions', () => {
 	});
 
 	test('OR logic with negation', () => {
-		const filterOptions = new FilterOptions('@source:eslint @source:ts !@source:error', [], true, true, true, uriIdentityService);
+		const filterOptions = new FilterOptions(
+			'@source:eslint @source:ts !@source:error',
+			[],
+			true,
+			true,
+			true,
+			uriIdentityService
+		);
 		assert.strictEqual(filterOptions.matchesSourceFilters('eslint'), true);
 		assert.strictEqual(filterOptions.matchesSourceFilters('ts'), true);
 		assert.strictEqual(filterOptions.matchesSourceFilters('error'), false);

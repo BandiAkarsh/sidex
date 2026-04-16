@@ -13,38 +13,55 @@ import { NotebookViewModel } from '../../browser/viewModel/notebookViewModelImpl
 import { ICellRange } from '../../common/notebookRange.js';
 
 suite('NotebookCellLayoutManager', () => {
-
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 
 	const mockCellViewModel = () => {
 		return { handle: 'cell1' } as unknown as ICellViewModel;
 	};
 
-	class MockList implements Pick<INotebookCellList, 'getViewIndex' | 'elementHeight' | 'inRenderingTransaction' | 'updateElementHeight2'> {
+	class MockList implements Pick<
+		INotebookCellList,
+		'getViewIndex' | 'elementHeight' | 'inRenderingTransaction' | 'updateElementHeight2'
+	> {
 		private _height = new Map();
-		getViewIndex(cell: ICellViewModel) { return this.cells.indexOf(cell) < 0 ? undefined : this.cells.indexOf(cell); }
-		elementHeight(cell: ICellViewModel) { return this._height.get(cell) ?? 100; }
+		getViewIndex(cell: ICellViewModel) {
+			return this.cells.indexOf(cell) < 0 ? undefined : this.cells.indexOf(cell);
+		}
+		elementHeight(cell: ICellViewModel) {
+			return this._height.get(cell) ?? 100;
+		}
 		inRenderingTransaction = false;
-		updateElementHeight2(cell: ICellViewModel, height: number) { this._height.set(cell, height); }
+		updateElementHeight2(cell: ICellViewModel, height: number) {
+			this._height.set(cell, height);
+		}
 		getViewIndexCalled = false;
 		cells: ICellViewModel[] = [];
 	}
 	class MockLoggingService implements INotebookLoggingService {
 		readonly _serviceBrand: undefined;
-		debug() { }
-		info() { }
-		warn() { }
-		error() { }
-		trace() { }
+		debug() {}
+		info() {}
+		warn() {}
+		error() {}
+		trace() {}
 	}
-	class MockNotebookWidget implements Pick<NotebookEditorWidget, 'viewModel' | 'hasEditorFocus' | 'getAbsoluteTopOfElement' | 'getLength' | 'visibleRanges' | 'getDomNode'> {
+	class MockNotebookWidget implements Pick<
+		NotebookEditorWidget,
+		'viewModel' | 'hasEditorFocus' | 'getAbsoluteTopOfElement' | 'getLength' | 'visibleRanges' | 'getDomNode'
+	> {
 		viewModel: NotebookViewModel | undefined = {
 			hasCell: (cell: ICellViewModel) => true,
 			getCellIndex: () => 0
 		} as unknown as NotebookViewModel;
-		hasEditorFocus() { return true; }
-		getAbsoluteTopOfElement() { return 0; }
-		getLength() { return 1; }
+		hasEditorFocus() {
+			return true;
+		}
+		getAbsoluteTopOfElement() {
+			return 0;
+		}
+		getLength() {
+			return 1;
+		}
 		visibleRanges: ICellRange[] = [{ start: 0, end: 0 }];
 		getDomNode(): HTMLElement {
 			return {
@@ -62,7 +79,13 @@ suite('NotebookCellLayoutManager', () => {
 		list.cells.push(cell);
 		list.cells.push(cell2);
 		const widget = new MockNotebookWidget();
-		const mgr = store.add(new NotebookCellLayoutManager(widget as unknown as NotebookEditorWidget, list as unknown as INotebookCellList, new MockLoggingService()));
+		const mgr = store.add(
+			new NotebookCellLayoutManager(
+				widget as unknown as NotebookEditorWidget,
+				list as unknown as INotebookCellList,
+				new MockLoggingService()
+			)
+		);
 		mgr.layoutNotebookCell(cell, 200);
 		mgr.layoutNotebookCell(cell2, 200);
 		assert.strictEqual(list.elementHeight(cell), 200);
@@ -77,7 +100,13 @@ suite('NotebookCellLayoutManager', () => {
 		list.cells.push(cell);
 		list.cells.push(cell2);
 		const widget = new MockNotebookWidget();
-		const mgr = store.add(new NotebookCellLayoutManager(widget as unknown as NotebookEditorWidget, list as unknown as INotebookCellList, new MockLoggingService()));
+		const mgr = store.add(
+			new NotebookCellLayoutManager(
+				widget as unknown as NotebookEditorWidget,
+				list as unknown as INotebookCellList,
+				new MockLoggingService()
+			)
+		);
 
 		const promise = mgr.layoutNotebookCell(cell, 200);
 		mgr.layoutNotebookCell(cell2, 200);
@@ -95,7 +124,13 @@ suite('NotebookCellLayoutManager', () => {
 		const cell = mockCellViewModel();
 		const list = new MockList();
 		const widget = new MockNotebookWidget();
-		const mgr = store.add(new NotebookCellLayoutManager(widget as unknown as NotebookEditorWidget, list as unknown as INotebookCellList, new MockLoggingService()));
+		const mgr = store.add(
+			new NotebookCellLayoutManager(
+				widget as unknown as NotebookEditorWidget,
+				list as unknown as INotebookCellList,
+				new MockLoggingService()
+			)
+		);
 		await mgr.layoutNotebookCell(cell, 200);
 		assert.strictEqual(list.elementHeight(cell), 100);
 	});
@@ -105,7 +140,13 @@ suite('NotebookCellLayoutManager', () => {
 		const list = new MockList();
 		list.cells.push(cell);
 		const widget = new MockNotebookWidget();
-		const mgr = store.add(new NotebookCellLayoutManager(widget as unknown as NotebookEditorWidget, list as unknown as INotebookCellList, new MockLoggingService()));
+		const mgr = store.add(
+			new NotebookCellLayoutManager(
+				widget as unknown as NotebookEditorWidget,
+				list as unknown as INotebookCellList,
+				new MockLoggingService()
+			)
+		);
 		await mgr.layoutNotebookCell(cell, 100);
 		assert.strictEqual(list.elementHeight(cell), 100);
 	});

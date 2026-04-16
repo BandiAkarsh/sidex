@@ -15,7 +15,13 @@ export interface ITextCellEditingDelegate {
 	insertCell?(index: number, cell: NotebookCellTextModel, endSelections?: ISelectionState): void;
 	deleteCell?(index: number, endSelections?: ISelectionState): void;
 	replaceCell?(index: number, count: number, cells: NotebookCellTextModel[], endSelections?: ISelectionState): void;
-	moveCell?(fromIndex: number, length: number, toIndex: number, beforeSelections: ISelectionState | undefined, endSelections?: ISelectionState): void;
+	moveCell?(
+		fromIndex: number,
+		length: number,
+		toIndex: number,
+		beforeSelections: ISelectionState | undefined,
+		endSelections?: ISelectionState
+	): void;
 	updateCellMetadata?(index: number, newMetadata: NotebookCellMetadata): void;
 }
 
@@ -34,15 +40,20 @@ export class MoveCellEdit implements IResourceUndoRedoElement {
 		private editingDelegate: ITextCellEditingDelegate,
 		private beforedSelections: ISelectionState | undefined,
 		private endSelections: ISelectionState | undefined
-	) {
-	}
+	) {}
 
 	undo(): void {
 		if (!this.editingDelegate.moveCell) {
 			throw new Error('Notebook Move Cell not implemented for Undo/Redo');
 		}
 
-		this.editingDelegate.moveCell(this.toIndex, this.length, this.fromIndex, this.endSelections, this.beforedSelections);
+		this.editingDelegate.moveCell(
+			this.toIndex,
+			this.length,
+			this.fromIndex,
+			this.endSelections,
+			this.beforedSelections
+		);
 	}
 
 	redo(): void {
@@ -50,7 +61,13 @@ export class MoveCellEdit implements IResourceUndoRedoElement {
 			throw new Error('Notebook Move Cell not implemented for Undo/Redo');
 		}
 
-		this.editingDelegate.moveCell(this.fromIndex, this.length, this.toIndex, this.beforedSelections, this.endSelections);
+		this.editingDelegate.moveCell(
+			this.fromIndex,
+			this.length,
+			this.toIndex,
+			this.beforedSelections,
+			this.endSelections
+		);
 	}
 }
 
@@ -74,8 +91,7 @@ export class SpliceCellsEdit implements IResourceUndoRedoElement {
 		private editingDelegate: ITextCellEditingDelegate,
 		private beforeHandles: ISelectionState | undefined,
 		private endHandles: ISelectionState | undefined
-	) {
-	}
+	) {}
 
 	undo(): void {
 		if (!this.editingDelegate.replaceCell) {
@@ -107,10 +123,8 @@ export class CellMetadataEdit implements IResourceUndoRedoElement {
 		readonly index: number,
 		readonly oldMetadata: NotebookCellMetadata,
 		readonly newMetadata: NotebookCellMetadata,
-		private editingDelegate: ITextCellEditingDelegate,
-	) {
-
-	}
+		private editingDelegate: ITextCellEditingDelegate
+	) {}
 
 	undo(): void {
 		if (!this.editingDelegate.updateCellMetadata) {

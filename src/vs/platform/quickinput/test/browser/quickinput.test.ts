@@ -38,19 +38,23 @@ import { TestAccessibilityService } from '../../../accessibility/test/common/tes
 // Sets up an `onShow` listener to allow us to wait until the quick pick is shown (useful when triggering an `accept()` right after launching a quick pick)
 // kick this off before you launch the picker and then await the promise returned after you launch the picker.
 async function setupWaitTilShownListener(controller: QuickInputController): Promise<void> {
-	const result = await raceTimeout(new Promise<boolean>(resolve => {
-		const event = controller.onShow(_ => {
-			event.dispose();
-			resolve(true);
-		});
-	}), 2000);
+	const result = await raceTimeout(
+		new Promise<boolean>(resolve => {
+			const event = controller.onShow(_ => {
+				event.dispose();
+				resolve(true);
+			});
+		}),
+		2000
+	);
 
 	if (!result) {
 		throw new Error('Cancelled');
 	}
 }
 
-suite('QuickInput', () => { // https://github.com/microsoft/vscode/issues/147543
+suite('QuickInput', () => {
+	// https://github.com/microsoft/vscode/issues/147543
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 	let controller: QuickInputController;
 
@@ -66,24 +70,37 @@ suite('QuickInput', () => { // https://github.com/microsoft/vscode/issues/147543
 		instantiationService.stub(IConfigurationService, new TestConfigurationService());
 		instantiationService.stub(IAccessibilityService, new TestAccessibilityService());
 		instantiationService.stub(IListService, store.add(new ListService()));
-		instantiationService.stub(ILayoutService, { _serviceBrand: undefined, activeContainer: fixture, onDidLayoutContainer: Event.None });
+		instantiationService.stub(ILayoutService, {
+			_serviceBrand: undefined,
+			activeContainer: fixture,
+			onDidLayoutContainer: Event.None
+		});
 		instantiationService.stub(IContextViewService, store.add(instantiationService.createInstance(ContextViewService)));
 		instantiationService.stub(IContextKeyService, store.add(instantiationService.createInstance(ContextKeyService)));
 		instantiationService.stub(IKeybindingService, {
-			mightProducePrintableCharacter() { return false; },
-			softDispatch() { return NoMatchingKb; },
+			mightProducePrintableCharacter() {
+				return false;
+			},
+			softDispatch() {
+				return NoMatchingKb;
+			}
 		});
 
-		controller = store.add(instantiationService.createInstance(
-			QuickInputController,
-			{
+		controller = store.add(
+			instantiationService.createInstance(QuickInputController, {
 				container: fixture,
 				idPrefix: 'testQuickInput',
-				ignoreFocusOut() { return true; },
-				returnFocus() { },
-				backKeybindingLabel() { return undefined; },
-				setContextKey() { return undefined; },
-				linkOpenerDelegate(content) { },
+				ignoreFocusOut() {
+					return true;
+				},
+				returnFocus() {},
+				backKeybindingLabel() {
+					return undefined;
+				},
+				setContextKey() {
+					return undefined;
+				},
+				linkOpenerDelegate(content) {},
 				hoverDelegate: {
 					showHover(options, focus) {
 						return undefined;
@@ -103,15 +120,15 @@ suite('QuickInput', () => { // https://github.com/microsoft/vscode/issues/147543
 						quickInputForeground: undefined,
 						quickInputTitleBackground: undefined,
 						widgetBorder: undefined,
-						widgetShadow: undefined,
+						widgetShadow: undefined
 					},
 					pickerGroup: {
 						pickerGroupBorder: undefined,
-						pickerGroupForeground: undefined,
+						pickerGroupForeground: undefined
 					}
 				}
-			}
-		));
+			})
+		);
 
 		// initial layout
 		controller.layout({ height: 20, width: 40 }, 0);
@@ -158,7 +175,7 @@ suite('QuickInput', () => { // https://github.com/microsoft/vscode/issues/147543
 		const quickpick = store.add(controller.createQuickPick());
 
 		let value: string | undefined = undefined;
-		store.add(quickpick.onDidChangeValue((e) => value = e));
+		store.add(quickpick.onDidChangeValue(e => (value = e)));
 
 		// Trigger a change
 		quickpick.value = 'changed';
@@ -225,11 +242,13 @@ suite('QuickInput', () => { // https://github.com/microsoft/vscode/issues/147543
 		quickpick.show();
 
 		void (await new Promise<void>(resolve => {
-			store.add(quickpick.onDidAccept(() => {
-				quickpick.canSelectMany = true;
-				quickpick.items = [{ label: 'a' }, { label: 'b' }, { label: 'c' }];
-				resolve();
-			}));
+			store.add(
+				quickpick.onDidAccept(() => {
+					quickpick.canSelectMany = true;
+					quickpick.items = [{ label: 'a' }, { label: 'b' }, { label: 'c' }];
+					resolve();
+				})
+			);
 
 			// accept 'step 1'
 			controller.accept();

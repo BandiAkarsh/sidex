@@ -8,7 +8,10 @@ import { autorun, derived, IObservable, observableValue } from '../../../../base
 import { ICodeEditor } from '../../../../editor/browser/editorBrowser.js';
 import { observableCodeEditor } from '../../../../editor/browser/observableCodeEditor.js';
 import { ICodeEditorService } from '../../../../editor/browser/services/codeEditorService.js';
-import { IRenameSymbolTrackerService, type ITrackedWord } from '../../../../editor/browser/services/renameSymbolTrackerService.js';
+import {
+	IRenameSymbolTrackerService,
+	type ITrackedWord
+} from '../../../../editor/browser/services/renameSymbolTrackerService.js';
 import { Position } from '../../../../editor/common/core/position.js';
 import { Range } from '../../../../editor/common/core/range.js';
 import { StandardTokenType } from '../../../../editor/common/encodedTokenAttributes.js';
@@ -36,7 +39,15 @@ function isUserEdit(event: IModelContentChangedEvent): boolean {
 	return event.detailedReasons.length > 0;
 }
 
-const userEditKinds = new Set(['type', 'paste', 'cut', 'executeCommands', 'executeCommand', 'compositionType', 'compositionEnd']);
+const userEditKinds = new Set([
+	'type',
+	'paste',
+	'cut',
+	'executeCommands',
+	'executeCommand',
+	'compositionType',
+	'compositionEnd'
+]);
 function isUserEditSource(source: TextModelEditSource): boolean {
 	const metadata = source.metadata;
 	if (metadata.source !== 'cursor') {
@@ -68,26 +79,26 @@ class ModelSymbolRenameTracker extends Disposable {
 	private _pendingContentChange: boolean = false;
 	private _lastCursorPosition: Position | undefined = undefined;
 
-	constructor(
-		private readonly _model: ITextModel
-	) {
+	constructor(private readonly _model: ITextModel) {
 		super();
 
 		// Listen to content changes - only reset on non-typing/paste edits
-		this._register(this._model.onDidChangeContent(e => {
-			if (!isUserEdit(e)) {
-				// Non-user edit has occurred - reset rename tracking at
-				// the current cursor position (if any)
-				const position = this._lastCursorPosition;
-				this.reset();
-				if (position !== undefined) {
-					this.updateCursorPosition(position);
+		this._register(
+			this._model.onDidChangeContent(e => {
+				if (!isUserEdit(e)) {
+					// Non-user edit has occurred - reset rename tracking at
+					// the current cursor position (if any)
+					const position = this._lastCursorPosition;
+					this.reset();
+					if (position !== undefined) {
+						this.updateCursorPosition(position);
+					}
+					return;
 				}
-				return;
-			}
-			// Valid typing/paste edit - mark that content changed, cursor update will handle tracking
-			this._pendingContentChange = true;
-		}));
+				// Valid typing/paste edit - mark that content changed, cursor update will handle tracking
+				this._pendingContentChange = true;
+			})
+		);
 	}
 
 	/**
@@ -113,12 +124,7 @@ class ModelSymbolRenameTracker extends Disposable {
 
 		const currentWord: WordState = {
 			word: wordAtPosition.word,
-			range: new Range(
-				position.lineNumber,
-				wordAtPosition.startColumn,
-				position.lineNumber,
-				wordAtPosition.endColumn
-			),
+			range: new Range(position.lineNumber, wordAtPosition.startColumn, position.lineNumber, wordAtPosition.endColumn),
 			position
 		};
 
@@ -136,45 +142,55 @@ class ModelSymbolRenameTracker extends Disposable {
 			// First edit on a word - use the word from before the edit as original
 			const originalWord = this._lastWordBeforeEdit ?? currentWord;
 			this._capturedWord = { ...originalWord };
-			this._trackedWord.set({
-				model: this._model,
-				originalWord: originalWord.word,
-				originalPosition: originalWord.position,
-				originalRange: originalWord.range,
-				currentWord: currentWord.word,
-				currentRange: currentWord.range,
-			}, undefined);
+			this._trackedWord.set(
+				{
+					model: this._model,
+					originalWord: originalWord.word,
+					originalPosition: originalWord.position,
+					originalRange: originalWord.range,
+					currentWord: currentWord.word,
+					currentRange: currentWord.range
+				},
+				undefined
+			);
 			this._lastWordBeforeEdit = currentWord;
 			return;
 		}
 
 		const capturedWord = this._capturedWord;
 		// Check if we're still on the same word (by position overlap or adjacency)
-		const isOnSameWord = this._rangesOverlap(capturedWord.range, currentWord.range) ||
+		const isOnSameWord =
+			this._rangesOverlap(capturedWord.range, currentWord.range) ||
 			this._isAdjacent(capturedWord.range, currentWord.range);
 
 		if (isOnSameWord) {
 			// Word has been edited - update the tracked word
-			this._trackedWord.set({
-				model: this._model,
-				originalWord: capturedWord.word,
-				originalPosition: capturedWord.position,
-				originalRange: capturedWord.range,
-				currentWord: currentWord.word,
-				currentRange: currentWord.range,
-			}, undefined);
+			this._trackedWord.set(
+				{
+					model: this._model,
+					originalWord: capturedWord.word,
+					originalPosition: capturedWord.position,
+					originalRange: capturedWord.range,
+					currentWord: currentWord.word,
+					currentRange: currentWord.range
+				},
+				undefined
+			);
 		} else {
 			// User started typing in a different word - use the word from before the edit as original
 			const originalWord = this._lastWordBeforeEdit ?? currentWord;
 			this._capturedWord = { ...originalWord };
-			this._trackedWord.set({
-				model: this._model,
-				originalWord: originalWord.word,
-				originalPosition: originalWord.position,
-				originalRange: originalWord.range,
-				currentWord: currentWord.word,
-				currentRange: currentWord.range,
-			}, undefined);
+			this._trackedWord.set(
+				{
+					model: this._model,
+					originalWord: originalWord.word,
+					originalPosition: originalWord.position,
+					originalRange: originalWord.range,
+					currentWord: currentWord.word,
+					currentRange: currentWord.range
+				},
+				undefined
+			);
 		}
 		// Update lastWordBeforeEdit for the next iteration
 		this._lastWordBeforeEdit = currentWord;
@@ -236,27 +252,33 @@ class RenameSymbolTrackerService extends Disposable implements IRenameSymbolTrac
 		}
 
 		// Track editor additions
-		this._register(this._codeEditorService.onCodeEditorAdd(editor => {
-			this._setupEditorTracking(editor);
-		}));
+		this._register(
+			this._codeEditorService.onCodeEditorAdd(editor => {
+				this._setupEditorTracking(editor);
+			})
+		);
 
 		// Clean up editor focus tracking when editors are removed
-		this._register(this._codeEditorService.onCodeEditorRemove(editor => {
-			const focusDisposable = this._editorFocusTrackingDisposables.get(editor);
-			if (focusDisposable) {
-				focusDisposable.dispose();
-				this._editorFocusTrackingDisposables.delete(editor);
-			}
-		}));
+		this._register(
+			this._codeEditorService.onCodeEditorRemove(editor => {
+				const focusDisposable = this._editorFocusTrackingDisposables.get(editor);
+				if (focusDisposable) {
+					focusDisposable.dispose();
+					this._editorFocusTrackingDisposables.delete(editor);
+				}
+			})
+		);
 
 		// Clean up model trackers when models are removed
-		this._register(this._modelService.onModelRemoved(model => {
-			const tracker = this._modelTrackers.get(model);
-			if (tracker) {
-				tracker.dispose();
-				this._modelTrackers.delete(model);
-			}
-		}));
+		this._register(
+			this._modelService.onModelRemoved(model => {
+				const tracker = this._modelTrackers.get(model);
+				if (tracker) {
+					tracker.dispose();
+					this._modelTrackers.delete(model);
+				}
+			})
+		);
 	}
 
 	private _setupEditorTracking(editor: ICodeEditor): void {

@@ -32,7 +32,8 @@ suite('Workbench - TerminalWordLinkDetector', () => {
 		instantiationService.stub(IConfigurationService, configurationService);
 		instantiationService.set(IProductService, TestProductService);
 
-		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
+		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js'))
+			.Terminal;
 		xterm = store.add(new TerminalCtor({ allowProposedApi: true, cols: 80, rows: 30, logger: TestXtermLogger }));
 		detector = store.add(instantiationService.createInstance(TerminalWordLinkDetector, xterm));
 	});
@@ -49,36 +50,148 @@ suite('Workbench - TerminalWordLinkDetector', () => {
 			await configurationService.setUserConfiguration('terminal', { integrated: { wordSeparators: ' ()[]' } });
 			// eslint-disable-next-line local/code-no-any-casts
 			configurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration: () => true } as any);
-			await assertLink('foo', [{ range: [[1, 1], [3, 1]], text: 'foo' }]);
-			await assertLink(' foo ', [{ range: [[2, 1], [4, 1]], text: 'foo' }]);
-			await assertLink('(foo)', [{ range: [[2, 1], [4, 1]], text: 'foo' }]);
-			await assertLink('[foo]', [{ range: [[2, 1], [4, 1]], text: 'foo' }]);
-			await assertLink('{foo}', [{ range: [[1, 1], [5, 1]], text: '{foo}' }]);
+			await assertLink('foo', [
+				{
+					range: [
+						[1, 1],
+						[3, 1]
+					],
+					text: 'foo'
+				}
+			]);
+			await assertLink(' foo ', [
+				{
+					range: [
+						[2, 1],
+						[4, 1]
+					],
+					text: 'foo'
+				}
+			]);
+			await assertLink('(foo)', [
+				{
+					range: [
+						[2, 1],
+						[4, 1]
+					],
+					text: 'foo'
+				}
+			]);
+			await assertLink('[foo]', [
+				{
+					range: [
+						[2, 1],
+						[4, 1]
+					],
+					text: 'foo'
+				}
+			]);
+			await assertLink('{foo}', [
+				{
+					range: [
+						[1, 1],
+						[5, 1]
+					],
+					text: '{foo}'
+				}
+			]);
 		});
 		test('" "', async () => {
 			await configurationService.setUserConfiguration('terminal', { integrated: { wordSeparators: ' ' } });
 			// eslint-disable-next-line local/code-no-any-casts
 			configurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration: () => true } as any);
-			await assertLink('foo', [{ range: [[1, 1], [3, 1]], text: 'foo' }]);
-			await assertLink(' foo ', [{ range: [[2, 1], [4, 1]], text: 'foo' }]);
-			await assertLink('(foo)', [{ range: [[1, 1], [5, 1]], text: '(foo)' }]);
-			await assertLink('[foo]', [{ range: [[1, 1], [5, 1]], text: '[foo]' }]);
-			await assertLink('{foo}', [{ range: [[1, 1], [5, 1]], text: '{foo}' }]);
+			await assertLink('foo', [
+				{
+					range: [
+						[1, 1],
+						[3, 1]
+					],
+					text: 'foo'
+				}
+			]);
+			await assertLink(' foo ', [
+				{
+					range: [
+						[2, 1],
+						[4, 1]
+					],
+					text: 'foo'
+				}
+			]);
+			await assertLink('(foo)', [
+				{
+					range: [
+						[1, 1],
+						[5, 1]
+					],
+					text: '(foo)'
+				}
+			]);
+			await assertLink('[foo]', [
+				{
+					range: [
+						[1, 1],
+						[5, 1]
+					],
+					text: '[foo]'
+				}
+			]);
+			await assertLink('{foo}', [
+				{
+					range: [
+						[1, 1],
+						[5, 1]
+					],
+					text: '{foo}'
+				}
+			]);
 		});
 		test('" []"', async () => {
 			await configurationService.setUserConfiguration('terminal', { integrated: { wordSeparators: ' []' } });
 			// eslint-disable-next-line local/code-no-any-casts
 			configurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration: () => true } as any);
-			await assertLink('aabbccdd.txt ', [{ range: [[1, 1], [12, 1]], text: 'aabbccdd.txt' }]);
-			await assertLink(' aabbccdd.txt ', [{ range: [[2, 1], [13, 1]], text: 'aabbccdd.txt' }]);
-			await assertLink(' [aabbccdd.txt] ', [{ range: [[3, 1], [14, 1]], text: 'aabbccdd.txt' }]);
+			await assertLink('aabbccdd.txt ', [
+				{
+					range: [
+						[1, 1],
+						[12, 1]
+					],
+					text: 'aabbccdd.txt'
+				}
+			]);
+			await assertLink(' aabbccdd.txt ', [
+				{
+					range: [
+						[2, 1],
+						[13, 1]
+					],
+					text: 'aabbccdd.txt'
+				}
+			]);
+			await assertLink(' [aabbccdd.txt] ', [
+				{
+					range: [
+						[3, 1],
+						[14, 1]
+					],
+					text: 'aabbccdd.txt'
+				}
+			]);
 		});
 	});
 
 	suite('should ignore powerline symbols', () => {
 		for (let i = 0xe0b0; i <= 0xe0bf; i++) {
 			test(`\\u${i.toString(16)}`, async () => {
-				await assertLink(`${String.fromCharCode(i)}foo${String.fromCharCode(i)}`, [{ range: [[2, 1], [4, 1]], text: 'foo' }]);
+				await assertLink(`${String.fromCharCode(i)}foo${String.fromCharCode(i)}`, [
+					{
+						range: [
+							[2, 1],
+							[4, 1]
+						],
+						text: 'foo'
+					}
+				]);
 			});
 		}
 	});
@@ -89,9 +202,33 @@ suite('Workbench - TerminalWordLinkDetector', () => {
 		await configurationService.setUserConfiguration('terminal', { integrated: { wordSeparators: ' []' } });
 		// eslint-disable-next-line local/code-no-any-casts
 		configurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration: () => true } as any);
-		await assertLink('我是学生.txt ', [{ range: [[1, 1], [12, 1]], text: '我是学生.txt' }]);
-		await assertLink(' 我是学生.txt ', [{ range: [[2, 1], [13, 1]], text: '我是学生.txt' }]);
-		await assertLink(' [我是学生.txt] ', [{ range: [[3, 1], [14, 1]], text: '我是学生.txt' }]);
+		await assertLink('我是学生.txt ', [
+			{
+				range: [
+					[1, 1],
+					[12, 1]
+				],
+				text: '我是学生.txt'
+			}
+		]);
+		await assertLink(' 我是学生.txt ', [
+			{
+				range: [
+					[2, 1],
+					[13, 1]
+				],
+				text: '我是学生.txt'
+			}
+		]);
+		await assertLink(' [我是学生.txt] ', [
+			{
+				range: [
+					[3, 1],
+					[14, 1]
+				],
+				text: '我是学生.txt'
+			}
+		]);
 	});
 
 	test('should support multiple link results', async () => {
@@ -99,8 +236,20 @@ suite('Workbench - TerminalWordLinkDetector', () => {
 		// eslint-disable-next-line local/code-no-any-casts
 		configurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration: () => true } as any);
 		await assertLink('foo bar', [
-			{ range: [[1, 1], [3, 1]], text: 'foo' },
-			{ range: [[5, 1], [7, 1]], text: 'bar' }
+			{
+				range: [
+					[1, 1],
+					[3, 1]
+				],
+				text: 'foo'
+			},
+			{
+				range: [
+					[5, 1],
+					[7, 1]
+				],
+				text: 'bar'
+			}
 		]);
 	});
 
@@ -109,8 +258,20 @@ suite('Workbench - TerminalWordLinkDetector', () => {
 		// eslint-disable-next-line local/code-no-any-casts
 		configurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration: () => true } as any);
 		await assertLink('foo:5:6: bar:0:32:', [
-			{ range: [[1, 1], [7, 1]], text: 'foo:5:6' },
-			{ range: [[10, 1], [17, 1]], text: 'bar:0:32' }
+			{
+				range: [
+					[1, 1],
+					[7, 1]
+				],
+				text: 'foo:5:6'
+			},
+			{
+				range: [
+					[10, 1],
+					[17, 1]
+				],
+				text: 'bar:0:32'
+			}
 		]);
 	});
 
@@ -118,19 +279,49 @@ suite('Workbench - TerminalWordLinkDetector', () => {
 		await configurationService.setUserConfiguration('terminal', { integrated: { wordSeparators: ' ' } });
 		// eslint-disable-next-line local/code-no-any-casts
 		configurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration: () => true } as any);
-		await assertLink('fsdjfsdkfjslkdfjskdfjsldkfjsdlkfjslkdjfskldjflskdfjskldjflskdfjsdklfjsdklfjsldkfjsdlkfjsdlkfjsdlkfjsldkfjslkdfjsdlkfjsldkfjsdlkfjskdfjsldkfjsdlkfjslkdfjsdlkfjsldkfjsldkfjsldkfjslkdfjsdlkfjslkdfjsdklfsd', [
-			{ range: [[1, 1], [41, 3]], text: 'fsdjfsdkfjslkdfjskdfjsldkfjsdlkfjslkdjfskldjflskdfjskldjflskdfjsdklfjsdklfjsldkfjsdlkfjsdlkfjsdlkfjsldkfjslkdfjsdlkfjsldkfjsdlkfjskdfjsldkfjsdlkfjslkdfjsdlkfjsldkfjsldkfjsldkfjslkdfjsdlkfjslkdfjsdklfsd' },
-		]);
+		await assertLink(
+			'fsdjfsdkfjslkdfjskdfjsldkfjsdlkfjslkdjfskldjflskdfjskldjflskdfjsdklfjsdklfjsldkfjsdlkfjsdlkfjsdlkfjsldkfjslkdfjsdlkfjsldkfjsdlkfjskdfjsldkfjsdlkfjslkdfjsdlkfjsldkfjsldkfjsldkfjslkdfjsdlkfjslkdfjsdklfsd',
+			[
+				{
+					range: [
+						[1, 1],
+						[41, 3]
+					],
+					text: 'fsdjfsdkfjslkdfjskdfjsldkfjsdlkfjslkdjfskldjflskdfjskldjflskdfjsdklfjsdklfjsldkfjsdlkfjsdlkfjsdlkfjsldkfjslkdfjsdlkfjsldkfjsdlkfjskdfjsldkfjsdlkfjslkdfjsdlkfjsldkfjsldkfjsldkfjslkdfjsdlkfjslkdfjsdklfsd'
+				}
+			]
+		);
 	});
 	test('should support wrapping with multiple links', async () => {
 		await configurationService.setUserConfiguration('terminal', { integrated: { wordSeparators: ' ' } });
 		// eslint-disable-next-line local/code-no-any-casts
 		configurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration: () => true } as any);
-		await assertLink('fsdjfsdkfjslkdfjskdfjsldkfj sdlkfjslkdjfskldjflskdfjskldjflskdfj sdklfjsdklfjsldkfjsdlkfjsdlkfjsdlkfjsldkfjslkdfjsdlkfjsldkfjsdlkfjskdfjsldkfjsdlkfjslkdfjsdlkfjsldkfjsldkfjsldkfjslkdfjsdlkfjslkdfjsdklfsd', [
-			{ range: [[1, 1], [27, 1]], text: 'fsdjfsdkfjslkdfjskdfjsldkfj' },
-			{ range: [[29, 1], [64, 1]], text: 'sdlkfjslkdjfskldjflskdfjskldjflskdfj' },
-			{ range: [[66, 1], [43, 3]], text: 'sdklfjsdklfjsldkfjsdlkfjsdlkfjsdlkfjsldkfjslkdfjsdlkfjsldkfjsdlkfjskdfjsldkfjsdlkfjslkdfjsdlkfjsldkfjsldkfjsldkfjslkdfjsdlkfjslkdfjsdklfsd' }
-		]);
+		await assertLink(
+			'fsdjfsdkfjslkdfjskdfjsldkfj sdlkfjslkdjfskldjflskdfjskldjflskdfj sdklfjsdklfjsldkfjsdlkfjsdlkfjsdlkfjsldkfjslkdfjsdlkfjsldkfjsdlkfjskdfjsldkfjsdlkfjslkdfjsdlkfjsldkfjsldkfjsldkfjslkdfjsdlkfjslkdfjsdklfsd',
+			[
+				{
+					range: [
+						[1, 1],
+						[27, 1]
+					],
+					text: 'fsdjfsdkfjslkdfjskdfjsldkfj'
+				},
+				{
+					range: [
+						[29, 1],
+						[64, 1]
+					],
+					text: 'sdlkfjslkdjfskldjflskdfjskldjflskdfj'
+				},
+				{
+					range: [
+						[66, 1],
+						[43, 3]
+					],
+					text: 'sdklfjsdklfjsldkfjsdlkfjsdlkfjsdlkfjsldkfjslkdfjsdlkfjsldkfjsdlkfjskdfjsldkfjsdlkfjslkdfjsdlkfjsldkfjsldkfjsldkfjslkdfjsdlkfjslkdfjsdklfsd'
+				}
+			]
+		);
 	});
 	test('does not return any links for empty text', async () => {
 		await configurationService.setUserConfiguration('terminal', { integrated: { wordSeparators: ' ' } });
@@ -142,7 +333,23 @@ suite('Workbench - TerminalWordLinkDetector', () => {
 		await configurationService.setUserConfiguration('terminal', { integrated: { wordSeparators: ' ' } });
 		// eslint-disable-next-line local/code-no-any-casts
 		configurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration: () => true } as any);
-		await assertLink('file:///C:/users/test/file.txt ', [{ range: [[1, 1], [30, 1]], text: 'file:///C:/users/test/file.txt' }]);
-		await assertLink('file:///C:/users/test/file.txt:1:10 ', [{ range: [[1, 1], [35, 1]], text: 'file:///C:/users/test/file.txt:1:10' }]);
+		await assertLink('file:///C:/users/test/file.txt ', [
+			{
+				range: [
+					[1, 1],
+					[30, 1]
+				],
+				text: 'file:///C:/users/test/file.txt'
+			}
+		]);
+		await assertLink('file:///C:/users/test/file.txt:1:10 ', [
+			{
+				range: [
+					[1, 1],
+					[35, 1]
+				],
+				text: 'file:///C:/users/test/file.txt:1:10'
+			}
+		]);
 	});
 });

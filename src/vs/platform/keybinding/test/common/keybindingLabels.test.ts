@@ -10,7 +10,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/c
 import { createUSLayoutResolvedKeybinding } from './keybindingsTestUtils.js';
 
 suite('KeybindingLabels', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	function assertUSLabel(OS: OperatingSystem, keybinding: number, expected: string): void {
@@ -37,16 +36,40 @@ suite('KeybindingLabels', () => {
 		assertUSLabel(OperatingSystem.Windows, KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, 'Alt+Windows+A');
 
 		// three modifiers
-		assertUSLabel(OperatingSystem.Windows, KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyCode.KeyA, 'Ctrl+Shift+Alt+A');
-		assertUSLabel(OperatingSystem.Windows, KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.WinCtrl | KeyCode.KeyA, 'Ctrl+Shift+Windows+A');
-		assertUSLabel(OperatingSystem.Windows, KeyMod.CtrlCmd | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, 'Ctrl+Alt+Windows+A');
-		assertUSLabel(OperatingSystem.Windows, KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, 'Shift+Alt+Windows+A');
+		assertUSLabel(
+			OperatingSystem.Windows,
+			KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyCode.KeyA,
+			'Ctrl+Shift+Alt+A'
+		);
+		assertUSLabel(
+			OperatingSystem.Windows,
+			KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.WinCtrl | KeyCode.KeyA,
+			'Ctrl+Shift+Windows+A'
+		);
+		assertUSLabel(
+			OperatingSystem.Windows,
+			KeyMod.CtrlCmd | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA,
+			'Ctrl+Alt+Windows+A'
+		);
+		assertUSLabel(
+			OperatingSystem.Windows,
+			KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA,
+			'Shift+Alt+Windows+A'
+		);
 
 		// four modifiers
-		assertUSLabel(OperatingSystem.Windows, KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, 'Ctrl+Shift+Alt+Windows+A');
+		assertUSLabel(
+			OperatingSystem.Windows,
+			KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA,
+			'Ctrl+Shift+Alt+Windows+A'
+		);
 
 		// chord
-		assertUSLabel(OperatingSystem.Windows, KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB), 'Ctrl+A Ctrl+B');
+		assertUSLabel(
+			OperatingSystem.Windows,
+			KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB),
+			'Ctrl+A Ctrl+B'
+		);
 	});
 
 	test('Linux US label', () => {
@@ -69,15 +92,35 @@ suite('KeybindingLabels', () => {
 
 		// three modifiers
 		assertUSLabel(OperatingSystem.Linux, KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyCode.KeyA, 'Ctrl+Shift+Alt+A');
-		assertUSLabel(OperatingSystem.Linux, KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.WinCtrl | KeyCode.KeyA, 'Ctrl+Shift+Super+A');
-		assertUSLabel(OperatingSystem.Linux, KeyMod.CtrlCmd | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, 'Ctrl+Alt+Super+A');
-		assertUSLabel(OperatingSystem.Linux, KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, 'Shift+Alt+Super+A');
+		assertUSLabel(
+			OperatingSystem.Linux,
+			KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.WinCtrl | KeyCode.KeyA,
+			'Ctrl+Shift+Super+A'
+		);
+		assertUSLabel(
+			OperatingSystem.Linux,
+			KeyMod.CtrlCmd | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA,
+			'Ctrl+Alt+Super+A'
+		);
+		assertUSLabel(
+			OperatingSystem.Linux,
+			KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA,
+			'Shift+Alt+Super+A'
+		);
 
 		// four modifiers
-		assertUSLabel(OperatingSystem.Linux, KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, 'Ctrl+Shift+Alt+Super+A');
+		assertUSLabel(
+			OperatingSystem.Linux,
+			KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA,
+			'Ctrl+Shift+Alt+Super+A'
+		);
 
 		// chord
-		assertUSLabel(OperatingSystem.Linux, KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB), 'Ctrl+A Ctrl+B');
+		assertUSLabel(
+			OperatingSystem.Linux,
+			KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB),
+			'Ctrl+A Ctrl+B'
+		);
 	});
 
 	test('Mac US label', () => {
@@ -105,10 +148,18 @@ suite('KeybindingLabels', () => {
 		assertUSLabel(OperatingSystem.Macintosh, KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, '⌃⇧⌥A');
 
 		// four modifiers
-		assertUSLabel(OperatingSystem.Macintosh, KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, '⌃⇧⌥⌘A');
+		assertUSLabel(
+			OperatingSystem.Macintosh,
+			KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA,
+			'⌃⇧⌥⌘A'
+		);
 
 		// chord
-		assertUSLabel(OperatingSystem.Macintosh, KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB), '⌘A ⌘B');
+		assertUSLabel(
+			OperatingSystem.Macintosh,
+			KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB),
+			'⌘A ⌘B'
+		);
 
 		// special keys
 		assertUSLabel(OperatingSystem.Macintosh, KeyCode.LeftArrow, '←');
@@ -123,9 +174,21 @@ suite('KeybindingLabels', () => {
 			assert.strictEqual(usResolvedKeybinding.getAriaLabel(), expected);
 		}
 
-		assertAriaLabel(OperatingSystem.Windows, KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, 'Control+Shift+Alt+Windows+A');
-		assertAriaLabel(OperatingSystem.Linux, KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, 'Control+Shift+Alt+Super+A');
-		assertAriaLabel(OperatingSystem.Macintosh, KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, 'Control+Shift+Option+Command+A');
+		assertAriaLabel(
+			OperatingSystem.Windows,
+			KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA,
+			'Control+Shift+Alt+Windows+A'
+		);
+		assertAriaLabel(
+			OperatingSystem.Linux,
+			KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA,
+			'Control+Shift+Alt+Super+A'
+		);
+		assertAriaLabel(
+			OperatingSystem.Macintosh,
+			KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA,
+			'Control+Shift+Option+Command+A'
+		);
 	});
 
 	test('Electron Accelerator label', () => {
@@ -134,14 +197,38 @@ suite('KeybindingLabels', () => {
 			assert.strictEqual(usResolvedKeybinding.getElectronAccelerator(), expected);
 		}
 
-		assertElectronAcceleratorLabel(OperatingSystem.Windows, KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, 'Ctrl+Shift+Alt+Super+A');
-		assertElectronAcceleratorLabel(OperatingSystem.Linux, KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, 'Ctrl+Shift+Alt+Super+A');
-		assertElectronAcceleratorLabel(OperatingSystem.Macintosh, KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, 'Ctrl+Shift+Alt+Cmd+A');
+		assertElectronAcceleratorLabel(
+			OperatingSystem.Windows,
+			KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA,
+			'Ctrl+Shift+Alt+Super+A'
+		);
+		assertElectronAcceleratorLabel(
+			OperatingSystem.Linux,
+			KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA,
+			'Ctrl+Shift+Alt+Super+A'
+		);
+		assertElectronAcceleratorLabel(
+			OperatingSystem.Macintosh,
+			KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA,
+			'Ctrl+Shift+Alt+Cmd+A'
+		);
 
 		// electron cannot handle chords
-		assertElectronAcceleratorLabel(OperatingSystem.Windows, KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB), null);
-		assertElectronAcceleratorLabel(OperatingSystem.Linux, KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB), null);
-		assertElectronAcceleratorLabel(OperatingSystem.Macintosh, KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB), null);
+		assertElectronAcceleratorLabel(
+			OperatingSystem.Windows,
+			KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB),
+			null
+		);
+		assertElectronAcceleratorLabel(
+			OperatingSystem.Linux,
+			KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB),
+			null
+		);
+		assertElectronAcceleratorLabel(
+			OperatingSystem.Macintosh,
+			KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB),
+			null
+		);
 
 		// electron cannot handle numpad keys
 		assertElectronAcceleratorLabel(OperatingSystem.Windows, KeyCode.Numpad1, null);
@@ -161,14 +248,38 @@ suite('KeybindingLabels', () => {
 			assert.strictEqual(usResolvedKeybinding.getUserSettingsLabel(), expected);
 		}
 
-		assertElectronAcceleratorLabel(OperatingSystem.Windows, KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, 'ctrl+shift+alt+win+a');
-		assertElectronAcceleratorLabel(OperatingSystem.Linux, KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, 'ctrl+shift+alt+meta+a');
-		assertElectronAcceleratorLabel(OperatingSystem.Macintosh, KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA, 'ctrl+shift+alt+cmd+a');
+		assertElectronAcceleratorLabel(
+			OperatingSystem.Windows,
+			KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA,
+			'ctrl+shift+alt+win+a'
+		);
+		assertElectronAcceleratorLabel(
+			OperatingSystem.Linux,
+			KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA,
+			'ctrl+shift+alt+meta+a'
+		);
+		assertElectronAcceleratorLabel(
+			OperatingSystem.Macintosh,
+			KeyMod.CtrlCmd | KeyMod.Shift | KeyMod.Alt | KeyMod.WinCtrl | KeyCode.KeyA,
+			'ctrl+shift+alt+cmd+a'
+		);
 
 		// electron cannot handle chords
-		assertElectronAcceleratorLabel(OperatingSystem.Windows, KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB), 'ctrl+a ctrl+b');
-		assertElectronAcceleratorLabel(OperatingSystem.Linux, KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB), 'ctrl+a ctrl+b');
-		assertElectronAcceleratorLabel(OperatingSystem.Macintosh, KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB), 'cmd+a cmd+b');
+		assertElectronAcceleratorLabel(
+			OperatingSystem.Windows,
+			KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB),
+			'ctrl+a ctrl+b'
+		);
+		assertElectronAcceleratorLabel(
+			OperatingSystem.Linux,
+			KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB),
+			'ctrl+a ctrl+b'
+		);
+		assertElectronAcceleratorLabel(
+			OperatingSystem.Macintosh,
+			KeyChord(KeyMod.CtrlCmd | KeyCode.KeyA, KeyMod.CtrlCmd | KeyCode.KeyB),
+			'cmd+a cmd+b'
+		);
 	});
 
 	test('issue #91235: Do not end with a +', () => {

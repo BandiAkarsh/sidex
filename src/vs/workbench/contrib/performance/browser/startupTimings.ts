@@ -21,15 +21,13 @@ import { posix } from '../../../../base/common/path.js';
 import { hash } from '../../../../base/common/hash.js';
 
 export abstract class StartupTimings {
-
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
 		@IPaneCompositePartService private readonly _paneCompositeService: IPaneCompositePartService,
 		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
 		@IUpdateService private readonly _updateService: IUpdateService,
 		@IWorkspaceTrustManagementService private readonly _workspaceTrustService: IWorkspaceTrustManagementService
-	) {
-	}
+	) {}
 
 	protected async _isStandardStartup(): Promise<string | undefined> {
 		// check for standard startup:
@@ -69,7 +67,6 @@ export abstract class StartupTimings {
 }
 
 export class BrowserStartupTimings extends StartupTimings implements IWorkbenchContribution {
-
 	constructor(
 		@IEditorService editorService: IEditorService,
 		@IPaneCompositePartService paneCompositeService: IPaneCompositePartService,
@@ -104,11 +101,7 @@ export class BrowserStartupTimings extends StartupTimings implements IWorkbenchC
 }
 
 export class BrowserResourcePerformanceMarks {
-
-	constructor(
-		@ITelemetryService telemetryService: ITelemetryService
-	) {
-
+	constructor(@ITelemetryService telemetryService: ITelemetryService) {
 		type Entry = {
 			hosthash: string;
 			name: string;
@@ -122,7 +115,6 @@ export class BrowserResourcePerformanceMarks {
 			duration: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Resource duration' };
 		};
 		for (const item of performance.getEntriesByType('resource')) {
-
 			try {
 				const url = new URL(item.name);
 				const name = posix.basename(url.pathname);

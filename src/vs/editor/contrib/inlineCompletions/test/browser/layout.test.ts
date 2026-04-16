@@ -38,11 +38,7 @@ suite('Layout - getMaxTowerHeightInAvailableArea', () => {
 
 	test('tower fits across multiple available areas', () => {
 		const towerHorizontalRange = new OffsetRange(10, 40); // width of 30
-		const availableTowerAreas = [
-			new Size2D(20, 30),
-			new Size2D(20, 25),
-			new Size2D(20, 30)
-		];
+		const availableTowerAreas = [new Size2D(20, 30), new Size2D(20, 25), new Size2D(20, 30)];
 
 		// Should return the minimum height across overlapping areas (25)
 		assert.strictEqual(getMaxTowerHeightInAvailableArea(towerHorizontalRange, availableTowerAreas), 25);
@@ -94,10 +90,7 @@ suite('Layout - getMaxTowerHeightInAvailableArea', () => {
 
 	test('tower spans exactly two available areas', () => {
 		const towerHorizontalRange = new OffsetRange(10, 50); // width of 40
-		const availableTowerAreas = [
-			new Size2D(30, 25),
-			new Size2D(30, 25)
-		];
+		const availableTowerAreas = [new Size2D(30, 25), new Size2D(30, 25)];
 
 		// Should return the minimum height across both areas (25)
 		assert.strictEqual(getMaxTowerHeightInAvailableArea(towerHorizontalRange, availableTowerAreas), 25);
@@ -105,10 +98,7 @@ suite('Layout - getMaxTowerHeightInAvailableArea', () => {
 
 	test('tower starts at boundary between two areas', () => {
 		const towerHorizontalRange = new OffsetRange(30, 50); // width of 20
-		const availableTowerAreas = [
-			new Size2D(30, 25),
-			new Size2D(30, 25)
-		];
+		const availableTowerAreas = [new Size2D(30, 25), new Size2D(30, 25)];
 
 		// Should return the height of the second area (25)
 		assert.strictEqual(getMaxTowerHeightInAvailableArea(towerHorizontalRange, availableTowerAreas), 25);

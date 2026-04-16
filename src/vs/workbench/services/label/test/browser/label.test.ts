@@ -5,7 +5,12 @@
 
 import * as resources from '../../../../../base/common/resources.js';
 import assert from 'assert';
-import { TestEnvironmentService, TestLifecycleService, TestPathService, TestRemoteAgentService } from '../../../../test/browser/workbenchTestServices.js';
+import {
+	TestEnvironmentService,
+	TestLifecycleService,
+	TestPathService,
+	TestRemoteAgentService
+} from '../../../../test/browser/workbenchTestServices.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { LabelService } from '../../common/labelService.js';
 import { TestContextService, TestStorageService } from '../../../../test/common/workbenchTestServices.js';
@@ -25,7 +30,14 @@ suite('URI Label', () => {
 
 	setup(() => {
 		storageService = new TestStorageService();
-		labelService = new LabelService(TestEnvironmentService, new TestContextService(), new TestPathService(URI.file('/foobar')), new TestRemoteAgentService(), storageService, new TestLifecycleService());
+		labelService = new LabelService(
+			TestEnvironmentService,
+			new TestContextService(),
+			new TestPathService(URI.file('/foobar')),
+			new TestRemoteAgentService(),
+			storageService,
+			new TestLifecycleService()
+		);
 	});
 
 	ensureNoDisposablesAreLeakedInTestSuite();
@@ -59,7 +71,10 @@ suite('URI Label', () => {
 
 		const uri1 = TestWorkspace.folders[0].uri.with({ path: TestWorkspace.folders[0].uri.path.concat('/a/b/c/d') });
 		assert.strictEqual(labelService.getUriLabel(uri1, { relative: true }), isWindows ? 'a\\b\\c\\d' : 'a/b/c/d');
-		assert.strictEqual(labelService.getUriLabel(uri1, { relative: false }), isWindows ? 'C:\\testWorkspace\\a\\b\\c\\d' : '/testWorkspace/a/b/c/d');
+		assert.strictEqual(
+			labelService.getUriLabel(uri1, { relative: false }),
+			isWindows ? 'C:\\testWorkspace\\a\\b\\c\\d' : '/testWorkspace/a/b/c/d'
+		);
 		assert.strictEqual(labelService.getUriBasenameLabel(uri1), 'd');
 
 		const uri2 = URI.file('c:\\1/2/3');
@@ -79,7 +94,10 @@ suite('URI Label', () => {
 		});
 
 		const uri1 = URI.parse('vscode://microsoft.com/1/2/3/4/5');
-		assert.strictEqual(labelService.getUriLabel(uri1, { relative: false }), 'LABEL\\\\1\\2\\3\\4\\5\\microsoft.com\\END');
+		assert.strictEqual(
+			labelService.getUriLabel(uri1, { relative: false }),
+			'LABEL\\\\1\\2\\3\\4\\5\\microsoft.com\\END'
+		);
 		assert.strictEqual(labelService.getUriBasenameLabel(uri1), 'END');
 	});
 
@@ -141,7 +159,9 @@ suite('URI Label', () => {
 			}
 		});
 
-		const uri1 = URI.parse(`vscode://microsoft.com/1/2/3/4/5?${encodeURIComponent(JSON.stringify({ prefix: 'prefix', path: 'path' }))}`);
+		const uri1 = URI.parse(
+			`vscode://microsoft.com/1/2/3/4/5?${encodeURIComponent(JSON.stringify({ prefix: 'prefix', path: 'path' }))}`
+		);
 		assert.strictEqual(labelService.getUriLabel(uri1, { relative: false }), 'LABELprefix: path/END');
 	});
 
@@ -190,10 +210,15 @@ suite('URI Label', () => {
 		assert.strictEqual(labelService.getUriLabel(uri1, { relative: false }), 'LABEL: /END');
 	});
 
-
 	test('label caching', () => {
-		const m = new Memento('cachedResourceLabelFormatters2', storageService).getMemento(StorageScope.PROFILE, StorageTarget.MACHINE);
-		const makeFormatter = (scheme: string): ResourceLabelFormatter => ({ formatting: { label: `\${path} (${scheme})`, separator: '/' }, scheme });
+		const m = new Memento('cachedResourceLabelFormatters2', storageService).getMemento(
+			StorageScope.PROFILE,
+			StorageTarget.MACHINE
+		);
+		const makeFormatter = (scheme: string): ResourceLabelFormatter => ({
+			formatting: { label: `\${path} (${scheme})`, separator: '/' },
+			scheme
+		});
 		assert.deepStrictEqual(m, {});
 
 		// registers a new formatter:
@@ -226,7 +251,6 @@ suite('URI Label', () => {
 	});
 });
 
-
 suite('multi-root workspace', () => {
 	let labelService: LabelService;
 	const disposables = new DisposableStore();
@@ -236,19 +260,22 @@ suite('multi-root workspace', () => {
 		const tests = URI.file('folder1/test');
 		const other = URI.file('folder2');
 
-		labelService = disposables.add(new LabelService(
-			TestEnvironmentService,
-			new TestContextService(
-				new Workspace('test-workspace', [
-					new WorkspaceFolder({ uri: sources, index: 0, name: 'Sources' }),
-					new WorkspaceFolder({ uri: tests, index: 1, name: 'Tests' }),
-					new WorkspaceFolder({ uri: other, index: 2, name: resources.basename(other) }),
-				])),
-			new TestPathService(),
-			new TestRemoteAgentService(),
-			disposables.add(new TestStorageService()),
-			disposables.add(new TestLifecycleService())
-		));
+		labelService = disposables.add(
+			new LabelService(
+				TestEnvironmentService,
+				new TestContextService(
+					new Workspace('test-workspace', [
+						new WorkspaceFolder({ uri: sources, index: 0, name: 'Sources' }),
+						new WorkspaceFolder({ uri: tests, index: 1, name: 'Tests' }),
+						new WorkspaceFolder({ uri: other, index: 2, name: resources.basename(other) })
+					])
+				),
+				new TestPathService(),
+				new TestRemoteAgentService(),
+				disposables.add(new TestStorageService()),
+				disposables.add(new TestLifecycleService())
+			)
+		);
 	});
 
 	teardown(() => {
@@ -273,7 +300,7 @@ suite('multi-root workspace', () => {
 			'folder1/src/folder/file': 'Sources • folder/file',
 			'folder1/src': 'Sources',
 			'folder1/other': '/folder1/other',
-			'folder2/other': 'folder2 • other',
+			'folder2/other': 'folder2 • other'
 		};
 
 		Object.entries(tests).forEach(([path, label]) => {
@@ -287,7 +314,7 @@ suite('multi-root workspace', () => {
 			scheme: 'file',
 			formatting: {
 				label: '${path} (${scheme})',
-				separator: '/',
+				separator: '/'
 			}
 		});
 
@@ -296,7 +323,7 @@ suite('multi-root workspace', () => {
 			'folder1/src/folder/file': 'Sources • folder/file (file)',
 			'folder1/src': 'Sources',
 			'folder1/other': '/folder1/other (file)',
-			'folder2/other': 'folder2 • other (file)',
+			'folder2/other': 'folder2 • other (file)'
 		};
 
 		Object.entries(tests).forEach(([path, label]) => {
@@ -317,7 +344,7 @@ suite('multi-root workspace', () => {
 
 		const tests = {
 			'folder1/src/file': 'Sources • file',
-			'other/blah': 'other/blah',
+			'other/blah': 'other/blah'
 		};
 
 		Object.entries(tests).forEach(([path, label]) => {
@@ -336,7 +363,11 @@ suite('multi-root workspace', () => {
 			}
 		});
 
-		const uri = URI.from({ scheme: 'vscode-agent-host', authority: 'my-server', path: '/file//home/user/project/file.ts' });
+		const uri = URI.from({
+			scheme: 'vscode-agent-host',
+			authority: 'my-server',
+			path: '/file//home/user/project/file.ts'
+		});
 		const generated = labelService.getUriLabel(uri, { relative: false });
 		assert.strictEqual(generated, '/home/user/project/file.ts');
 	});
@@ -376,19 +407,22 @@ suite('multi-root workspace', () => {
 	test('relative label without formatter', () => {
 		const rootFolder = URI.parse('myscheme://myauthority/');
 
-		labelService = disposables.add(new LabelService(
-			TestEnvironmentService,
-			new TestContextService(
-				new Workspace('test-workspace', [
-					new WorkspaceFolder({ uri: rootFolder, index: 0, name: 'FSProotFolder' }),
-				])),
-			new TestPathService(undefined, rootFolder.scheme),
-			new TestRemoteAgentService(),
-			disposables.add(new TestStorageService()),
-			disposables.add(new TestLifecycleService())
-		));
+		labelService = disposables.add(
+			new LabelService(
+				TestEnvironmentService,
+				new TestContextService(
+					new Workspace('test-workspace', [new WorkspaceFolder({ uri: rootFolder, index: 0, name: 'FSProotFolder' })])
+				),
+				new TestPathService(undefined, rootFolder.scheme),
+				new TestRemoteAgentService(),
+				disposables.add(new TestStorageService()),
+				disposables.add(new TestLifecycleService())
+			)
+		);
 
-		const generated = labelService.getUriLabel(URI.parse('myscheme://myauthority/some/folder/test.txt'), { relative: true });
+		const generated = labelService.getUriLabel(URI.parse('myscheme://myauthority/some/folder/test.txt'), {
+			relative: true
+		});
 		if (isWindows) {
 			assert.strictEqual(generated, 'some\\folder\\test.txt');
 		} else {
@@ -408,9 +442,8 @@ suite('workspace at FSP root', () => {
 		labelService = new LabelService(
 			TestEnvironmentService,
 			new TestContextService(
-				new Workspace('test-workspace', [
-					new WorkspaceFolder({ uri: rootFolder, index: 0, name: 'FSProotFolder' }),
-				])),
+				new Workspace('test-workspace', [new WorkspaceFolder({ uri: rootFolder, index: 0, name: 'FSProotFolder' })])
+			),
 			new TestPathService(),
 			new TestRemoteAgentService(),
 			new TestStorageService(),
@@ -431,10 +464,9 @@ suite('workspace at FSP root', () => {
 	});
 
 	test('non-relative label', () => {
-
 		const tests = {
 			'myscheme://myauthority/myFile1.txt': 'myscheme://myauthority/myFile1.txt',
-			'myscheme://myauthority/folder/myFile2.txt': 'myscheme://myauthority/folder/myFile2.txt',
+			'myscheme://myauthority/folder/myFile2.txt': 'myscheme://myauthority/folder/myFile2.txt'
 		};
 
 		Object.entries(tests).forEach(([uriString, label]) => {
@@ -444,10 +476,9 @@ suite('workspace at FSP root', () => {
 	});
 
 	test('relative label', () => {
-
 		const tests = {
 			'myscheme://myauthority/myFile1.txt': 'myFile1.txt',
-			'myscheme://myauthority/folder/myFile2.txt': 'folder/myFile2.txt',
+			'myscheme://myauthority/folder/myFile2.txt': 'folder/myFile2.txt'
 		};
 
 		Object.entries(tests).forEach(([uriString, label]) => {
@@ -457,10 +488,16 @@ suite('workspace at FSP root', () => {
 	});
 
 	test('relative label with explicit path separator', () => {
-		let generated = labelService.getUriLabel(URI.parse('myscheme://myauthority/some/folder/test.txt'), { relative: true, separator: '/' });
+		let generated = labelService.getUriLabel(URI.parse('myscheme://myauthority/some/folder/test.txt'), {
+			relative: true,
+			separator: '/'
+		});
 		assert.strictEqual(generated, 'some/folder/test.txt');
 
-		generated = labelService.getUriLabel(URI.parse('myscheme://myauthority/some/folder/test.txt'), { relative: true, separator: '\\' });
+		generated = labelService.getUriLabel(URI.parse('myscheme://myauthority/some/folder/test.txt'), {
+			relative: true,
+			separator: '\\'
+		});
 		assert.strictEqual(generated, 'some\\folder\\test.txt');
 	});
 

@@ -8,7 +8,11 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { toDisposable } from '../../../../../base/common/lifecycle.js';
 import { DefaultSettings } from '../../common/preferencesModels.js';
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
-import { Extensions, IConfigurationRegistry, IConfigurationNode } from '../../../../../platform/configuration/common/configurationRegistry.js';
+import {
+	Extensions,
+	IConfigurationRegistry,
+	IConfigurationNode
+} from '../../../../../platform/configuration/common/configurationRegistry.js';
 import { Registry } from '../../../../../platform/registry/common/platform.js';
 import { ConfigurationTarget } from '../../../../../platform/configuration/common/configuration.js';
 

@@ -2,7 +2,11 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { AccessibleViewProviderId, AccessibleViewType, AccessibleContentProvider } from '../../../../platform/accessibility/browser/accessibleView.js';
+import {
+	AccessibleViewProviderId,
+	AccessibleViewType,
+	AccessibleContentProvider
+} from '../../../../platform/accessibility/browser/accessibleView.js';
 import { IAccessibleViewImplementation } from '../../../../platform/accessibility/browser/accessibleViewRegistry.js';
 import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
@@ -45,12 +49,13 @@ export function getAccessibleOutputProvider(editorService: IEditorService) {
 	return new AccessibleContentProvider(
 		AccessibleViewProviderId.Notebook,
 		{ type: AccessibleViewType.View },
-		() => { return outputContent; },
+		() => {
+			return outputContent;
+		},
 		() => {
 			notebookEditor?.setFocus(selections[0]);
 			notebookEditor.focus();
 		},
-		AccessibilityVerbositySettingId.Notebook,
+		AccessibilityVerbositySettingId.Notebook
 	);
 }
-

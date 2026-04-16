@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 import assert from 'assert';
 import { TreeVisibility } from '../../../../../base/browser/ui/tree/tree.js';
 import { timeout } from '../../../../../base/common/async.js';
@@ -13,7 +12,15 @@ import { TestConfigurationService } from '../../../../../platform/configuration/
 import { RawDebugSession } from '../../browser/rawDebugSession.js';
 import { ReplFilter } from '../../browser/replFilter.js';
 import { DebugModel, StackFrame, Thread } from '../../common/debugModel.js';
-import { RawObjectReplElement, ReplEvaluationInput, ReplEvaluationResult, ReplGroup, ReplModel, ReplOutputElement, ReplVariableElement } from '../../common/replModel.js';
+import {
+	RawObjectReplElement,
+	ReplEvaluationInput,
+	ReplEvaluationResult,
+	ReplGroup,
+	ReplModel,
+	ReplOutputElement,
+	ReplVariableElement
+} from '../../common/replModel.js';
 import { createTestSession } from './callStack.test.js';
 import { createMockDebugModel } from './mockDebugModel.js';
 import { MockDebugAdapter, MockRawSession } from '../common/mockDebug.js';
@@ -50,8 +57,12 @@ suite('Debug - REPL', () => {
 		assert.strictEqual(elements[2].value, '1');
 		assert.strictEqual(elements[2].severity, severity.Warning);
 
-		const keyValueObject = { 'key1': 2, 'key2': 'value' };
-		repl.appendToRepl(session, { output: '', expression: new RawObjectReplElement('fakeid', 'fake', keyValueObject), sev: severity.Info });
+		const keyValueObject = { key1: 2, key2: 'value' };
+		repl.appendToRepl(session, {
+			output: '',
+			expression: new RawObjectReplElement('fakeid', 'fake', keyValueObject),
+			sev: severity.Info
+		});
 		const element = <ReplVariableElement>repl.getReplElements()[3];
 		assert.strictEqual(element.expression.value, 'Object');
 		assert.deepStrictEqual((element.expression as RawObjectReplElement).valueObj, keyValueObject);
@@ -65,7 +76,10 @@ suite('Debug - REPL', () => {
 		repl.appendToRepl(session, { output: '5\n', sev: severity.Info });
 		repl.appendToRepl(session, { output: '6', sev: severity.Info });
 		elements = <ReplOutputElement[]>repl.getReplElements();
-		assert.deepStrictEqual(elements.map(e => e.toString()), ['1\n', '23\n', '45\n', '6']);
+		assert.deepStrictEqual(
+			elements.map(e => e.toString()),
+			['1\n', '23\n', '45\n', '6']
+		);
 
 		repl.removeReplExpressions();
 	});
@@ -80,19 +94,26 @@ suite('Debug - REPL', () => {
 		repl.appendToRepl(session, { output: 'second line\n', sev: severity.Info });
 		repl.appendToRepl(session, { output: 'third line\n', sev: severity.Info });
 		const elements = <ReplOutputElement[]>repl.getReplElements();
-		assert.deepStrictEqual(elements.map(e => ({ value: e.value, count: e.count })), [
-			{ value: 'first line\n', count: 3 },
-			{ value: 'second line\n', count: 2 },
-			{ value: 'third line\n', count: 1 }
-		]);
+		assert.deepStrictEqual(
+			elements.map(e => ({ value: e.value, count: e.count })),
+			[
+				{ value: 'first line\n', count: 3 },
+				{ value: 'second line\n', count: 2 },
+				{ value: 'third line\n', count: 1 }
+			]
+		);
 	});
 
 	test('repl merging', () => {
 		// 'mergeWithParent' should be ignored when there is no parent.
 		const parent = disposables.add(createTestSession(model, 'parent', { repl: 'mergeWithParent' }));
 		const child1 = disposables.add(createTestSession(model, 'child1', { parentSession: parent, repl: 'separate' }));
-		const child2 = disposables.add(createTestSession(model, 'child2', { parentSession: parent, repl: 'mergeWithParent' }));
-		const grandChild = disposables.add(createTestSession(model, 'grandChild', { parentSession: child2, repl: 'mergeWithParent' }));
+		const child2 = disposables.add(
+			createTestSession(model, 'child2', { parentSession: parent, repl: 'mergeWithParent' })
+		);
+		const grandChild = disposables.add(
+			createTestSession(model, 'grandChild', { parentSession: child2, repl: 'mergeWithParent' })
+		);
 		const child3 = disposables.add(createTestSession(model, 'child3', { parentSession: parent }));
 
 		let parentChanges = 0;
@@ -140,7 +161,16 @@ suite('Debug - REPL', () => {
 		session['raw'] = <any>rawSession;
 		const thread = new Thread(session, 'mockthread', 1);
 		// eslint-disable-next-line local/code-no-any-casts
-		const stackFrame = new StackFrame(thread, 1, <any>undefined, 'app.js', 'normal', { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 10 }, 1, true);
+		const stackFrame = new StackFrame(
+			thread,
+			1,
+			<any>undefined,
+			'app.js',
+			'normal',
+			{ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 10 },
+			1,
+			true
+		);
 		const replModel = new ReplModel(configurationService);
 		replModel.addReplExpression(session, stackFrame, 'myVariable').then();
 		replModel.addReplExpression(session, stackFrame, 'myVariable').then();
@@ -160,7 +190,9 @@ suite('Debug - REPL', () => {
 		model.addSession(session);
 
 		const adapter = new MockDebugAdapter();
-		const raw = disposables.add(new RawDebugSession(adapter, undefined!, '', '', undefined!, undefined!, undefined!, undefined!,));
+		const raw = disposables.add(
+			new RawDebugSession(adapter, undefined!, '', '', undefined!, undefined!, undefined!, undefined!)
+		);
 		session.initializeForTest(raw);
 
 		await session.addReplExpression(undefined, 'before.1');

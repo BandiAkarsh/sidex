@@ -6,7 +6,11 @@
 import { Disposable } from '../../../../base/common/lifecycle.js';
 import { MarshalledId } from '../../../../base/common/marshallingIds.js';
 import { ServicesAccessor } from '../../../../editor/browser/editorExtensions.js';
-import { AccessibleViewProviderId, AccessibleViewType, IAccessibleViewContentProvider } from '../../../../platform/accessibility/browser/accessibleView.js';
+import {
+	AccessibleViewProviderId,
+	AccessibleViewType,
+	IAccessibleViewContentProvider
+} from '../../../../platform/accessibility/browser/accessibleView.js';
 import { IAccessibleViewImplementation } from '../../../../platform/accessibility/browser/accessibleViewRegistry.js';
 import { IMenuService } from '../../../../platform/actions/common/actions.js';
 import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
@@ -51,7 +55,6 @@ export class CommentsAccessibleView extends Disposable implements IAccessibleVie
 	}
 }
 
-
 export class CommentThreadAccessibleView extends Disposable implements IAccessibleViewImplementation {
 	readonly priority = 85;
 	readonly name = 'commentThread';
@@ -72,30 +75,31 @@ export class CommentThreadAccessibleView extends Disposable implements IAccessib
 	}
 }
 
-
 class CommentsAccessibleContentProvider extends Disposable implements IAccessibleViewContentProvider {
 	public readonly actions: IAction[];
 	constructor(
 		private readonly _commentsView: CommentsPanel,
 		private readonly _focusedCommentNode: CommentNode,
-		private readonly _menus: CommentsMenus,
+		private readonly _menus: CommentsMenus
 	) {
 		super();
 
-		this.actions = [...this._menus.getResourceContextActions(this._focusedCommentNode)].filter(i => i.enabled).map(action => {
-			return {
-				...action,
-				run: () => {
-					this._commentsView.focus();
-					action.run({
-						thread: this._focusedCommentNode.thread,
-						$mid: MarshalledId.CommentThread,
-						commentControlHandle: this._focusedCommentNode.controllerHandle,
-						commentThreadHandle: this._focusedCommentNode.threadHandle,
-					});
-				}
-			};
-		});
+		this.actions = [...this._menus.getResourceContextActions(this._focusedCommentNode)]
+			.filter(i => i.enabled)
+			.map(action => {
+				return {
+					...action,
+					run: () => {
+						this._commentsView.focus();
+						action.run({
+							thread: this._focusedCommentNode.thread,
+							$mid: MarshalledId.CommentThread,
+							commentControlHandle: this._focusedCommentNode.controllerHandle,
+							commentThreadHandle: this._focusedCommentNode.threadHandle
+						});
+					}
+				};
+			});
 	}
 	readonly id = AccessibleViewProviderId.Comments;
 	readonly verbositySettingKey = AccessibilityVerbositySettingId.Comments;
@@ -127,9 +131,10 @@ class CommentsThreadWidgetAccessibleContentProvider extends Disposable implement
 	readonly verbositySettingKey = AccessibilityVerbositySettingId.Comments;
 	readonly options = { type: AccessibleViewType.View };
 	private _activeCommentInfo: { thread: CommentThread<IRange>; comment?: Comment } | undefined;
-	constructor(@ICommentService private readonly _commentService: ICommentService,
+	constructor(
+		@ICommentService private readonly _commentService: ICommentService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IUriIdentityService private readonly _uriIdentityService: IUriIdentityService,
+		@IUriIdentityService private readonly _uriIdentityService: IUriIdentityService
 	) {
 		super();
 	}
@@ -146,7 +151,7 @@ class CommentsThreadWidgetAccessibleContentProvider extends Disposable implement
 			throw new Error('No current comment thread');
 		}
 		const comment = this.activeCommentInfo.comment?.body;
-		const commentLabel = typeof comment === 'string' ? comment : comment?.value ?? '';
+		const commentLabel = typeof comment === 'string' ? comment : (comment?.value ?? '');
 		const resource = this.activeCommentInfo.thread.resource;
 		const range = this.activeCommentInfo.thread.range;
 		let contentLabel = '';
@@ -166,7 +171,13 @@ class CommentsThreadWidgetAccessibleContentProvider extends Disposable implement
 		const lastComment = this._activeCommentInfo;
 		this._activeCommentInfo = undefined;
 		if (lastComment) {
-			revealCommentThread(this._commentService, this._editorService, this._uriIdentityService, lastComment.thread, lastComment.comment);
+			revealCommentThread(
+				this._commentService,
+				this._editorService,
+				this._uriIdentityService,
+				lastComment.thread,
+				lastComment.comment
+			);
 		}
 	}
 	provideNextContent(): string | undefined {

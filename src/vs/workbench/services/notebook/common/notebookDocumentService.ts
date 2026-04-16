@@ -43,7 +43,6 @@ export function parse(cell: URI): { notebook: URI; handle: number } | undefined 
 }
 
 export function generate(notebook: URI, handle: number): URI {
-
 	const s = handle.toString(_radix);
 	const p = s.length < _lengths.length ? _lengths[s.length - 1] : 'z';
 
@@ -66,7 +65,17 @@ export function generateMetadataUri(notebook: URI): URI {
 	return notebook.with({ scheme: Schemas.vscodeNotebookMetadata, fragment });
 }
 
-export function extractCellOutputDetails(uri: URI): { notebook: URI; openIn: string; outputId?: string; cellFragment?: string; outputIndex?: number; cellHandle?: number; cellIndex?: number } | undefined {
+export function extractCellOutputDetails(uri: URI):
+	| {
+			notebook: URI;
+			openIn: string;
+			outputId?: string;
+			cellFragment?: string;
+			outputIndex?: number;
+			cellHandle?: number;
+			cellIndex?: number;
+	  }
+	| undefined {
 	if (uri.scheme !== Schemas.vscodeNotebookCellOutput) {
 		return;
 	}
@@ -79,11 +88,13 @@ export function extractCellOutputDetails(uri: URI): { notebook: URI; openIn: str
 	const outputId = params.get('outputId') ?? undefined;
 	const parsedCell = parse(uri.with({ scheme: Schemas.vscodeNotebookCell, query: null }));
 	const outputIndex = params.get('outputIndex') ? parseInt(params.get('outputIndex') || '', 10) : undefined;
-	const notebookUri = parsedCell ? parsedCell.notebook : uri.with({
-		scheme: params.get('notebookScheme') || Schemas.file,
-		fragment: null,
-		query: null,
-	});
+	const notebookUri = parsedCell
+		? parsedCell.notebook
+		: uri.with({
+				scheme: params.get('notebookScheme') || Schemas.file,
+				fragment: null,
+				query: null
+			});
 	const cellIndex = params.get('cellIndex') ? parseInt(params.get('cellIndex') || '', 10) : undefined;
 
 	return {
@@ -93,10 +104,9 @@ export function extractCellOutputDetails(uri: URI): { notebook: URI; openIn: str
 		outputIndex: outputIndex,
 		cellHandle: parsedCell?.handle,
 		cellFragment: uri.fragment,
-		cellIndex: cellIndex,
+		cellIndex: cellIndex
 	};
 }
-
 
 export interface INotebookDocumentService {
 	readonly _serviceBrand: undefined;
@@ -141,7 +151,6 @@ export class NotebookDocumentWorkbenchService implements INotebookDocumentServic
 	removeNotebookDocument(document: INotebookDocument) {
 		this._documents.delete(document.uri);
 	}
-
 }
 
 registerSingleton(INotebookDocumentService, NotebookDocumentWorkbenchService, InstantiationType.Delayed);

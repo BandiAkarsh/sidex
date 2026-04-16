@@ -10,26 +10,60 @@ import { IWorkbenchConfigurationService } from '../../../../services/configurati
 import { IRemoteAuthorityResolverService } from '../../../../../platform/remote/common/remoteAuthorityResolver.js';
 import { IWorkbenchEnvironmentService } from '../../../../services/environment/common/environmentService.js';
 import { IWorkspaceContextService } from '../../../../../platform/workspace/common/workspace.js';
-import { serializeEnvironmentDescriptionMap, serializeEnvironmentVariableCollection } from '../../../../../platform/terminal/common/environmentVariableShared.js';
+import {
+	serializeEnvironmentDescriptionMap,
+	serializeEnvironmentVariableCollection
+} from '../../../../../platform/terminal/common/environmentVariableShared.js';
 import { IConfigurationResolverService } from '../../../../services/configurationResolver/common/configurationResolver.js';
 import { SideBySideEditor, EditorResourceAccessor } from '../../../../common/editor.js';
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
 import { Schemas } from '../../../../../base/common/network.js';
 import { ILabelService } from '../../../../../platform/label/common/label.js';
 import { IEnvironmentVariableService } from '../environmentVariable.js';
-import { IProcessDataEvent, IRequestResolveVariablesEvent, IShellLaunchConfigDto, ITerminalLaunchError, ITerminalProfile, ITerminalsLayoutInfo, ITerminalsLayoutInfoById, TerminalIcon, IProcessProperty, ProcessPropertyType, IProcessPropertyMap, TitleEventSource, ISerializedTerminalState, IPtyHostController, ITerminalProcessOptions, IProcessReadyEvent, ITerminalLogService, IPtyHostLatencyMeasurement, ITerminalLaunchResult } from '../../../../../platform/terminal/common/terminal.js';
-import { IGetTerminalLayoutInfoArgs, IProcessDetails, ISetTerminalLayoutInfoArgs } from '../../../../../platform/terminal/common/terminalProcess.js';
+import {
+	IProcessDataEvent,
+	IRequestResolveVariablesEvent,
+	IShellLaunchConfigDto,
+	ITerminalLaunchError,
+	ITerminalProfile,
+	ITerminalsLayoutInfo,
+	ITerminalsLayoutInfoById,
+	TerminalIcon,
+	IProcessProperty,
+	ProcessPropertyType,
+	IProcessPropertyMap,
+	TitleEventSource,
+	ISerializedTerminalState,
+	IPtyHostController,
+	ITerminalProcessOptions,
+	IProcessReadyEvent,
+	ITerminalLogService,
+	IPtyHostLatencyMeasurement,
+	ITerminalLaunchResult
+} from '../../../../../platform/terminal/common/terminal.js';
+import {
+	IGetTerminalLayoutInfoArgs,
+	IProcessDetails,
+	ISetTerminalLayoutInfoArgs
+} from '../../../../../platform/terminal/common/terminalProcess.js';
 import { IProcessEnvironment, OperatingSystem } from '../../../../../base/common/platform.js';
 import { ICompleteTerminalConfiguration } from '../terminal.js';
 import { IPtyHostProcessReplayEvent } from '../../../../../platform/terminal/common/capabilities/capabilities.js';
-import { ISerializableEnvironmentDescriptionMap, ISerializableEnvironmentVariableCollection } from '../../../../../platform/terminal/common/environmentVariable.js';
+import {
+	ISerializableEnvironmentDescriptionMap,
+	ISerializableEnvironmentVariableCollection
+} from '../../../../../platform/terminal/common/environmentVariable.js';
 import type * as performance from '../../../../../base/common/performance.js';
 import { RemoteTerminalChannelEvent, RemoteTerminalChannelRequest } from './terminal.js';
 import { ConfigurationResolverExpression } from '../../../../services/configurationResolver/common/configurationResolverExpression.js';
 
 export const REMOTE_TERMINAL_CHANNEL_NAME = 'remoteterminal';
 
-export type ITerminalEnvironmentVariableCollections = [string, ISerializableEnvironmentVariableCollection, ISerializableEnvironmentDescriptionMap][];
+export type ITerminalEnvironmentVariableCollections = [
+	string,
+	ISerializableEnvironmentVariableCollection,
+	ISerializableEnvironmentDescriptionMap
+][];
 
 export interface IWorkspaceFolderData {
 	uri: UriComponents;
@@ -74,31 +108,55 @@ export class RemoteTerminalChannelClient implements IPtyHostController {
 		return this._channel.listen<void>(RemoteTerminalChannelEvent.OnPtyHostResponsiveEvent);
 	}
 	get onPtyHostRequestResolveVariables(): Event<IRequestResolveVariablesEvent> {
-		return this._channel.listen<IRequestResolveVariablesEvent>(RemoteTerminalChannelEvent.OnPtyHostRequestResolveVariablesEvent);
+		return this._channel.listen<IRequestResolveVariablesEvent>(
+			RemoteTerminalChannelEvent.OnPtyHostRequestResolveVariablesEvent
+		);
 	}
 	get onProcessData(): Event<{ id: number; event: IProcessDataEvent | string }> {
-		return this._channel.listen<{ id: number; event: IProcessDataEvent | string }>(RemoteTerminalChannelEvent.OnProcessDataEvent);
+		return this._channel.listen<{ id: number; event: IProcessDataEvent | string }>(
+			RemoteTerminalChannelEvent.OnProcessDataEvent
+		);
 	}
 	get onProcessExit(): Event<{ id: number; event: number | undefined }> {
-		return this._channel.listen<{ id: number; event: number | undefined }>(RemoteTerminalChannelEvent.OnProcessExitEvent);
+		return this._channel.listen<{ id: number; event: number | undefined }>(
+			RemoteTerminalChannelEvent.OnProcessExitEvent
+		);
 	}
 	get onProcessReady(): Event<{ id: number; event: IProcessReadyEvent }> {
-		return this._channel.listen<{ id: number; event: IProcessReadyEvent }>(RemoteTerminalChannelEvent.OnProcessReadyEvent);
+		return this._channel.listen<{ id: number; event: IProcessReadyEvent }>(
+			RemoteTerminalChannelEvent.OnProcessReadyEvent
+		);
 	}
 	get onProcessReplay(): Event<{ id: number; event: IPtyHostProcessReplayEvent }> {
-		return this._channel.listen<{ id: number; event: IPtyHostProcessReplayEvent }>(RemoteTerminalChannelEvent.OnProcessReplayEvent);
+		return this._channel.listen<{ id: number; event: IPtyHostProcessReplayEvent }>(
+			RemoteTerminalChannelEvent.OnProcessReplayEvent
+		);
 	}
 	get onProcessOrphanQuestion(): Event<{ id: number }> {
 		return this._channel.listen<{ id: number }>(RemoteTerminalChannelEvent.OnProcessOrphanQuestion);
 	}
-	get onExecuteCommand(): Event<{ reqId: number; persistentProcessId: number; commandId: string; commandArgs: unknown[] }> {
-		return this._channel.listen<{ reqId: number; persistentProcessId: number; commandId: string; commandArgs: unknown[] }>(RemoteTerminalChannelEvent.OnExecuteCommand);
+	get onExecuteCommand(): Event<{
+		reqId: number;
+		persistentProcessId: number;
+		commandId: string;
+		commandArgs: unknown[];
+	}> {
+		return this._channel.listen<{
+			reqId: number;
+			persistentProcessId: number;
+			commandId: string;
+			commandArgs: unknown[];
+		}>(RemoteTerminalChannelEvent.OnExecuteCommand);
 	}
 	get onDidRequestDetach(): Event<{ requestId: number; workspaceId: string; instanceId: number }> {
-		return this._channel.listen<{ requestId: number; workspaceId: string; instanceId: number }>(RemoteTerminalChannelEvent.OnDidRequestDetach);
+		return this._channel.listen<{ requestId: number; workspaceId: string; instanceId: number }>(
+			RemoteTerminalChannelEvent.OnDidRequestDetach
+		);
 	}
 	get onDidChangeProperty(): Event<{ id: number; property: IProcessProperty }> {
-		return this._channel.listen<{ id: number; property: IProcessProperty }>(RemoteTerminalChannelEvent.OnDidChangeProperty);
+		return this._channel.listen<{ id: number; property: IProcessProperty }>(
+			RemoteTerminalChannelEvent.OnDidChangeProperty
+		);
 	}
 
 	constructor(
@@ -112,8 +170,8 @@ export class RemoteTerminalChannelClient implements IPtyHostController {
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
 		@IEditorService private readonly _editorService: IEditorService,
 		@ILabelService private readonly _labelService: ILabelService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-	) { }
+		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService
+	) {}
 
 	restartPtyHost(): Promise<void> {
 		return this._channel.call(RemoteTerminalChannelRequest.RestartPtyHost, []);
@@ -135,7 +193,9 @@ export class RemoteTerminalChannelClient implements IPtyHostController {
 		// We will use the resolver service to resolve all the variables in the config / launch config
 		// But then we will keep only some variables, since the rest need to be resolved on the remote side
 		const resolvedVariables = Object.create(null);
-		const lastActiveWorkspace = activeWorkspaceRootUri ? this._workspaceContextService.getWorkspaceFolder(activeWorkspaceRootUri) ?? undefined : undefined;
+		const lastActiveWorkspace = activeWorkspaceRootUri
+			? (this._workspaceContextService.getWorkspaceFolder(activeWorkspaceRootUri) ?? undefined)
+			: undefined;
 		const expr = ConfigurationResolverExpression.parse({ shellLaunchConfig, configuration });
 		try {
 			await this._resolverService.resolveAsync(lastActiveWorkspace, expr);
@@ -150,7 +210,11 @@ export class RemoteTerminalChannelClient implements IPtyHostController {
 
 		const envVariableCollections: ITerminalEnvironmentVariableCollections = [];
 		for (const [k, v] of this._environmentVariableService.collections.entries()) {
-			envVariableCollections.push([k, serializeEnvironmentVariableCollection(v.map), serializeEnvironmentDescriptionMap(v.descriptionMap)]);
+			envVariableCollections.push([
+				k,
+				serializeEnvironmentVariableCollection(v.map),
+				serializeEnvironmentDescriptionMap(v.descriptionMap)
+			]);
 		}
 
 		const resolverResult = await this._remoteAuthorityResolverService.resolveAuthority(this._remoteAuthority);
@@ -159,12 +223,15 @@ export class RemoteTerminalChannelClient implements IPtyHostController {
 			 * If the extension host was spawned via a launch configuration,
 			 * include the environment provided by that launch configuration.
 			 */
-			...(this._environmentService.debugExtensionHost.env ?? {}), ...resolverResult.options?.extensionHostEnv
+			...(this._environmentService.debugExtensionHost.env ?? {}),
+			...resolverResult.options?.extensionHostEnv
 		};
 
 		const workspace = this._workspaceContextService.getWorkspace();
 		const workspaceFolders = workspace.folders;
-		const activeWorkspaceFolder = activeWorkspaceRootUri ? this._workspaceContextService.getWorkspaceFolder(activeWorkspaceRootUri) : null;
+		const activeWorkspaceFolder = activeWorkspaceRootUri
+			? this._workspaceContextService.getWorkspaceFolder(activeWorkspaceRootUri)
+			: null;
 
 		const activeFileResource = EditorResourceAccessor.getOriginalUri(this._editorService.activeEditor, {
 			supportSideBySide: SideBySideEditor.PRIMARY,
@@ -263,8 +330,17 @@ export class RemoteTerminalChannelClient implements IPtyHostController {
 	getDefaultSystemShell(osOverride?: OperatingSystem): Promise<string> {
 		return this._channel.call(RemoteTerminalChannelRequest.GetDefaultSystemShell, [osOverride]);
 	}
-	getProfiles(profiles: unknown, defaultProfile: unknown, includeDetectedProfiles?: boolean): Promise<ITerminalProfile[]> {
-		return this._channel.call(RemoteTerminalChannelRequest.GetProfiles, [this._workspaceContextService.getWorkspace().id, profiles, defaultProfile, includeDetectedProfiles]);
+	getProfiles(
+		profiles: unknown,
+		defaultProfile: unknown,
+		includeDetectedProfiles?: boolean
+	): Promise<ITerminalProfile[]> {
+		return this._channel.call(RemoteTerminalChannelRequest.GetProfiles, [
+			this._workspaceContextService.getWorkspace().id,
+			profiles,
+			defaultProfile,
+			includeDetectedProfiles
+		]);
 	}
 	acceptPtyHostResolvedVariables(requestId: number, resolved: string[]): Promise<void> {
 		return this._channel.call(RemoteTerminalChannelRequest.AcceptPtyHostResolvedVariables, [requestId, resolved]);
@@ -307,13 +383,21 @@ export class RemoteTerminalChannelClient implements IPtyHostController {
 	getTerminalLayoutInfo(): Promise<ITerminalsLayoutInfo | undefined> {
 		const workspace = this._workspaceContextService.getWorkspace();
 		const args: IGetTerminalLayoutInfoArgs = {
-			workspaceId: workspace.id,
+			workspaceId: workspace.id
 		};
 		return this._channel.call<ITerminalsLayoutInfo>(RemoteTerminalChannelRequest.GetTerminalLayoutInfo, args);
 	}
 
-	reviveTerminalProcesses(workspaceId: string, state: ISerializedTerminalState[], dateTimeFormatLocate: string): Promise<void> {
-		return this._channel.call(RemoteTerminalChannelRequest.ReviveTerminalProcesses, [workspaceId, state, dateTimeFormatLocate]);
+	reviveTerminalProcesses(
+		workspaceId: string,
+		state: ISerializedTerminalState[],
+		dateTimeFormatLocate: string
+	): Promise<void> {
+		return this._channel.call(RemoteTerminalChannelRequest.ReviveTerminalProcesses, [
+			workspaceId,
+			state,
+			dateTimeFormatLocate
+		]);
 	}
 
 	getRevivedPtyNewId(id: number): Promise<number | undefined> {

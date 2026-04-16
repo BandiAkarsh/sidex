@@ -6,7 +6,14 @@
 import { Emitter } from '../../../../base/common/event.js';
 import { TernarySearchTree } from '../../../../base/common/ternarySearchTree.js';
 import { URI } from '../../../../base/common/uri.js';
-import { getConfigurationValue, IConfigurationChangeEvent, IConfigurationOverrides, IConfigurationService, IConfigurationValue, isConfigurationOverrides } from '../../common/configuration.js';
+import {
+	getConfigurationValue,
+	IConfigurationChangeEvent,
+	IConfigurationOverrides,
+	IConfigurationService,
+	IConfigurationValue,
+	isConfigurationOverrides
+} from '../../common/configuration.js';
 import { Extensions, IConfigurationRegistry } from '../../common/configurationRegistry.js';
 import { Registry } from '../../../registry/common/platform.js';
 
@@ -21,7 +28,8 @@ export class TestConfigurationService implements IConfigurationService {
 		this.configuration = configuration || Object.create(null);
 	}
 
-	private configurationByRoot: TernarySearchTree<string, Record<string, unknown>> = TernarySearchTree.forPaths<Record<string, unknown>>();
+	private configurationByRoot: TernarySearchTree<string, Record<string, unknown>> =
+		TernarySearchTree.forPaths<Record<string, unknown>>();
 
 	public reloadConfiguration<T>(): Promise<T> {
 		return Promise.resolve(this.getValue() as T);

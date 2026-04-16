@@ -17,7 +17,15 @@ import { EditorService } from '../../services/editor/browser/editorService.js';
 import { IEditorGroupsService } from '../../services/editor/common/editorGroupsService.js';
 import { IEditorService, SIDE_GROUP } from '../../services/editor/common/editorService.js';
 import { LifecyclePhase } from '../../services/lifecycle/common/lifecycle.js';
-import { ITestInstantiationService, TestFileEditorInput, TestServiceAccessor, TestForceRevealFileEditorInput, createEditorPart, registerTestEditor, workbenchInstantiationService } from './workbenchTestServices.js';
+import {
+	ITestInstantiationService,
+	TestFileEditorInput,
+	TestServiceAccessor,
+	TestForceRevealFileEditorInput,
+	createEditorPart,
+	registerTestEditor,
+	workbenchInstantiationService
+} from './workbenchTestServices.js';
 
 suite('Contributions', () => {
 	const disposables = new DisposableStore();
@@ -31,7 +39,9 @@ suite('Contributions', () => {
 	const TEST_EDITOR_ID = 'MyTestEditorForContributions';
 	const TEST_EDITOR_INPUT_ID = 'testEditorInputForContributions';
 
-	async function createEditorService(instantiationService: ITestInstantiationService = workbenchInstantiationService(undefined, disposables)): Promise<[EditorPart, EditorService]> {
+	async function createEditorService(
+		instantiationService: ITestInstantiationService = workbenchInstantiationService(undefined, disposables)
+	): Promise<[EditorPart, EditorService]> {
 		const part = await createEditorPart(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, part);
 
@@ -48,7 +58,13 @@ suite('Contributions', () => {
 		bCreated = false;
 		bCreatedPromise = new DeferredPromise<void>();
 
-		disposables.add(registerTestEditor(TEST_EDITOR_ID, [new SyncDescriptor(TestFileEditorInput), new SyncDescriptor(TestForceRevealFileEditorInput)], TEST_EDITOR_INPUT_ID));
+		disposables.add(
+			registerTestEditor(
+				TEST_EDITOR_ID,
+				[new SyncDescriptor(TestFileEditorInput), new SyncDescriptor(TestForceRevealFileEditorInput)],
+				TEST_EDITOR_INPUT_ID
+			)
+		);
 	});
 
 	teardown(async () => {
@@ -150,29 +166,32 @@ suite('Contributions', () => {
 		assert.ok(aCreated);
 	});
 
-	(isCI ? test.skip /* runWhenIdle seems flaky in CI on Windows */ : test)('lifecycle phase instantiation works for late phases', async () => {
-		const registry = disposables.add(new WorkbenchContributionsRegistry());
+	(isCI ? test.skip /* runWhenIdle seems flaky in CI on Windows */ : test)(
+		'lifecycle phase instantiation works for late phases',
+		async () => {
+			const registry = disposables.add(new WorkbenchContributionsRegistry());
 
-		const instantiationService = workbenchInstantiationService(undefined, disposables);
-		const accessor = instantiationService.createInstance(TestServiceAccessor);
-		accessor.lifecycleService.usePhases = true;
-		registry.start(instantiationService);
+			const instantiationService = workbenchInstantiationService(undefined, disposables);
+			const accessor = instantiationService.createInstance(TestServiceAccessor);
+			accessor.lifecycleService.usePhases = true;
+			registry.start(instantiationService);
 
-		registry.registerWorkbenchContribution2('a', TestContributionA, WorkbenchPhase.AfterRestored);
-		registry.registerWorkbenchContribution2('b', TestContributionB, WorkbenchPhase.Eventually);
-		assert.ok(!aCreated);
-		assert.ok(!bCreated);
+			registry.registerWorkbenchContribution2('a', TestContributionA, WorkbenchPhase.AfterRestored);
+			registry.registerWorkbenchContribution2('b', TestContributionB, WorkbenchPhase.Eventually);
+			assert.ok(!aCreated);
+			assert.ok(!bCreated);
 
-		accessor.lifecycleService.phase = LifecyclePhase.Starting;
-		accessor.lifecycleService.phase = LifecyclePhase.Ready;
-		accessor.lifecycleService.phase = LifecyclePhase.Restored;
-		await aCreatedPromise.p;
-		assert.ok(aCreated);
+			accessor.lifecycleService.phase = LifecyclePhase.Starting;
+			accessor.lifecycleService.phase = LifecyclePhase.Ready;
+			accessor.lifecycleService.phase = LifecyclePhase.Restored;
+			await aCreatedPromise.p;
+			assert.ok(aCreated);
 
-		accessor.lifecycleService.phase = LifecyclePhase.Eventually;
-		await bCreatedPromise.p;
-		assert.ok(bCreated);
-	});
+			accessor.lifecycleService.phase = LifecyclePhase.Eventually;
+			await bCreatedPromise.p;
+			assert.ok(bCreated);
+		}
+	);
 
 	test('contribution on editor - editor exists before start', async function () {
 		const registry = disposables.add(new WorkbenchContributionsRegistry());

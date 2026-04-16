@@ -34,22 +34,39 @@ class StubPaneCompositePart implements IPaneCompositePart {
 	onDidChange = Event.None;
 	onDidPaneCompositeOpen = new Emitter<IPaneComposite>().event;
 	onDidPaneCompositeClose = new Emitter<IPaneComposite>().event;
-	openPaneComposite(): Promise<IPaneComposite | undefined> { return Promise.resolve(undefined); }
-	getPaneComposites(): PaneCompositeDescriptor[] { return []; }
-	getPaneComposite(): PaneCompositeDescriptor | undefined { return undefined; }
-	getActivePaneComposite(): IPaneComposite | undefined { return undefined; }
-	getProgressIndicator() { return undefined; }
-	hideActivePaneComposite(): void { }
-	getLastActivePaneCompositeId(): string { return ''; }
-	getPinnedPaneCompositeIds(): string[] { return []; }
-	getVisiblePaneCompositeIds(): string[] { return []; }
-	getPaneCompositeIds(): string[] { return []; }
-	layout(): void { }
-	dispose(): void { }
+	openPaneComposite(): Promise<IPaneComposite | undefined> {
+		return Promise.resolve(undefined);
+	}
+	getPaneComposites(): PaneCompositeDescriptor[] {
+		return [];
+	}
+	getPaneComposite(): PaneCompositeDescriptor | undefined {
+		return undefined;
+	}
+	getActivePaneComposite(): IPaneComposite | undefined {
+		return undefined;
+	}
+	getProgressIndicator() {
+		return undefined;
+	}
+	hideActivePaneComposite(): void {}
+	getLastActivePaneCompositeId(): string {
+		return '';
+	}
+	getPinnedPaneCompositeIds(): string[] {
+		return [];
+	}
+	getVisiblePaneCompositeIds(): string[] {
+		return [];
+	}
+	getPaneCompositeIds(): string[] {
+		return [];
+	}
+	layout(): void {}
+	dispose(): void {}
 }
 
 suite('ActivitybarPart', () => {
-
 	const disposables = new DisposableStore();
 
 	let fixture: HTMLElement;
@@ -68,7 +85,7 @@ suite('ActivitybarPart', () => {
 
 	function createActivitybarPart(compact: boolean): { part: ActivitybarPart; configService: TestConfigurationService } {
 		const configService = new TestConfigurationService({
-			[LayoutSettings.ACTIVITY_BAR_COMPACT]: compact,
+			[LayoutSettings.ACTIVITY_BAR_COMPACT]: compact
 		});
 		const storageService = disposables.add(new TestStorageService());
 		const themeService = new TestThemeService();
@@ -80,24 +97,30 @@ suite('ActivitybarPart', () => {
 
 		// Stub instantiation service—createCompositeBar is only called in show(),
 		// which we skip in unit tests focused on dimensions / style behaviour.
-		const stubInstantiationService = { createInstance: () => { throw new Error('not expected'); } } as unknown as IInstantiationService;
+		const stubInstantiationService = {
+			createInstance: () => {
+				throw new Error('not expected');
+			}
+		} as unknown as IInstantiationService;
 
-		const part = disposables.add(new ActivitybarPart(
-			ViewContainerLocation.Sidebar,
-			new StubPaneCompositePart(),
-			stubInstantiationService,
-			layoutService,
-			themeService,
-			storageService,
-			configService,
-		));
+		const part = disposables.add(
+			new ActivitybarPart(
+				ViewContainerLocation.Sidebar,
+				new StubPaneCompositePart(),
+				stubInstantiationService,
+				layoutService,
+				themeService,
+				storageService,
+				configService
+			)
+		);
 
 		return { part, configService };
 	}
 
 	function fireConfigChange(configService: TestConfigurationService, key: string): void {
 		configService.onDidChangeConfigurationEmitter.fire({
-			affectsConfiguration: (k: string) => k === key,
+			affectsConfiguration: (k: string) => k === key
 		} satisfies Partial<IConfigurationChangeEvent> as unknown as IConfigurationChangeEvent);
 	}
 
@@ -108,12 +131,12 @@ suite('ActivitybarPart', () => {
 			{
 				width: ActivitybarPart.ACTIVITYBAR_WIDTH,
 				actionHeight: ActivitybarPart.ACTION_HEIGHT,
-				iconSize: ActivitybarPart.ICON_SIZE,
+				iconSize: ActivitybarPart.ICON_SIZE
 			},
 			{
 				width: 48,
 				actionHeight: 48,
-				iconSize: 24,
+				iconSize: 24
 			}
 		);
 	});
@@ -123,12 +146,12 @@ suite('ActivitybarPart', () => {
 			{
 				width: ActivitybarPart.COMPACT_ACTIVITYBAR_WIDTH,
 				actionHeight: ActivitybarPart.COMPACT_ACTION_HEIGHT,
-				iconSize: ActivitybarPart.COMPACT_ICON_SIZE,
+				iconSize: ActivitybarPart.COMPACT_ICON_SIZE
 			},
 			{
 				width: 36,
 				actionHeight: 32,
-				iconSize: 16,
+				iconSize: 16
 			}
 		);
 	});
@@ -240,8 +263,14 @@ suite('ActivitybarPart', () => {
 		fixture.appendChild(el);
 		part.create(el);
 
-		assert.strictEqual(el.style.getPropertyValue('--activity-bar-width'), `${ActivitybarPart.COMPACT_ACTIVITYBAR_WIDTH}px`);
-		assert.strictEqual(el.style.getPropertyValue('--activity-bar-action-height'), `${ActivitybarPart.COMPACT_ACTION_HEIGHT}px`);
+		assert.strictEqual(
+			el.style.getPropertyValue('--activity-bar-width'),
+			`${ActivitybarPart.COMPACT_ACTIVITYBAR_WIDTH}px`
+		);
+		assert.strictEqual(
+			el.style.getPropertyValue('--activity-bar-action-height'),
+			`${ActivitybarPart.COMPACT_ACTION_HEIGHT}px`
+		);
 		assert.strictEqual(el.style.getPropertyValue('--activity-bar-icon-size'), `${ActivitybarPart.COMPACT_ICON_SIZE}px`);
 		assert.strictEqual(el.classList.contains('compact'), true);
 	});
@@ -261,8 +290,14 @@ suite('ActivitybarPart', () => {
 		configService.setUserConfiguration(LayoutSettings.ACTIVITY_BAR_COMPACT, true);
 		fireConfigChange(configService, LayoutSettings.ACTIVITY_BAR_COMPACT);
 
-		assert.strictEqual(el.style.getPropertyValue('--activity-bar-width'), `${ActivitybarPart.COMPACT_ACTIVITYBAR_WIDTH}px`);
-		assert.strictEqual(el.style.getPropertyValue('--activity-bar-action-height'), `${ActivitybarPart.COMPACT_ACTION_HEIGHT}px`);
+		assert.strictEqual(
+			el.style.getPropertyValue('--activity-bar-width'),
+			`${ActivitybarPart.COMPACT_ACTIVITYBAR_WIDTH}px`
+		);
+		assert.strictEqual(
+			el.style.getPropertyValue('--activity-bar-action-height'),
+			`${ActivitybarPart.COMPACT_ACTION_HEIGHT}px`
+		);
 		assert.strictEqual(el.style.getPropertyValue('--activity-bar-icon-size'), `${ActivitybarPart.COMPACT_ICON_SIZE}px`);
 		assert.strictEqual(el.classList.contains('compact'), true);
 

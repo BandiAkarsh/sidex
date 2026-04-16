@@ -476,11 +476,11 @@ define({
 		withShiftAltGrIsDeadKey: false
 	},
 	Quote: {
-		value: '\'',
+		value: "'",
 		valueIsDeadKey: false,
 		withShift: '"',
 		withShiftIsDeadKey: false,
-		withAltGr: '\'',
+		withAltGr: "'",
 		withAltGrIsDeadKey: false,
 		withShiftAltGr: '"',
 		withShiftAltGrIsDeadKey: false

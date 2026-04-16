@@ -32,15 +32,19 @@ export class ListTopCellToolbar extends Disposable {
 		this.topCellToolbar = DOM.$('.cell-list-top-cell-toolbar-container');
 		this.topCellToolbarContainer.appendChild(this.topCellToolbar);
 
-		this._register(this.notebookEditor.onDidAttachViewModel(() => {
-			this.updateTopToolbar();
-		}));
-
-		this._register(this.notebookOptions.onDidChangeOptions(e => {
-			if (e.insertToolbarAlignment || e.insertToolbarPosition || e.cellToolbarLocation) {
+		this._register(
+			this.notebookEditor.onDidAttachViewModel(() => {
 				this.updateTopToolbar();
-			}
-		}));
+			})
+		);
+
+		this._register(
+			this.notebookOptions.onDidChangeOptions(e => {
+				if (e.insertToolbarAlignment || e.insertToolbarPosition || e.cellToolbarLocation) {
+					this.updateTopToolbar();
+				}
+			})
+		);
 	}
 
 	private updateTopToolbar() {
@@ -73,7 +77,6 @@ export class ListTopCellToolbar extends Disposable {
 			return;
 		}
 
-
 		this.notebookEditor.changeViewZones(accessor => {
 			const height = this.notebookOptions.computeTopInsertToolbarHeight(this.notebookEditor.textModel?.viewType);
 			const id = accessor.addZone({
@@ -95,23 +98,30 @@ export class ListTopCellToolbar extends Disposable {
 
 			DOM.clearNode(this.topCellToolbar);
 
-			const toolbar = this.instantiationService.createInstance(MenuWorkbenchToolBar, this.topCellToolbar, this.notebookEditor.creationOptions.menuIds.cellTopInsertToolbar, {
-				actionViewItemProvider: (action, options) => {
-					if (action instanceof MenuItemAction) {
-						const item = this.instantiationService.createInstance(CodiconActionViewItem, action, { hoverDelegate: options.hoverDelegate });
-						return item;
-					}
+			const toolbar = this.instantiationService.createInstance(
+				MenuWorkbenchToolBar,
+				this.topCellToolbar,
+				this.notebookEditor.creationOptions.menuIds.cellTopInsertToolbar,
+				{
+					actionViewItemProvider: (action, options) => {
+						if (action instanceof MenuItemAction) {
+							const item = this.instantiationService.createInstance(CodiconActionViewItem, action, {
+								hoverDelegate: options.hoverDelegate
+							});
+							return item;
+						}
 
-					return undefined;
-				},
-				menuOptions: {
-					shouldForwardArgs: true
-				},
-				toolbarOptions: {
-					primaryGroup: (g: string) => /^inline/.test(g),
-				},
-				hiddenItemStrategy: HiddenItemStrategy.Ignore,
-			});
+						return undefined;
+					},
+					menuOptions: {
+						shouldForwardArgs: true
+					},
+					toolbarOptions: {
+						primaryGroup: (g: string) => /^inline/.test(g)
+					},
+					hiddenItemStrategy: HiddenItemStrategy.Ignore
+				}
+			);
 
 			if (this.notebookEditor.hasModel()) {
 				toolbar.context = {
@@ -122,17 +132,21 @@ export class ListTopCellToolbar extends Disposable {
 			this.viewZone.value?.add(toolbar);
 
 			// update toolbar container css based on cell list length
-			this.viewZone.value?.add(this.notebookEditor.onDidChangeModel(() => {
-				this._modelDisposables.clear();
+			this.viewZone.value?.add(
+				this.notebookEditor.onDidChangeModel(() => {
+					this._modelDisposables.clear();
 
-				if (this.notebookEditor.hasModel()) {
-					this._modelDisposables.add(this.notebookEditor.onDidChangeViewCells(() => {
+					if (this.notebookEditor.hasModel()) {
+						this._modelDisposables.add(
+							this.notebookEditor.onDidChangeViewCells(() => {
+								this.updateClass();
+							})
+						);
+
 						this.updateClass();
-					}));
-
-					this.updateClass();
-				}
-			}));
+					}
+				})
+			);
 
 			this.updateClass();
 		});

@@ -13,7 +13,6 @@ import { createDecorator } from '../../../platform/instantiation/common/instanti
 import { IExtHostRpcService } from './extHostRpcService.js';
 
 export class ExtHostUrls implements ExtHostUrlsShape {
-
 	declare _serviceBrand: undefined;
 
 	private static HandlePool = 0;
@@ -22,9 +21,7 @@ export class ExtHostUrls implements ExtHostUrlsShape {
 	private handles = new ExtensionIdentifierSet();
 	private handlers = new Map<number, vscode.UriHandler>();
 
-	constructor(
-		@IExtHostRpcService extHostRpc: IExtHostRpcService
-	) {
+	constructor(@IExtHostRpcService extHostRpc: IExtHostRpcService) {
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadUrls);
 	}
 
@@ -66,5 +63,5 @@ export class ExtHostUrls implements ExtHostUrlsShape {
 	}
 }
 
-export interface IExtHostUrlsService extends ExtHostUrls { }
+export interface IExtHostUrlsService extends ExtHostUrls {}
 export const IExtHostUrlsService = createDecorator<IExtHostUrlsService>('IExtHostUrlsService');

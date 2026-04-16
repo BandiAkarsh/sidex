@@ -107,16 +107,16 @@ suite('ProblemPatternParser', () => {
 			];
 			const parsed = parser.parse(problemPattern);
 			assert(reporter.isOK());
-			assert.deepStrictEqual(parsed,
-				[{
+			assert.deepStrictEqual(parsed, [
+				{
 					regexp: testRegexp,
 					kind: matchers.ProblemLocationKind.Location,
 					file: 3,
 					line: 4,
 					character: 5,
 					message: 6
-				}]
-			);
+				}
+			]);
 		});
 		test('defines a pattern bsaed on regexp and property fields, with location', () => {
 			const problemPattern: matchers.Config.MultiLineProblemPattern = [
@@ -124,15 +124,15 @@ suite('ProblemPatternParser', () => {
 			];
 			const parsed = parser.parse(problemPattern);
 			assert(reporter.isOK());
-			assert.deepStrictEqual(parsed,
-				[{
+			assert.deepStrictEqual(parsed, [
+				{
 					regexp: testRegexp,
 					kind: matchers.ProblemLocationKind.Location,
 					file: 3,
 					location: 4,
 					message: 6
-				}]
-			);
+				}
+			]);
 		});
 		test('accepts a pattern that provides the fields from multiple entries', () => {
 			const problemPattern: matchers.Config.MultiLineProblemPattern = [
@@ -168,13 +168,15 @@ suite('ProblemPatternParser', () => {
 			const parsed = parser.parse(problemPattern);
 			assert.strictEqual(null, parsed);
 			assert.strictEqual(ValidationState.Error, reporter.state);
-			assert(reporter.hasMessage('The problem pattern is invalid. The kind property must be provided only in the first element'));
+			assert(
+				reporter.hasMessage(
+					'The problem pattern is invalid. The kind property must be provided only in the first element'
+				)
+			);
 		});
 
 		test('kind: Location requires a regexp', () => {
-			const problemPattern: matchers.Config.MultiLineProblemPattern = [
-				{ file: 0, line: 1, column: 20, message: 0 }
-			];
+			const problemPattern: matchers.Config.MultiLineProblemPattern = [{ file: 0, line: 1, column: 20, message: 0 }];
 			const parsed = parser.parse(problemPattern);
 			assert.strictEqual(null, parsed);
 			assert.strictEqual(ValidationState.Error, reporter.state);
@@ -209,7 +211,11 @@ suite('ProblemPatternParser', () => {
 			const parsed = parser.parse(problemPattern);
 			assert.strictEqual(null, parsed);
 			assert.strictEqual(ValidationState.Error, reporter.state);
-			assert(reporter.hasMessage('The problem pattern is invalid. It must either have kind: "file" or have a line or location match group.'));
+			assert(
+				reporter.hasMessage(
+					'The problem pattern is invalid. It must either have kind: "file" or have a line or location match group.'
+				)
+			);
 		});
 
 		test('kind: Location requires either a line or location', () => {
@@ -219,7 +225,11 @@ suite('ProblemPatternParser', () => {
 			const parsed = parser.parse(problemPattern);
 			assert.strictEqual(null, parsed);
 			assert.strictEqual(ValidationState.Error, reporter.state);
-			assert(reporter.hasMessage('The problem pattern is invalid. It must either have kind: "file" or have a line or location match group.'));
+			assert(
+				reporter.hasMessage(
+					'The problem pattern is invalid. It must either have kind: "file" or have a line or location match group.'
+				)
+			);
 		});
 
 		test('kind: File accepts a regexp, file and message', () => {
@@ -228,20 +238,18 @@ suite('ProblemPatternParser', () => {
 			];
 			const parsed = parser.parse(problemPattern);
 			assert(reporter.isOK());
-			assert.deepStrictEqual(parsed,
-				[{
+			assert.deepStrictEqual(parsed, [
+				{
 					regexp: testRegexp,
 					kind: matchers.ProblemLocationKind.File,
 					file: 2,
 					message: 6
-				}]
-			);
+				}
+			]);
 		});
 
 		test('kind: File requires a file', () => {
-			const problemPattern: matchers.Config.MultiLineProblemPattern = [
-				{ regexp: 'test', kind: 'file', message: 6 }
-			];
+			const problemPattern: matchers.Config.MultiLineProblemPattern = [{ regexp: 'test', kind: 'file', message: 6 }];
 			const parsed = parser.parse(problemPattern);
 			assert.strictEqual(null, parsed);
 			assert.strictEqual(ValidationState.Error, reporter.state);
@@ -249,9 +257,7 @@ suite('ProblemPatternParser', () => {
 		});
 
 		test('kind: File requires a message', () => {
-			const problemPattern: matchers.Config.MultiLineProblemPattern = [
-				{ regexp: 'test', kind: 'file', file: 6 }
-			];
+			const problemPattern: matchers.Config.MultiLineProblemPattern = [{ regexp: 'test', kind: 'file', file: 6 }];
 			const parsed = parser.parse(problemPattern);
 			assert.strictEqual(null, parsed);
 			assert.strictEqual(ValidationState.Error, reporter.state);
@@ -307,12 +313,12 @@ suite('ProblemPatternRegistry - msCompile', () => {
 			fileLocation: matchers.FileLocationKind.Absolute,
 			pattern: matchers.ProblemPatternRegistry.get('msCompile')
 		});
-		const line = 'Main.cs: warning CS0168: The variable \'x\' is declared but never used';
+		const line = "Main.cs: warning CS0168: The variable 'x' is declared but never used";
 		const result = matcher.handle([line]);
 		assert.ok(result.match);
 		const marker = result.match!.marker;
 		assert.strictEqual(marker.code, 'CS0168');
-		assert.strictEqual(marker.message, 'The variable \'x\' is declared but never used');
+		assert.strictEqual(marker.message, "The variable 'x' is declared but never used");
 		assert.strictEqual(marker.severity, MarkerSeverity.Warning);
 	});
 
@@ -355,12 +361,12 @@ suite('ProblemPatternRegistry - msCompile', () => {
 			fileLocation: matchers.FileLocationKind.Absolute,
 			pattern: matchers.ProblemPatternRegistry.get('msCompile')
 		});
-		const line = 'Main.cs(17,20): subcategory warning CS0168: The variable \'x\' is declared but never used';
+		const line = "Main.cs(17,20): subcategory warning CS0168: The variable 'x' is declared but never used";
 		const result = matcher.handle([line]);
 		assert.ok(result.match);
 		const marker = result.match!.marker;
 		assert.strictEqual(marker.code, 'CS0168');
-		assert.strictEqual(marker.message, 'The variable \'x\' is declared but never used');
+		assert.strictEqual(marker.message, "The variable 'x' is declared but never used");
 		assert.strictEqual(marker.severity, MarkerSeverity.Warning);
 	});
 
@@ -391,7 +397,7 @@ suite('ProblemPatternRegistry - msCompile', () => {
 			fileLocation: matchers.FileLocationKind.Absolute,
 			pattern: matchers.ProblemPatternRegistry.get('msCompile')
 		});
-		const line = 'warning: The variable \'x\' is declared but never used';
+		const line = "warning: The variable 'x' is declared but never used";
 		const result = matcher.handle([line]);
 		assert.strictEqual(result.match, null);
 	});

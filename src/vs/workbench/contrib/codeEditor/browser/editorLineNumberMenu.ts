@@ -7,9 +7,17 @@ import { IAction, Separator } from '../../../../base/common/actions.js';
 import { Disposable, IDisposable } from '../../../../base/common/lifecycle.js';
 import { isMacintosh } from '../../../../base/common/platform.js';
 import { ICodeEditor, IEditorMouseEvent, MouseTargetType } from '../../../../editor/browser/editorBrowser.js';
-import { registerEditorContribution, EditorContributionInstantiation } from '../../../../editor/browser/editorExtensions.js';
+import {
+	registerEditorContribution,
+	EditorContributionInstantiation
+} from '../../../../editor/browser/editorExtensions.js';
 import { IEditorContribution } from '../../../../editor/common/editorCommon.js';
-import { IMenuService, MenuId, MenuItemAction, SubmenuItemAction } from '../../../../platform/actions/common/actions.js';
+import {
+	IMenuService,
+	MenuId,
+	MenuItemAction,
+	SubmenuItemAction
+} from '../../../../platform/actions/common/actions.js';
 import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
 import { IContextMenuService } from '../../../../platform/contextview/browser/contextView.js';
 import { TextEditorSelectionSource } from '../../../../platform/editor/common/editor.js';
@@ -17,7 +25,10 @@ import { IInstantiationService, ServicesAccessor } from '../../../../platform/in
 import { Registry } from '../../../../platform/registry/common/platform.js';
 
 export interface IGutterActionsGenerator {
-	(context: { lineNumber: number; editor: ICodeEditor; accessor: ServicesAccessor }, result: { push(action: IAction, group?: string): void }): void;
+	(
+		context: { lineNumber: number; editor: ICodeEditor; accessor: ServicesAccessor },
+		result: { push(action: IAction, group?: string): void }
+	): void;
 }
 
 export class GutterActionsRegistryImpl {
@@ -54,12 +65,11 @@ export class EditorLineNumberContextMenu extends Disposable implements IEditorCo
 		@IContextMenuService private readonly contextMenuService: IContextMenuService,
 		@IMenuService private readonly menuService: IMenuService,
 		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService private readonly instantiationService: IInstantiationService
 	) {
 		super();
 
 		this._register(this.editor.onMouseDown((e: IEditorMouseEvent) => this.doShow(e, false)));
-
 	}
 
 	public show(e: IEditorMouseEvent) {
@@ -70,9 +80,12 @@ export class EditorLineNumberContextMenu extends Disposable implements IEditorCo
 		const model = this.editor.getModel();
 
 		// on macOS ctrl+click is interpreted as right click
-		if (!e.event.rightButton && !(isMacintosh && e.event.leftButton && e.event.ctrlKey) && !force
-			|| e.target.type !== MouseTargetType.GUTTER_LINE_NUMBERS && e.target.type !== MouseTargetType.GUTTER_GLYPH_MARGIN
-			|| !e.target.position || !model
+		if (
+			(!e.event.rightButton && !(isMacintosh && e.event.leftButton && e.event.ctrlKey) && !force) ||
+			(e.target.type !== MouseTargetType.GUTTER_LINE_NUMBERS &&
+				e.target.type !== MouseTargetType.GUTTER_GLYPH_MARGIN) ||
+			!e.target.position ||
+			!model
 		) {
 			return;
 		}
@@ -87,13 +100,16 @@ export class EditorLineNumberContextMenu extends Disposable implements IEditorCo
 		this.instantiationService.invokeFunction(accessor => {
 			for (const generator of GutterActionsRegistry.getGutterActionsGenerators()) {
 				const collectedActions = new Map<string, IAction[]>();
-				generator({ lineNumber, editor: this.editor, accessor }, {
-					push: (action: IAction, group: string = 'navigation') => {
-						const actions = (collectedActions.get(group) ?? []);
-						actions.push(action);
-						collectedActions.set(group, actions);
+				generator(
+					{ lineNumber, editor: this.editor, accessor },
+					{
+						push: (action: IAction, group: string = 'navigation') => {
+							const actions = collectedActions.get(group) ?? [];
+							actions.push(action);
+							collectedActions.set(group, actions);
+						}
 					}
-				});
+				);
 				for (const [group, actions] of collectedActions.entries()) {
 					allActions.push([group, actions]);
 				}
@@ -114,7 +130,9 @@ export class EditorLineNumberContextMenu extends Disposable implements IEditorCo
 					startColumn: 1,
 					endColumn: model.getLineLength(lineNumber) + 1
 				};
-				const containsSelection = currentSelections?.some(selection => !selection.isEmpty() && selection.intersectRanges(lineRange) !== null);
+				const containsSelection = currentSelections?.some(
+					selection => !selection.isEmpty() && selection.intersectRanges(lineRange) !== null
+				);
 				if (!containsSelection) {
 					this.editor.setSelection(lineRange, TextEditorSelectionSource.PROGRAMMATIC);
 				}
@@ -122,11 +140,15 @@ export class EditorLineNumberContextMenu extends Disposable implements IEditorCo
 
 			this.contextMenuService.showContextMenu({
 				getAnchor: () => e.event,
-				getActions: () => Separator.join(...allActions.map((a) => a[1])),
-				onHide: () => menu.dispose(),
+				getActions: () => Separator.join(...allActions.map(a => a[1])),
+				onHide: () => menu.dispose()
 			});
 		});
 	}
 }
 
-registerEditorContribution(EditorLineNumberContextMenu.ID, EditorLineNumberContextMenu, EditorContributionInstantiation.AfterFirstRender);
+registerEditorContribution(
+	EditorLineNumberContextMenu.ID,
+	EditorLineNumberContextMenu,
+	EditorContributionInstantiation.AfterFirstRender
+);

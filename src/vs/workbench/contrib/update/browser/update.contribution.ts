@@ -9,7 +9,14 @@ import { Registry } from '../../../../platform/registry/common/platform.js';
 import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from '../../../common/contributions.js';
 import { Categories } from '../../../../platform/action/common/actionCommonCategories.js';
 import { MenuId, registerAction2, Action2 } from '../../../../platform/actions/common/actions.js';
-import { ProductContribution, UpdateContribution, CONTEXT_UPDATE_STATE, SwitchProductQualityContribution, showReleaseNotesInEditor, DefaultAccountUpdateContribution } from './update.js';
+import {
+	ProductContribution,
+	UpdateContribution,
+	CONTEXT_UPDATE_STATE,
+	SwitchProductQualityContribution,
+	showReleaseNotesInEditor,
+	DefaultAccountUpdateContribution
+} from './update.js';
 import { UpdateTitleBarContribution } from './updateTitleBarEntry.js';
 import { LifecyclePhase } from '../../../services/lifecycle/common/lifecycle.js';
 import product from '../../../../platform/product/common/product.js';
@@ -35,23 +42,27 @@ workbench.registerWorkbenchContribution(UpdateTitleBarContribution, LifecyclePha
 // Release notes
 
 export class ShowReleaseNotesAction extends Action2 {
-
 	static readonly AVAILABLE = !!product.releaseNotesUrl;
 
 	constructor() {
 		super({
 			id: ShowCurrentReleaseNotesActionId,
 			title: {
-				...localize2('showReleaseNotes', "Show Release Notes"),
-				mnemonicTitle: localize({ key: 'mshowReleaseNotes', comment: ['&& denotes a mnemonic'] }, "Show &&Release Notes"),
+				...localize2('showReleaseNotes', 'Show Release Notes'),
+				mnemonicTitle: localize(
+					{ key: 'mshowReleaseNotes', comment: ['&& denotes a mnemonic'] },
+					'Show &&Release Notes'
+				)
 			},
 			category: { value: product.nameShort, original: product.nameShort },
 			f1: true,
-			menu: [{
-				id: MenuId.MenubarHelpMenu,
-				group: '1_welcome',
-				order: 5,
-			}]
+			menu: [
+				{
+					id: MenuId.MenubarHelpMenu,
+					group: '1_welcome',
+					order: 5
+				}
+			]
 		});
 	}
 
@@ -67,23 +78,31 @@ export class ShowReleaseNotesAction extends Action2 {
 			if (productService.releaseNotesUrl) {
 				await openerService.open(URI.parse(productService.releaseNotesUrl));
 			} else {
-				throw new Error(localize('update.noReleaseNotesOnline', "This version of {0} does not have release notes online", productService.nameLong));
+				throw new Error(
+					localize(
+						'update.noReleaseNotesOnline',
+						'This version of {0} does not have release notes online',
+						productService.nameLong
+					)
+				);
 			}
 		}
 	}
 }
 
 export class ShowCurrentReleaseNotesFromCurrentFileAction extends Action2 {
-
 	constructor() {
 		super({
 			id: ShowCurrentReleaseNotesFromCurrentFileActionId,
 			title: {
-				...localize2('showReleaseNotesCurrentFile', "Open Current File as Release Notes"),
-				mnemonicTitle: localize({ key: 'mshowReleaseNotes', comment: ['&& denotes a mnemonic'] }, "Show &&Release Notes"),
+				...localize2('showReleaseNotesCurrentFile', 'Open Current File as Release Notes'),
+				mnemonicTitle: localize(
+					{ key: 'mshowReleaseNotes', comment: ['&& denotes a mnemonic'] },
+					'Show &&Release Notes'
+				)
 			},
-			category: localize2('developerCategory', "Developer"),
-			f1: true,
+			category: localize2('developerCategory', 'Developer'),
+			f1: true
 		});
 	}
 
@@ -94,7 +113,7 @@ export class ShowCurrentReleaseNotesFromCurrentFileAction extends Action2 {
 		try {
 			await showReleaseNotesInEditor(instantiationService, productService.version, true);
 		} catch (err) {
-			throw new Error(localize('releaseNotesFromFileNone', "Cannot open the current file as Release Notes"));
+			throw new Error(localize('releaseNotesFromFileNone', 'Cannot open the current file as Release Notes'));
 		}
 	}
 }
@@ -107,14 +126,13 @@ registerAction2(ShowCurrentReleaseNotesFromCurrentFileAction);
 // Update
 
 export class CheckForUpdateAction extends Action2 {
-
 	constructor() {
 		super({
 			id: 'update.checkForUpdate',
 			title: localize2('checkForUpdates', 'Check for Updates...'),
 			category: { value: product.nameShort, original: product.nameShort },
 			f1: true,
-			precondition: CONTEXT_UPDATE_STATE.isEqualTo(StateType.Idle),
+			precondition: CONTEXT_UPDATE_STATE.isEqualTo(StateType.Idle)
 		});
 	}
 
@@ -173,20 +191,21 @@ class RestartToUpdateAction extends Action2 {
 }
 
 class DownloadAction extends Action2 {
-
 	static readonly ID = 'workbench.action.download';
 	static readonly AVAILABLE = !!product.downloadUrl;
 
 	constructor() {
 		super({
 			id: DownloadAction.ID,
-			title: localize2('openDownloadPage', "Download {0}", product.nameLong),
+			title: localize2('openDownloadPage', 'Download {0}', product.nameLong),
 			precondition: IsWebContext, // Only show when running in a web browser
 			f1: true,
-			menu: [{
-				id: MenuId.StatusBarWindowIndicatorMenu,
-				when: IsWebContext
-			}]
+			menu: [
+				{
+					id: MenuId.StatusBarWindowIndicatorMenu,
+					when: IsWebContext
+				}
+			]
 		});
 	}
 
@@ -225,10 +244,12 @@ if (isWindows) {
 			const fileDialogService = accessor.get(IFileDialogService);
 
 			const updatePath = await fileDialogService.showOpenDialog({
-				title: localize('pickUpdate', "Apply Update"),
+				title: localize('pickUpdate', 'Apply Update'),
 				filters: [{ name: 'Setup', extensions: ['exe'] }],
 				canSelectFiles: true,
-				openLabel: mnemonicButtonLabel(localize({ key: 'updateButton', comment: ['&& denotes a mnemonic'] }, "&&Update"))
+				openLabel: mnemonicButtonLabel(
+					localize({ key: 'updateButton', comment: ['&& denotes a mnemonic'] }, '&&Update')
+				)
 			});
 
 			if (!updatePath || !updatePath[0]) {

@@ -22,10 +22,12 @@ import { ILanguageFeaturesService } from '../../../../../../editor/common/servic
 import { LanguageFeaturesService } from '../../../../../../editor/common/services/languageFeaturesService.js';
 import { IEditorPaneSelectionChangeEvent } from '../../../../../common/editor.js';
 import { CancellationToken } from '../../../../../../base/common/cancellation.js';
-import { INotebookOutlineEntryFactory, NotebookOutlineEntryFactory } from '../../../browser/viewModel/notebookOutlineEntryFactory.js';
+import {
+	INotebookOutlineEntryFactory,
+	NotebookOutlineEntryFactory
+} from '../../../browser/viewModel/notebookOutlineEntryFactory.js';
 
 suite('Notebook Outline', function () {
-
 	let disposables: DisposableStore;
 	let instantiationService: TestInstantiationService;
 	let symbolsCached: boolean;
@@ -38,47 +40,52 @@ suite('Notebook Outline', function () {
 		symbolsCached = false;
 		disposables = new DisposableStore();
 		instantiationService = setupInstantiationService(disposables);
-		instantiationService.set(IEditorService, new class extends mock<IEditorService>() { });
+		instantiationService.set(IEditorService, new (class extends mock<IEditorService>() {})());
 		instantiationService.set(ILanguageFeaturesService, new LanguageFeaturesService());
 		instantiationService.set(IMarkerService, disposables.add(new MarkerService()));
-		instantiationService.set(IThemeService, new class extends mock<IThemeService>() {
-			override onDidFileIconThemeChange = Event.None;
-			override getFileIconTheme(): IFileIconTheme {
-				return { hasFileIcons: true, hasFolderIcons: true, hidesExplorerArrows: false };
-			}
-		});
+		instantiationService.set(
+			IThemeService,
+			new (class extends mock<IThemeService>() {
+				override onDidFileIconThemeChange = Event.None;
+				override getFileIconTheme(): IFileIconTheme {
+					return { hasFileIcons: true, hasFolderIcons: true, hidesExplorerArrows: false };
+				}
+			})()
+		);
 	});
-
 
 	async function withNotebookOutline<R = any>(
 		cells: [source: string, lang: string, kind: CellKind, output?: IOutputDto[], metadata?: NotebookCellMetadata][],
 		target: OutlineTarget,
-		callback: (outline: NotebookCellOutline, editor: IActiveNotebookEditor) => R,
+		callback: (outline: NotebookCellOutline, editor: IActiveNotebookEditor) => R
 	): Promise<R> {
-
-		return withTestNotebook(cells, async (editor) => {
+		return withTestNotebook(cells, async editor => {
 			if (!editor.hasModel()) {
 				assert.ok(false, 'MUST have active text editor');
 			}
-			const notebookEditorPane = new class extends mock<INotebookEditorPane>() {
+			const notebookEditorPane = new (class extends mock<INotebookEditorPane>() {
 				override getControl() {
 					return editor;
 				}
 				override onDidChangeModel: Event<void> = Event.None;
 				override onDidChangeSelection: Event<IEditorPaneSelectionChangeEvent> = Event.None;
+			})();
+
+			const testOutlineEntryFactory = instantiationService.createInstance(
+				NotebookOutlineEntryFactory
+			) as NotebookOutlineEntryFactory;
+			testOutlineEntryFactory.cacheSymbols = async () => {
+				symbolsCached = true;
 			};
-
-
-			const testOutlineEntryFactory = instantiationService.createInstance(NotebookOutlineEntryFactory) as NotebookOutlineEntryFactory;
-			testOutlineEntryFactory.cacheSymbols = async () => { symbolsCached = true; };
 			instantiationService.stub(INotebookOutlineEntryFactory, testOutlineEntryFactory);
 
-			const outline = await instantiationService.createInstance(NotebookOutlineCreator).createOutline(notebookEditorPane, target, CancellationToken.None);
+			const outline = await instantiationService
+				.createInstance(NotebookOutlineCreator)
+				.createOutline(notebookEditorPane, target, CancellationToken.None);
 
 			disposables.add(outline!);
 			return callback(outline as NotebookCellOutline, editor);
 		});
-
 	}
 
 	test('basic', async function () {
@@ -89,17 +96,13 @@ suite('Notebook Outline', function () {
 	});
 
 	test('special characters in heading', async function () {
-		await withNotebookOutline([
-			['# Hellö & Hällo', 'md', CellKind.Markup]
-		], OutlineTarget.OutlinePane, outline => {
+		await withNotebookOutline([['# Hellö & Hällo', 'md', CellKind.Markup]], OutlineTarget.OutlinePane, outline => {
 			assert.ok(outline instanceof NotebookCellOutline);
 			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements().length, 1);
 			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements()[0].label, 'Hellö & Hällo');
 		});
 
-		await withNotebookOutline([
-			['# bo<i>ld</i>', 'md', CellKind.Markup]
-		], OutlineTarget.OutlinePane, outline => {
+		await withNotebookOutline([['# bo<i>ld</i>', 'md', CellKind.Markup]], OutlineTarget.OutlinePane, outline => {
 			assert.ok(outline instanceof NotebookCellOutline);
 			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements().length, 1);
 			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements()[0].label, 'bold');
@@ -107,76 +110,104 @@ suite('Notebook Outline', function () {
 	});
 
 	test('Notebook falsely detects "empty cells"', async function () {
-		await withNotebookOutline([
-			['  的时代   ', 'md', CellKind.Markup]
-		], OutlineTarget.OutlinePane, (outline, notebookEditor) => {
-			assert.ok(outline instanceof NotebookCellOutline);
-			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements().length, 1);
-			assert.deepStrictEqual(outline.entries[0].label, '的时代',
-				`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up correctly in outline label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
-			);
-			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements()[0].label, '的时代',
-				`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up correctly in quickpick entry label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
-			);
-		});
+		await withNotebookOutline(
+			[['  的时代   ', 'md', CellKind.Markup]],
+			OutlineTarget.OutlinePane,
+			(outline, notebookEditor) => {
+				assert.ok(outline instanceof NotebookCellOutline);
+				assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements().length, 1);
+				assert.deepStrictEqual(
+					outline.entries[0].label,
+					'的时代',
+					`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up correctly in outline label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
+				);
+				assert.deepStrictEqual(
+					outline.config.quickPickDataSource.getQuickPickElements()[0].label,
+					'的时代',
+					`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up correctly in quickpick entry label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
+				);
+			}
+		);
 
-		await withNotebookOutline([
-			['   ', 'md', CellKind.Markup]
-		], OutlineTarget.OutlinePane, (outline, notebookEditor) => {
-			assert.ok(outline instanceof NotebookCellOutline);
-			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements().length, 1);
-			assert.deepStrictEqual(outline.entries[0].label, 'empty cell',
-				`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up as an empty cell in outline label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
-			);
-			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements()[0].label, 'empty cell',
-				`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up as an empty cell in quickpick entry label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
-			);
-		});
+		await withNotebookOutline(
+			[['   ', 'md', CellKind.Markup]],
+			OutlineTarget.OutlinePane,
+			(outline, notebookEditor) => {
+				assert.ok(outline instanceof NotebookCellOutline);
+				assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements().length, 1);
+				assert.deepStrictEqual(
+					outline.entries[0].label,
+					'empty cell',
+					`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up as an empty cell in outline label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
+				);
+				assert.deepStrictEqual(
+					outline.config.quickPickDataSource.getQuickPickElements()[0].label,
+					'empty cell',
+					`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up as an empty cell in quickpick entry label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
+				);
+			}
+		);
 
-		await withNotebookOutline([
-			['+++++[]{}--)(0  ', 'md', CellKind.Markup]
-		], OutlineTarget.OutlinePane, (outline, notebookEditor) => {
-			assert.ok(outline instanceof NotebookCellOutline);
-			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements().length, 1);
-			assert.deepStrictEqual(outline.entries[0].label, '+++++[]{}--)(0',
-				`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up correctly in outline label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
-			);
-			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements()[0].label, '+++++[]{}--)(0',
-				`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up correctly in quickpick entry label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
-			);
-		});
+		await withNotebookOutline(
+			[['+++++[]{}--)(0  ', 'md', CellKind.Markup]],
+			OutlineTarget.OutlinePane,
+			(outline, notebookEditor) => {
+				assert.ok(outline instanceof NotebookCellOutline);
+				assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements().length, 1);
+				assert.deepStrictEqual(
+					outline.entries[0].label,
+					'+++++[]{}--)(0',
+					`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up correctly in outline label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
+				);
+				assert.deepStrictEqual(
+					outline.config.quickPickDataSource.getQuickPickElements()[0].label,
+					'+++++[]{}--)(0',
+					`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up correctly in quickpick entry label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
+				);
+			}
+		);
 
-		await withNotebookOutline([
-			['+++++[]{}--)(0 Hello **&^ ', 'md', CellKind.Markup]
-		], OutlineTarget.OutlinePane, (outline, notebookEditor) => {
-			assert.ok(outline instanceof NotebookCellOutline);
-			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements().length, 1);
-			assert.deepStrictEqual(outline.entries[0].label, '+++++[]{}--)(0 Hello **&^',
-				`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up correctly in outline label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
-			);
-			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements()[0].label, '+++++[]{}--)(0 Hello **&^',
-				`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up correctly in quickpick entry label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
-			);
-		});
+		await withNotebookOutline(
+			[['+++++[]{}--)(0 Hello **&^ ', 'md', CellKind.Markup]],
+			OutlineTarget.OutlinePane,
+			(outline, notebookEditor) => {
+				assert.ok(outline instanceof NotebookCellOutline);
+				assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements().length, 1);
+				assert.deepStrictEqual(
+					outline.entries[0].label,
+					'+++++[]{}--)(0 Hello **&^',
+					`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up correctly in outline label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
+				);
+				assert.deepStrictEqual(
+					outline.config.quickPickDataSource.getQuickPickElements()[0].label,
+					'+++++[]{}--)(0 Hello **&^',
+					`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up correctly in quickpick entry label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
+				);
+			}
+		);
 
-		await withNotebookOutline([
-			['!@#$\n Überschrïft', 'md', CellKind.Markup]
-		], OutlineTarget.OutlinePane, (outline, notebookEditor) => {
-			assert.ok(outline instanceof NotebookCellOutline);
-			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements().length, 1);
-			assert.deepStrictEqual(outline.entries[0].label, '!@#$',
-				`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up correctly in outline label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
-			);
-			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements()[0].label, '!@#$',
-				`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up correctly in quickpick entry label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
-			);
-		});
+		await withNotebookOutline(
+			[['!@#$\n Überschrïft', 'md', CellKind.Markup]],
+			OutlineTarget.OutlinePane,
+			(outline, notebookEditor) => {
+				assert.ok(outline instanceof NotebookCellOutline);
+				assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements().length, 1);
+				assert.deepStrictEqual(
+					outline.entries[0].label,
+					'!@#$',
+					`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up correctly in outline label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
+				);
+				assert.deepStrictEqual(
+					outline.config.quickPickDataSource.getQuickPickElements()[0].label,
+					'!@#$',
+					`cell content: ${notebookEditor.cellAt(0).model.getValue()} did not show up correctly in quickpick entry label. \n Cell text buffer line 1: ${outline.entries[0].cell.textBuffer.getLineContent(1)}`
+				);
+			}
+		);
 	});
 
 	test('Heading text defines entry label', async function () {
-		return await withNotebookOutline([
-			['foo\n # h1', 'md', CellKind.Markup]
-		], OutlineTarget.OutlinePane, outline => {
+		return await withNotebookOutline([['foo\n # h1', 'md', CellKind.Markup]], OutlineTarget.OutlinePane, outline => {
 			assert.ok(outline instanceof NotebookCellOutline);
 			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements().length, 1);
 			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements()[0].label, 'h1');
@@ -184,30 +215,30 @@ suite('Notebook Outline', function () {
 	});
 
 	test('Notebook outline ignores markdown headings #115200', async function () {
-		await withNotebookOutline([
-			['## h2 \n# h1', 'md', CellKind.Markup]
-		], OutlineTarget.OutlinePane, outline => {
+		await withNotebookOutline([['## h2 \n# h1', 'md', CellKind.Markup]], OutlineTarget.OutlinePane, outline => {
 			assert.ok(outline instanceof NotebookCellOutline);
 			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements().length, 2);
 			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements()[0].label, 'h2');
 			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements()[1].label, 'h1');
 		});
 
-		await withNotebookOutline([
-			['## h2', 'md', CellKind.Markup],
-			['# h1', 'md', CellKind.Markup]
-		], OutlineTarget.OutlinePane, outline => {
-			assert.ok(outline instanceof NotebookCellOutline);
-			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements().length, 2);
-			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements()[0].label, 'h2');
-			assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements()[1].label, 'h1');
-		});
+		await withNotebookOutline(
+			[
+				['## h2', 'md', CellKind.Markup],
+				['# h1', 'md', CellKind.Markup]
+			],
+			OutlineTarget.OutlinePane,
+			outline => {
+				assert.ok(outline instanceof NotebookCellOutline);
+				assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements().length, 2);
+				assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements()[0].label, 'h2');
+				assert.deepStrictEqual(outline.config.quickPickDataSource.getQuickPickElements()[1].label, 'h1');
+			}
+		);
 	});
 
 	test('Symbols for goto quickpick are pre-cached', async function () {
-		await withNotebookOutline([
-			['a = 1\nb = 2', 'python', CellKind.Code]
-		], OutlineTarget.QuickPick, outline => {
+		await withNotebookOutline([['a = 1\nb = 2', 'python', CellKind.Code]], OutlineTarget.QuickPick, outline => {
 			assert.ok(outline instanceof NotebookCellOutline);
 			assert.strictEqual(symbolsCached, true);
 		});

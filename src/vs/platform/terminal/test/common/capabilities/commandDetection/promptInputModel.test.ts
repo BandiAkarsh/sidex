@@ -6,7 +6,10 @@
 import type { Terminal } from '@xterm/headless';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
 import { NullLogService } from '../../../../../log/common/log.js';
-import { PromptInputModel, type IPromptInputModelState } from '../../../../common/capabilities/commandDetection/promptInputModel.js';
+import {
+	PromptInputModel,
+	type IPromptInputModelState
+} from '../../../../common/capabilities/commandDetection/promptInputModel.js';
 import { Emitter } from '../../../../../../base/common/event.js';
 import type { ITerminalCommand } from '../../../../common/capabilities/capabilities.js';
 import { ok, notDeepStrictEqual, strictEqual } from 'assert';
@@ -54,27 +57,37 @@ suite('PromptInputModel', () => {
 		}
 
 		const actualValueWithCursor = promptInputModel.getCombinedString();
-		strictEqual(
-			actualValueWithCursor,
-			valueWithCursor.replaceAll('\n', '\u23CE')
-		);
+		strictEqual(actualValueWithCursor, valueWithCursor.replaceAll('\n', '\u23CE'));
 
 		// This is required to ensure the cursor index is correctly resolved for non-ascii characters
 		const value = valueWithCursor.replace(/[\|\[\]]/g, '');
 		const cursorIndex = valueWithCursor.indexOf('|');
 		strictEqual(promptInputModel.value, value);
 		strictEqual(promptInputModel.cursorIndex, cursorIndex, `value=${promptInputModel.value}`);
-		ok(promptInputModel.ghostTextIndex === -1 || cursorIndex <= promptInputModel.ghostTextIndex, `cursorIndex (${cursorIndex}) must be before ghostTextIndex (${promptInputModel.ghostTextIndex})`);
+		ok(
+			promptInputModel.ghostTextIndex === -1 || cursorIndex <= promptInputModel.ghostTextIndex,
+			`cursorIndex (${cursorIndex}) must be before ghostTextIndex (${promptInputModel.ghostTextIndex})`
+		);
 	}
 
 	setup(async () => {
-		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
+		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js'))
+			.Terminal;
 		xterm = store.add(new TerminalCtor({ allowProposedApi: true, logger: TestXtermLogger }));
 		onCommandStart = store.add(new Emitter());
 		onCommandStartChanged = store.add(new Emitter());
 		onCommandExecuted = store.add(new Emitter());
 		onCommandFinished = store.add(new Emitter());
-		promptInputModel = store.add(new PromptInputModel(xterm, onCommandStart.event, onCommandStartChanged.event, onCommandExecuted.event, onCommandFinished.event, new NullLogService));
+		promptInputModel = store.add(
+			new PromptInputModel(
+				xterm,
+				onCommandStart.event,
+				onCommandStartChanged.event,
+				onCommandExecuted.event,
+				onCommandFinished.event,
+				new NullLogService()
+			)
+		);
 	});
 
 	test('basic input and execute', async () => {
@@ -133,12 +146,16 @@ suite('PromptInputModel', () => {
 		await assertPromptInput('foo|');
 
 		await new Promise<void>(r => {
-			store.add(promptInputModel.onDidInterrupt(() => {
-				// Fire onDidFinishInput immediately after onDidInterrupt
-				store.add(promptInputModel.onDidFinishInput(() => {
-					r();
-				}));
-			}));
+			store.add(
+				promptInputModel.onDidInterrupt(() => {
+					// Fire onDidFinishInput immediately after onDidInterrupt
+					store.add(
+						promptInputModel.onDidFinishInput(() => {
+							r();
+						})
+					);
+				})
+			);
 			xterm.input('\x03');
 			writePromise('^C').then(() => fireCommandExecuted());
 		});
@@ -248,9 +265,9 @@ suite('PromptInputModel', () => {
 			await assertPromptInput('|');
 
 			await writePromise(
-				'\x1b[38;2;255;0;0mred1\x1b[0m ' +  // Red "red1"
-				'\x1b[38;2;0;255;0mgreen\x1b[0m ' + // Green "green"
-				'\x1b[38;2;255;0;0mred2\x1b[0m'     // Red "red2" (same as red1)
+				'\x1b[38;2;255;0;0mred1\x1b[0m ' + // Red "red1"
+					'\x1b[38;2;0;255;0mgreen\x1b[0m ' + // Green "green"
+					'\x1b[38;2;255;0;0mred2\x1b[0m' // Red "red2" (same as red1)
 			);
 
 			await assertPromptInput('red1 green red2|'); // No ghost text expected
@@ -262,9 +279,9 @@ suite('PromptInputModel', () => {
 			await assertPromptInput('|');
 
 			await writePromise(
-				'\x1b[38;2;255;0;0mcmd\x1b[0m ' +   // Red "cmd"
-				'\x1b[38;2;0;255;0marg\x1b[0m ' +   // Green "arg"
-				'\x1b[38;2;0;0;255mfinal\x1b[5D'    // Blue "final" (ghost text)
+				'\x1b[38;2;255;0;0mcmd\x1b[0m ' + // Red "cmd"
+					'\x1b[38;2;0;255;0marg\x1b[0m ' + // Green "arg"
+					'\x1b[38;2;0;0;255mfinal\x1b[5D' // Blue "final" (ghost text)
 			);
 
 			await assertPromptInput('cmd arg |[final]');
@@ -276,9 +293,9 @@ suite('PromptInputModel', () => {
 			await assertPromptInput('|');
 
 			await writePromise(
-				'\x1b[48;2;255;0;0mred_bg1\x1b[0m ' +  // Red background
-				'\x1b[48;2;0;255;0mgreen_bg\x1b[0m ' + // Green background
-				'\x1b[48;2;255;0;0mred_bg2\x1b[0m'     // Red background again
+				'\x1b[48;2;255;0;0mred_bg1\x1b[0m ' + // Red background
+					'\x1b[48;2;0;255;0mgreen_bg\x1b[0m ' + // Green background
+					'\x1b[48;2;255;0;0mred_bg2\x1b[0m' // Red background again
 			);
 
 			await assertPromptInput('red_bg1 green_bg red_bg2|'); // No ghost text expected
@@ -290,9 +307,9 @@ suite('PromptInputModel', () => {
 			await assertPromptInput('|');
 
 			await writePromise(
-				'\x1b[48;2;255;0;0mred_bg\x1b[0m ' +  // Red background
-				'\x1b[48;2;0;255;0mgreen_bg\x1b[0m ' + // Green background
-				'\x1b[48;2;0;0;255mblue_bg\x1b[7D'     // Blue background (ghost text)
+				'\x1b[48;2;255;0;0mred_bg\x1b[0m ' + // Red background
+					'\x1b[48;2;0;255;0mgreen_bg\x1b[0m ' + // Green background
+					'\x1b[48;2;0;0;255mblue_bg\x1b[7D' // Blue background (ghost text)
 			);
 
 			await assertPromptInput('red_bg green_bg |[blue_bg]');
@@ -304,8 +321,7 @@ suite('PromptInputModel', () => {
 			await assertPromptInput('|');
 
 			await writePromise(
-				'text ' +
-				'\x1b[1mBOLD\x1b[4D' // Bold "BOLD" (ghost text)
+				'text ' + '\x1b[1mBOLD\x1b[4D' // Bold "BOLD" (ghost text)
 			);
 
 			await assertPromptInput('text |[BOLD]');
@@ -318,8 +334,8 @@ suite('PromptInputModel', () => {
 
 			await writePromise(
 				'\x1b[1mBOLD1\x1b[0m ' + // Bold "BOLD1"
-				'normal ' +
-				'\x1b[1mBOLD2\x1b[0m'    // Bold "BOLD2" (same style as "BOLD1")
+					'normal ' +
+					'\x1b[1mBOLD2\x1b[0m' // Bold "BOLD2" (same style as "BOLD1")
 			);
 
 			await assertPromptInput('BOLD1 normal BOLD2|'); // No ghost text expected
@@ -331,8 +347,7 @@ suite('PromptInputModel', () => {
 			await assertPromptInput('|');
 
 			await writePromise(
-				'text ' +
-				'\x1b[3mITALIC\x1b[6D' // Italic "ITALIC" (ghost text)
+				'text ' + '\x1b[3mITALIC\x1b[6D' // Italic "ITALIC" (ghost text)
 			);
 
 			await assertPromptInput('text |[ITALIC]');
@@ -345,8 +360,8 @@ suite('PromptInputModel', () => {
 
 			await writePromise(
 				'\x1b[3mITALIC1\x1b[0m ' + // Italic "ITALIC1"
-				'normal ' +
-				'\x1b[3mITALIC2\x1b[0m'    // Italic "ITALIC2" (same style as "ITALIC1")
+					'normal ' +
+					'\x1b[3mITALIC2\x1b[0m' // Italic "ITALIC2" (same style as "ITALIC1")
 			);
 
 			await assertPromptInput('ITALIC1 normal ITALIC2|'); // No ghost text expected
@@ -358,8 +373,7 @@ suite('PromptInputModel', () => {
 			await assertPromptInput('|');
 
 			await writePromise(
-				'text ' +
-				'\x1b[4mUNDERLINE\x1b[9D' // Underlined "UNDERLINE" (ghost text)
+				'text ' + '\x1b[4mUNDERLINE\x1b[9D' // Underlined "UNDERLINE" (ghost text)
 			);
 
 			await assertPromptInput('text |[UNDERLINE]');
@@ -372,8 +386,8 @@ suite('PromptInputModel', () => {
 
 			await writePromise(
 				'\x1b[4mUNDERLINE1\x1b[0m ' + // Underlined "UNDERLINE1"
-				'normal ' +
-				'\x1b[4mUNDERLINE2\x1b[0m'    // Underlined "UNDERLINE2" (same style as "UNDERLINE1")
+					'normal ' +
+					'\x1b[4mUNDERLINE2\x1b[0m' // Underlined "UNDERLINE2" (same style as "UNDERLINE1")
 			);
 
 			await assertPromptInput('UNDERLINE1 normal UNDERLINE2|'); // No ghost text expected
@@ -385,8 +399,7 @@ suite('PromptInputModel', () => {
 			await assertPromptInput('|');
 
 			await writePromise(
-				'text ' +
-				'\x1b[9mSTRIKE\x1b[6D' // Strikethrough "STRIKE" (ghost text)
+				'text ' + '\x1b[9mSTRIKE\x1b[6D' // Strikethrough "STRIKE" (ghost text)
 			);
 
 			await assertPromptInput('text |[STRIKE]');
@@ -399,8 +412,8 @@ suite('PromptInputModel', () => {
 
 			await writePromise(
 				'\x1b[9mSTRIKE1\x1b[0m ' + // Strikethrough "STRIKE1"
-				'normal ' +
-				'\x1b[9mSTRIKE2\x1b[0m'    // Strikethrough "STRIKE2" (same style as "STRIKE1")
+					'normal ' +
+					'\x1b[9mSTRIKE2\x1b[0m' // Strikethrough "STRIKE2" (same style as "STRIKE1")
 			);
 
 			await assertPromptInput('STRIKE1 normal STRIKE2|'); // No ghost text expected
@@ -916,7 +929,7 @@ suite('PromptInputModel', () => {
 						']633;P;IsWindows=True',
 						']633;P;ContinuationPrompt=\x1b[38\x3b5\x3b8m∙\x1b[0m ',
 						']633;A]633;P;Cwd=C:\x5cGithub\x5cmicrosoft\x5cvscode]633;B',
-						'[34m\r\n[38;2;17;17;17m[44m03:13:47 [34m[41m [38;2;17;17;17mvscode [31m[43m [38;2;17;17;17m tyriar/prompt_input_model [33m[46m [38;2;17;17;17m$⇡ [36m[49m [mvia [32m[1m v18.18.2 \r\n❯[m ',
+						'[34m\r\n[38;2;17;17;17m[44m03:13:47 [34m[41m [38;2;17;17;17mvscode [31m[43m [38;2;17;17;17m tyriar/prompt_input_model [33m[46m [38;2;17;17;17m$⇡ [36m[49m [mvia [32m[1m v18.18.2 \r\n❯[m '
 					]);
 					fireCommandStart();
 					await assertPromptInput('|');
@@ -927,7 +940,7 @@ suite('PromptInputModel', () => {
 						'[93mfo[9X',
 						'[m',
 						'[?25l[93m[3;3Hfoo[?25h',
-						'[m',
+						'[m'
 					]);
 					await assertPromptInput('foo|');
 				});
@@ -940,63 +953,40 @@ suite('PromptInputModel', () => {
 						']633;P;IsWindows=True',
 						']633;P;ContinuationPrompt=\x1b[38\x3b5\x3b8m∙\x1b[0m ',
 						']633;A]633;P;Cwd=C:\x5cGithub\x5cmicrosoft\x5cvscode]633;B',
-						'[34m\r\n[38;2;17;17;17m[44m03:41:36 [34m[41m [38;2;17;17;17mvscode [31m[43m [38;2;17;17;17m tyriar/prompt_input_model [33m[46m [38;2;17;17;17m$ [36m[49m [mvia [32m[1m v18.18.2 \r\n❯[m ',
+						'[34m\r\n[38;2;17;17;17m[44m03:41:36 [34m[41m [38;2;17;17;17mvscode [31m[43m [38;2;17;17;17m tyriar/prompt_input_model [33m[46m [38;2;17;17;17m$ [36m[49m [mvia [32m[1m v18.18.2 \r\n❯[m '
 					]);
 					promptInputModel.setContinuationPrompt('∙ ');
 					fireCommandStart();
 					await assertPromptInput('|');
 
-					await replayEvents([
-						'[?25l[93me[97m[2m[3mcho "hello world"[3;4H[?25h',
-						'[m',
-					]);
+					await replayEvents(['[?25l[93me[97m[2m[3mcho "hello world"[3;4H[?25h', '[m']);
 					await assertPromptInput('e|[cho "hello world"]');
 
-					await replayEvents([
-						'[?25l[93mec[97m[2m[3mho "hello world"[3;5H[?25h',
-						'[m',
-					]);
+					await replayEvents(['[?25l[93mec[97m[2m[3mho "hello world"[3;5H[?25h', '[m']);
 					await assertPromptInput('ec|[ho "hello world"]');
 
-					await replayEvents([
-						'[?25l[93m[3;3Hech[97m[2m[3mo "hello world"[3;6H[?25h',
-						'[m',
-					]);
+					await replayEvents(['[?25l[93m[3;3Hech[97m[2m[3mo "hello world"[3;6H[?25h', '[m']);
 					await assertPromptInput('ech|[o "hello world"]');
 
-					await replayEvents([
-						'[?25l[93m[3;3Hecho[97m[2m[3m "hello world"[3;7H[?25h',
-						'[m',
-					]);
+					await replayEvents(['[?25l[93m[3;3Hecho[97m[2m[3m "hello world"[3;7H[?25h', '[m']);
 					await assertPromptInput('echo|[ "hello world"]');
 
-					await replayEvents([
-						'[?25l[93m[3;3Hecho [97m[2m[3m"hello world"[3;8H[?25h',
-						'[m',
-					]);
+					await replayEvents(['[?25l[93m[3;3Hecho [97m[2m[3m"hello world"[3;8H[?25h', '[m']);
 					await assertPromptInput('echo |["hello world"]');
 
-					await replayEvents([
-						'[?25l[93m[3;3Hecho [36m"hello world"[?25h',
-						'[m',
-					]);
+					await replayEvents(['[?25l[93m[3;3Hecho [36m"hello world"[?25h', '[m']);
 					await assertPromptInput('echo "hello world"|');
 
-					await replayEvents([
-						']633;E;echo "hello world";ff464d39-bc80-4bae-9ead-b1cafc4adf6f]633;C',
-					]);
+					await replayEvents([']633;E;echo "hello world";ff464d39-bc80-4bae-9ead-b1cafc4adf6f]633;C']);
 					fireCommandExecuted();
 					await assertPromptInput('echo "hello world"');
 
-					await replayEvents([
-						'\r\n',
-						'hello world\r\n',
-					]);
+					await replayEvents(['\r\n', 'hello world\r\n']);
 					await assertPromptInput('echo "hello world"');
 
 					await replayEvents([
 						']633;D;0]633;A]633;P;Cwd=C:\x5cGithub\x5cmicrosoft\x5cvscode]633;B',
-						'[34m\r\n[38;2;17;17;17m[44m03:41:42 [34m[41m [38;2;17;17;17mvscode [31m[43m [38;2;17;17;17m tyriar/prompt_input_model [33m[46m [38;2;17;17;17m$ [36m[49m [mvia [32m[1m v18.18.2 \r\n❯[m ',
+						'[34m\r\n[38;2;17;17;17m[44m03:41:42 [34m[41m [38;2;17;17;17mvscode [31m[43m [38;2;17;17;17m tyriar/prompt_input_model [33m[46m [38;2;17;17;17m$ [36m[49m [mvia [32m[1m v18.18.2 \r\n❯[m '
 					]);
 					fireCommandStart();
 					await assertPromptInput('|');
@@ -1011,7 +1001,7 @@ suite('PromptInputModel', () => {
 						']633;P;IsWindows=True',
 						']633;P;ContinuationPrompt=\x1b[38\x3b5\x3b8m∙\x1b[0m ',
 						']633;A]633;P;Cwd=C:\x5cGithub\x5cmicrosoft\x5cvscode]633;B',
-						'[34m\r\n[38;2;17;17;17m[44m16:07:06 [34m[41m [38;2;17;17;17mvscode [31m[43m [38;2;17;17;17m tyriar/210662 [33m[46m [38;2;17;17;17m$! [36m[49m [mvia [32m[1m v18.18.2 \r\n❯[m ',
+						'[34m\r\n[38;2;17;17;17m[44m16:07:06 [34m[41m [38;2;17;17;17mvscode [31m[43m [38;2;17;17;17m tyriar/210662 [33m[46m [38;2;17;17;17m$! [36m[49m [mvia [32m[1m v18.18.2 \r\n❯[m '
 					]);
 					fireCommandStart();
 					await assertPromptInput('|');
@@ -1021,23 +1011,16 @@ suite('PromptInputModel', () => {
 						'[m',
 						'[?25l[93mGe[97m[2m[3mt-ChildItem -Path a[3;5H[?25h',
 						'[m',
-						'[?25l[93m[3;3HGet[97m[2m[3m-ChildItem -Path a[3;6H[?25h',
+						'[?25l[93m[3;3HGet[97m[2m[3m-ChildItem -Path a[3;6H[?25h'
 					]);
 					await assertPromptInput('Get|[-ChildItem -Path a]');
 
-					await replayEvents([
-						'[m',
-						'[?25l[3;3H[?25h',
-						'[21X',
-					]);
+					await replayEvents(['[m', '[?25l[3;3H[?25h', '[21X']);
 
 					// Don't force a sync, the prompt input model should update by itself
 					await timeout(0);
 					const actualValueWithCursor = promptInputModel.getCombinedString();
-					strictEqual(
-						actualValueWithCursor,
-						'|'.replaceAll('\n', '\u23CE')
-					);
+					strictEqual(actualValueWithCursor, '|'.replaceAll('\n', '\u23CE'));
 				});
 			});
 		});

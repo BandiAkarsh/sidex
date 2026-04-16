@@ -19,7 +19,7 @@ class TestGotoLineQuickAccessProvider extends AbstractGotoLineQuickAccessProvide
 	}
 	protected override readonly storageService = {
 		getBoolean: () => this.zeroBased,
-		store: () => { }
+		store: () => {}
 	} as unknown as IStorageService;
 
 	public parsePositionTest(editor: IEditor, value: string) {
@@ -32,13 +32,7 @@ suite('AbstractGotoLineQuickAccessProvider', () => {
 
 	function runTest(input: string, expectedLine: number, expectedColumn?: number, zeroBased = false) {
 		const provider = new TestGotoLineQuickAccessProvider(zeroBased);
-		withTestCodeEditor([
-			'line 1',
-			'line 2',
-			'line 3',
-			'line 4',
-			'line 5'
-		], {}, (editor, _) => {
+		withTestCodeEditor(['line 1', 'line 2', 'line 3', 'line 4', 'line 5'], {}, (editor, _) => {
 			const { lineNumber, column } = provider.parsePositionTest(editor, input);
 			assert.strictEqual(lineNumber, expectedLine);
 			assert.strictEqual(column, expectedColumn ?? 1);
@@ -98,11 +92,7 @@ suite('AbstractGotoLineQuickAccessProvider', () => {
 
 	function runTabTest(input: string, expectedLine: number, expectedColumn?: number, zeroBased = false) {
 		const provider = new TestGotoLineQuickAccessProvider(zeroBased);
-		withTestCodeEditor([
-			'\tline 1',
-			'\t\tline 2',
-			'\tline 3'
-		], {}, (editor, _) => {
+		withTestCodeEditor(['\tline 1', '\t\tline 2', '\tline 3'], {}, (editor, _) => {
 			const { lineNumber, column } = provider.parsePositionTest(editor, input);
 			assert.strictEqual(lineNumber, expectedLine);
 			assert.strictEqual(column, expectedColumn ?? 1);
@@ -136,4 +126,3 @@ suite('AbstractGotoLineQuickAccessProvider', () => {
 		runTabTest('2:11', 2, 5);
 	});
 });
-

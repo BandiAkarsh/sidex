@@ -12,14 +12,12 @@ import { CursorUndo, CursorUndoRedoController } from '../../browser/cursorUndo.j
 import { withTestCodeEditor } from '../../../../test/browser/testCodeEditor.js';
 
 suite('FindController', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	const cursorUndoAction = new CursorUndo();
 
 	test('issue #82535: Edge case with cursorUndo', () => {
-		withTestCodeEditor('', {}, (editor) => {
-
+		withTestCodeEditor('', {}, editor => {
 			editor.registerAndInstantiateContribution(CursorUndoRedoController.ID, CursorUndoRedoController);
 
 			// type hello
@@ -44,8 +42,7 @@ suite('FindController', () => {
 	});
 
 	test('issue #82535: Edge case with cursorUndo (reverse)', () => {
-		withTestCodeEditor('', {}, (editor) => {
-
+		withTestCodeEditor('', {}, editor => {
 			editor.registerAndInstantiateContribution(CursorUndoRedoController.ID, CursorUndoRedoController);
 
 			// type hello

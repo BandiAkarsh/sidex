@@ -6,12 +6,23 @@
 import { Event } from '../../../../base/common/event.js';
 import { Disposable, IDisposable } from '../../../../base/common/lifecycle.js';
 import { URI } from '../../../../base/common/uri.js';
-import { IFileDeleteOptions, IFileOverwriteOptions, FileSystemProviderCapabilities, FileType, IFileWriteOptions, hasReadWriteCapability, IFileService, IFileSystemProvider, IFileSystemProviderWithFileReadWriteCapability, IStat, IWatchOptions } from '../../../../platform/files/common/files.js';
+import {
+	IFileDeleteOptions,
+	IFileOverwriteOptions,
+	FileSystemProviderCapabilities,
+	FileType,
+	IFileWriteOptions,
+	hasReadWriteCapability,
+	IFileService,
+	IFileSystemProvider,
+	IFileSystemProviderWithFileReadWriteCapability,
+	IStat,
+	IWatchOptions
+} from '../../../../platform/files/common/files.js';
 import { isEqual } from '../../../../base/common/resources.js';
 import { VSBuffer } from '../../../../base/common/buffer.js';
 
 interface ILocalHistoryResource {
-
 	/**
 	 * The location of the local history entry to read from.
 	 */
@@ -32,8 +43,9 @@ interface ISerializedLocalHistoryResource {
  * A wrapper around a standard file system provider
  * that is entirely readonly.
  */
-export class LocalHistoryFileSystemProvider implements IFileSystemProvider, IFileSystemProviderWithFileReadWriteCapability {
-
+export class LocalHistoryFileSystemProvider
+	implements IFileSystemProvider, IFileSystemProviderWithFileReadWriteCapability
+{
 	static readonly SCHEMA = 'vscode-local-history';
 
 	static toLocalHistoryFileSystem(resource: ILocalHistoryResource): URI {
@@ -72,7 +84,7 @@ export class LocalHistoryFileSystemProvider implements IFileSystemProvider, IFil
 		return FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.Readonly;
 	}
 
-	constructor(private readonly fileService: IFileService) { }
+	constructor(private readonly fileService: IFileService) {}
 
 	private readonly mapSchemeToProvider = new Map<string, Promise<IFileSystemProvider>>();
 
@@ -81,7 +93,6 @@ export class LocalHistoryFileSystemProvider implements IFileSystemProvider, IFil
 
 		let providerPromise = this.mapSchemeToProvider.get(scheme);
 		if (!providerPromise) {
-
 			// Resolve early when provider already exists
 			const provider = this.fileService.getProvider(scheme);
 			if (provider) {
@@ -145,15 +156,19 @@ export class LocalHistoryFileSystemProvider implements IFileSystemProvider, IFil
 	readonly onDidChangeCapabilities = Event.None;
 	readonly onDidChangeFile = Event.None;
 
-	async writeFile(resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> { }
+	async writeFile(resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> {}
 
-	async mkdir(resource: URI): Promise<void> { }
-	async readdir(resource: URI): Promise<[string, FileType][]> { return []; }
+	async mkdir(resource: URI): Promise<void> {}
+	async readdir(resource: URI): Promise<[string, FileType][]> {
+		return [];
+	}
 
-	async rename(from: URI, to: URI, opts: IFileOverwriteOptions): Promise<void> { }
-	async delete(resource: URI, opts: IFileDeleteOptions): Promise<void> { }
+	async rename(from: URI, to: URI, opts: IFileOverwriteOptions): Promise<void> {}
+	async delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {}
 
-	watch(resource: URI, opts: IWatchOptions): IDisposable { return Disposable.None; }
+	watch(resource: URI, opts: IWatchOptions): IDisposable {
+		return Disposable.None;
+	}
 
 	//#endregion
 }

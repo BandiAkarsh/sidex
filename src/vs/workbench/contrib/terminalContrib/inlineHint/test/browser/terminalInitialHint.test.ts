@@ -21,10 +21,15 @@ suite('Terminal Initial Hint Addon', () => {
 	let initialHintAddon: InitialHintAddon;
 	setup(async () => {
 		const instantiationService = workbenchInstantiationService({}, store);
-		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
+		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js'))
+			.Terminal;
 		xterm = store.add(new TerminalCtor({ logger: TestXtermLogger }));
-		const shellIntegrationAddon = store.add(new ShellIntegrationAddon('', true, undefined, undefined, new NullLogService));
-		initialHintAddon = store.add(instantiationService.createInstance(InitialHintAddon, shellIntegrationAddon.capabilities));
+		const shellIntegrationAddon = store.add(
+			new ShellIntegrationAddon('', true, undefined, undefined, new NullLogService())
+		);
+		initialHintAddon = store.add(
+			instantiationService.createInstance(InitialHintAddon, shellIntegrationAddon.capabilities)
+		);
 		store.add(initialHintAddon.onDidRequestCreateHint(() => eventCount++));
 		const testContainer = document.createElement('div');
 		getActiveDocument().body.append(testContainer);

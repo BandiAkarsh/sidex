@@ -14,7 +14,11 @@ import { IExternalTerminalSettings } from '../../../../../platform/externalTermi
 import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { IRemoteAuthorityResolverService } from '../../../../../platform/remote/common/remoteAuthorityResolver.js';
-import { IWorkspace, IWorkspaceContextService, IWorkspaceFolder } from '../../../../../platform/workspace/common/workspace.js';
+import {
+	IWorkspace,
+	IWorkspaceContextService,
+	IWorkspaceFolder
+} from '../../../../../platform/workspace/common/workspace.js';
 import { CommandsRegistry } from '../../../../../platform/commands/common/commands.js';
 import { IQuickInputService, IQuickPickItem } from '../../../../../platform/quickinput/common/quickInput.js';
 import { ILabelService } from '../../../../../platform/label/common/label.js';
@@ -47,53 +51,73 @@ suite('ExternalTerminal contribution', () => {
 		openTerminalCalls = [];
 		pickCalls = [];
 
-		instantiationService.stub(IHistoryService, new class extends mock<IHistoryService>() {
-			override getLastActiveWorkspaceRoot() {
-				return options.lastActiveRoot;
-			}
-			override getLastActiveFile(_schemeFilter: string) {
-				return options.lastActiveFile;
-			}
-		});
-
-		instantiationService.stub(IExternalTerminalService, new class extends mock<IExternalTerminalService>() {
-			override async openTerminal(_config: IExternalTerminalSettings, cwd: string | undefined) {
-				openTerminalCalls.push({ cwd });
-			}
-		});
-
-		instantiationService.stub(IConfigurationService, new TestConfigurationService({
-			terminal: { external: { linuxExec: 'xterm', osxExec: 'Terminal.app', windowsExec: 'cmd' } }
-		}));
-
-		instantiationService.stub(IRemoteAuthorityResolverService, new class extends mock<IRemoteAuthorityResolverService>() {
-		});
-
-		instantiationService.stub(IWorkspaceContextService, new class extends mock<IWorkspaceContextService>() {
-			override getWorkspace(): IWorkspace {
-				return {
-					id: 'test-workspace',
-					folders: options.folders,
-				};
-			}
-		});
-
-		instantiationService.stub(IQuickInputService, new class extends mock<IQuickInputService>() {
-			override async pick<T extends IQuickPickItem>(picks: T[]): Promise<T | undefined> {
-				pickCalls.push(picks);
-				if (options.pickedFolder) {
-					const index = options.folders.indexOf(options.pickedFolder);
-					return picks[index];
+		instantiationService.stub(
+			IHistoryService,
+			new (class extends mock<IHistoryService>() {
+				override getLastActiveWorkspaceRoot() {
+					return options.lastActiveRoot;
 				}
-				return undefined;
-			}
-		});
+				override getLastActiveFile(_schemeFilter: string) {
+					return options.lastActiveFile;
+				}
+			})()
+		);
 
-		instantiationService.stub(ILabelService, new class extends mock<ILabelService>() {
-			override getUriLabel(uri: URI) {
-				return uri.fsPath;
-			}
-		});
+		instantiationService.stub(
+			IExternalTerminalService,
+			new (class extends mock<IExternalTerminalService>() {
+				override async openTerminal(_config: IExternalTerminalSettings, cwd: string | undefined) {
+					openTerminalCalls.push({ cwd });
+				}
+			})()
+		);
+
+		instantiationService.stub(
+			IConfigurationService,
+			new TestConfigurationService({
+				terminal: { external: { linuxExec: 'xterm', osxExec: 'Terminal.app', windowsExec: 'cmd' } }
+			})
+		);
+
+		instantiationService.stub(
+			IRemoteAuthorityResolverService,
+			new (class extends mock<IRemoteAuthorityResolverService>() {})()
+		);
+
+		instantiationService.stub(
+			IWorkspaceContextService,
+			new (class extends mock<IWorkspaceContextService>() {
+				override getWorkspace(): IWorkspace {
+					return {
+						id: 'test-workspace',
+						folders: options.folders
+					};
+				}
+			})()
+		);
+
+		instantiationService.stub(
+			IQuickInputService,
+			new (class extends mock<IQuickInputService>() {
+				override async pick<T extends IQuickPickItem>(picks: T[]): Promise<T | undefined> {
+					pickCalls.push(picks);
+					if (options.pickedFolder) {
+						const index = options.folders.indexOf(options.pickedFolder);
+						return picks[index];
+					}
+					return undefined;
+				}
+			})()
+		);
+
+		instantiationService.stub(
+			ILabelService,
+			new (class extends mock<ILabelService>() {
+				override getUriLabel(uri: URI) {
+					return uri.fsPath;
+				}
+			})()
+		);
 	}
 
 	test('single folder - uses last active workspace root', async () => {
@@ -102,7 +126,7 @@ suite('ExternalTerminal contribution', () => {
 
 		setupServices({
 			folders: [folder],
-			lastActiveRoot: folderUri,
+			lastActiveRoot: folderUri
 		});
 
 		const handler = CommandsRegistry.getCommand('workbench.action.terminal.openNativeConsole')!.handler;
@@ -120,7 +144,7 @@ suite('ExternalTerminal contribution', () => {
 
 		setupServices({
 			folders: [folder1, folder2],
-			pickedFolder: folder2,
+			pickedFolder: folder2
 		});
 
 		const handler = CommandsRegistry.getCommand('workbench.action.terminal.openNativeConsole')!.handler;
@@ -138,7 +162,7 @@ suite('ExternalTerminal contribution', () => {
 
 		setupServices({
 			folders: [folder1, folder2],
-			pickedFolder: undefined,
+			pickedFolder: undefined
 		});
 
 		const handler = CommandsRegistry.getCommand('workbench.action.terminal.openNativeConsole')!.handler;
@@ -155,7 +179,7 @@ suite('ExternalTerminal contribution', () => {
 		setupServices({
 			folders: [],
 			lastActiveRoot: undefined,
-			lastActiveFile: fileUri,
+			lastActiveFile: fileUri
 		});
 
 		const handler = CommandsRegistry.getCommand('workbench.action.terminal.openNativeConsole')!.handler;
@@ -168,7 +192,7 @@ suite('ExternalTerminal contribution', () => {
 		setupServices({
 			folders: [],
 			lastActiveRoot: undefined,
-			lastActiveFile: undefined,
+			lastActiveFile: undefined
 		});
 
 		const handler = CommandsRegistry.getCommand('workbench.action.terminal.openNativeConsole')!.handler;

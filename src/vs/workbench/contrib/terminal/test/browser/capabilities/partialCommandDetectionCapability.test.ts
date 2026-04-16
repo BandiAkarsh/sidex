@@ -21,12 +21,19 @@ suite('PartialCommandDetectionCapability', () => {
 	let onDidExecuteTextEmitter: Emitter<void>;
 
 	function assertCommands(expectedLines: number[]) {
-		deepStrictEqual(capability.commands.map(e => e.line), expectedLines);
-		deepStrictEqual(addEvents.map(e => e.line), expectedLines);
+		deepStrictEqual(
+			capability.commands.map(e => e.line),
+			expectedLines
+		);
+		deepStrictEqual(
+			addEvents.map(e => e.line),
+			expectedLines
+		);
 	}
 
 	setup(async () => {
-		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js')).Terminal;
+		const TerminalCtor = (await importAMDNodeModule<typeof import('@xterm/xterm')>('@xterm/xterm', 'lib/xterm.js'))
+			.Terminal;
 
 		xterm = store.add(new TerminalCtor({ allowProposedApi: true, cols: 80, logger: TestXtermLogger }) as Terminal);
 		onDidExecuteTextEmitter = store.add(new Emitter<void>());

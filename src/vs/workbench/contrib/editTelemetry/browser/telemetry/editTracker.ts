@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 import { Disposable } from '../../../../../base/common/lifecycle.js';
 import { observableSignal, runOnChange, IReader } from '../../../../../base/common/observable.js';
 import { AnnotatedStringEdit } from '../../../../../editor/common/core/edits/stringEdit.js';
@@ -13,40 +12,42 @@ import { IDocumentWithAnnotatedEdits, EditKeySourceData, EditSource } from '../h
 
 /**
  * Tracks a single document.
-*/
+ */
 export class DocumentEditSourceTracker<T = void> extends Disposable {
 	private _edits: AnnotatedStringEdit<EditKeySourceData> = AnnotatedStringEdit.empty;
 	private _pendingExternalEdits: AnnotatedStringEdit<EditKeySourceData> = AnnotatedStringEdit.empty;
 
 	private readonly _update = observableSignal(this);
 	private readonly _representativePerKey: Map<string, TextModelEditSource> = new Map();
-	private readonly _sumAddedCharactersPerKey: Map</* key */string, number> = new Map();
+	private readonly _sumAddedCharactersPerKey: Map</* key */ string, number> = new Map();
 
 	constructor(
 		private readonly _doc: IDocumentWithAnnotatedEdits,
-		public readonly data: T,
+		public readonly data: T
 	) {
 		super();
 
-		this._register(runOnChange(this._doc.value, (_val, _prevVal, edits) => {
-			const eComposed = AnnotatedStringEdit.compose(edits.map(e => e.edit));
-			if (eComposed.replacements.every(e => e.data.source.category === 'external')) {
-				if (this._edits.isEmpty()) {
-					// Ignore initial external edits
+		this._register(
+			runOnChange(this._doc.value, (_val, _prevVal, edits) => {
+				const eComposed = AnnotatedStringEdit.compose(edits.map(e => e.edit));
+				if (eComposed.replacements.every(e => e.data.source.category === 'external')) {
+					if (this._edits.isEmpty()) {
+						// Ignore initial external edits
+					} else {
+						// queue pending external edits
+						this._pendingExternalEdits = this._pendingExternalEdits.compose(eComposed);
+					}
 				} else {
-					// queue pending external edits
-					this._pendingExternalEdits = this._pendingExternalEdits.compose(eComposed);
+					if (!this._pendingExternalEdits.isEmpty()) {
+						this._applyEdit(this._pendingExternalEdits);
+						this._pendingExternalEdits = AnnotatedStringEdit.empty;
+					}
+					this._applyEdit(eComposed);
 				}
-			} else {
-				if (!this._pendingExternalEdits.isEmpty()) {
-					this._applyEdit(this._pendingExternalEdits);
-					this._pendingExternalEdits = AnnotatedStringEdit.empty;
-				}
-				this._applyEdit(eComposed);
-			}
 
-			this._update.trigger(undefined);
-		}));
+				this._update.trigger(undefined);
+			})
+		);
 	}
 
 	private _applyEdit(e: AnnotatedStringEdit<EditKeySourceData>): void {
@@ -100,11 +101,11 @@ export class DocumentEditSourceTracker<T = void> extends Disposable {
 
 		return {
 			...{ $fileExtension: 'text.w' },
-			'value': txt,
-			'decorations': ranges.map(r => {
+			value: txt,
+			decorations: ranges.map(r => {
 				return {
 					range: [r.range.start, r.range.endExclusive],
-					color: r.source.getColor(),
+					color: r.source.getColor()
 				};
 			})
 		};
@@ -117,6 +118,6 @@ export class TrackedEdit {
 		public readonly range: OffsetRange,
 		public readonly sourceKey: string,
 		public readonly source: EditSource,
-		public readonly sourceRepresentative: TextModelEditSource,
-	) { }
+		public readonly sourceRepresentative: TextModelEditSource
+	) {}
 }

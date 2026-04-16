@@ -12,8 +12,8 @@ function testErrorMessage(module: string): string {
 }
 
 flakySuite('Native Modules (all platforms)', () => {
-
-	(isMacintosh ? test.skip : test)('kerberos', async () => { // Somehow fails on macOS ARM?
+	(isMacintosh ? test.skip : test)('kerberos', async () => {
+		// Somehow fails on macOS ARM?
 		const { default: kerberos } = await import('kerberos');
 		assert.ok(typeof kerberos.initializeClient === 'function', testErrorMessage('kerberos'));
 	});
@@ -117,11 +117,11 @@ flakySuite('Native Modules (all platforms)', () => {
 		const windowsCerts = await proxyAgent.loadSystemCertificates({
 			loadSystemCertificatesFromNode: () => undefined,
 			log: {
-				trace: () => { },
-				debug: () => { },
-				info: () => { },
-				warn: () => { },
-				error: () => { }
+				trace: () => {},
+				debug: () => {},
+				info: () => {},
+				warn: () => {},
+				error: () => {}
 			}
 		});
 		assert.ok(windowsCerts.length > 0, testErrorMessage('@vscode/proxy-agent'));
@@ -129,7 +129,6 @@ flakySuite('Native Modules (all platforms)', () => {
 });
 
 (!isWindows ? suite.skip : suite)('Native Modules (Windows)', () => {
-
 	test('@vscode/windows-mutex', async () => {
 		const mutex = await import('@vscode/windows-mutex');
 		assert.ok(mutex && typeof mutex.isActive === 'function', testErrorMessage('@vscode/windows-mutex'));
@@ -139,7 +138,10 @@ flakySuite('Native Modules (all platforms)', () => {
 
 	test('windows-foreground-love', async () => {
 		const foregroundLove = await import('windows-foreground-love');
-		assert.ok(typeof foregroundLove.allowSetForegroundWindow === 'function', testErrorMessage('windows-foreground-love'));
+		assert.ok(
+			typeof foregroundLove.allowSetForegroundWindow === 'function',
+			testErrorMessage('windows-foreground-love')
+		);
 
 		const result = foregroundLove.allowSetForegroundWindow(process.pid);
 		assert.ok(typeof result === 'boolean', testErrorMessage('windows-foreground-love'));
@@ -164,7 +166,14 @@ flakySuite('Native Modules (all platforms)', () => {
 		const windowsRegistry = await import('@vscode/windows-registry');
 		assert.ok(typeof windowsRegistry.GetStringRegKey === 'function', testErrorMessage('@vscode/windows-registry'));
 
-		const result = windowsRegistry.GetStringRegKey('HKEY_LOCAL_MACHINE', 'SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion', 'EditionID');
-		assert.ok(typeof result === 'string' || typeof result === 'undefined', testErrorMessage('@vscode/windows-registry'));
+		const result = windowsRegistry.GetStringRegKey(
+			'HKEY_LOCAL_MACHINE',
+			'SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion',
+			'EditionID'
+		);
+		assert.ok(
+			typeof result === 'string' || typeof result === 'undefined',
+			testErrorMessage('@vscode/windows-registry')
+		);
 	});
 });

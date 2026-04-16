@@ -11,17 +11,34 @@ import { ExtensionIdentifier } from '../../../platform/extensions/common/extensi
 import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
 import { IExtHostExtensionService } from './extHostExtensionService.js';
 import { IExtHostRpcService } from './extHostRpcService.js';
-import { ExtHostGitExtensionShape, GitBaseRefDto, GitBranchDto, GitChangeDto, GitDiffChangeDto, GitRefDto, GitRefQueryDto, GitRefTypeDto, GitRepositoryStateDto, GitUpstreamRefDto, MainContext, MainThreadGitExtensionShape } from './extHost.protocol.js';
+import {
+	ExtHostGitExtensionShape,
+	GitBaseRefDto,
+	GitBranchDto,
+	GitChangeDto,
+	GitDiffChangeDto,
+	GitRefDto,
+	GitRefQueryDto,
+	GitRefTypeDto,
+	GitRepositoryStateDto,
+	GitUpstreamRefDto,
+	MainContext,
+	MainThreadGitExtensionShape
+} from './extHost.protocol.js';
 import { ResourceMap } from '../../../base/common/map.js';
 
 const GIT_EXTENSION_ID = 'vscode.git';
 
 function toGitRefTypeDto(type: GitRefType): GitRefTypeDto {
 	switch (type) {
-		case GitRefType.Head: return GitRefTypeDto.Head;
-		case GitRefType.RemoteHead: return GitRefTypeDto.RemoteHead;
-		case GitRefType.Tag: return GitRefTypeDto.Tag;
-		default: throw new Error(`Unknown GitRefType: ${type}`);
+		case GitRefType.Head:
+			return GitRefTypeDto.Head;
+		case GitRefType.RemoteHead:
+			return GitRefTypeDto.RemoteHead;
+		case GitRefType.Tag:
+			return GitRefTypeDto.Tag;
+		default:
+			throw new Error(`Unknown GitRefType: ${type}`);
 	}
 }
 
@@ -34,7 +51,7 @@ function toGitBranchDto(branch: Branch): GitBranchDto {
 		base: branch.base,
 		upstream: branch.upstream ? toGitUpstreamRefDto(branch.upstream) : undefined,
 		ahead: branch.ahead,
-		behind: branch.behind,
+		behind: branch.behind
 	};
 }
 
@@ -42,7 +59,7 @@ function toGitUpstreamRefDto(upstream: UpstreamRef): GitUpstreamRefDto {
 	return {
 		remote: upstream.remote,
 		name: upstream.name,
-		commit: upstream.commit,
+		commit: upstream.commit
 	};
 }
 
@@ -55,7 +72,7 @@ const enum GitStatus {
 	DELETED = 6,
 	UNTRACKED = 7,
 	INTENT_TO_ADD = 9,
-	INTENT_TO_RENAME = 10,
+	INTENT_TO_RENAME = 10
 }
 
 function toGitChangeDto(change: Change): GitChangeDto {
@@ -183,7 +200,7 @@ export class ExtHostGitExtensionService extends Disposable implements IExtHostGi
 
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
-		@IExtHostExtensionService private readonly _extHostExtensionService: IExtHostExtensionService,
+		@IExtHostExtensionService private readonly _extHostExtensionService: IExtHostExtensionService
 	) {
 		super();
 
@@ -195,7 +212,9 @@ export class ExtHostGitExtensionService extends Disposable implements IExtHostGi
 		return !!registry.getExtensionDescription(GIT_EXTENSION_ID);
 	}
 
-	async $openRepository(uri: UriComponents): Promise<{ handle: number; rootUri: UriComponents; state: GitRepositoryStateDto } | undefined> {
+	async $openRepository(
+		uri: UriComponents
+	): Promise<{ handle: number; rootUri: UriComponents; state: GitRepositoryStateDto } | undefined> {
 		const api = await this._ensureGitApi();
 		if (!api) {
 			return undefined;
@@ -229,9 +248,11 @@ export class ExtHostGitExtensionService extends Disposable implements IExtHostGi
 		this._repositoryByUri.set(repository.rootUri, handle);
 
 		// Subscribe to repository state changes
-		this._disposables.add(repository.state.onDidChange(() => {
-			this._proxy.$onDidChangeRepository(handle);
-		}));
+		this._disposables.add(
+			repository.state.onDidChange(() => {
+				this._proxy.$onDidChangeRepository(handle);
+			})
+		);
 
 		const state = await this._getRepositoryState(repository);
 		return { handle, rootUri: repository.rootUri, state };
@@ -250,11 +271,12 @@ export class ExtHostGitExtensionService extends Disposable implements IExtHostGi
 					return undefined;
 				}
 
-				const id = ref.type === GitRefType.Head
-					? `refs/heads/${ref.name}`
-					: ref.type === GitRefType.RemoteHead
-						? `refs/remotes/${ref.remote}/${ref.name}`
-						: `refs/tags/${ref.name}`;
+				const id =
+					ref.type === GitRefType.Head
+						? `refs/heads/${ref.name}`
+						: ref.type === GitRefType.RemoteHead
+							? `refs/remotes/${ref.remote}/${ref.name}`
+							: `refs/tags/${ref.name}`;
 
 				return {
 					id,
@@ -290,7 +312,7 @@ export class ExtHostGitExtensionService extends Disposable implements IExtHostGi
 			mergeChanges: state.mergeChanges.map(toGitChangeDto),
 			indexChanges: state.indexChanges.map(toGitChangeDto),
 			workingTreeChanges: state.workingTreeChanges.map(toGitChangeDto),
-			untrackedChanges: state.untrackedChanges.map(toGitChangeDto),
+			untrackedChanges: state.untrackedChanges.map(toGitChangeDto)
 		};
 	}
 
@@ -320,7 +342,7 @@ export class ExtHostGitExtensionService extends Disposable implements IExtHostGi
 			return changes.map(c => ({
 				...toGitChangeDto(c),
 				insertions: c.insertions,
-				deletions: c.deletions,
+				deletions: c.deletions
 			}));
 		} catch {
 			return [];
@@ -338,7 +360,7 @@ export class ExtHostGitExtensionService extends Disposable implements IExtHostGi
 			return changes.map(c => ({
 				...toGitChangeDto(c),
 				insertions: c.insertions,
-				deletions: c.deletions,
+				deletions: c.deletions
 			}));
 		} catch {
 			return [];
@@ -351,10 +373,11 @@ export class ExtHostGitExtensionService extends Disposable implements IExtHostGi
 		}
 
 		try {
-			await this._extHostExtensionService.activateByIdWithErrors(
-				new ExtensionIdentifier(GIT_EXTENSION_ID),
-				{ startup: false, extensionId: new ExtensionIdentifier(GIT_EXTENSION_ID), activationEvent: 'api' }
-			);
+			await this._extHostExtensionService.activateByIdWithErrors(new ExtensionIdentifier(GIT_EXTENSION_ID), {
+				startup: false,
+				extensionId: new ExtensionIdentifier(GIT_EXTENSION_ID),
+				activationEvent: 'api'
+			});
 
 			const exports = this._extHostExtensionService.getExtensionExports(new ExtensionIdentifier(GIT_EXTENSION_ID));
 			if (!!exports && typeof (exports as GitExtension).getAPI === 'function') {

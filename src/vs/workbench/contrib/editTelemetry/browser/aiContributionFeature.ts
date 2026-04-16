@@ -23,49 +23,57 @@ interface TrackerEntry {
  * Tracks AI-generated edits across open documents using the edit telemetry pipeline.
  */
 export class AiContributionFeature extends Disposable {
-
 	private readonly _trackers = new ResourceMap<TrackerEntry>();
 	private readonly _documentsByUri = new ResourceMap<AnnotatedDocument>();
 
-	constructor(
-		annotatedDocuments: IAnnotatedDocuments,
-	) {
+	constructor(annotatedDocuments: IAnnotatedDocuments) {
 		super();
 
-		this._register(autorun(reader => {
-			const docs = annotatedDocuments.documents.read(reader);
-			const activeUris = new ResourceMap<boolean>();
+		this._register(
+			autorun(reader => {
+				const docs = annotatedDocuments.documents.read(reader);
+				const activeUris = new ResourceMap<boolean>();
 
-			for (const doc of docs) {
-				const uri = doc.document.uri;
-				activeUris.set(uri, true);
-				this._documentsByUri.set(uri, doc);
+				for (const doc of docs) {
+					const uri = doc.document.uri;
+					activeUris.set(uri, true);
+					this._documentsByUri.set(uri, doc);
 
-				if (!this._trackers.has(uri)) {
-					this._trackers.set(uri, this._createTrackerEntry(doc));
+					if (!this._trackers.has(uri)) {
+						this._trackers.set(uri, this._createTrackerEntry(doc));
+					}
 				}
-			}
 
-			for (const [uri, entry] of this._trackers) {
-				if (!activeUris.has(uri)) {
-					entry.trackerStore.dispose();
-					this._trackers.delete(uri);
-					this._documentsByUri.delete(uri);
+				for (const [uri, entry] of this._trackers) {
+					if (!activeUris.has(uri)) {
+						entry.trackerStore.dispose();
+						this._trackers.delete(uri);
+						this._documentsByUri.delete(uri);
+					}
 				}
-			}
-		}));
+			})
+		);
 
-		this._register(CommandsRegistry.registerCommand('_aiEdits.hasAiContributions', (_accessor, resources: UriComponents[], level: AiContributionLevel) => {
-			return this._hasAiContributions(resources, level);
-		}));
+		this._register(
+			CommandsRegistry.registerCommand(
+				'_aiEdits.hasAiContributions',
+				(_accessor, resources: UriComponents[], level: AiContributionLevel) => {
+					return this._hasAiContributions(resources, level);
+				}
+			)
+		);
 
-		this._register(CommandsRegistry.registerCommand('_aiEdits.clearAiContributions', (_accessor, resources: UriComponents[]) => {
-			this._clearAiContributions(resources);
-		}));
+		this._register(
+			CommandsRegistry.registerCommand('_aiEdits.clearAiContributions', (_accessor, resources: UriComponents[]) => {
+				this._clearAiContributions(resources);
+			})
+		);
 
-		this._register(CommandsRegistry.registerCommand('_aiEdits.clearAllAiContributions', () => {
-			this._clearAiContributions();
-		}));
+		this._register(
+			CommandsRegistry.registerCommand('_aiEdits.clearAllAiContributions', () => {
+				this._clearAiContributions();
+			})
+		);
 	}
 
 	override dispose(): void {

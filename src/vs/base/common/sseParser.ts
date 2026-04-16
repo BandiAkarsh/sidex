@@ -42,7 +42,7 @@ const enum Chr {
 	CR = 13, // '\r'
 	LF = 10, // '\n'
 	COLON = 58, // ':'
-	SPACE = 32, // ' '
+	SPACE = 32 // ' '
 }
 
 /**
@@ -101,7 +101,7 @@ export class SSEParser {
 		while (offset < chunk.length) {
 			const indexCR = chunk.indexOf(Chr.CR, offset);
 			const indexLF = chunk.indexOf(Chr.LF, offset);
-			const index = indexCR === -1 ? indexLF : (indexLF === -1 ? indexCR : Math.min(indexCR, indexLF));
+			const index = indexCR === -1 ? indexLF : indexLF === -1 ? indexCR : Math.min(indexCR, indexLF);
 			if (index === -1) {
 				break;
 			}
@@ -116,7 +116,6 @@ export class SSEParser {
 			this.buffer.length = 0;
 			offset = index + (chunk[index] === Chr.CR && chunk[index + 1] === Chr.LF ? 2 : 1);
 		}
-
 
 		if (offset < chunk.length) {
 			this.buffer.push(chunk.subarray(offset));
@@ -212,7 +211,7 @@ export class SSEParser {
 		// Create and dispatch the event
 		const event: ISSEEvent = {
 			type: this.eventTypeBuffer || 'message',
-			data: this.dataBuffer,
+			data: this.dataBuffer
 		};
 
 		// Add optional fields if they exist
@@ -241,5 +240,3 @@ export class SSEParser {
 		// Note: lastEventIdBuffer is not reset as it's used for reconnection
 	}
 }
-
-

@@ -82,5 +82,4 @@ export class InteractiveHistoryService extends Disposable implements IInteractiv
 	has(uri: URI) {
 		return this._history.has(uri) ? true : false;
 	}
-
 }

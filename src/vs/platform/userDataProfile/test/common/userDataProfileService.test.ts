@@ -23,12 +23,15 @@ class TestEnvironmentService extends AbstractNativeEnvironmentService {
 	constructor(private readonly _appSettingsHome: URI) {
 		super(Object.create(null), Object.create(null), { _serviceBrand: undefined, ...product });
 	}
-	override get userRoamingDataHome() { return this._appSettingsHome.with({ scheme: Schemas.vscodeUserData }); }
-	override get cacheHome() { return this.userRoamingDataHome; }
+	override get userRoamingDataHome() {
+		return this._appSettingsHome.with({ scheme: Schemas.vscodeUserData });
+	}
+	override get cacheHome() {
+		return this.userRoamingDataHome;
+	}
 }
 
 suite('UserDataProfileService (Common)', () => {
-
 	const disposables = ensureNoDisposablesAreLeakedInTestSuite();
 	let testObject: UserDataProfilesService;
 	let environmentService: TestEnvironmentService;
@@ -41,20 +44,47 @@ suite('UserDataProfileService (Common)', () => {
 		disposables.add(fileService.registerProvider(Schemas.vscodeUserData, fileSystemProvider));
 
 		environmentService = new TestEnvironmentService(joinPath(ROOT, 'User'));
-		testObject = disposables.add(new InMemoryUserDataProfilesService(environmentService, fileService, disposables.add(new UriIdentityService(fileService)), logService));
+		testObject = disposables.add(
+			new InMemoryUserDataProfilesService(
+				environmentService,
+				fileService,
+				disposables.add(new UriIdentityService(fileService)),
+				logService
+			)
+		);
 	});
-
 
 	test('default profile', () => {
 		assert.strictEqual(testObject.defaultProfile.isDefault, true);
 		assert.strictEqual(testObject.defaultProfile.useDefaultFlags, undefined);
-		assert.strictEqual(testObject.defaultProfile.location.toString(), environmentService.userRoamingDataHome.toString());
-		assert.strictEqual(testObject.defaultProfile.globalStorageHome.toString(), joinPath(environmentService.userRoamingDataHome, 'globalStorage').toString());
-		assert.strictEqual(testObject.defaultProfile.keybindingsResource.toString(), joinPath(environmentService.userRoamingDataHome, 'keybindings.json').toString());
-		assert.strictEqual(testObject.defaultProfile.settingsResource.toString(), joinPath(environmentService.userRoamingDataHome, 'settings.json').toString());
-		assert.strictEqual(testObject.defaultProfile.snippetsHome.toString(), joinPath(environmentService.userRoamingDataHome, 'snippets').toString());
-		assert.strictEqual(testObject.defaultProfile.tasksResource.toString(), joinPath(environmentService.userRoamingDataHome, 'tasks.json').toString());
-		assert.strictEqual(testObject.defaultProfile.extensionsResource.toString(), joinPath(environmentService.userRoamingDataHome, 'extensions.json').toString());
+		assert.strictEqual(
+			testObject.defaultProfile.location.toString(),
+			environmentService.userRoamingDataHome.toString()
+		);
+		assert.strictEqual(
+			testObject.defaultProfile.globalStorageHome.toString(),
+			joinPath(environmentService.userRoamingDataHome, 'globalStorage').toString()
+		);
+		assert.strictEqual(
+			testObject.defaultProfile.keybindingsResource.toString(),
+			joinPath(environmentService.userRoamingDataHome, 'keybindings.json').toString()
+		);
+		assert.strictEqual(
+			testObject.defaultProfile.settingsResource.toString(),
+			joinPath(environmentService.userRoamingDataHome, 'settings.json').toString()
+		);
+		assert.strictEqual(
+			testObject.defaultProfile.snippetsHome.toString(),
+			joinPath(environmentService.userRoamingDataHome, 'snippets').toString()
+		);
+		assert.strictEqual(
+			testObject.defaultProfile.tasksResource.toString(),
+			joinPath(environmentService.userRoamingDataHome, 'tasks.json').toString()
+		);
+		assert.strictEqual(
+			testObject.defaultProfile.extensionsResource.toString(),
+			joinPath(environmentService.userRoamingDataHome, 'extensions.json').toString()
+		);
 	});
 
 	test('profiles always include default profile', () => {
@@ -178,7 +208,10 @@ suite('UserDataProfileService (Common)', () => {
 
 		assert.strictEqual(profile.isDefault, false);
 		assert.deepStrictEqual(profile.useDefaultFlags, { keybindings: true });
-		assert.strictEqual(profile.keybindingsResource.toString(), testObject.defaultProfile.keybindingsResource.toString());
+		assert.strictEqual(
+			profile.keybindingsResource.toString(),
+			testObject.defaultProfile.keybindingsResource.toString()
+		);
 	});
 
 	test('profile using default profile for snippets', async () => {
@@ -219,7 +252,10 @@ suite('UserDataProfileService (Common)', () => {
 
 		assert.strictEqual(profile.isDefault, false);
 		assert.deepStrictEqual(profile.useDefaultFlags, { keybindings: true });
-		assert.strictEqual(profile.keybindingsResource.toString(), testObject.defaultProfile.keybindingsResource.toString());
+		assert.strictEqual(
+			profile.keybindingsResource.toString(),
+			testObject.defaultProfile.keybindingsResource.toString()
+		);
 	});
 
 	test('create profile with a workspace associates it to the profile', async () => {
@@ -349,5 +385,4 @@ suite('UserDataProfileService (Common)', () => {
 		assert.deepStrictEqual(testObject.profiles[2].id, profile1.id);
 		assert.deepStrictEqual(testObject.profiles[3].id, profile2.id);
 	});
-
 });

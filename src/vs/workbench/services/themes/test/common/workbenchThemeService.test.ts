@@ -11,14 +11,15 @@ import { TestConfigurationService } from '../../../../../platform/configuration/
 import { IHostColorSchemeService } from '../../common/hostColorSchemeService.js';
 import { ColorScheme } from '../../../../../platform/theme/common/theme.js';
 import { Event } from '../../../../../base/common/event.js';
-import { IConfigurationOverrides, IConfigurationValue } from '../../../../../platform/configuration/common/configuration.js';
+import {
+	IConfigurationOverrides,
+	IConfigurationValue
+} from '../../../../../platform/configuration/common/configuration.js';
 
 suite('WorkbenchThemeService', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	suite('migrateThemeSettingsId', () => {
-
 		test('migrates Default-prefixed theme IDs', () => {
 			assert.deepStrictEqual(
 				['Default Dark Modern', 'Default Light Modern', 'Default Dark+', 'Default Light+'].map(migrateThemeSettingsId),
@@ -29,26 +30,32 @@ suite('WorkbenchThemeService', () => {
 		test('migrates Experimental theme IDs to VS Code themes', () => {
 			assert.deepStrictEqual(
 				['Experimental Dark', 'Experimental Light', 'VS Code Dark', 'VS Code Light'].map(migrateThemeSettingsId),
-				[ThemeSettingDefaults.COLOR_THEME_DARK, ThemeSettingDefaults.COLOR_THEME_LIGHT, ThemeSettingDefaults.COLOR_THEME_DARK, ThemeSettingDefaults.COLOR_THEME_LIGHT]
+				[
+					ThemeSettingDefaults.COLOR_THEME_DARK,
+					ThemeSettingDefaults.COLOR_THEME_LIGHT,
+					ThemeSettingDefaults.COLOR_THEME_DARK,
+					ThemeSettingDefaults.COLOR_THEME_LIGHT
+				]
 			);
 		});
 
 		test('returns unknown IDs unchanged', () => {
-			assert.deepStrictEqual(
-				['Dark Modern', 'Dark 2026', 'Some Custom Theme', ''].map(migrateThemeSettingsId),
-				['Dark Modern', 'Dark 2026', 'Some Custom Theme', '']
-			);
+			assert.deepStrictEqual(['Dark Modern', 'Dark 2026', 'Some Custom Theme', ''].map(migrateThemeSettingsId), [
+				'Dark Modern',
+				'Dark 2026',
+				'Some Custom Theme',
+				''
+			]);
 		});
 	});
 
 	suite('ThemeConfiguration', () => {
-
 		function createHostColorSchemeService(dark: boolean, highContrast: boolean = false): IHostColorSchemeService {
 			return {
 				_serviceBrand: undefined,
 				dark,
 				highContrast,
-				onDidChangeColorScheme: Event.None,
+				onDidChangeColorScheme: Event.None
 			};
 		}
 
@@ -73,7 +80,7 @@ suite('WorkbenchThemeService', () => {
 					value: defaultVal,
 					defaultValue: defaultVal,
 					userValue: undefined,
-					userLocalValue: undefined,
+					userLocalValue: undefined
 				};
 			};
 			const originalGetValue = configService.getValue.bind(configService);

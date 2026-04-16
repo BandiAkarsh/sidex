@@ -9,7 +9,11 @@ import { URI } from '../../../../../base/common/uri.js';
 import { TextResourceEditorInput } from '../../../../common/editor/textResourceEditorInput.js';
 import { TextResourceEditorModel } from '../../../../common/editor/textResourceEditorModel.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
-import { workbenchInstantiationService, TestServiceAccessor, ITestTextFileEditorModelManager } from '../../../../test/browser/workbenchTestServices.js';
+import {
+	workbenchInstantiationService,
+	TestServiceAccessor,
+	ITestTextFileEditorModelManager
+} from '../../../../test/browser/workbenchTestServices.js';
 import { ensureNoDisposablesAreLeakedInTestSuite, toResource } from '../../../../../base/test/common/utils.js';
 import { TextFileEditorModel } from '../../../textfile/common/textFileEditorModel.js';
 import { snapshotToString } from '../../../textfile/common/textfiles.js';
@@ -22,7 +26,6 @@ import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { Schemas } from '../../../../../base/common/network.js';
 
 suite('Workbench - TextModelResolverService', () => {
-
 	const disposables = new DisposableStore();
 	let instantiationService: IInstantiationService;
 	let accessor: TestServiceAccessor;
@@ -38,25 +41,34 @@ suite('Workbench - TextModelResolverService', () => {
 	});
 
 	test('resolve resource', async () => {
-		disposables.add(accessor.textModelResolverService.registerTextModelContentProvider('test', {
-			provideTextContent: async function (resource: URI): Promise<ITextModel | null> {
-				if (resource.scheme === 'test') {
-					const modelContent = 'Hello Test';
-					const languageSelection = accessor.languageService.createById('json');
+		disposables.add(
+			accessor.textModelResolverService.registerTextModelContentProvider('test', {
+				provideTextContent: async function (resource: URI): Promise<ITextModel | null> {
+					if (resource.scheme === 'test') {
+						const modelContent = 'Hello Test';
+						const languageSelection = accessor.languageService.createById('json');
 
-					return accessor.modelService.createModel(modelContent, languageSelection, resource);
+						return accessor.modelService.createModel(modelContent, languageSelection, resource);
+					}
+
+					return null;
 				}
-
-				return null;
-			}
-		}));
+			})
+		);
 
 		const resource = URI.from({ scheme: 'test', authority: null!, path: 'thePath' });
-		const input = instantiationService.createInstance(TextResourceEditorInput, resource, 'The Name', 'The Description', undefined, undefined);
+		const input = instantiationService.createInstance(
+			TextResourceEditorInput,
+			resource,
+			'The Name',
+			'The Description',
+			undefined,
+			undefined
+		);
 
 		const model = disposables.add(await input.resolve());
 		assert.ok(model);
-		assert.strictEqual(snapshotToString(((model as TextResourceEditorModel).createSnapshot()!)), 'Hello Test');
+		assert.strictEqual(snapshotToString((model as TextResourceEditorModel).createSnapshot()!), 'Hello Test');
 		let disposed = false;
 		const disposedPromise = new Promise<void>(resolve => {
 			Event.once(model.onWillDispose)(() => {
@@ -71,7 +83,14 @@ suite('Workbench - TextModelResolverService', () => {
 	});
 
 	test('resolve file', async function () {
-		const textModel = disposables.add(instantiationService.createInstance(TextFileEditorModel, toResource.call(this, '/path/file_resolver.txt'), 'utf8', undefined));
+		const textModel = disposables.add(
+			instantiationService.createInstance(
+				TextFileEditorModel,
+				toResource.call(this, '/path/file_resolver.txt'),
+				'utf8',
+				undefined
+			)
+		);
 		(<ITestTextFileEditorModelManager>accessor.textFileService.files).add(textModel.resource, textModel);
 
 		await textModel.resolve();
@@ -90,12 +109,19 @@ suite('Workbench - TextModelResolverService', () => {
 		});
 
 		ref.dispose();
-		await timeout(0);  // due to the reference resolving the model first which is async
+		await timeout(0); // due to the reference resolving the model first which is async
 		assert.strictEqual(disposed, true);
 	});
 
 	test('resolved dirty file eventually disposes', async function () {
-		const textModel = disposables.add(instantiationService.createInstance(TextFileEditorModel, toResource.call(this, '/path/file_resolver.txt'), 'utf8', undefined));
+		const textModel = disposables.add(
+			instantiationService.createInstance(
+				TextFileEditorModel,
+				toResource.call(this, '/path/file_resolver.txt'),
+				'utf8',
+				undefined
+			)
+		);
 		(<ITestTextFileEditorModelManager>accessor.textFileService.files).add(textModel.resource, textModel);
 
 		await textModel.resolve();
@@ -120,7 +146,14 @@ suite('Workbench - TextModelResolverService', () => {
 	});
 
 	test('resolved dirty file does not dispose when new reference created', async function () {
-		const textModel = disposables.add(instantiationService.createInstance(TextFileEditorModel, toResource.call(this, '/path/file_resolver.txt'), 'utf8', undefined));
+		const textModel = disposables.add(
+			instantiationService.createInstance(
+				TextFileEditorModel,
+				toResource.call(this, '/path/file_resolver.txt'),
+				'utf8',
+				undefined
+			)
+		);
 		(<ITestTextFileEditorModelManager>accessor.textFileService.files).add(textModel.resource, textModel);
 
 		await textModel.resolve();
@@ -169,17 +202,19 @@ suite('Workbench - TextModelResolverService', () => {
 
 	test('even loading documents should be refcounted', async () => {
 		let resolveModel!: Function;
-		const waitForIt = new Promise(resolve => resolveModel = resolve);
+		const waitForIt = new Promise(resolve => (resolveModel = resolve));
 
-		disposables.add(accessor.textModelResolverService.registerTextModelContentProvider('test', {
-			provideTextContent: async (resource: URI): Promise<ITextModel> => {
-				await waitForIt;
+		disposables.add(
+			accessor.textModelResolverService.registerTextModelContentProvider('test', {
+				provideTextContent: async (resource: URI): Promise<ITextModel> => {
+					await waitForIt;
 
-				const modelContent = 'Hello Test';
-				const languageSelection = accessor.languageService.createById('json');
-				return disposables.add(accessor.modelService.createModel(modelContent, languageSelection, resource));
-			}
-		}));
+					const modelContent = 'Hello Test';
+					const languageSelection = accessor.languageService.createById('json');
+					return disposables.add(accessor.modelService.createModel(modelContent, languageSelection, resource));
+				}
+			})
+		);
 
 		const uri = URI.from({ scheme: 'test', authority: null!, path: 'thePath' });
 

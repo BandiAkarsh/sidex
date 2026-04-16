@@ -19,8 +19,8 @@ class WebBrowserViewWorkbenchService implements IBrowserViewWorkbenchService {
 		throw new Error('Integrated Browser is not available in web.');
 	}
 
-	async clearGlobalStorage(): Promise<void> { }
-	async clearWorkspaceStorage(): Promise<void> { }
+	async clearGlobalStorage(): Promise<void> {}
+	async clearWorkspaceStorage(): Promise<void> {}
 }
 
 class WebBrowserViewCDPService implements IBrowserViewCDPService {
@@ -30,9 +30,9 @@ class WebBrowserViewCDPService implements IBrowserViewCDPService {
 		throw new Error('Integrated Browser is not available in web.');
 	}
 
-	async destroySessionGroup(_groupId: string): Promise<void> { }
+	async destroySessionGroup(_groupId: string): Promise<void> {}
 
-	async sendCDPMessage(_groupId: string, _message: CDPRequest): Promise<void> { }
+	async sendCDPMessage(_groupId: string, _message: CDPRequest): Promise<void> {}
 
 	onCDPMessage(_groupId: string): Event<CDPResponse | CDPEvent> {
 		return Event.None;

@@ -7,7 +7,9 @@ import { Event } from '../../../../base/common/event.js';
 import { IDisposable } from '../../../../base/common/lifecycle.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 
-export const INotebookRendererMessagingService = createDecorator<INotebookRendererMessagingService>('INotebookRendererMessagingService');
+export const INotebookRendererMessagingService = createDecorator<INotebookRendererMessagingService>(
+	'INotebookRendererMessagingService'
+);
 
 export interface INotebookRendererMessagingService {
 	readonly _serviceBrand: undefined;

@@ -15,7 +15,12 @@ import { EditorExtensionsRegistry } from '../../../../editor/browser/editorExten
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { registerThemingParticipant } from '../../../../platform/theme/common/themeService.js';
 import { IDisposable } from '../../../../base/common/lifecycle.js';
-import { selectionBackground, inputBackground, inputForeground, editorSelectionBackground } from '../../../../platform/theme/common/colorRegistry.js';
+import {
+	selectionBackground,
+	inputBackground,
+	inputForeground,
+	editorSelectionBackground
+} from '../../../../platform/theme/common/colorRegistry.js';
 
 export function getSimpleEditorOptions(configurationService: IConfigurationService): IEditorOptions {
 	return {
@@ -47,12 +52,14 @@ export function getSimpleEditorOptions(configurationService: IConfigurationServi
 		},
 		wordSegmenterLocales: configurationService.getValue<string | string[]>('editor.wordSegmenterLocales'),
 		accessibilitySupport: configurationService.getValue<'auto' | 'off' | 'on'>('editor.accessibilitySupport'),
-		cursorBlinking: configurationService.getValue<'blink' | 'smooth' | 'phase' | 'expand' | 'solid'>('editor.cursorBlinking'),
+		cursorBlinking: configurationService.getValue<'blink' | 'smooth' | 'phase' | 'expand' | 'solid'>(
+			'editor.cursorBlinking'
+		),
 		editContext: configurationService.getValue<boolean>('editor.editContext'),
 		defaultColorDecorators: 'never',
 		allowVariableLineHeights: false,
 		allowVariableFonts: false,
-		allowVariableFontsInAccessibilityMode: false,
+		allowVariableFontsInAccessibilityMode: false
 	};
 }
 
@@ -65,7 +72,7 @@ export function getSimpleCodeEditorWidgetOptions(): ICodeEditorWidgetOptions {
 			ContextMenuController.ID,
 			SuggestController.ID,
 			SnippetController2.ID,
-			TabCompletionController.ID,
+			TabCompletionController.ID
 		])
 	};
 }
@@ -83,21 +90,30 @@ export function setupSimpleEditorSelectionStyling(editorContainerSelector: strin
 			// Override inactive selection bg
 			const inputBackgroundColor = theme.getColor(inputBackground);
 			if (inputBackgroundColor) {
-				collector.addRule(`${editorContainerSelector} .monaco-editor-background { background-color: ${inputBackgroundColor}; } `);
-				collector.addRule(`${editorContainerSelector} .monaco-editor .selected-text { background-color: ${inputBackgroundColor.transparent(0.4)}; }`);
+				collector.addRule(
+					`${editorContainerSelector} .monaco-editor-background { background-color: ${inputBackgroundColor}; } `
+				);
+				collector.addRule(
+					`${editorContainerSelector} .monaco-editor .selected-text { background-color: ${inputBackgroundColor.transparent(0.4)}; }`
+				);
 			}
 
 			// Override selected fg
 			const inputForegroundColor = theme.getColor(inputForeground);
 			if (inputForegroundColor) {
-				collector.addRule(`${editorContainerSelector} .monaco-editor .view-line span.inline-selected-text { color: ${inputForegroundColor}; }`);
+				collector.addRule(
+					`${editorContainerSelector} .monaco-editor .view-line span.inline-selected-text { color: ${inputForegroundColor}; }`
+				);
 			}
 
-			collector.addRule(`${editorContainerSelector} .monaco-editor .focused .selected-text { background-color: ${selectionBackgroundColor}; }`);
+			collector.addRule(
+				`${editorContainerSelector} .monaco-editor .focused .selected-text { background-color: ${selectionBackgroundColor}; }`
+			);
 		} else {
 			// Use editor selection color if theme has not set a selection background color
-			collector.addRule(`${editorContainerSelector} .monaco-editor .focused .selected-text { background-color: ${theme.getColor(editorSelectionBackground)}; }`);
+			collector.addRule(
+				`${editorContainerSelector} .monaco-editor .focused .selected-text { background-color: ${theme.getColor(editorSelectionBackground)}; }`
+			);
 		}
 	});
-
 }

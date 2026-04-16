@@ -19,8 +19,26 @@ suite('TestingContinuousRunService', () => {
 	let testService: MockTestService;
 	let cr: ITestingContinuousRunService;
 
-	const profile1: ITestRunProfile = { profileId: 1, controllerId: 'ctrl', group: TestRunProfileBitset.Run, label: 'label', supportsContinuousRun: true, isDefault: false, hasConfigurationHandler: true, tag: null };
-	const profile2: ITestRunProfile = { profileId: 2, controllerId: 'ctrl', group: TestRunProfileBitset.Run, label: 'label', supportsContinuousRun: true, isDefault: false, hasConfigurationHandler: true, tag: null };
+	const profile1: ITestRunProfile = {
+		profileId: 1,
+		controllerId: 'ctrl',
+		group: TestRunProfileBitset.Run,
+		label: 'label',
+		supportsContinuousRun: true,
+		isDefault: false,
+		hasConfigurationHandler: true,
+		tag: null
+	};
+	const profile2: ITestRunProfile = {
+		profileId: 2,
+		controllerId: 'ctrl',
+		group: TestRunProfileBitset.Run,
+		label: 'label',
+		supportsContinuousRun: true,
+		isDefault: false,
+		hasConfigurationHandler: true,
+		tag: null
+	};
 
 	class MockTestService extends mock<ITestService>() {
 		public requests = new Set<ResolvedTestRunRequest>();
@@ -29,10 +47,12 @@ suite('TestingContinuousRunService', () => {
 		override startContinuousRun(req: ResolvedTestRunRequest, token: CancellationToken): Promise<void> {
 			this.requests.add(req);
 			this.log.push(['start', req.targets[0].profileId, req.targets[0].testIds]);
-			ds.add(token.onCancellationRequested(() => {
-				this.log.push(['stop', req.targets[0].profileId, req.targets[0].testIds]);
-				this.requests.delete(req);
-			}));
+			ds.add(
+				token.onCancellationRequested(() => {
+					this.log.push(['stop', req.targets[0].profileId, req.targets[0].testIds]);
+					this.requests.delete(req);
+				})
+			);
 			return Promise.resolve();
 		}
 	}
@@ -48,12 +68,14 @@ suite('TestingContinuousRunService', () => {
 
 	setup(() => {
 		testService = new MockTestService();
-		cr = ds.add(new TestingContinuousRunService(
-			testService,
-			ds.add(new TestStorageService()),
-			ds.add(new MockContextKeyService()),
-			new MockProfilesService(),
-		));
+		cr = ds.add(
+			new TestingContinuousRunService(
+				testService,
+				ds.add(new TestStorageService()),
+				ds.add(new MockContextKeyService()),
+				new MockProfilesService()
+			)
+		);
 	});
 
 	test('isSpecificallyEnabledFor', () => {
@@ -64,9 +86,7 @@ suite('TestingContinuousRunService', () => {
 		assert.strictEqual(cr.isSpecificallyEnabledFor('testId'), false);
 		assert.strictEqual(cr.isSpecificallyEnabledFor('testId\0child'), true);
 
-		assert.deepStrictEqual(testService.log, [
-			['start', 1, ['testId\0child']],
-		]);
+		assert.deepStrictEqual(testService.log, [['start', 1, ['testId\0child']]]);
 	});
 
 	test('isEnabledForAParentOf', () => {
@@ -78,9 +98,7 @@ suite('TestingContinuousRunService', () => {
 		assert.strictEqual(cr.isEnabledForAParentOf('parentTestId\0testId\0nestd'), true);
 		assert.strictEqual(cr.isEnabled(), true);
 
-		assert.deepStrictEqual(testService.log, [
-			['start', 1, ['parentTestId\0testId']],
-		]);
+		assert.deepStrictEqual(testService.log, [['start', 1, ['parentTestId\0testId']]]);
 	});
 
 	test('isEnabledForAChildOf', () => {
@@ -105,7 +123,7 @@ suite('TestingContinuousRunService', () => {
 				['start', 1, ['a\0b\0c']],
 				['stop', 1, ['a\0b\0c\0d']],
 				['stop', 1, ['a\0b\0c']],
-				['stop', 1, ['a\0b']],
+				['stop', 1, ['a\0b']]
 			]);
 			assert.strictEqual(cr.isEnabled(), false);
 		});
@@ -121,7 +139,7 @@ suite('TestingContinuousRunService', () => {
 				['start', 1, ['a\0b\0c']],
 				['stop', 1, ['a\0b\0c\0d']],
 				['stop', 1, ['a\0b\0c']],
-				['stop', 1, ['a\0b']],
+				['stop', 1, ['a\0b']]
 			]);
 			assert.strictEqual(cr.isEnabled(), false);
 		});
@@ -136,7 +154,7 @@ suite('TestingContinuousRunService', () => {
 				['start', 1, ['parent\0testId']],
 				['start', 2, ['parent\0testId']],
 				['stop', 1, ['parent\0testId']],
-				['stop', 2, ['parent\0testId']],
+				['stop', 2, ['parent\0testId']]
 			]);
 			assert.strictEqual(cr.isEnabled(), false);
 		});
@@ -147,7 +165,7 @@ suite('TestingContinuousRunService', () => {
 			assert.deepStrictEqual(testService.log, [
 				['start', 1, ['parent\0testId']],
 				['start', 2, ['parent\0testId']],
-				['stop', 1, ['parent\0testId']],
+				['stop', 1, ['parent\0testId']]
 			]);
 			assert.strictEqual(cr.isEnabled(), true);
 
@@ -156,7 +174,7 @@ suite('TestingContinuousRunService', () => {
 				['start', 1, ['parent\0testId']],
 				['start', 2, ['parent\0testId']],
 				['stop', 1, ['parent\0testId']],
-				['stop', 2, ['parent\0testId']],
+				['stop', 2, ['parent\0testId']]
 			]);
 			assert.strictEqual(cr.isEnabled(), false);
 		});

@@ -36,13 +36,15 @@ suite('bracket matching', () => {
 	function createTextModelWithBrackets(text: string) {
 		const languageId = 'bracketMode';
 		disposables.add(languageService.registerLanguage({ id: languageId }));
-		disposables.add(languageConfigurationService.register(languageId, {
-			brackets: [
-				['{', '}'],
-				['[', ']'],
-				['(', ')'],
-			]
-		}));
+		disposables.add(
+			languageConfigurationService.register(languageId, {
+				brackets: [
+					['{', '}'],
+					['[', ']'],
+					['(', ')']
+				]
+			})
+		);
 		return disposables.add(instantiateTextModel(instantiationService, text, languageId));
 	}
 
@@ -52,7 +54,9 @@ suite('bracket matching', () => {
 
 	test('issue #183: jump to matching bracket position', () => {
 		const editor = createCodeEditorWithBrackets('var x = (3 + (5-7)) + ((5+3)+5);');
-		const bracketMatchingController = disposables.add(editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController));
+		const bracketMatchingController = disposables.add(
+			editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController)
+		);
 
 		// start on closing bracket
 		editor.setPosition(new Position(1, 20));
@@ -75,7 +79,9 @@ suite('bracket matching', () => {
 
 	test('Jump to next bracket', () => {
 		const editor = createCodeEditorWithBrackets('var x = (3 + (5-7)); y();');
-		const bracketMatchingController = disposables.add(editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController));
+		const bracketMatchingController = disposables.add(
+			editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController)
+		);
 
 		// start position between brackets
 		editor.setPosition(new Position(1, 16));
@@ -103,7 +109,9 @@ suite('bracket matching', () => {
 
 	test('Select to next bracket', () => {
 		const editor = createCodeEditorWithBrackets('var x = (3 + (5-7)); y();');
-		const bracketMatchingController = disposables.add(editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController));
+		const bracketMatchingController = disposables.add(
+			editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController)
+		);
 
 		// start position in open brackets
 		editor.setPosition(new Position(1, 9));
@@ -142,10 +150,12 @@ suite('bracket matching', () => {
 			'    something: [0, 1, 2],',
 			'    another: true,',
 			'    somethingmore: [0, 2, 4]',
-			'};',
+			'};'
 		].join('\n');
 		const editor = createCodeEditorWithBrackets(text);
-		const bracketMatchingController = disposables.add(editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController));
+		const bracketMatchingController = disposables.add(
+			editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController)
+		);
 
 		editor.setPosition(new Position(3, 5));
 		bracketMatchingController.jumpToBracket();
@@ -158,10 +168,12 @@ suite('bracket matching', () => {
 			'    something: [0, 1, 2],',
 			'    another: true,',
 			'    somethingmore: [0, 2, 4]',
-			'};',
+			'};'
 		].join('\n');
 		const editor = createCodeEditorWithBrackets(text);
-		const bracketMatchingController = disposables.add(editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController));
+		const bracketMatchingController = disposables.add(
+			editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController)
+		);
 
 		editor.setPosition(new Position(3, 5));
 		bracketMatchingController.selectToBracket(false);
@@ -170,14 +182,12 @@ suite('bracket matching', () => {
 
 	test('issue #45369: Select to Bracket with multicursor', () => {
 		const editor = createCodeEditorWithBrackets('{  }   {   }   { }');
-		const bracketMatchingController = disposables.add(editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController));
+		const bracketMatchingController = disposables.add(
+			editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController)
+		);
 
 		// cursors inside brackets become selections of the entire bracket contents
-		editor.setSelections([
-			new Selection(1, 3, 1, 3),
-			new Selection(1, 10, 1, 10),
-			new Selection(1, 17, 1, 17)
-		]);
+		editor.setSelections([new Selection(1, 3, 1, 3), new Selection(1, 10, 1, 10), new Selection(1, 17, 1, 17)]);
 		bracketMatchingController.selectToBracket(true);
 		assert.deepStrictEqual(editor.getSelections(), [
 			new Selection(1, 1, 1, 5),
@@ -186,11 +196,7 @@ suite('bracket matching', () => {
 		]);
 
 		// cursors to the left of bracket pairs become selections of the entire pair
-		editor.setSelections([
-			new Selection(1, 1, 1, 1),
-			new Selection(1, 6, 1, 6),
-			new Selection(1, 14, 1, 14)
-		]);
+		editor.setSelections([new Selection(1, 1, 1, 1), new Selection(1, 6, 1, 6), new Selection(1, 14, 1, 14)]);
 		bracketMatchingController.selectToBracket(true);
 		assert.deepStrictEqual(editor.getSelections(), [
 			new Selection(1, 1, 1, 5),
@@ -199,11 +205,7 @@ suite('bracket matching', () => {
 		]);
 
 		// cursors just right of a bracket pair become selections of the entire pair
-		editor.setSelections([
-			new Selection(1, 5, 1, 5),
-			new Selection(1, 13, 1, 13),
-			new Selection(1, 19, 1, 19)
-		]);
+		editor.setSelections([new Selection(1, 5, 1, 5), new Selection(1, 13, 1, 13), new Selection(1, 19, 1, 19)]);
 		bracketMatchingController.selectToBracket(true);
 		assert.deepStrictEqual(editor.getSelections(), [
 			new Selection(1, 5, 1, 1),
@@ -214,7 +216,9 @@ suite('bracket matching', () => {
 
 	test('Removes brackets', () => {
 		const editor = createCodeEditorWithBrackets('var x = (3 + (5-7)); y();');
-		const bracketMatchingController = disposables.add(editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController));
+		const bracketMatchingController = disposables.add(
+			editor.registerAndInstantiateContribution(BracketMatchingController.ID, BracketMatchingController)
+		);
 		function removeBrackets() {
 			bracketMatchingController.removeBrackets();
 		}

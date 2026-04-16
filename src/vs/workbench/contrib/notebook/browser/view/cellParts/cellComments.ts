@@ -17,7 +17,10 @@ import { ICellRange } from '../../../common/notebookRange.js';
 
 export class CellComments extends CellContentPart {
 	// keyed by threadId
-	private readonly _commentThreadWidgets: DisposableMap<string, { widget: CommentThreadWidget<ICellRange>; dispose: () => void }>;
+	private readonly _commentThreadWidgets: DisposableMap<
+		string,
+		{ widget: CommentThreadWidget<ICellRange>; dispose: () => void }
+	>;
 	private currentElement: ICellViewModel | undefined;
 
 	constructor(
@@ -31,7 +34,12 @@ export class CellComments extends CellContentPart {
 		super();
 		this.container.classList.add('review-widget');
 
-		this._register(this._commentThreadWidgets = new DisposableMap<string, { widget: CommentThreadWidget<ICellRange>; dispose: () => void }>());
+		this._register(
+			(this._commentThreadWidgets = new DisposableMap<
+				string,
+				{ widget: CommentThreadWidget<ICellRange>; dispose: () => void }
+			>())
+		);
 
 		this._register(this.themeService.onDidColorThemeChange(this._applyTheme, this));
 		// TODO @rebornix onDidChangeLayout (font change)
@@ -64,9 +72,10 @@ export class CellComments extends CellContentPart {
 			{},
 			undefined,
 			{
-				actionRunner: () => {
-				},
-				collapse: async () => { return true; }
+				actionRunner: () => {},
+				collapse: async () => {
+					return true;
+				}
 			}
 		) as unknown as CommentThreadWidget<ICellRange>;
 		widgetDisposables.add(widget);
@@ -77,11 +86,13 @@ export class CellComments extends CellContentPart {
 		await widget.display(layoutInfo.fontInfo.lineHeight, true);
 		this._applyTheme();
 
-		widgetDisposables.add(widget.onDidResize(() => {
-			if (this.currentElement) {
-				this.currentElement.commentHeight = this._calculateCommentThreadHeight(widget.getDimensions().height);
-			}
-		}));
+		widgetDisposables.add(
+			widget.onDidResize(() => {
+				if (this.currentElement) {
+					this.currentElement.commentHeight = this._calculateCommentThreadHeight(widget.getDimensions().height);
+				}
+			})
+		);
 	}
 
 	private _bindListeners() {
@@ -97,7 +108,9 @@ export class CellComments extends CellContentPart {
 		const layoutInfo = this.currentElement.layoutInfo;
 		this.container.style.top = `${layoutInfo.commentOffset}px`;
 		for (const info of infos) {
-			if (!info) { continue; }
+			if (!info) {
+				continue;
+			}
 			for (const thread of info.threads) {
 				widgetsToDelete.delete(thread.threadId);
 				const widget = this._commentThreadWidgets.get(thread.threadId)?.widget;
@@ -112,7 +125,6 @@ export class CellComments extends CellContentPart {
 			this._commentThreadWidgets.deleteAndDispose(threadId);
 		}
 		this._updateHeight();
-
 	}
 
 	private _calculateCommentThreadHeight(bodyHeight: number) {
@@ -123,7 +135,8 @@ export class CellComments extends CellContentPart {
 		const arrowHeight = Math.round(lineHeight / 3);
 		const frameThickness = Math.round(lineHeight / 9) * 2;
 
-		const computedHeight = headHeight + bodyHeight + arrowHeight + frameThickness + 8 /** margin bottom to avoid margin collapse */;
+		const computedHeight =
+			headHeight + bodyHeight + arrowHeight + frameThickness + 8; /** margin bottom to avoid margin collapse */
 		return computedHeight;
 	}
 
@@ -168,4 +181,3 @@ export class CellComments extends CellContentPart {
 		}
 	}
 }
-

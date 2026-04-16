@@ -8,7 +8,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/c
 import { CommandsRegistry } from '../../common/commands.js';
 
 suite('Command Tests', function () {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('register command - no handler', function () {
@@ -16,7 +15,7 @@ suite('Command Tests', function () {
 	});
 
 	test('register/dispose', () => {
-		const command = function () { };
+		const command = function () {};
 		const reg = CommandsRegistry.registerCommand('foo', command);
 		assert.ok(CommandsRegistry.getCommand('foo')!.handler === command);
 		reg.dispose();
@@ -24,8 +23,8 @@ suite('Command Tests', function () {
 	});
 
 	test('register/register/dispose', () => {
-		const command1 = function () { };
-		const command2 = function () { };
+		const command1 = function () {};
+		const command2 = function () {};
 
 		// dispose overriding command
 		let reg1 = CommandsRegistry.registerCommand('foo', command1);
@@ -52,7 +51,6 @@ suite('Command Tests', function () {
 	});
 
 	test('command with description', function () {
-
 		const r1 = CommandsRegistry.registerCommand('test', function (accessor, args) {
 			assert.ok(typeof args === 'string');
 		});

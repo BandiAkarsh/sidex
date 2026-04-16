@@ -20,7 +20,6 @@ interface CustomEditorsMemento {
 }
 
 export class ContributedCustomEditors extends Disposable {
-
 	private static readonly CUSTOM_EDITORS_STORAGE_ID = 'customEditors';
 	private static readonly CUSTOM_EDITORS_ENTRY_ID = 'editors';
 
@@ -37,9 +36,11 @@ export class ContributedCustomEditors extends Disposable {
 			this.add(new CustomEditorInfo(info));
 		}
 
-		this._register(customEditorsExtensionPoint.setHandler(extensions => {
-			this.update(extensions);
-		}));
+		this._register(
+			customEditorsExtensionPoint.setHandler(extensions => {
+				this.update(extensions);
+			})
+		);
 	}
 
 	private readonly _onChange = this._register(new Emitter<void>());
@@ -50,13 +51,17 @@ export class ContributedCustomEditors extends Disposable {
 
 		for (const extension of extensions) {
 			for (const webviewEditorContribution of extension.value) {
-				this.add(new CustomEditorInfo({
-					id: webviewEditorContribution.viewType,
-					displayName: webviewEditorContribution.displayName,
-					providerDisplayName: extension.description.isBuiltin ? nls.localize('builtinProviderDisplayName', "Built-in") : extension.description.displayName || extension.description.identifier.value,
-					selector: webviewEditorContribution.selector || [],
-					priority: getPriorityFromContribution(webviewEditorContribution, extension.description),
-				}));
+				this.add(
+					new CustomEditorInfo({
+						id: webviewEditorContribution.viewType,
+						displayName: webviewEditorContribution.displayName,
+						providerDisplayName: extension.description.isBuiltin
+							? nls.localize('builtinProviderDisplayName', 'Built-in')
+							: extension.description.displayName || extension.description.identifier.value,
+						selector: webviewEditorContribution.selector || [],
+						priority: getPriorityFromContribution(webviewEditorContribution, extension.description)
+					})
+				);
 			}
 		}
 
@@ -76,8 +81,7 @@ export class ContributedCustomEditors extends Disposable {
 	}
 
 	public getContributedEditors(resource: URI): readonly CustomEditorInfo[] {
-		return Array.from(this._editors.values())
-			.filter(customEditor => customEditor.matches(resource));
+		return Array.from(this._editors.values()).filter(customEditor => customEditor.matches(resource));
 	}
 
 	private add(info: CustomEditorInfo): void {
@@ -91,7 +95,7 @@ export class ContributedCustomEditors extends Disposable {
 
 function getPriorityFromContribution(
 	contribution: ICustomEditorsExtensionPoint,
-	extension: IExtensionDescription,
+	extension: IExtensionDescription
 ): RegisteredEditorPriority {
 	switch (contribution.priority as CustomEditorPriority | undefined) {
 		case CustomEditorPriority.default:

@@ -27,7 +27,6 @@ export interface INotebookKernelMatchResult {
 	readonly hidden: INotebookKernel[];
 }
 
-
 export interface INotebookKernelChangeEvent {
 	label?: true;
 	description?: true;
@@ -70,7 +69,13 @@ export interface INotebookKernel {
 	executeNotebookCellsRequest(uri: URI, cellHandles: number[]): Promise<void>;
 	cancelNotebookCellExecution(uri: URI, cellHandles: number[]): Promise<void>;
 
-	provideVariables(notebookUri: URI, parentId: number | undefined, kind: 'named' | 'indexed', start: number, token: CancellationToken): AsyncIterableProducer<VariablesResult>;
+	provideVariables(
+		notebookUri: URI,
+		parentId: number | undefined,
+		kind: 'named' | 'indexed',
+		start: number,
+		token: CancellationToken
+	): AsyncIterableProducer<VariablesResult>;
 }
 
 export const enum ProxyKernelState {
@@ -106,7 +111,10 @@ export interface IKernelSourceActionProvider {
 	provideKernelSourceActions(): Promise<INotebookKernelSourceAction[]>;
 }
 
-export interface INotebookTextModelLike { uri: URI; notebookType: string }
+export interface INotebookTextModelLike {
+	uri: URI;
+	notebookType: string;
+}
 
 export const INotebookKernelService = createDecorator<INotebookKernelService>('INotebookKernelService');
 
@@ -151,7 +159,10 @@ export interface INotebookKernelService {
 
 	//#region Kernel source actions
 	readonly onDidChangeSourceActions: Event<INotebookSourceActionChangeEvent>;
-	getSourceActions(notebook: INotebookTextModelLike, contextKeyService: IContextKeyService | undefined): ISourceAction[];
+	getSourceActions(
+		notebook: INotebookTextModelLike,
+		contextKeyService: IContextKeyService | undefined
+	): ISourceAction[];
 	getRunningSourceActions(notebook: INotebookTextModelLike): ISourceAction[];
 	registerKernelSourceActionProvider(viewType: string, provider: IKernelSourceActionProvider): IDisposable;
 	getKernelSourceActions2(notebook: INotebookTextModelLike): Promise<INotebookKernelSourceAction[]>;
@@ -160,7 +171,9 @@ export interface INotebookKernelService {
 	notifyVariablesChange(notebookUri: URI): void;
 }
 
-export const INotebookKernelHistoryService = createDecorator<INotebookKernelHistoryService>('INotebookKernelHistoryService');
+export const INotebookKernelHistoryService = createDecorator<INotebookKernelHistoryService>(
+	'INotebookKernelHistoryService'
+);
 export interface INotebookKernelHistoryService {
 	_serviceBrand: undefined;
 	getKernels(notebook: INotebookTextModelLike): { selected: INotebookKernel | undefined; all: INotebookKernel[] };

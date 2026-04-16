@@ -65,7 +65,6 @@ class DependentService implements IDependentService {
 }
 
 class Service1Consumer {
-
 	constructor(@IService1 service1: IService1) {
 		assert.ok(service1);
 		assert.strictEqual(service1.c, 1);
@@ -73,7 +72,6 @@ class Service1Consumer {
 }
 
 class Target2Dep {
-
 	constructor(@IService1 service1: IService1, @IService2 service2: Service2) {
 		assert.ok(service1 instanceof Service1);
 		assert.ok(service2 instanceof Service2);
@@ -87,8 +85,6 @@ class TargetWithStaticParam {
 		assert.strictEqual(service1.c, 1);
 	}
 }
-
-
 
 class DependentServiceTarget {
 	constructor(@IDependentService d: IDependentService) {
@@ -106,27 +102,21 @@ class DependentServiceTarget2 {
 	}
 }
 
-
 class ServiceLoop1 implements IService1 {
 	declare readonly _serviceBrand: undefined;
 	c = 1;
 
-	constructor(@IService2 s: IService2) {
-
-	}
+	constructor(@IService2 s: IService2) {}
 }
 
 class ServiceLoop2 implements IService2 {
 	declare readonly _serviceBrand: undefined;
 	d = true;
 
-	constructor(@IService1 s: IService1) {
-
-	}
+	constructor(@IService1 s: IService1) {}
 }
 
 suite('Instantiation Service', () => {
-
 	test('service collection, cannot overwrite', function () {
 		const collection = new ServiceCollection();
 		let result = collection.set(IService1, null!);
@@ -166,7 +156,6 @@ suite('Instantiation Service', () => {
 	});
 
 	test('service collection is live', function () {
-
 		const collection = new ServiceCollection();
 		collection.set(IService1, new Service1());
 
@@ -207,7 +196,6 @@ suite('Instantiation Service', () => {
 		collection.set(IService1, new SyncDescriptor<IService1>(Service1));
 
 		service.invokeFunction(accessor => {
-
 			const service1 = accessor.get(IService1);
 			assert.ok(service1);
 			assert.strictEqual(service1.c, 1);
@@ -332,7 +320,6 @@ suite('Instantiation Service', () => {
 	});
 
 	test('Create child', function () {
-
 		let serviceInstanceCount = 0;
 
 		const CtorCounter = class implements Service1 {
@@ -366,7 +353,6 @@ suite('Instantiation Service', () => {
 	});
 
 	test('Remote window / integration tests is broken #105562', function () {
-
 		const Service1 = createDecorator<any>('service1');
 		class Service1Impl {
 			constructor(@IInstantiationService insta: IInstantiationService) {
@@ -376,37 +362,45 @@ suite('Instantiation Service', () => {
 		}
 		const Service2 = createDecorator<any>('service2');
 		class Service2Impl {
-			constructor() { }
+			constructor() {}
 		}
 
 		// This service depends on Service1 and Service2 BUT creating Service1 creates Service2 (via recursive invocation)
 		// and then Servce2 should not be created a second time
 		const Service21 = createDecorator<any>('service21');
 		class Service21Impl {
-			constructor(@Service2 public readonly service2: Service2Impl, @Service1 public readonly service1: Service1Impl) { }
+			constructor(
+				@Service2 public readonly service2: Service2Impl,
+				@Service1 public readonly service1: Service1Impl
+			) {}
 		}
 
-		const insta = new InstantiationService(new ServiceCollection(
-			[Service1, new SyncDescriptor(Service1Impl)],
-			[Service2, new SyncDescriptor(Service2Impl)],
-			[Service21, new SyncDescriptor(Service21Impl)],
-		));
+		const insta = new InstantiationService(
+			new ServiceCollection(
+				[Service1, new SyncDescriptor(Service1Impl)],
+				[Service2, new SyncDescriptor(Service2Impl)],
+				[Service21, new SyncDescriptor(Service21Impl)]
+			)
+		);
 
 		const obj = insta.invokeFunction(accessor => accessor.get(Service21));
 		assert.ok(obj);
 	});
 
 	test('Sync/Async dependency loop', async function () {
-
 		const A = createDecorator<A>('A');
 		const B = createDecorator<B>('B');
-		interface A { _serviceBrand: undefined; doIt(): void }
-		interface B { _serviceBrand: undefined; b(): boolean }
+		interface A {
+			_serviceBrand: undefined;
+			doIt(): void;
+		}
+		interface B {
+			_serviceBrand: undefined;
+			b(): boolean;
+		}
 
 		class BConsumer {
-			constructor(@B private readonly b: B) {
-
-			}
+			constructor(@B private readonly b: B) {}
 			doIt() {
 				return this.b.b();
 			}
@@ -428,20 +422,23 @@ suite('Instantiation Service', () => {
 			constructor(@A a: A) {
 				assert.ok(a);
 			}
-			b() { return true; }
+			b() {
+				return true;
+			}
 		}
 
 		// SYNC -> explodes AImpl -> [insta:BConsumer] -> BImpl -> AImpl
 		{
-			const insta1 = new InstantiationService(new ServiceCollection(
-				[A, new SyncDescriptor(AService)],
-				[B, new SyncDescriptor(BService)],
-			), true, undefined, true);
+			const insta1 = new InstantiationService(
+				new ServiceCollection([A, new SyncDescriptor(AService)], [B, new SyncDescriptor(BService)]),
+				true,
+				undefined,
+				true
+			);
 
 			try {
 				insta1.invokeFunction(accessor => accessor.get(A));
 				assert.ok(false);
-
 			} catch (error) {
 				assert.ok(error instanceof Error);
 				assert.ok(error.message.includes('RECURSIVELY'));
@@ -450,10 +447,15 @@ suite('Instantiation Service', () => {
 
 		// ASYNC -> doesn't explode but cycle is tracked
 		{
-			const insta2 = new InstantiationService(new ServiceCollection(
-				[A, new SyncDescriptor(AService, undefined, true)],
-				[B, new SyncDescriptor(BService, undefined)],
-			), true, undefined, true);
+			const insta2 = new InstantiationService(
+				new ServiceCollection(
+					[A, new SyncDescriptor(AService, undefined, true)],
+					[B, new SyncDescriptor(BService, undefined)]
+				),
+				true,
+				undefined,
+				true
+			);
 
 			const a = insta2.invokeFunction(accessor => accessor.get(A));
 			a.doIt();
@@ -489,9 +491,12 @@ suite('Instantiation Service', () => {
 			}
 		}
 
-		const insta = new InstantiationService(new ServiceCollection(
-			[A, new SyncDescriptor(AImpl, undefined, true)],
-		), true, undefined, true);
+		const insta = new InstantiationService(
+			new ServiceCollection([A, new SyncDescriptor(AImpl, undefined, true)]),
+			true,
+			undefined,
+			true
+		);
 
 		class Consumer {
 			constructor(@A public readonly a: A) {
@@ -518,14 +523,12 @@ suite('Instantiation Service', () => {
 		assert.strictEqual(created, true);
 		assert.strictEqual(eventCount, 1);
 
-
 		const d3 = c.a.onDidDoIt(listener);
 		c.a.doIt();
 		assert.strictEqual(eventCount, 3);
 
 		dispose([d1, d3]);
 	});
-
 
 	test('Capture event before init, use after init', function () {
 		const A = createDecorator<A>('A');
@@ -553,13 +556,15 @@ suite('Instantiation Service', () => {
 				this._onDidDoIt.fire(this);
 			}
 
-			noop(): void {
-			}
+			noop(): void {}
 		}
 
-		const insta = new InstantiationService(new ServiceCollection(
-			[A, new SyncDescriptor(AImpl, undefined, true)],
-		), true, undefined, true);
+		const insta = new InstantiationService(
+			new ServiceCollection([A, new SyncDescriptor(AImpl, undefined, true)]),
+			true,
+			undefined,
+			true
+		);
 
 		class Consumer {
 			constructor(@A public readonly a: A) {
@@ -587,7 +592,6 @@ suite('Instantiation Service', () => {
 		const d1 = event(listener);
 
 		c.a.doIt();
-
 
 		// instantiation happens on first call
 		assert.strictEqual(eventCount, 1);
@@ -620,9 +624,12 @@ suite('Instantiation Service', () => {
 			}
 		}
 
-		const insta = new InstantiationService(new ServiceCollection(
-			[A, new SyncDescriptor(AImpl, undefined, true)],
-		), true, undefined, true);
+		const insta = new InstantiationService(
+			new ServiceCollection([A, new SyncDescriptor(AImpl, undefined, true)]),
+			true,
+			undefined,
+			true
+		);
 
 		class Consumer {
 			constructor(@A public readonly a: A) {
@@ -655,7 +662,6 @@ suite('Instantiation Service', () => {
 		assert.strictEqual(eventCount, 1);
 	});
 
-
 	test('Dispose services it created', function () {
 		let disposedA = false;
 		let disposedB = false;
@@ -686,10 +692,12 @@ suite('Instantiation Service', () => {
 			}
 		}
 
-		const insta = new InstantiationService(new ServiceCollection(
-			[A, new SyncDescriptor(AImpl, undefined, true)],
-			[B, new BImpl()],
-		), true, undefined, true);
+		const insta = new InstantiationService(
+			new ServiceCollection([A, new SyncDescriptor(AImpl, undefined, true)], [B, new BImpl()]),
+			true,
+			undefined,
+			true
+		);
 
 		class Consumer {
 			constructor(
@@ -709,8 +717,6 @@ suite('Instantiation Service', () => {
 	});
 
 	test('Disposed service cannot be used anymore', function () {
-
-
 		const B = createDecorator<B>('B');
 		interface B {
 			_serviceBrand: undefined;
@@ -721,14 +727,10 @@ suite('Instantiation Service', () => {
 			value: 1 = 1;
 		}
 
-		const insta = new InstantiationService(new ServiceCollection(
-			[B, new BImpl()],
-		), true, undefined, true);
+		const insta = new InstantiationService(new ServiceCollection([B, new BImpl()]), true, undefined, true);
 
 		class Consumer {
-			constructor(
-				@B public readonly b: B
-			) {
+			constructor(@B public readonly b: B) {
 				assert.strictEqual(b.value, 1);
 			}
 		}
@@ -739,12 +741,11 @@ suite('Instantiation Service', () => {
 		insta.dispose();
 
 		assert.throws(() => insta.createInstance(Consumer));
-		assert.throws(() => insta.invokeFunction(accessor => { }));
+		assert.throws(() => insta.invokeFunction(accessor => {}));
 		assert.throws(() => insta.createChild(new ServiceCollection()));
 	});
 
 	test('Child does not dispose parent', function () {
-
 		const B = createDecorator<B>('B');
 		interface B {
 			_serviceBrand: undefined;
@@ -755,16 +756,12 @@ suite('Instantiation Service', () => {
 			value: 1 = 1;
 		}
 
-		const insta1 = new InstantiationService(new ServiceCollection(
-			[B, new BImpl()],
-		), true, undefined, true);
+		const insta1 = new InstantiationService(new ServiceCollection([B, new BImpl()]), true, undefined, true);
 
 		const insta2 = insta1.createChild(new ServiceCollection());
 
 		class Consumer {
-			constructor(
-				@B public readonly b: B
-			) {
+			constructor(@B public readonly b: B) {
 				assert.strictEqual(b.value, 1);
 			}
 		}
@@ -779,7 +776,6 @@ suite('Instantiation Service', () => {
 	});
 
 	test('Parent does dispose children', function () {
-
 		const B = createDecorator<B>('B');
 		interface B {
 			_serviceBrand: undefined;
@@ -790,16 +786,12 @@ suite('Instantiation Service', () => {
 			value: 1 = 1;
 		}
 
-		const insta1 = new InstantiationService(new ServiceCollection(
-			[B, new BImpl()],
-		), true, undefined, true);
+		const insta1 = new InstantiationService(new ServiceCollection([B, new BImpl()]), true, undefined, true);
 
 		const insta2 = insta1.createChild(new ServiceCollection());
 
 		class Consumer {
-			constructor(
-				@B public readonly b: B
-			) {
+			constructor(@B public readonly b: B) {
 				assert.strictEqual(b.value, 1);
 			}
 		}

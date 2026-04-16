@@ -10,7 +10,13 @@ import { Schemas } from '../../../../base/common/network.js';
 import { joinPath } from '../../../../base/common/resources.js';
 import { URI } from '../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
-import { FileChangeType, FileOperation, FileOperationEvent, FileSystemProviderCapabilities, IFileStat } from '../../common/files.js';
+import {
+	FileChangeType,
+	FileOperation,
+	FileOperationEvent,
+	FileSystemProviderCapabilities,
+	IFileStat
+} from '../../common/files.js';
 import { FileService } from '../../common/fileService.js';
 import { InMemoryFileSystemProvider } from '../../common/inMemoryFilesystemProvider.js';
 import { NullLogService } from '../../../log/common/log.js';
@@ -43,7 +49,6 @@ type Fixture = {
 };
 
 suite('InMemory File Service', () => {
-
 	const disposables = ensureNoDisposablesAreLeakedInTestSuite();
 
 	let service: FileService;
@@ -60,7 +65,7 @@ suite('InMemory File Service', () => {
 
 	test('createFolder', async () => {
 		let event: FileOperationEvent | undefined;
-		disposables.add(service.onDidRunOperation(e => event = e));
+		disposables.add(service.onDidRunOperation(e => (event = e)));
 
 		const newFolderResource = joinPath(fixture.root, 'newFolder');
 		const newFolder = await service.createFolder(newFolderResource);
@@ -77,7 +82,7 @@ suite('InMemory File Service', () => {
 
 	test('createFolder: creating multiple folders at once', async () => {
 		let event: FileOperationEvent | undefined;
-		disposables.add(service.onDidRunOperation(e => event = e));
+		disposables.add(service.onDidRunOperation(e => (event = e)));
 
 		const multiFolderPaths = ['a', 'couple', 'of', 'folders'];
 		const newFolderResource = joinPath(fixture.root, ...multiFolderPaths);
@@ -115,7 +120,10 @@ suite('InMemory File Service', () => {
 		assert.ok(resolved.children);
 
 		const names = resolved.children.map(c => c.name).sort();
-		assert.deepStrictEqual(names, ['examples', 'index.html', 'other', 'site.css', 'deep', 'small.txt', 'small_umlaut.txt'].sort());
+		assert.deepStrictEqual(
+			names,
+			['examples', 'index.html', 'other', 'site.css', 'deep', 'small.txt', 'small_umlaut.txt'].sort()
+		);
 	});
 
 	test('resolve - directory with resolveTo', async () => {
@@ -189,8 +197,14 @@ suite('InMemory File Service', () => {
 		assert.strictEqual(content.value.byteLength, prefix.byteLength + suffix.byteLength);
 
 		assert.deepStrictEqual(content.value.slice(0, 64).buffer, prefix.slice(0, 64).buffer);
-		assert.deepStrictEqual(content.value.slice(prefix.byteLength, prefix.byteLength + 64).buffer, suffix.slice(0, 64).buffer);
-		assert.deepStrictEqual(content.value.slice(content.value.byteLength - 64, content.value.byteLength).buffer, suffix.slice(suffix.byteLength - 64, suffix.byteLength).buffer);
+		assert.deepStrictEqual(
+			content.value.slice(prefix.byteLength, prefix.byteLength + 64).buffer,
+			suffix.slice(0, 64).buffer
+		);
+		assert.deepStrictEqual(
+			content.value.slice(content.value.byteLength - 64, content.value.byteLength).buffer,
+			suffix.slice(suffix.byteLength - 64, suffix.byteLength).buffer
+		);
 	});
 
 	test('writeFile - append', async () => {
@@ -215,8 +229,14 @@ suite('InMemory File Service', () => {
 		assert.strictEqual(content.value.byteLength, prefix.byteLength + suffix.byteLength);
 
 		assert.deepStrictEqual(content.value.slice(0, 64).buffer, prefix.slice(0, 64).buffer);
-		assert.deepStrictEqual(content.value.slice(prefix.byteLength, prefix.byteLength + 64).buffer, suffix.slice(0, 64).buffer);
-		assert.deepStrictEqual(content.value.slice(content.value.byteLength - 64, content.value.byteLength).buffer, suffix.slice(suffix.byteLength - 64, suffix.byteLength).buffer);
+		assert.deepStrictEqual(
+			content.value.slice(prefix.byteLength, prefix.byteLength + 64).buffer,
+			suffix.slice(0, 64).buffer
+		);
+		assert.deepStrictEqual(
+			content.value.slice(content.value.byteLength - 64, content.value.byteLength).buffer,
+			suffix.slice(suffix.byteLength - 64, suffix.byteLength).buffer
+		);
 	});
 
 	test('rename', async () => {
@@ -251,11 +271,17 @@ suite('InMemory File Service', () => {
 	test('provider events bubble through file service', async () => {
 		let changeCount = 0;
 		const resource = joinPath(fixture.root, 'events.txt');
-		disposables.add(service.onDidFilesChange(e => {
-			if (e.contains(resource, FileChangeType.UPDATED) || e.contains(resource, FileChangeType.ADDED) || e.contains(resource, FileChangeType.DELETED)) {
-				changeCount++;
-			}
-		}));
+		disposables.add(
+			service.onDidFilesChange(e => {
+				if (
+					e.contains(resource, FileChangeType.UPDATED) ||
+					e.contains(resource, FileChangeType.ADDED) ||
+					e.contains(resource, FileChangeType.DELETED)
+				) {
+					changeCount++;
+				}
+			})
+		);
 
 		await service.writeFile(resource, VSBuffer.fromString('1'));
 		await service.writeFile(resource, VSBuffer.fromString('2'));

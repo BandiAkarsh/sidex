@@ -20,7 +20,9 @@ class NotebookCellOutlineDataSourceReferenceCollection extends ReferenceCollecti
 	}
 }
 
-export const INotebookCellOutlineDataSourceFactory = createDecorator<INotebookCellOutlineDataSourceFactory>('INotebookCellOutlineDataSourceFactory');
+export const INotebookCellOutlineDataSourceFactory = createDecorator<INotebookCellOutlineDataSourceFactory>(
+	'INotebookCellOutlineDataSourceFactory'
+);
 
 export interface INotebookCellOutlineDataSourceFactory {
 	getOrCreate(editor: INotebookEditor): IReference<NotebookCellOutlineDataSource>;

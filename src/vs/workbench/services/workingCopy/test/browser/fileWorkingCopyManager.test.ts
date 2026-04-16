@@ -6,19 +6,25 @@
 import assert from 'assert';
 import { URI } from '../../../../../base/common/uri.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
-import { workbenchInstantiationService, TestServiceAccessor, TestInMemoryFileSystemProvider } from '../../../../test/browser/workbenchTestServices.js';
+import {
+	workbenchInstantiationService,
+	TestServiceAccessor,
+	TestInMemoryFileSystemProvider
+} from '../../../../test/browser/workbenchTestServices.js';
 import { StoredFileWorkingCopy, IStoredFileWorkingCopy } from '../../common/storedFileWorkingCopy.js';
 import { bufferToStream, VSBuffer } from '../../../../../base/common/buffer.js';
 import { TestStoredFileWorkingCopyModel, TestStoredFileWorkingCopyModelFactory } from './storedFileWorkingCopy.test.js';
 import { Schemas } from '../../../../../base/common/network.js';
 import { IFileWorkingCopyManager, FileWorkingCopyManager } from '../../common/fileWorkingCopyManager.js';
-import { TestUntitledFileWorkingCopyModel, TestUntitledFileWorkingCopyModelFactory } from './untitledFileWorkingCopy.test.js';
+import {
+	TestUntitledFileWorkingCopyModel,
+	TestUntitledFileWorkingCopyModelFactory
+} from './untitledFileWorkingCopy.test.js';
 import { UntitledFileWorkingCopy } from '../../common/untitledFileWorkingCopy.js';
 import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('FileWorkingCopyManager', () => {
-
 	const disposables = new DisposableStore();
 	let instantiationService: IInstantiationService;
 	let accessor: TestServiceAccessor;
@@ -32,16 +38,32 @@ suite('FileWorkingCopyManager', () => {
 		accessor.fileService.registerProvider(Schemas.file, new TestInMemoryFileSystemProvider());
 		accessor.fileService.registerProvider(Schemas.vscodeRemote, new TestInMemoryFileSystemProvider());
 
-		manager = disposables.add(new FileWorkingCopyManager(
-			'testFileWorkingCopyType',
-			new TestStoredFileWorkingCopyModelFactory(),
-			new TestUntitledFileWorkingCopyModelFactory(),
-			accessor.fileService, accessor.lifecycleService, accessor.labelService, accessor.logService,
-			accessor.workingCopyFileService, accessor.workingCopyBackupService, accessor.uriIdentityService, accessor.fileDialogService,
-			accessor.filesConfigurationService, accessor.workingCopyService, accessor.notificationService,
-			accessor.workingCopyEditorService, accessor.editorService, accessor.elevatedFileService, accessor.pathService,
-			accessor.environmentService, accessor.dialogService, accessor.decorationsService, accessor.progressService,
-		));
+		manager = disposables.add(
+			new FileWorkingCopyManager(
+				'testFileWorkingCopyType',
+				new TestStoredFileWorkingCopyModelFactory(),
+				new TestUntitledFileWorkingCopyModelFactory(),
+				accessor.fileService,
+				accessor.lifecycleService,
+				accessor.labelService,
+				accessor.logService,
+				accessor.workingCopyFileService,
+				accessor.workingCopyBackupService,
+				accessor.uriIdentityService,
+				accessor.fileDialogService,
+				accessor.filesConfigurationService,
+				accessor.workingCopyService,
+				accessor.notificationService,
+				accessor.workingCopyEditorService,
+				accessor.editorService,
+				accessor.elevatedFileService,
+				accessor.pathService,
+				accessor.environmentService,
+				accessor.dialogService,
+				accessor.decorationsService,
+				accessor.progressService
+			)
+		);
 	});
 
 	teardown(() => {
@@ -50,9 +72,11 @@ suite('FileWorkingCopyManager', () => {
 
 	test('onDidCreate, get, workingCopies', async () => {
 		let createCounter = 0;
-		disposables.add(manager.onDidCreate(e => {
-			createCounter++;
-		}));
+		disposables.add(
+			manager.onDidCreate(e => {
+				createCounter++;
+			})
+		);
 
 		const fileUri = URI.file('/test.html');
 
@@ -68,7 +92,9 @@ suite('FileWorkingCopyManager', () => {
 		assert.strictEqual(manager.get(untitledFileWorkingCopy.resource), untitledFileWorkingCopy);
 
 		const sameFileWorkingCopy = disposables.add(await manager.resolve(fileUri));
-		const sameUntitledFileWorkingCopy = disposables.add(await manager.resolve({ untitledResource: untitledFileWorkingCopy.resource }));
+		const sameUntitledFileWorkingCopy = disposables.add(
+			await manager.resolve({ untitledResource: untitledFileWorkingCopy.resource })
+		);
 		assert.strictEqual(sameFileWorkingCopy, fileWorkingCopy);
 		assert.strictEqual(sameUntitledFileWorkingCopy, untitledFileWorkingCopy);
 		assert.strictEqual(manager.workingCopies.length, 2);
@@ -82,7 +108,10 @@ suite('FileWorkingCopyManager', () => {
 
 		const untitledFileWorkingCopy = disposables.add(await manager.resolve());
 		assert.ok(untitledFileWorkingCopy instanceof UntitledFileWorkingCopy);
-		assert.strictEqual(await manager.untitled.resolve({ untitledResource: untitledFileWorkingCopy.resource }), untitledFileWorkingCopy);
+		assert.strictEqual(
+			await manager.untitled.resolve({ untitledResource: untitledFileWorkingCopy.resource }),
+			untitledFileWorkingCopy
+		);
 		assert.strictEqual(await manager.resolve(untitledFileWorkingCopy.resource), untitledFileWorkingCopy);
 	});
 
@@ -239,7 +268,9 @@ suite('FileWorkingCopyManager', () => {
 	});
 
 	test('saveAs - untitled (with associated resource)', async () => {
-		const workingCopy = disposables.add(await manager.resolve({ associatedResource: { path: '/some/associated.txt' } }));
+		const workingCopy = disposables.add(
+			await manager.resolve({ associatedResource: { path: '/some/associated.txt' } })
+		);
 		workingCopy.model?.updateContents('Simple Save As with associated resource');
 
 		const target = URI.from({ scheme: Schemas.file, path: '/some/associated.txt' });
@@ -249,7 +280,10 @@ suite('FileWorkingCopyManager', () => {
 		const result = await manager.saveAs(workingCopy.resource, undefined);
 		assert.strictEqual(result?.resource.toString(), target.toString());
 
-		assert.strictEqual((result?.model as TestStoredFileWorkingCopyModel).contents, 'Simple Save As with associated resource');
+		assert.strictEqual(
+			(result?.model as TestStoredFileWorkingCopyModel).contents,
+			'Simple Save As with associated resource'
+		);
 
 		assert.strictEqual(manager.untitled.get(workingCopy.resource), undefined);
 

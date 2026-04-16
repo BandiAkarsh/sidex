@@ -8,11 +8,16 @@ import { runWithFakedTimers } from '../../../../base/test/common/timeTravelSched
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { IUserDataProfilesService } from '../../../userDataProfile/common/userDataProfile.js';
 import { UserDataProfilesManifestSynchroniser } from '../../common/userDataProfilesManifestSync.js';
-import { ISyncData, ISyncUserDataProfile, IUserDataSyncStoreService, SyncResource, SyncStatus } from '../../common/userDataSync.js';
+import {
+	ISyncData,
+	ISyncUserDataProfile,
+	IUserDataSyncStoreService,
+	SyncResource,
+	SyncStatus
+} from '../../common/userDataSync.js';
 import { UserDataSyncClient, UserDataSyncTestServer } from './userDataSyncClient.js';
 
 suite('UserDataProfilesManifestSync', () => {
-
 	const server = new UserDataSyncTestServer();
 	let testClient: UserDataSyncClient;
 	let client2: UserDataSyncClient;
@@ -73,14 +78,20 @@ suite('UserDataProfilesManifestSync', () => {
 
 			assert.deepStrictEqual(server.requests, [
 				{ type: 'POST', url: `${server.url}/v1/collection`, headers: {} },
-				{ type: 'POST', url: `${server.url}/v1/resource/${testObject.resource}`, headers: { 'If-Match': lastSyncUserData?.ref } },
+				{
+					type: 'POST',
+					url: `${server.url}/v1/resource/${testObject.resource}`,
+					headers: { 'If-Match': lastSyncUserData?.ref }
+				}
 			]);
 
 			lastSyncUserData = await testObject.getLastSyncUserData();
 			const remoteUserData = await testObject.getRemoteUserData(null);
 			assert.deepStrictEqual(lastSyncUserData!.ref, remoteUserData.ref);
 			assert.deepStrictEqual(lastSyncUserData!.syncData, remoteUserData.syncData);
-			assert.deepStrictEqual(JSON.parse(lastSyncUserData!.syncData!.content), [{ 'name': '1', 'id': '1', 'collection': '1' }]);
+			assert.deepStrictEqual(JSON.parse(lastSyncUserData!.syncData!.content), [
+				{ name: '1', id: '1', collection: '1' }
+			]);
 		});
 	});
 
@@ -94,7 +105,7 @@ suite('UserDataProfilesManifestSync', () => {
 
 			const { content } = await testClient.read(testObject.resource);
 			assert.ok(content !== null);
-			assert.deepStrictEqual(JSON.parse(JSON.parse(content).content), [{ 'name': '1', 'id': '1', 'collection': '1' }]);
+			assert.deepStrictEqual(JSON.parse(JSON.parse(content).content), [{ name: '1', id: '1', collection: '1' }]);
 		});
 	});
 
@@ -123,12 +134,18 @@ suite('UserDataProfilesManifestSync', () => {
 			assert.deepStrictEqual(testObject.conflicts.conflicts, []);
 
 			const profiles = getLocalProfiles(testClient);
-			assert.deepStrictEqual(profiles, [{ id: '1', name: 'name 1', useDefaultFlags: undefined }, { id: '2', name: 'name 2', useDefaultFlags: undefined }]);
+			assert.deepStrictEqual(profiles, [
+				{ id: '1', name: 'name 1', useDefaultFlags: undefined },
+				{ id: '2', name: 'name 2', useDefaultFlags: undefined }
+			]);
 
 			const { content } = await testClient.read(testObject.resource);
 			assert.ok(content !== null);
 			const actual = parseRemoteProfiles(content);
-			assert.deepStrictEqual(actual, [{ id: '1', name: 'name 1', collection: '1' }, { id: '2', name: 'name 2', collection: '2' }]);
+			assert.deepStrictEqual(actual, [
+				{ id: '1', name: 'name 1', collection: '1' },
+				{ id: '2', name: 'name 2', collection: '2' }
+			]);
 		});
 	});
 
@@ -163,15 +180,24 @@ suite('UserDataProfilesManifestSync', () => {
 			await testObject.sync(await testClient.getLatestRef(SyncResource.Profiles));
 			assert.strictEqual(testObject.status, SyncStatus.Idle);
 			assert.deepStrictEqual(testObject.conflicts.conflicts, []);
-			assert.deepStrictEqual(getLocalProfiles(testClient), [{ id: '1', name: 'name 1', useDefaultFlags: undefined }, { id: '2', name: 'name 2', useDefaultFlags: undefined }]);
+			assert.deepStrictEqual(getLocalProfiles(testClient), [
+				{ id: '1', name: 'name 1', useDefaultFlags: undefined },
+				{ id: '2', name: 'name 2', useDefaultFlags: undefined }
+			]);
 
 			await client2.sync();
-			assert.deepStrictEqual(getLocalProfiles(client2), [{ id: '1', name: 'name 1', useDefaultFlags: undefined }, { id: '2', name: 'name 2', useDefaultFlags: undefined }]);
+			assert.deepStrictEqual(getLocalProfiles(client2), [
+				{ id: '1', name: 'name 1', useDefaultFlags: undefined },
+				{ id: '2', name: 'name 2', useDefaultFlags: undefined }
+			]);
 
 			const { content } = await testClient.read(testObject.resource);
 			assert.ok(content !== null);
 			const actual = parseRemoteProfiles(content);
-			assert.deepStrictEqual(actual, [{ id: '1', name: 'name 1', collection: '1' }, { id: '2', name: 'name 2', collection: '2' }]);
+			assert.deepStrictEqual(actual, [
+				{ id: '1', name: 'name 1', collection: '1' },
+				{ id: '2', name: 'name 2', collection: '2' }
+			]);
 		});
 	});
 
@@ -222,7 +248,9 @@ suite('UserDataProfilesManifestSync', () => {
 
 	test('sync profile that uses default profile', async () => {
 		await runWithFakedTimers<void>({}, async () => {
-			await client2.instantiationService.get(IUserDataProfilesService).createProfile('1', 'name 1', { useDefaultFlags: { keybindings: true } });
+			await client2.instantiationService
+				.get(IUserDataProfilesService)
+				.createProfile('1', 'name 1', { useDefaultFlags: { keybindings: true } });
 			await client2.sync();
 
 			await testObject.sync(await testClient.getLatestRef(SyncResource.Profiles));
@@ -232,9 +260,13 @@ suite('UserDataProfilesManifestSync', () => {
 			const { content } = await testClient.read(testObject.resource);
 			assert.ok(content !== null);
 			const actual = parseRemoteProfiles(content);
-			assert.deepStrictEqual(actual, [{ id: '1', name: 'name 1', collection: '1', useDefaultFlags: { keybindings: true } }]);
+			assert.deepStrictEqual(actual, [
+				{ id: '1', name: 'name 1', collection: '1', useDefaultFlags: { keybindings: true } }
+			]);
 
-			assert.deepStrictEqual(getLocalProfiles(testClient), [{ id: '1', name: 'name 1', useDefaultFlags: { keybindings: true } }]);
+			assert.deepStrictEqual(getLocalProfiles(testClient), [
+				{ id: '1', name: 'name 1', useDefaultFlags: { keybindings: true } }
+			]);
 		});
 	});
 
@@ -246,7 +278,9 @@ suite('UserDataProfilesManifestSync', () => {
 			await testObject.sync(await testClient.getLatestRef(SyncResource.Profiles));
 
 			const profile = testClient.instantiationService.get(IUserDataProfilesService).profiles.find(p => p.id === '1')!;
-			testClient.instantiationService.get(IUserDataProfilesService).updateProfile(profile, { useDefaultFlags: { keybindings: true } });
+			testClient.instantiationService
+				.get(IUserDataProfilesService)
+				.updateProfile(profile, { useDefaultFlags: { keybindings: true } });
 
 			await testObject.sync(await testClient.getLatestRef(SyncResource.Profiles));
 			assert.strictEqual(testObject.status, SyncStatus.Idle);
@@ -255,8 +289,12 @@ suite('UserDataProfilesManifestSync', () => {
 			const { content } = await testClient.read(testObject.resource);
 			assert.ok(content !== null);
 			const actual = parseRemoteProfiles(content);
-			assert.deepStrictEqual(actual, [{ id: '1', name: 'name 1', collection: '1', useDefaultFlags: { keybindings: true } }]);
-			assert.deepStrictEqual(getLocalProfiles(testClient), [{ id: '1', name: 'name 1', useDefaultFlags: { keybindings: true } }]);
+			assert.deepStrictEqual(actual, [
+				{ id: '1', name: 'name 1', collection: '1', useDefaultFlags: { keybindings: true } }
+			]);
+			assert.deepStrictEqual(getLocalProfiles(testClient), [
+				{ id: '1', name: 'name 1', useDefaultFlags: { keybindings: true } }
+			]);
 		});
 	});
 
@@ -267,7 +305,9 @@ suite('UserDataProfilesManifestSync', () => {
 
 			await testObject.sync(await testClient.getLatestRef(SyncResource.Profiles));
 
-			client2.instantiationService.get(IUserDataProfilesService).updateProfile(profile, { useDefaultFlags: { keybindings: true } });
+			client2.instantiationService
+				.get(IUserDataProfilesService)
+				.updateProfile(profile, { useDefaultFlags: { keybindings: true } });
 			await client2.sync();
 
 			await testObject.sync(await testClient.getLatestRef(SyncResource.Profiles));
@@ -277,9 +317,13 @@ suite('UserDataProfilesManifestSync', () => {
 			const { content } = await testClient.read(testObject.resource);
 			assert.ok(content !== null);
 			const actual = parseRemoteProfiles(content);
-			assert.deepStrictEqual(actual, [{ id: '1', name: 'name 1', collection: '1', useDefaultFlags: { keybindings: true } }]);
+			assert.deepStrictEqual(actual, [
+				{ id: '1', name: 'name 1', collection: '1', useDefaultFlags: { keybindings: true } }
+			]);
 
-			assert.deepStrictEqual(getLocalProfiles(testClient), [{ id: '1', name: 'name 1', useDefaultFlags: { keybindings: true } }]);
+			assert.deepStrictEqual(getLocalProfiles(testClient), [
+				{ id: '1', name: 'name 1', useDefaultFlags: { keybindings: true } }
+			]);
 		});
 	});
 
@@ -289,10 +333,10 @@ suite('UserDataProfilesManifestSync', () => {
 	}
 
 	function getLocalProfiles(client: UserDataSyncClient): { id: string; name: string }[] {
-		return client.instantiationService.get(IUserDataProfilesService).profiles
-			.slice(1).sort((a, b) => a.name.localeCompare(b.name))
+		return client.instantiationService
+			.get(IUserDataProfilesService)
+			.profiles.slice(1)
+			.sort((a, b) => a.name.localeCompare(b.name))
 			.map(profile => ({ id: profile.id, name: profile.name, useDefaultFlags: profile.useDefaultFlags }));
 	}
-
-
 });

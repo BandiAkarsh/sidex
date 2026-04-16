@@ -18,12 +18,16 @@ interface IServiceMock<T> {
 const isSinonSpyLike = (fn: Function): fn is sinon.SinonSpy => fn && 'callCount' in fn;
 
 export class TestInstantiationService extends InstantiationService implements IDisposable, ServicesAccessor {
-
 	private _servciesMap: Map<ServiceIdentifier<any>, any>;
 	private readonly _classStubs: Map<Function, any> = new Map();
 	private readonly _parentTestService: TestInstantiationService | undefined;
 
-	constructor(private _serviceCollection: ServiceCollection = new ServiceCollection(), strict: boolean = false, parent?: InstantiationService, private _properDispose?: boolean) {
+	constructor(
+		private _serviceCollection: ServiceCollection = new ServiceCollection(),
+		strict: boolean = false,
+		parent?: InstantiationService,
+		private _properDispose?: boolean
+	) {
 		super(_serviceCollection, strict, parent);
 
 		this._servciesMap = new Map<ServiceIdentifier<any>, any>();
@@ -53,7 +57,10 @@ export class TestInstantiationService extends InstantiationService implements ID
 	}
 
 	public override createInstance<T>(descriptor: SyncDescriptor0<T>): T;
-	public override createInstance<Ctor extends new (...args: any[]) => unknown, R extends InstanceType<Ctor>>(ctor: Ctor, ...args: GetLeadingNonServiceArgs<ConstructorParameters<Ctor>>): R;
+	public override createInstance<Ctor extends new (...args: any[]) => unknown, R extends InstanceType<Ctor>>(
+		ctor: Ctor,
+		...args: GetLeadingNonServiceArgs<ConstructorParameters<Ctor>>
+	): R;
 	public override createInstance(ctorOrDescriptor: any | SyncDescriptor<any>, ...rest: unknown[]): unknown {
 		const stub = this._getClassStub(ctorOrDescriptor as Function);
 		if (stub) {
@@ -63,9 +70,23 @@ export class TestInstantiationService extends InstantiationService implements ID
 	}
 
 	public stub<T>(service: ServiceIdentifier<T>, obj: Partial<NoInfer<T>> | Function): T;
-	public stub<T, V>(service: ServiceIdentifier<T>, obj: Partial<NoInfer<T>> | Function, property: string, value: V): V extends Function ? sinon.SinonSpy : sinon.SinonStub;
-	public stub<T, V>(service: ServiceIdentifier<T>, property: string, value: V): V extends Function ? sinon.SinonSpy : sinon.SinonStub;
-	public stub<T>(serviceIdentifier: ServiceIdentifier<T>, arg2: any, arg3?: string, arg4?: any): sinon.SinonStub | sinon.SinonSpy {
+	public stub<T, V>(
+		service: ServiceIdentifier<T>,
+		obj: Partial<NoInfer<T>> | Function,
+		property: string,
+		value: V
+	): V extends Function ? sinon.SinonSpy : sinon.SinonStub;
+	public stub<T, V>(
+		service: ServiceIdentifier<T>,
+		property: string,
+		value: V
+	): V extends Function ? sinon.SinonSpy : sinon.SinonStub;
+	public stub<T>(
+		serviceIdentifier: ServiceIdentifier<T>,
+		arg2: any,
+		arg3?: string,
+		arg4?: any
+	): sinon.SinonStub | sinon.SinonSpy {
 		const service = typeof arg2 !== 'string' ? arg2 : undefined;
 		const serviceMock: IServiceMock<any> = { id: serviceIdentifier, service: service };
 		const property = typeof arg2 === 'string' ? arg2 : arg3;
@@ -94,8 +115,18 @@ export class TestInstantiationService extends InstantiationService implements ID
 	}
 
 	public stubPromise<T>(service?: ServiceIdentifier<T>, fnProperty?: string, value?: any): T | sinon.SinonStub;
-	public stubPromise<T, V>(service?: ServiceIdentifier<T>, ctor?: any, fnProperty?: string, value?: V): V extends Function ? sinon.SinonSpy : sinon.SinonStub;
-	public stubPromise<T, V>(service?: ServiceIdentifier<T>, obj?: any, fnProperty?: string, value?: V): V extends Function ? sinon.SinonSpy : sinon.SinonStub;
+	public stubPromise<T, V>(
+		service?: ServiceIdentifier<T>,
+		ctor?: any,
+		fnProperty?: string,
+		value?: V
+	): V extends Function ? sinon.SinonSpy : sinon.SinonStub;
+	public stubPromise<T, V>(
+		service?: ServiceIdentifier<T>,
+		obj?: any,
+		fnProperty?: string,
+		value?: V
+	): V extends Function ? sinon.SinonSpy : sinon.SinonStub;
 	public stubPromise(arg1?: any, arg2?: any, arg3?: any, arg4?: any): sinon.SinonStub | sinon.SinonSpy {
 		arg3 = typeof arg2 === 'string' ? Promise.resolve(arg3) : arg3;
 		arg4 = typeof arg2 !== 'string' && typeof arg3 === 'string' ? Promise.resolve(arg4) : arg4;
@@ -166,7 +197,10 @@ interface SinonOptions {
 
 export type ServiceIdCtorPair<T> = [id: ServiceIdentifier<T>, ctorOrInstance: T | (new (...args: any[]) => T)];
 
-export function createServices(disposables: DisposableStore, services: ServiceIdCtorPair<any>[]): TestInstantiationService {
+export function createServices(
+	disposables: DisposableStore,
+	services: ServiceIdCtorPair<any>[]
+): TestInstantiationService {
 	const serviceIdentifiers: ServiceIdentifier<any>[] = [];
 	const serviceCollection = new ServiceCollection();
 
@@ -186,13 +220,15 @@ export function createServices(disposables: DisposableStore, services: ServiceId
 	}
 
 	const instantiationService = disposables.add(new TestInstantiationService(serviceCollection, true));
-	disposables.add(toDisposable(() => {
-		for (const id of serviceIdentifiers) {
-			const instanceOrDescriptor = serviceCollection.get(id);
-			if (typeof instanceOrDescriptor.dispose === 'function') {
-				instanceOrDescriptor.dispose();
+	disposables.add(
+		toDisposable(() => {
+			for (const id of serviceIdentifiers) {
+				const instanceOrDescriptor = serviceCollection.get(id);
+				if (typeof instanceOrDescriptor.dispose === 'function') {
+					instanceOrDescriptor.dispose();
+				}
 			}
-		}
-	}));
+		})
+	);
 	return instantiationService;
 }

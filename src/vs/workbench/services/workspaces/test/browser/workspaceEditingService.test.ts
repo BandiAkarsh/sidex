@@ -10,9 +10,7 @@ import { DidEnterWorkspaceEvent } from '../../browser/abstractWorkspaceEditingSe
 import { UNKNOWN_EMPTY_WINDOW_WORKSPACE } from '../../../../../platform/workspace/common/workspace.js';
 
 suite('WorkspaceEditingService', () => {
-
 	suite('DidEnterWorkspaceEvent', () => {
-
 		test('event captures old workspace and new workspace URI', () => {
 			const oldWorkspace = { id: 'old-folder', uri: URI.file('/old/folder') };
 			const newWorkspace = { id: 'new-workspace', configPath: URI.file('/test/workspace.code-workspace') };
@@ -30,11 +28,15 @@ suite('WorkspaceEditingService', () => {
 			let executed2 = false;
 
 			event.join(
-				(async () => { executed1 = true; })(),
+				(async () => {
+					executed1 = true;
+				})()
 			);
 
 			event.join(
-				(async () => { executed2 = true; })(),
+				(async () => {
+					executed2 = true;
+				})()
 			);
 
 			await event.wait();
@@ -49,14 +51,20 @@ suite('WorkspaceEditingService', () => {
 
 			let resolve1: () => void;
 			let resolve2: () => void;
-			const promise1 = new Promise<void>(r => { resolve1 = r; });
-			const promise2 = new Promise<void>(r => { resolve2 = r; });
+			const promise1 = new Promise<void>(r => {
+				resolve1 = r;
+			});
+			const promise2 = new Promise<void>(r => {
+				resolve2 = r;
+			});
 
 			event.join(promise1);
 			event.join(promise2);
 
 			let waitCompleted = false;
-			const waitPromise = event.wait().then(() => { waitCompleted = true; });
+			const waitPromise = event.wait().then(() => {
+				waitCompleted = true;
+			});
 
 			// Should not be completed yet
 			await Promise.resolve();

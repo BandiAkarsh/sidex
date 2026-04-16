@@ -35,12 +35,7 @@ suite('Hover Copy Button', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('should create button element in container', () => {
-		disposables.add(new HoverCopyButton(
-			container,
-			() => 'test content',
-			clipboardService,
-			hoverService
-		));
+		disposables.add(new HoverCopyButton(container, () => 'test content', clipboardService, hoverService));
 
 		const buttonElement = container.querySelector('.hover-copy-button');
 		assert.ok(buttonElement, 'Button element should be created');
@@ -50,25 +45,21 @@ suite('Hover Copy Button', () => {
 	});
 
 	test('should add hover-row-with-copy class to container', () => {
-		assert.ok(!container.classList.contains('hover-row-with-copy'), 'Container should not have class before button creation');
+		assert.ok(
+			!container.classList.contains('hover-row-with-copy'),
+			'Container should not have class before button creation'
+		);
 
-		disposables.add(new HoverCopyButton(
-			container,
-			() => 'test content',
-			clipboardService,
-			hoverService
-		));
+		disposables.add(new HoverCopyButton(container, () => 'test content', clipboardService, hoverService));
 
-		assert.ok(container.classList.contains('hover-row-with-copy'), 'Container should have hover-row-with-copy class after button creation');
+		assert.ok(
+			container.classList.contains('hover-row-with-copy'),
+			'Container should have hover-row-with-copy class after button creation'
+		);
 	});
 
 	test('should have copy icon', () => {
-		disposables.add(new HoverCopyButton(
-			container,
-			() => 'test content',
-			clipboardService,
-			hoverService
-		));
+		disposables.add(new HoverCopyButton(container, () => 'test content', clipboardService, hoverService));
 
 		const icon = container.querySelector('.codicon-copy');
 		assert.ok(icon, 'Copy icon should be present');
@@ -76,12 +67,7 @@ suite('Hover Copy Button', () => {
 
 	test('should copy content on click', async () => {
 		const testContent = 'test content to copy';
-		disposables.add(new HoverCopyButton(
-			container,
-			() => testContent,
-			clipboardService,
-			hoverService
-		));
+		disposables.add(new HoverCopyButton(container, () => testContent, clipboardService, hoverService));
 
 		const buttonElement = container.querySelector('.hover-copy-button') as HTMLElement;
 		assert.ok(buttonElement);
@@ -94,12 +80,7 @@ suite('Hover Copy Button', () => {
 
 	test('should copy content on Enter key', async () => {
 		const testContent = 'test content for enter key';
-		disposables.add(new HoverCopyButton(
-			container,
-			() => testContent,
-			clipboardService,
-			hoverService
-		));
+		disposables.add(new HoverCopyButton(container, () => testContent, clipboardService, hoverService));
 
 		const buttonElement = container.querySelector('.hover-copy-button') as HTMLElement;
 		assert.ok(buttonElement);
@@ -119,12 +100,7 @@ suite('Hover Copy Button', () => {
 
 	test('should copy content on Space key', async () => {
 		const testContent = 'test content for space key';
-		disposables.add(new HoverCopyButton(
-			container,
-			() => testContent,
-			clipboardService,
-			hoverService
-		));
+		disposables.add(new HoverCopyButton(container, () => testContent, clipboardService, hoverService));
 
 		const buttonElement = container.querySelector('.hover-copy-button') as HTMLElement;
 		assert.ok(buttonElement);

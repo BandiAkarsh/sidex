@@ -4,7 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import assert from 'assert';
-import { workbenchInstantiationService, registerTestEditor, TestFileEditorInput, createEditorParts } from '../../../../test/browser/workbenchTestServices.js';
+import {
+	workbenchInstantiationService,
+	registerTestEditor,
+	TestFileEditorInput,
+	createEditorParts
+} from '../../../../test/browser/workbenchTestServices.js';
 import { GroupsOrder, IEditorGroupsService } from '../../common/editorGroupsService.js';
 import { EditorExtensions, EditorInputCapabilities, IEditorFactoryRegistry } from '../../../../common/editor.js';
 import { URI } from '../../../../../base/common/uri.js';
@@ -24,14 +29,19 @@ import { TestStorageService } from '../../../../test/common/workbenchTestService
 import { Memento } from '../../../../common/memento.js';
 
 suite('Modal Editor Group', () => {
-
 	const TEST_EDITOR_ID = 'MyFileEditorForModalEditorGroup';
 	const TEST_EDITOR_INPUT_ID = 'testEditorInputForModalEditorGroup';
 
 	const disposables = new DisposableStore();
 
 	setup(() => {
-		disposables.add(registerTestEditor(TEST_EDITOR_ID, [new SyncDescriptor(TestFileEditorInput), new SyncDescriptor(SideBySideEditorInput)], TEST_EDITOR_INPUT_ID));
+		disposables.add(
+			registerTestEditor(
+				TEST_EDITOR_ID,
+				[new SyncDescriptor(TestFileEditorInput), new SyncDescriptor(SideBySideEditorInput)],
+				TEST_EDITOR_INPUT_ID
+			)
+		);
 	});
 
 	teardown(() => {
@@ -53,8 +63,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('createModalEditorPart creates a modal editor part', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -68,8 +83,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part has correct initial state', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -82,8 +102,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part can open editors', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -99,8 +124,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part is added to parts list', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -115,8 +145,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('closing modal part fires onWillClose event', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -135,8 +170,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part close returns true when no confirming editors', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -151,8 +191,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part getGroups returns groups in correct order', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -171,8 +216,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part is singleton - subsequent calls return same instance', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -189,8 +239,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part singleton is reset after close', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -211,15 +266,22 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part onDidAddGroup fires only once for singleton', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
 		let addGroupCount = 0;
-		disposables.add(parts.onDidAddGroup(() => {
-			addGroupCount++;
-		}));
+		disposables.add(
+			parts.onDidAddGroup(() => {
+				addGroupCount++;
+			})
+		);
 
 		// Create modal twice
 		await parts.createModalEditorPart();
@@ -232,8 +294,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part enforces no tabs mode', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -246,8 +313,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part enforces closeEmptyGroups', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -260,8 +332,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('closing all editors in modal removes the modal group', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -284,8 +361,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part does not persist state', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -302,8 +384,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('activePart returns modal when focused', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -323,8 +410,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal part group can be found by id', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -340,15 +432,22 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('onDidAddGroup fires when modal is created', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
 		let addedGroupId: number | undefined;
-		disposables.add(parts.onDidAddGroup(group => {
-			addedGroupId = group.id;
-		}));
+		disposables.add(
+			parts.onDidAddGroup(group => {
+				addedGroupId = group.id;
+			})
+		);
 
 		const modalPart = await parts.createModalEditorPart();
 
@@ -359,8 +458,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('onDidRemoveGroup fires when modal is closed', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -369,9 +473,11 @@ suite('Modal Editor Group', () => {
 		const modalGroupId = modalPart.activeGroup.id;
 
 		let removedGroupId: number | undefined;
-		disposables.add(parts.onDidRemoveGroup(group => {
-			removedGroupId = group.id;
-		}));
+		disposables.add(
+			parts.onDidRemoveGroup(group => {
+				removedGroupId = group.id;
+			})
+		);
 
 		await modalPart.close();
 
@@ -380,8 +486,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('activeModalEditorPart is set when modal is created and cleared on close', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -398,8 +509,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('findGroup returns main part group when modal is active and preferredGroup is not MODAL_GROUP', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -412,14 +528,21 @@ suite('Modal Editor Group', () => {
 
 		// findGroup without MODAL_GROUP should return main part group, not modal group
 		const newInput = createTestFileEditorInput(URI.file('foo/baz'), TEST_EDITOR_INPUT_ID);
-		const [group] = await instantiationService.invokeFunction(accessor => findGroup(accessor, { resource: newInput.resource }, undefined));
+		const [group] = await instantiationService.invokeFunction(accessor =>
+			findGroup(accessor, { resource: newInput.resource }, undefined)
+		);
 
 		assert.strictEqual(group.id, mainGroup.id);
 	});
 
 	test('findGroup closes modal when preferredGroup is not MODAL_GROUP and preserveFocus is not set', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -432,14 +555,21 @@ suite('Modal Editor Group', () => {
 
 		// findGroup without MODAL_GROUP and without preserveFocus should close the modal
 		const newInput = createTestFileEditorInput(URI.file('foo/baz'), TEST_EDITOR_INPUT_ID);
-		await instantiationService.invokeFunction(accessor => findGroup(accessor, { resource: newInput.resource }, undefined));
+		await instantiationService.invokeFunction(accessor =>
+			findGroup(accessor, { resource: newInput.resource }, undefined)
+		);
 
 		assert.strictEqual(parts.activeModalEditorPart, undefined);
 	});
 
 	test('findGroup keeps modal open when preserveFocus is true', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -452,7 +582,9 @@ suite('Modal Editor Group', () => {
 
 		// findGroup with preserveFocus should keep the modal open
 		const newInput = createTestFileEditorInput(URI.file('foo/baz'), TEST_EDITOR_INPUT_ID);
-		await instantiationService.invokeFunction(accessor => findGroup(accessor, { resource: newInput.resource, options: { preserveFocus: true } }, undefined));
+		await instantiationService.invokeFunction(accessor =>
+			findGroup(accessor, { resource: newInput.resource, options: { preserveFocus: true } }, undefined)
+		);
 
 		assert.strictEqual(parts.activeModalEditorPart, modalPart);
 
@@ -460,8 +592,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part starts not maximized', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -473,8 +610,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part toggleMaximized toggles state', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -492,8 +634,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part fires onDidChangeMaximized', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -511,8 +658,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part remembers maximized state across instances', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -541,10 +693,16 @@ suite('Modal Editor Group', () => {
 	});
 
 	suite('useModal: all', () => {
-
 		test('findGroup creates modal and returns its active group', async () => {
-			const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-			instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+			const instantiationService = workbenchInstantiationService(
+				{
+					contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService)
+				},
+				disposables
+			);
+			instantiationService.invokeFunction(accessor =>
+				Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+			);
 			const configurationService = new TestConfigurationService();
 			await configurationService.setUserConfiguration('workbench.editor.useModal', 'all');
 			instantiationService.stub(IConfigurationService, configurationService);
@@ -553,7 +711,9 @@ suite('Modal Editor Group', () => {
 
 			// findGroup with undefined preferredGroup should create modal and return its group
 			const input = createTestFileEditorInput(URI.file('foo/bar'), TEST_EDITOR_INPUT_ID);
-			const result = instantiationService.invokeFunction(accessor => findGroup(accessor, { resource: input.resource }, undefined));
+			const result = instantiationService.invokeFunction(accessor =>
+				findGroup(accessor, { resource: input.resource }, undefined)
+			);
 
 			// Should return a promise (async modal creation)
 			assert.ok(result instanceof Promise);
@@ -567,8 +727,15 @@ suite('Modal Editor Group', () => {
 		});
 
 		test('findGroup does not auto-close modal', async () => {
-			const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-			instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+			const instantiationService = workbenchInstantiationService(
+				{
+					contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService)
+				},
+				disposables
+			);
+			instantiationService.invokeFunction(accessor =>
+				Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+			);
 			const configurationService = new TestConfigurationService();
 			await configurationService.setUserConfiguration('workbench.editor.useModal', 'all');
 			instantiationService.stub(IConfigurationService, configurationService);
@@ -582,7 +749,9 @@ suite('Modal Editor Group', () => {
 
 			// findGroup without MODAL_GROUP should NOT close the modal
 			const newInput = createTestFileEditorInput(URI.file('foo/baz'), TEST_EDITOR_INPUT_ID);
-			const result = instantiationService.invokeFunction(accessor => findGroup(accessor, { resource: newInput.resource }, undefined));
+			const result = instantiationService.invokeFunction(accessor =>
+				findGroup(accessor, { resource: newInput.resource }, undefined)
+			);
 
 			// Since the setting is 'on', modal stays open
 			const [group] = result instanceof Promise ? await result : result;
@@ -594,8 +763,15 @@ suite('Modal Editor Group', () => {
 		});
 
 		test('findGroup auto-closes modal when setting is not all', async () => {
-			const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-			instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+			const instantiationService = workbenchInstantiationService(
+				{
+					contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService)
+				},
+				disposables
+			);
+			instantiationService.invokeFunction(accessor =>
+				Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+			);
 			const configurationService = new TestConfigurationService();
 			await configurationService.setUserConfiguration('workbench.editor.useModal', 'off');
 			instantiationService.stub(IConfigurationService, configurationService);
@@ -611,14 +787,23 @@ suite('Modal Editor Group', () => {
 
 			// findGroup without MODAL_GROUP should close the modal
 			const newInput = createTestFileEditorInput(URI.file('foo/baz'), TEST_EDITOR_INPUT_ID);
-			await instantiationService.invokeFunction(accessor => findGroup(accessor, { resource: newInput.resource }, undefined));
+			await instantiationService.invokeFunction(accessor =>
+				findGroup(accessor, { resource: newInput.resource }, undefined)
+			);
 
 			assert.strictEqual(parts.activeModalEditorPart, undefined);
 		});
 
 		test('shows tabs when multiple editors are open', async () => {
-			const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-			instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+			const instantiationService = workbenchInstantiationService(
+				{
+					contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService)
+				},
+				disposables
+			);
+			instantiationService.invokeFunction(accessor =>
+				Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+			);
 			const configurationService = new TestConfigurationService();
 			await configurationService.setUserConfiguration('workbench.editor.useModal', 'all');
 			instantiationService.stub(IConfigurationService, configurationService);
@@ -648,8 +833,15 @@ suite('Modal Editor Group', () => {
 		});
 
 		test('hides tabs when not in all mode even with multiple editors', async () => {
-			const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-			instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+			const instantiationService = workbenchInstantiationService(
+				{
+					contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService)
+				},
+				disposables
+			);
+			instantiationService.invokeFunction(accessor =>
+				Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+			);
 			const configurationService = new TestConfigurationService();
 			await configurationService.setUserConfiguration('workbench.editor.useModal', 'some');
 			instantiationService.stub(IConfigurationService, configurationService);
@@ -676,8 +868,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part editors can be moved to another group', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -693,7 +890,10 @@ suite('Modal Editor Group', () => {
 		// Move editors from modal to main part group
 		const targetGroup = parts.mainPart.activeGroup;
 		for (const group of modalPart.getGroups(GroupsOrder.MOST_RECENTLY_ACTIVE)) {
-			group.moveEditors(group.editors.map(editor => ({ editor, options: { preserveFocus: true } })), targetGroup);
+			group.moveEditors(
+				group.editors.map(editor => ({ editor, options: { preserveFocus: true } })),
+				targetGroup
+			);
 		}
 
 		// Editors should be in the target group now
@@ -706,8 +906,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('openEditor with MODAL_GROUP ignores preserveFocus', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -724,8 +929,13 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part state is remembered on close and reused on next open', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const parts = await createEditorParts(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, parts);
 
@@ -741,19 +951,29 @@ suite('Modal Editor Group', () => {
 	});
 
 	test('modal editor part state restores from profile storage', async () => {
-		const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-		instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		const instantiationService = workbenchInstantiationService(
+			{ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) },
+			disposables
+		);
+		instantiationService.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const storageService = instantiationService.get(IStorageService) as TestStorageService;
 
 		// Pre-populate storage with modal state and clear memento cache
 		// so the next EditorParts instance reads fresh from storage
-		storageService.store('memento/workbench.editorParts', JSON.stringify({
-			'editorparts.modalState': {
-				maximized: true,
-				size: { width: 500, height: 400 },
-				position: { left: 100, top: 50 }
-			}
-		}), StorageScope.PROFILE, StorageTarget.MACHINE);
+		storageService.store(
+			'memento/workbench.editorParts',
+			JSON.stringify({
+				'editorparts.modalState': {
+					maximized: true,
+					size: { width: 500, height: 400 },
+					position: { left: 100, top: 50 }
+				}
+			}),
+			StorageScope.PROFILE,
+			StorageTarget.MACHINE
+		);
 		Memento.clear(StorageScope.PROFILE);
 
 		const parts = await createEditorParts(instantiationService, disposables);
@@ -767,10 +987,16 @@ suite('Modal Editor Group', () => {
 	});
 
 	suite('RequiresModal capability', () => {
-
 		test('findGroup opens modal for editor with RequiresModal even when setting is off', async () => {
-			const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-			instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+			const instantiationService = workbenchInstantiationService(
+				{
+					contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService)
+				},
+				disposables
+			);
+			instantiationService.invokeFunction(accessor =>
+				Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+			);
 			const configurationService = new TestConfigurationService();
 			await configurationService.setUserConfiguration('workbench.editor.useModal', 'off');
 			instantiationService.stub(IConfigurationService, configurationService);
@@ -780,7 +1006,9 @@ suite('Modal Editor Group', () => {
 			const input = createTestFileEditorInput(URI.file('foo/bar'), TEST_EDITOR_INPUT_ID);
 			input.capabilities = EditorInputCapabilities.RequiresModal;
 
-			const result = instantiationService.invokeFunction(accessor => findGroup(accessor, { editor: input, options: {} }, undefined));
+			const result = instantiationService.invokeFunction(accessor =>
+				findGroup(accessor, { editor: input, options: {} }, undefined)
+			);
 
 			assert.ok(result instanceof Promise);
 			const [group] = await result;
@@ -792,8 +1020,15 @@ suite('Modal Editor Group', () => {
 		});
 
 		test('findGroup does not close modal for RequiresModal editor when modal is already open', async () => {
-			const instantiationService = workbenchInstantiationService({ contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService) }, disposables);
-			instantiationService.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+			const instantiationService = workbenchInstantiationService(
+				{
+					contextKeyService: instantiationService => instantiationService.createInstance(MockScopableContextKeyService)
+				},
+				disposables
+			);
+			instantiationService.invokeFunction(accessor =>
+				Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+			);
 			const configurationService = new TestConfigurationService();
 			await configurationService.setUserConfiguration('workbench.editor.useModal', 'some');
 			instantiationService.stub(IConfigurationService, configurationService);
@@ -809,7 +1044,9 @@ suite('Modal Editor Group', () => {
 			const input = createTestFileEditorInput(URI.file('foo/bar'), TEST_EDITOR_INPUT_ID);
 			input.capabilities = EditorInputCapabilities.RequiresModal;
 
-			const result = instantiationService.invokeFunction(accessor => findGroup(accessor, { editor: input, options: {} }, undefined));
+			const result = instantiationService.invokeFunction(accessor =>
+				findGroup(accessor, { editor: input, options: {} }, undefined)
+			);
 
 			assert.ok(result instanceof Promise);
 			const [group] = await result;

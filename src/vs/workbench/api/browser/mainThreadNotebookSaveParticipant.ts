@@ -11,20 +11,30 @@ import { extHostCustomer, IExtHostContext } from '../../services/extensions/comm
 import { ExtHostContext, ExtHostNotebookDocumentSaveParticipantShape } from '../common/extHost.protocol.js';
 import { IDisposable } from '../../../base/common/lifecycle.js';
 import { raceCancellationError } from '../../../base/common/async.js';
-import { IStoredFileWorkingCopySaveParticipant, IStoredFileWorkingCopySaveParticipantContext, IWorkingCopyFileService } from '../../services/workingCopy/common/workingCopyFileService.js';
-import { IStoredFileWorkingCopy, IStoredFileWorkingCopyModel } from '../../services/workingCopy/common/storedFileWorkingCopy.js';
+import {
+	IStoredFileWorkingCopySaveParticipant,
+	IStoredFileWorkingCopySaveParticipantContext,
+	IWorkingCopyFileService
+} from '../../services/workingCopy/common/workingCopyFileService.js';
+import {
+	IStoredFileWorkingCopy,
+	IStoredFileWorkingCopyModel
+} from '../../services/workingCopy/common/storedFileWorkingCopy.js';
 import { NotebookFileWorkingCopyModel } from '../../contrib/notebook/common/notebookEditorModel.js';
 
 class ExtHostNotebookDocumentSaveParticipant implements IStoredFileWorkingCopySaveParticipant {
-
 	private readonly _proxy: ExtHostNotebookDocumentSaveParticipantShape;
 
 	constructor(extHostContext: IExtHostContext) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostNotebookDocumentSaveParticipant);
 	}
 
-	async participate(workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>, context: IStoredFileWorkingCopySaveParticipantContext, _progress: IProgress<IProgressStep>, token: CancellationToken): Promise<void> {
-
+	async participate(
+		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
+		context: IStoredFileWorkingCopySaveParticipantContext,
+		_progress: IProgress<IProgressStep>,
+		token: CancellationToken
+	): Promise<void> {
 		if (!workingCopy.model || !(workingCopy.model instanceof NotebookFileWorkingCopyModel)) {
 			return undefined;
 		}
@@ -32,15 +42,18 @@ class ExtHostNotebookDocumentSaveParticipant implements IStoredFileWorkingCopySa
 		let _warningTimeout: Timeout;
 
 		const p = new Promise<void>((resolve, reject) => {
-
 			_warningTimeout = setTimeout(
-				() => reject(new Error(localize('timeout.onWillSave', "Aborted onWillSaveNotebookDocument-event after 1750ms"))),
+				() =>
+					reject(new Error(localize('timeout.onWillSave', 'Aborted onWillSaveNotebookDocument-event after 1750ms'))),
 				1750
 			);
-			this._proxy.$participateInSave(workingCopy.resource, context.reason, token).then(_ => {
-				clearTimeout(_warningTimeout);
-				return undefined;
-			}).then(resolve, reject);
+			this._proxy
+				.$participateInSave(workingCopy.resource, context.reason, token)
+				.then(_ => {
+					clearTimeout(_warningTimeout);
+					return undefined;
+				})
+				.then(resolve, reject);
 		});
 
 		return raceCancellationError(p, token);
@@ -49,7 +62,6 @@ class ExtHostNotebookDocumentSaveParticipant implements IStoredFileWorkingCopySa
 
 @extHostCustomer
 export class SaveParticipant {
-
 	private _saveParticipantDisposable: IDisposable;
 
 	constructor(
@@ -57,7 +69,9 @@ export class SaveParticipant {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IWorkingCopyFileService private readonly workingCopyFileService: IWorkingCopyFileService
 	) {
-		this._saveParticipantDisposable = this.workingCopyFileService.addSaveParticipant(instantiationService.createInstance(ExtHostNotebookDocumentSaveParticipant, extHostContext));
+		this._saveParticipantDisposable = this.workingCopyFileService.addSaveParticipant(
+			instantiationService.createInstance(ExtHostNotebookDocumentSaveParticipant, extHostContext)
+		);
 	}
 
 	dispose(): void {

@@ -19,14 +19,20 @@ import { BugIndicatingError } from '../../../../../base/common/errors.js';
 import { isDefined } from '../../../../../base/common/types.js';
 
 export class ScrollSynchronizer extends Disposable {
-	private get model() { return this.viewModel.get()?.model; }
+	private get model() {
+		return this.viewModel.get()?.model;
+	}
 
 	private readonly reentrancyBarrier = new ReentrancyBarrier();
 
 	public readonly updateScrolling: () => void;
 
-	private get lockResultWithInputs() { return this.layout.get().kind === 'columns'; }
-	private get lockBaseWithInputs() { return this.layout.get().kind === 'mixed' && !this.layout.get().showBaseAtTop; }
+	private get lockResultWithInputs() {
+		return this.layout.get().kind === 'columns';
+	}
+	private get lockBaseWithInputs() {
+		return this.layout.get().kind === 'mixed' && !this.layout.get().showBaseAtTop;
+	}
 
 	private _isSyncing = true;
 
@@ -36,11 +42,11 @@ export class ScrollSynchronizer extends Disposable {
 		private readonly input2View: InputCodeEditorView,
 		private readonly baseView: IObservable<BaseCodeEditorView | undefined>,
 		private readonly inputResultView: ResultCodeEditorView,
-		private readonly layout: IObservable<IMergeEditorLayout>,
+		private readonly layout: IObservable<IMergeEditorLayout>
 	) {
 		super();
 
-		const s = derived((reader) => {
+		const s = derived(reader => {
 			const baseView = this.baseView.read(reader);
 			const editors = [this.input1View, this.input2View, this.inputResultView, baseView].filter(isDefined);
 
@@ -73,12 +79,14 @@ export class ScrollSynchronizer extends Disposable {
 			};
 
 			for (const editorView of editors) {
-				reader.store.add(editorView.editor.onDidScrollChange(e => {
-					if (!this._isSyncing) {
-						return;
-					}
-					alignScrolling(editorView, e.scrollLeftChanged, e.scrollTopChanged);
-				}));
+				reader.store.add(
+					editorView.editor.onDidScrollChange(e => {
+						if (!this._isSyncing) {
+							return;
+						}
+						alignScrolling(editorView, e.scrollLeftChanged, e.scrollTopChanged);
+					})
+				);
 			}
 
 			return {
@@ -103,10 +111,16 @@ export class ScrollSynchronizer extends Disposable {
 
 	private _shouldLock(editor1: CodeEditorView, editor2: CodeEditorView): boolean {
 		const isInput = (editor: CodeEditorView) => editor === this.input1View || editor === this.input2View;
-		if (isInput(editor1) && editor2 === this.inputResultView || isInput(editor2) && editor1 === this.inputResultView) {
+		if (
+			(isInput(editor1) && editor2 === this.inputResultView) ||
+			(isInput(editor2) && editor1 === this.inputResultView)
+		) {
 			return this.lockResultWithInputs;
 		}
-		if (isInput(editor1) && editor2 === this.baseView.get() || isInput(editor2) && editor1 === this.baseView.get()) {
+		if (
+			(isInput(editor1) && editor2 === this.baseView.get()) ||
+			(isInput(editor2) && editor1 === this.baseView.get())
+		) {
 			return this.lockBaseWithInputs;
 		}
 		if (isInput(editor1) && isInput(editor2)) {
@@ -123,7 +137,9 @@ export class ScrollSynchronizer extends Disposable {
 				return this.model?.input1ResultMapping.get()!;
 			} else if (editor2 === this.baseView.get()) {
 				const b = this.model?.baseInput1Diffs.get();
-				if (!b) { return undefined; }
+				if (!b) {
+					return undefined;
+				}
 				return new DocumentLineRangeMap(b, -1).reverse();
 			}
 		} else if (editor1 === this.input2View) {
@@ -133,7 +149,9 @@ export class ScrollSynchronizer extends Disposable {
 				return this.model?.input2ResultMapping.get()!;
 			} else if (editor2 === this.baseView.get()) {
 				const b = this.model?.baseInput2Diffs.get();
-				if (!b) { return undefined; }
+				if (!b) {
+					return undefined;
+				}
 				return new DocumentLineRangeMap(b, -1).reverse();
 			}
 		} else if (editor1 === this.inputResultView) {
@@ -143,21 +161,29 @@ export class ScrollSynchronizer extends Disposable {
 				return this.model?.resultInput2Mapping.get()!;
 			} else if (editor2 === this.baseView.get()) {
 				const b = this.model?.resultBaseMapping.get();
-				if (!b) { return undefined; }
+				if (!b) {
+					return undefined;
+				}
 				return b;
 			}
 		} else if (editor1 === this.baseView.get()) {
 			if (editor2 === this.input1View) {
 				const b = this.model?.baseInput1Diffs.get();
-				if (!b) { return undefined; }
+				if (!b) {
+					return undefined;
+				}
 				return new DocumentLineRangeMap(b, -1);
 			} else if (editor2 === this.input2View) {
 				const b = this.model?.baseInput2Diffs.get();
-				if (!b) { return undefined; }
+				if (!b) {
+					return undefined;
+				}
 				return new DocumentLineRangeMap(b, -1);
 			} else if (editor2 === this.inputResultView) {
 				const b = this.model?.baseResultMapping.get();
-				if (!b) { return undefined; }
+				if (!b) {
+					return undefined;
+				}
 				return b;
 			}
 		}
@@ -165,7 +191,11 @@ export class ScrollSynchronizer extends Disposable {
 		throw new BugIndicatingError();
 	}
 
-	private _synchronizeScrolling(scrollingEditor: CodeEditorWidget, targetEditor: CodeEditorWidget, mapping: DocumentLineRangeMap | undefined) {
+	private _synchronizeScrolling(
+		scrollingEditor: CodeEditorWidget,
+		targetEditor: CodeEditorWidget,
+		mapping: DocumentLineRangeMap | undefined
+	) {
 		if (!mapping) {
 			return;
 		}

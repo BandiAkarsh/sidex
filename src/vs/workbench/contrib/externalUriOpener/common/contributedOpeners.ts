@@ -20,7 +20,6 @@ interface OpenersMemento {
 }
 
 export class ContributedExternalUriOpenersStore extends Disposable {
-
 	private static readonly STORAGE_ID = 'externalUriOpeners';
 
 	private readonly _openers = new Map<string, RegisteredExternalOpener>();
@@ -44,7 +43,9 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 		this.invalidateOpenersOnExtensionsChanged();
 
 		this._register(this._extensionService.onDidChangeExtensions(() => this.invalidateOpenersOnExtensionsChanged()));
-		this._register(this._extensionService.onDidChangeExtensionsStatus(() => this.invalidateOpenersOnExtensionsChanged()));
+		this._register(
+			this._extensionService.onDidChangeExtensionsStatus(() => this.invalidateOpenersOnExtensionsChanged())
+		);
 	}
 
 	public didRegisterOpener(id: string, extensionId: string): void {

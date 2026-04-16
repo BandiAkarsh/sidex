@@ -11,15 +11,17 @@ import { Categories } from '../../../../platform/action/common/actionCommonCateg
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 
 export class ToggleRenderControlCharacterAction extends Action2 {
-
 	static readonly ID = 'editor.action.toggleRenderControlCharacter';
 
 	constructor() {
 		super({
 			id: ToggleRenderControlCharacterAction.ID,
 			title: {
-				...localize2('toggleRenderControlCharacters', "Toggle Control Characters"),
-				mnemonicTitle: localize({ key: 'miToggleRenderControlCharacters', comment: ['&& denotes a mnemonic'] }, "Render &&Control Characters"),
+				...localize2('toggleRenderControlCharacters', 'Toggle Control Characters'),
+				mnemonicTitle: localize(
+					{ key: 'miToggleRenderControlCharacters', comment: ['&& denotes a mnemonic'] },
+					'Render &&Control Characters'
+				)
 			},
 			category: Categories.View,
 			f1: true,

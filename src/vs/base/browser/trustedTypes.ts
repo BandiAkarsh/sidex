@@ -10,9 +10,8 @@ type TrustedTypePolicyOptions = import('trusted-types/lib/index.d.ts').TrustedTy
 
 export function createTrustedTypesPolicy<Options extends TrustedTypePolicyOptions>(
 	policyName: string,
-	policyOptions?: Options,
+	policyOptions?: Options
 ): undefined | Pick<TrustedTypePolicy, 'name' | Extract<keyof Options, keyof TrustedTypePolicyOptions>> {
-
 	const monacoEnvironment = getMonacoEnvironment();
 
 	if (monacoEnvironment?.createTrustedTypesPolicy) {

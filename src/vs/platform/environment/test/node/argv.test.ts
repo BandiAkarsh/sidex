@@ -10,59 +10,66 @@ import { addArg } from '../../node/argvHelper.js';
 
 function o(description: string, type: 'boolean' | 'string' | 'string[]' = 'string'): Option<any> {
 	return {
-		description, type
+		description,
+		type
 	};
 }
 function c(description: string, options: OptionDescriptions<any>): Subcommand<any> {
 	return {
-		description, type: 'subcommand', options
+		description,
+		type: 'subcommand',
+		options
 	};
 }
 
 suite('formatOptions', () => {
-
 	test('Text should display small columns correctly', () => {
 		assert.deepStrictEqual(
-			formatOptions({
-				'add': o('bar')
-			}, 80),
+			formatOptions(
+				{
+					add: o('bar')
+				},
+				80
+			),
 			['  --add        bar']
 		);
 		assert.deepStrictEqual(
-			formatOptions({
-				'add': o('bar'),
-				'wait': o('ba'),
-				'trace': o('b')
-			}, 80),
-			[
-				'  --add        bar',
-				'  --wait       ba',
-				'  --trace      b'
-			]);
+			formatOptions(
+				{
+					add: o('bar'),
+					wait: o('ba'),
+					trace: o('b')
+				},
+				80
+			),
+			['  --add        bar', '  --wait       ba', '  --trace      b']
+		);
 	});
 
 	test('Text should wrap', () => {
 		assert.deepStrictEqual(
-			formatOptions({
-				// eslint-disable-next-line local/code-no-any-casts
-				'add': o((<any>'bar ').repeat(9))
-			}, 40),
-			[
-				'  --add        bar bar bar bar bar bar',
-				'               bar bar bar'
-			]);
+			formatOptions(
+				{
+					// eslint-disable-next-line local/code-no-any-casts
+					add: o((<any>'bar ').repeat(9))
+				},
+				40
+			),
+			['  --add        bar bar bar bar bar bar', '               bar bar bar']
+		);
 	});
 
 	test('Text should revert to the condensed view when the terminal is too narrow', () => {
 		assert.deepStrictEqual(
-			formatOptions({
-				// eslint-disable-next-line local/code-no-any-casts
-				'add': o((<any>'bar ').repeat(9))
-			}, 30),
-			[
-				'  --add',
-				'      bar bar bar bar bar bar bar bar bar '
-			]);
+			formatOptions(
+				{
+					// eslint-disable-next-line local/code-no-any-casts
+					add: o((<any>'bar ').repeat(9))
+				},
+				30
+			),
+			['  --add', '      bar bar bar bar bar bar bar bar bar ']
+		);
 	});
 
 	test('addArg', () => {
@@ -76,13 +83,14 @@ suite('formatOptions', () => {
 
 	test('subcommands', () => {
 		assert.deepStrictEqual(
-			formatOptions({
-				'testcmd': c('A test command', { add: o('A test command option') })
-			}, 30),
-			[
-				'  --testcmd',
-				'      A test command'
-			]);
+			formatOptions(
+				{
+					testcmd: c('A test command', { add: o('A test command option') })
+				},
+				30
+			),
+			['  --testcmd', '      A test command']
+		);
 	});
 
 	ensureNoDisposablesAreLeakedInTestSuite();
@@ -92,11 +100,11 @@ suite('parseArgs', () => {
 	function newErrorReporter(result: string[] = [], command = ''): ErrorReporter & { result: string[] } {
 		const commandPrefix = command ? command + '-' : '';
 		return {
-			onDeprecatedOption: (deprecatedId) => result.push(`${commandPrefix}onDeprecatedOption ${deprecatedId}`),
-			onUnknownOption: (id) => result.push(`${commandPrefix}onUnknownOption ${id}`),
-			onEmptyValue: (id) => result.push(`${commandPrefix}onEmptyValue ${id}`),
+			onDeprecatedOption: deprecatedId => result.push(`${commandPrefix}onDeprecatedOption ${deprecatedId}`),
+			onUnknownOption: id => result.push(`${commandPrefix}onUnknownOption ${id}`),
+			onEmptyValue: id => result.push(`${commandPrefix}onEmptyValue ${id}`),
 			onMultipleValues: (id, usedValue) => result.push(`${commandPrefix}onMultipleValues ${id} ${usedValue}`),
-			getSubcommandReporter: (c) => newErrorReporter(result, commandPrefix + c),
+			getSubcommandReporter: c => newErrorReporter(result, commandPrefix + c),
 			result
 		};
 	}
@@ -108,7 +116,6 @@ suite('parseArgs', () => {
 	}
 
 	test('subcommands', () => {
-
 		interface TestArgs1 {
 			testcmd?: {
 				testArg?: string;
@@ -118,45 +125,24 @@ suite('parseArgs', () => {
 		}
 
 		const options1 = {
-			'testcmd': c('A test command', {
+			testcmd: c('A test command', {
 				testArg: o('A test command option'),
 				_: { type: 'string[]' }
 			}),
 			_: { type: 'string[]' }
 		} as OptionDescriptions<TestArgs1>;
-		assertParse(
-			options1,
-			['testcmd', '--testArg=foo'],
-			{ testcmd: { testArg: 'foo', '_': [] }, '_': [] },
-			[]
-		);
-		assertParse(
-			options1,
-			['testcmd', '--testArg=foo', '--testX'],
-			{ testcmd: { testArg: 'foo', '_': [] }, '_': [] },
-			['testcmd-onUnknownOption testX']
-		);
+		assertParse(options1, ['testcmd', '--testArg=foo'], { testcmd: { testArg: 'foo', _: [] }, _: [] }, []);
+		assertParse(options1, ['testcmd', '--testArg=foo', '--testX'], { testcmd: { testArg: 'foo', _: [] }, _: [] }, [
+			'testcmd-onUnknownOption testX'
+		]);
 
-		assertParse(
-			options1,
-			['--testArg=foo', 'testcmd', '--testX'],
-			{ testcmd: { testArg: 'foo', '_': [] }, '_': [] },
-			['testcmd-onUnknownOption testX']
-		);
+		assertParse(options1, ['--testArg=foo', 'testcmd', '--testX'], { testcmd: { testArg: 'foo', _: [] }, _: [] }, [
+			'testcmd-onUnknownOption testX'
+		]);
 
-		assertParse(
-			options1,
-			['--testArg=foo', 'testcmd'],
-			{ testcmd: { testArg: 'foo', '_': [] }, '_': [] },
-			[]
-		);
+		assertParse(options1, ['--testArg=foo', 'testcmd'], { testcmd: { testArg: 'foo', _: [] }, _: [] }, []);
 
-		assertParse(
-			options1,
-			['--testArg', 'foo', 'testcmd'],
-			{ testcmd: { testArg: 'foo', '_': [] }, '_': [] },
-			[]
-		);
+		assertParse(options1, ['--testArg', 'foo', 'testcmd'], { testcmd: { testArg: 'foo', _: [] }, _: [] }, []);
 
 		interface TestArgs2 {
 			testcmd?: {
@@ -169,7 +155,7 @@ suite('parseArgs', () => {
 		}
 
 		const options2 = {
-			'testcmd': c('A test command', {
+			testcmd: c('A test command', {
 				testArg: o('A test command option')
 			}),
 			testX: { type: 'boolean', global: true, description: '' },
@@ -178,7 +164,7 @@ suite('parseArgs', () => {
 		assertParse(
 			options2,
 			['testcmd', '--testArg=foo', '--testX'],
-			{ testcmd: { testArg: 'foo', testX: true, '_': [] }, '_': [] },
+			{ testcmd: { testArg: 'foo', testX: true, _: [] }, _: [] },
 			[]
 		);
 	});

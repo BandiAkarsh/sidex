@@ -89,9 +89,7 @@ export interface IBrowserZoomService {
 // ---------------------------------------------------------------------------
 
 /** Pre-computed map from percentage label (e.g. "125%") to index into browserZoomFactors. */
-const ZOOM_LABEL_TO_INDEX = new Map<string, number>(
-	browserZoomFactors.map((f, i) => [`${Math.round(f * 100)}%`, i])
-);
+const ZOOM_LABEL_TO_INDEX = new Map<string, number>(browserZoomFactors.map((f, i) => [`${Math.round(f * 100)}%`, i]));
 
 export class BrowserZoomService extends Disposable implements IBrowserZoomService {
 	declare readonly _serviceBrand: undefined;
@@ -112,17 +110,19 @@ export class BrowserZoomService extends Disposable implements IBrowserZoomServic
 
 	constructor(
 		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IStorageService private readonly storageService: IStorageService,
+		@IStorageService private readonly storageService: IStorageService
 	) {
 		super();
 
 		this._persistentZoomMap = this._readPersistentZoomMap();
 
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('workbench.browser.pageZoom')) {
-				this._onDidChangeZoom.fire({ host: undefined, isEphemeralChange: false });
-			}
-		}));
+		this._register(
+			this.configurationService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration('workbench.browser.pageZoom')) {
+					this._onDidChangeZoom.fire({ host: undefined, isEphemeralChange: false });
+				}
+			})
+		);
 	}
 
 	getEffectiveZoomIndex(host: string | undefined, isEphemeral: boolean): number {
@@ -259,7 +259,12 @@ export class BrowserZoomService extends Disposable implements IBrowserZoomServic
 	private _writePersistentZoomMap(): void {
 		const hasEntries = Object.keys(this._persistentZoomMap).length > 0;
 		if (hasEntries) {
-			this.storageService.store(BROWSER_ZOOM_PER_HOST_STORAGE_KEY, JSON.stringify(this._persistentZoomMap), StorageScope.PROFILE, StorageTarget.MACHINE);
+			this.storageService.store(
+				BROWSER_ZOOM_PER_HOST_STORAGE_KEY,
+				JSON.stringify(this._persistentZoomMap),
+				StorageScope.PROFILE,
+				StorageTarget.MACHINE
+			);
 		} else {
 			this.storageService.remove(BROWSER_ZOOM_PER_HOST_STORAGE_KEY, StorageScope.PROFILE);
 		}

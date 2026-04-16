@@ -18,15 +18,21 @@ suite('Request Service', () => {
 	(isWindows ? test : test.skip)('Kerberos lookup', async () => {
 		try {
 			const logService = store.add(new NullLogService());
-			const response = await lookupKerberosAuthorization('http://localhost:9999', undefined, logService, 'requestService.test.ts');
+			const response = await lookupKerberosAuthorization(
+				'http://localhost:9999',
+				undefined,
+				logService,
+				'requestService.test.ts'
+			);
 			assert.ok(response);
 		} catch (err) {
 			assert.ok(
-				err?.message?.includes('No authority could be contacted for authentication')
-				|| err?.message?.includes('No Kerberos credentials available')
-				|| err?.message?.includes('No credentials are available in the security package')
-				|| err?.message?.includes('no credential for')
-				, `Unexpected error: ${err}`);
+				err?.message?.includes('No authority could be contacted for authentication') ||
+					err?.message?.includes('No Kerberos credentials available') ||
+					err?.message?.includes('No credentials are available in the security package') ||
+					err?.message?.includes('no credential for'),
+				`Unexpected error: ${err}`
+			);
 		}
 	});
 
@@ -36,7 +42,10 @@ suite('Request Service', () => {
 		setTimeout(() => cts.cancel(), 50);
 
 		try {
-			await nodeRequest({ url: 'http://localhost:9999/nonexistent', callSite: 'requestService.test.cancellation' }, cts.token);
+			await nodeRequest(
+				{ url: 'http://localhost:9999/nonexistent', callSite: 'requestService.test.cancellation' },
+				cts.token
+			);
 			assert.fail('Request should have been cancelled');
 		} catch (err) {
 			const elapsed = Date.now() - startTime;
@@ -61,22 +70,28 @@ suite('Request Service', () => {
 				end: () => {
 					if (currentAttempt >= 3) {
 						// Succeed on third attempt by calling the response callback
-						setTimeout(() => callback({ statusCode: 200, headers: {}, on: () => { }, pipe: () => ({ on: () => { } }) }), 0);
+						setTimeout(
+							() => callback({ statusCode: 200, headers: {}, on: () => {}, pipe: () => ({ on: () => {} }) }),
+							0
+						);
 					}
 				},
-				abort: () => { },
-				setTimeout: () => { }
+				abort: () => {},
+				setTimeout: () => {}
 			};
 			return mockReq;
 		};
 
 		try {
-			await nodeRequest({
-				url: 'http://example.com',
-				type: 'GET',
-				getRawRequest: () => mockRawRequest as IRawRequestFunction,
-				callSite: 'requestService.test.retryGET'
-			}, CancellationToken.None);
+			await nodeRequest(
+				{
+					url: 'http://example.com',
+					type: 'GET',
+					getRawRequest: () => mockRawRequest as IRawRequestFunction,
+					callSite: 'requestService.test.retryGET'
+				},
+				CancellationToken.None
+			);
 		} catch (err) {
 			// Expected to eventually succeed or fail after retries
 		}
@@ -96,20 +111,23 @@ suite('Request Service', () => {
 						setTimeout(() => handler(err), 0);
 					}
 				},
-				end: () => { },
-				abort: () => { },
-				setTimeout: () => { }
+				end: () => {},
+				abort: () => {},
+				setTimeout: () => {}
 			};
 			return mockReq;
 		};
 
 		try {
-			await nodeRequest({
-				url: 'http://example.com',
-				type: 'POST',
-				getRawRequest: () => mockRawRequest,
-				callSite: 'requestService.test.noRetryPOST'
-			}, CancellationToken.None);
+			await nodeRequest(
+				{
+					url: 'http://example.com',
+					type: 'POST',
+					getRawRequest: () => mockRawRequest,
+					callSite: 'requestService.test.noRetryPOST'
+				},
+				CancellationToken.None
+			);
 			assert.fail('Should have thrown an error');
 		} catch (err) {
 			assert.ok(err instanceof Error);
@@ -133,22 +151,28 @@ suite('Request Service', () => {
 				},
 				end: () => {
 					if (currentAttempt >= 3) {
-						setTimeout(() => callback({ statusCode: 200, headers: {}, on: () => { }, pipe: () => ({ on: () => { } }) }), 0);
+						setTimeout(
+							() => callback({ statusCode: 200, headers: {}, on: () => {}, pipe: () => ({ on: () => {} }) }),
+							0
+						);
 					}
 				},
-				abort: () => { },
-				setTimeout: () => { }
+				abort: () => {},
+				setTimeout: () => {}
 			};
 			return mockReq;
 		};
 
 		try {
-			await nodeRequest({
-				url: 'http://example.com',
-				type: 'HEAD',
-				getRawRequest: () => mockRawRequest as IRawRequestFunction,
-				callSite: 'requestService.test.retryHEAD'
-			}, CancellationToken.None);
+			await nodeRequest(
+				{
+					url: 'http://example.com',
+					type: 'HEAD',
+					getRawRequest: () => mockRawRequest as IRawRequestFunction,
+					callSite: 'requestService.test.retryHEAD'
+				},
+				CancellationToken.None
+			);
 		} catch (err) {
 			// Expected to eventually succeed or fail after retries
 		}
@@ -171,22 +195,28 @@ suite('Request Service', () => {
 				},
 				end: () => {
 					if (currentAttempt >= 3) {
-						setTimeout(() => callback({ statusCode: 200, headers: {}, on: () => { }, pipe: () => ({ on: () => { } }) }), 0);
+						setTimeout(
+							() => callback({ statusCode: 200, headers: {}, on: () => {}, pipe: () => ({ on: () => {} }) }),
+							0
+						);
 					}
 				},
-				abort: () => { },
-				setTimeout: () => { }
+				abort: () => {},
+				setTimeout: () => {}
 			};
 			return mockReq;
 		};
 
 		try {
-			await nodeRequest({
-				url: 'http://example.com',
-				type: 'OPTIONS',
-				getRawRequest: () => mockRawRequest as IRawRequestFunction,
-				callSite: 'requestService.test.retryOPTIONS'
-			}, CancellationToken.None);
+			await nodeRequest(
+				{
+					url: 'http://example.com',
+					type: 'OPTIONS',
+					getRawRequest: () => mockRawRequest as IRawRequestFunction,
+					callSite: 'requestService.test.retryOPTIONS'
+				},
+				CancellationToken.None
+			);
 		} catch (err) {
 			// Expected to eventually succeed or fail after retries
 		}
@@ -206,20 +236,23 @@ suite('Request Service', () => {
 						setTimeout(() => handler(err), 0);
 					}
 				},
-				end: () => { },
-				abort: () => { },
-				setTimeout: () => { }
+				end: () => {},
+				abort: () => {},
+				setTimeout: () => {}
 			};
 			return mockReq;
 		};
 
 		try {
-			await nodeRequest({
-				url: 'http://example.com',
-				type: 'DELETE',
-				getRawRequest: () => mockRawRequest,
-				callSite: 'requestService.test.noRetryDELETE'
-			}, CancellationToken.None);
+			await nodeRequest(
+				{
+					url: 'http://example.com',
+					type: 'DELETE',
+					getRawRequest: () => mockRawRequest,
+					callSite: 'requestService.test.noRetryDELETE'
+				},
+				CancellationToken.None
+			);
 			assert.fail('Should have thrown an error');
 		} catch (err) {
 			assert.ok(err instanceof Error);
@@ -240,20 +273,23 @@ suite('Request Service', () => {
 						setTimeout(() => handler(err), 0);
 					}
 				},
-				end: () => { },
-				abort: () => { },
-				setTimeout: () => { }
+				end: () => {},
+				abort: () => {},
+				setTimeout: () => {}
 			};
 			return mockReq;
 		};
 
 		try {
-			await nodeRequest({
-				url: 'http://example.com',
-				type: 'PUT',
-				getRawRequest: () => mockRawRequest,
-				callSite: 'requestService.test.noRetryPUT'
-			}, CancellationToken.None);
+			await nodeRequest(
+				{
+					url: 'http://example.com',
+					type: 'PUT',
+					getRawRequest: () => mockRawRequest,
+					callSite: 'requestService.test.noRetryPUT'
+				},
+				CancellationToken.None
+			);
 			assert.fail('Should have thrown an error');
 		} catch (err) {
 			assert.ok(err instanceof Error);
@@ -274,20 +310,23 @@ suite('Request Service', () => {
 						setTimeout(() => handler(err), 0);
 					}
 				},
-				end: () => { },
-				abort: () => { },
-				setTimeout: () => { }
+				end: () => {},
+				abort: () => {},
+				setTimeout: () => {}
 			};
 			return mockReq;
 		};
 
 		try {
-			await nodeRequest({
-				url: 'http://example.com',
-				type: 'PATCH',
-				getRawRequest: () => mockRawRequest,
-				callSite: 'requestService.test.noRetryPATCH'
-			}, CancellationToken.None);
+			await nodeRequest(
+				{
+					url: 'http://example.com',
+					type: 'PATCH',
+					getRawRequest: () => mockRawRequest,
+					callSite: 'requestService.test.noRetryPATCH'
+				},
+				CancellationToken.None
+			);
 			assert.fail('Should have thrown an error');
 		} catch (err) {
 			assert.ok(err instanceof Error);

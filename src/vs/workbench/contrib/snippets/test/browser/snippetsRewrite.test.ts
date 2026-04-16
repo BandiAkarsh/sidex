@@ -9,7 +9,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { Snippet, SnippetSource } from '../../browser/snippetsFile.js';
 
 suite('SnippetRewrite', function () {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	function assertRewrite(input: string, expected: string | boolean): void {
@@ -22,13 +21,11 @@ suite('SnippetRewrite', function () {
 	}
 
 	test('bogous variable rewrite', function () {
-
 		assertRewrite('foo', false);
 		assertRewrite('hello $1 world$0', false);
 
 		assertRewrite('$foo and $foo', '${1:foo} and ${1:foo}');
 		assertRewrite('$1 and $SELECTION and $foo', '$1 and ${SELECTION} and ${2:foo}');
-
 
 		assertRewrite(
 			[
@@ -51,7 +48,17 @@ suite('SnippetRewrite', function () {
 	});
 
 	test('lazy bogous variable rewrite', function () {
-		const snippet = new Snippet(false, ['fooLang'], 'foo', 'prefix', 'desc', 'This is ${bogous} because it is a ${var}', 'source', SnippetSource.Extension, generateUuid());
+		const snippet = new Snippet(
+			false,
+			['fooLang'],
+			'foo',
+			'prefix',
+			'desc',
+			'This is ${bogous} because it is a ${var}',
+			'source',
+			SnippetSource.Extension,
+			generateUuid()
+		);
 		assert.strictEqual(snippet.body, 'This is ${bogous} because it is a ${var}');
 		assert.strictEqual(snippet.codeSnippet, 'This is ${1:bogous} because it is a ${2:var}');
 		assert.strictEqual(snippet.isBogous, true);

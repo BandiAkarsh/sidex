@@ -17,10 +17,18 @@ import { IEnvironmentService } from '../../../../platform/environment/common/env
 import { Registry } from '../../../../platform/registry/common/platform.js';
 import { getIconsStyleSheet } from '../../../../platform/theme/browser/iconsStyleSheet.js';
 import { ColorScheme } from '../../../../platform/theme/common/theme.js';
-import { IColorTheme, IThemeService, IThemingRegistry, Extensions as ThemingExtensions } from '../../../../platform/theme/common/themeService.js';
+import {
+	IColorTheme,
+	IThemeService,
+	IThemingRegistry,
+	Extensions as ThemingExtensions
+} from '../../../../platform/theme/common/themeService.js';
 import { generateColorThemeCSS } from '../../../services/themes/browser/colorThemeCss.js';
 import { ColorThemeData } from '../../../services/themes/common/colorThemeData.js';
-import { COLOR_THEME_DARK_INITIAL_COLORS, COLOR_THEME_LIGHT_INITIAL_COLORS } from '../../../services/themes/common/workbenchThemeService.js';
+import {
+	COLOR_THEME_DARK_INITIAL_COLORS,
+	COLOR_THEME_LIGHT_INITIAL_COLORS
+} from '../../../services/themes/common/workbenchThemeService.js';
 
 // Instantiation
 import { SyncDescriptor } from '../../../../platform/instantiation/common/descriptors.js';
@@ -32,11 +40,17 @@ import { TestInstantiationService } from '../../../../platform/instantiation/tes
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { mock } from '../../../../base/test/common/mock.js';
 import { ICodeEditorService } from '../../../../editor/browser/services/codeEditorService.js';
-import { IInlineCompletionsService, InlineCompletionsService } from '../../../../editor/browser/services/inlineCompletionsService.js';
+import {
+	IInlineCompletionsService,
+	InlineCompletionsService
+} from '../../../../editor/browser/services/inlineCompletionsService.js';
 import { ILanguageService } from '../../../../editor/common/languages/language.js';
 import { ILanguageConfigurationService } from '../../../../editor/common/languages/languageConfigurationRegistry.js';
 import { IEditorWorkerService } from '../../../../editor/common/services/editorWorker.js';
-import { ILanguageFeatureDebounceService, LanguageFeatureDebounceService } from '../../../../editor/common/services/languageFeatureDebounce.js';
+import {
+	ILanguageFeatureDebounceService,
+	LanguageFeatureDebounceService
+} from '../../../../editor/common/services/languageFeatureDebounce.js';
 import { ILanguageFeaturesService } from '../../../../editor/common/services/languageFeatures.js';
 import { LanguageFeaturesService } from '../../../../editor/common/services/languageFeaturesService.js';
 import { LanguageService } from '../../../../editor/common/services/languageService.js';
@@ -52,7 +66,10 @@ import { TestTextResourcePropertiesService } from '../../../../editor/test/commo
 import { TestTreeSitterLibraryService } from '../../../../editor/test/common/services/testTreeSitterLibraryService.js';
 import { IAccessibilityService } from '../../../../platform/accessibility/common/accessibility.js';
 import { TestAccessibilityService } from '../../../../platform/accessibility/test/common/testAccessibilityService.js';
-import { IActionViewItemService, NullActionViewItemService } from '../../../../platform/actions/browser/actionViewItemService.js';
+import {
+	IActionViewItemService,
+	NullActionViewItemService
+} from '../../../../platform/actions/browser/actionViewItemService.js';
 import { IMenuService } from '../../../../platform/actions/common/actions.js';
 import { IClipboardService } from '../../../../platform/clipboard/common/clipboardService.js';
 import { TestClipboardService } from '../../../../platform/clipboard/test/common/testClipboardService.js';
@@ -67,28 +84,44 @@ import { IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
 import { TestDialogService } from '../../../../platform/dialogs/test/common/testDialogService.js';
 import { IHoverService } from '../../../../platform/hover/browser/hover.js';
 import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
-import { MockContextKeyService, MockKeybindingService } from '../../../../platform/keybinding/test/common/mockKeybindingService.js';
+import {
+	MockContextKeyService,
+	MockKeybindingService
+} from '../../../../platform/keybinding/test/common/mockKeybindingService.js';
 import { ILabelService } from '../../../../platform/label/common/label.js';
 import { ILoggerService, ILogService, NullLoggerService, NullLogService } from '../../../../platform/log/common/log.js';
 import { INotificationService } from '../../../../platform/notification/common/notification.js';
 import { TestNotificationService } from '../../../../platform/notification/test/common/testNotificationService.js';
 import { IOpenerService } from '../../../../platform/opener/common/opener.js';
 import { NullOpenerService } from '../../../../platform/opener/test/common/nullOpenerService.js';
-import { IApplicationStorageValueChangeEvent, IProfileStorageValueChangeEvent, IStorageEntry, IStorageService, IStorageTargetChangeEvent, IStorageValueChangeEvent, IWillSaveStateEvent, IWorkspaceStorageValueChangeEvent, StorageScope, StorageTarget, WillSaveStateReason } from '../../../../platform/storage/common/storage.js';
+import {
+	IApplicationStorageValueChangeEvent,
+	IProfileStorageValueChangeEvent,
+	IStorageEntry,
+	IStorageService,
+	IStorageTargetChangeEvent,
+	IStorageValueChangeEvent,
+	IWillSaveStateEvent,
+	IWorkspaceStorageValueChangeEvent,
+	StorageScope,
+	StorageTarget,
+	WillSaveStateReason
+} from '../../../../platform/storage/common/storage.js';
 import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
 import { NullTelemetryServiceShape } from '../../../../platform/telemetry/common/telemetryUtils.js';
 import { TestThemeService } from '../../../../platform/theme/test/common/testThemeService.js';
 import { IUndoRedoService } from '../../../../platform/undoRedo/common/undoRedo.js';
 import { UndoRedoService } from '../../../../platform/undoRedo/common/undoRedoService.js';
 import { IUserDataProfile } from '../../../../platform/userDataProfile/common/userDataProfile.js';
-import { IUserInteractionService, MockUserInteractionService } from '../../../../platform/userInteraction/browser/userInteractionService.js';
+import {
+	IUserInteractionService,
+	MockUserInteractionService
+} from '../../../../platform/userInteraction/browser/userInteractionService.js';
 import { IAnyWorkspaceIdentifier } from '../../../../platform/workspace/common/workspace.js';
 import { TestMenuService } from '../workbenchTestServices.js';
 
 // Editor
 import { ITextModel } from '../../../../editor/common/model.js';
-
-
 
 // Import color registrations to ensure colors are available
 import { isThenable } from '../../../../base/common/async.js';
@@ -103,15 +136,34 @@ import '../../../common/theme.js';
  * This is useful for fixtures where we want consistent behavior without persisted state.
  */
 class NullStorageService implements IStorageService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeValue = new Emitter<IStorageValueChangeEvent>();
-	onDidChangeValue(scope: StorageScope.WORKSPACE, key: string | undefined, disposable: DisposableStore): Event<IWorkspaceStorageValueChangeEvent>;
-	onDidChangeValue(scope: StorageScope.PROFILE, key: string | undefined, disposable: DisposableStore): Event<IProfileStorageValueChangeEvent>;
-	onDidChangeValue(scope: StorageScope.APPLICATION, key: string | undefined, disposable: DisposableStore): Event<IApplicationStorageValueChangeEvent>;
-	onDidChangeValue(scope: StorageScope, key: string | undefined, disposable: DisposableStore): Event<IStorageValueChangeEvent> {
-		return Event.filter(this._onDidChangeValue.event, e => e.scope === scope && (key === undefined || e.key === key), disposable);
+	onDidChangeValue(
+		scope: StorageScope.WORKSPACE,
+		key: string | undefined,
+		disposable: DisposableStore
+	): Event<IWorkspaceStorageValueChangeEvent>;
+	onDidChangeValue(
+		scope: StorageScope.PROFILE,
+		key: string | undefined,
+		disposable: DisposableStore
+	): Event<IProfileStorageValueChangeEvent>;
+	onDidChangeValue(
+		scope: StorageScope.APPLICATION,
+		key: string | undefined,
+		disposable: DisposableStore
+	): Event<IApplicationStorageValueChangeEvent>;
+	onDidChangeValue(
+		scope: StorageScope,
+		key: string | undefined,
+		disposable: DisposableStore
+	): Event<IStorageValueChangeEvent> {
+		return Event.filter(
+			this._onDidChangeValue.event,
+			e => e.scope === scope && (key === undefined || e.key === key),
+			disposable
+		);
 	}
 
 	private readonly _onDidChangeTarget = new Emitter<IStorageTargetChangeEvent>();
@@ -144,7 +196,12 @@ class NullStorageService implements IStorageService {
 		return fallbackValue;
 	}
 
-	store(_key: string, _value: string | boolean | number | undefined | null, _scope: StorageScope, _target: StorageTarget): void {
+	store(
+		_key: string,
+		_value: string | boolean | number | undefined | null,
+		_scope: StorageScope,
+		_target: StorageTarget
+	): void {
 		// no-op
 	}
 
@@ -184,7 +241,6 @@ class NullStorageService implements IStorageService {
 		return false;
 	}
 }
-
 
 // ============================================================================
 // Themes
@@ -275,7 +331,7 @@ function installGlobalStyles(): void {
 		getGlobalStyleSheet(),
 		getIconsStyleSheetCached(),
 		getThemeStyleSheet(darkTheme),
-		getThemeStyleSheet(lightTheme),
+		getThemeStyleSheet(lightTheme)
 	];
 }
 
@@ -299,7 +355,6 @@ function getPlatformClass(): string {
 		return 'windows';
 	}
 }
-
 
 // ============================================================================
 // Services
@@ -325,7 +380,10 @@ export interface CreateServicesOptions {
  * Creates a TestInstantiationService with all services needed for CodeEditorWidget.
  * Additional services can be registered via the options callback.
  */
-export function createEditorServices(disposables: DisposableStore, options?: CreateServicesOptions): TestInstantiationService {
+export function createEditorServices(
+	disposables: DisposableStore,
+	options?: CreateServicesOptions
+): TestInstantiationService {
 	const services = new ServiceCollection();
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const serviceIdentifiers: ServiceIdentifier<any>[] = [];
@@ -372,31 +430,34 @@ export function createEditorServices(disposables: DisposableStore, options?: Cre
 	define(ITelemetryService, NullTelemetryServiceShape);
 	define(ILoggerService, NullLoggerService);
 	define(IDataChannelService, NullDataChannelService);
-	define(IEnvironmentService, class extends mock<IEnvironmentService>() {
-		declare readonly _serviceBrand: undefined;
-		override isBuilt: boolean = true;
-		override isExtensionDevelopment: boolean = false;
-	});
+	define(
+		IEnvironmentService,
+		class extends mock<IEnvironmentService>() {
+			declare readonly _serviceBrand: undefined;
+			override isBuilt: boolean = true;
+			override isExtensionDevelopment: boolean = false;
+		}
+	);
 	define(ILanguageFeatureDebounceService, LanguageFeatureDebounceService);
 	define(ILanguageFeaturesService, LanguageFeaturesService);
 	define(ITreeSitterLibraryService, TestTreeSitterLibraryService);
 	define(IInlineCompletionsService, InlineCompletionsService);
 	defineInstance(ICodeLensCache, {
 		_serviceBrand: undefined,
-		put: () => { },
+		put: () => {},
 		get: () => undefined,
-		delete: () => { },
+		delete: () => {}
 	});
 	defineInstance(IHoverService, {
 		_serviceBrand: undefined,
 		showDelayedHover: () => undefined,
-		setupDelayedHover: () => ({ dispose: () => { } }),
-		setupDelayedHoverAtMouse: () => ({ dispose: () => { } }),
+		setupDelayedHover: () => ({ dispose: () => {} }),
+		setupDelayedHoverAtMouse: () => ({ dispose: () => {} }),
 		showInstantHover: () => undefined,
-		hideHover: () => { },
-		showAndFocusLastHover: () => { },
-		setupManagedHover: () => ({ dispose: () => { }, show: () => { }, hide: () => { }, update: () => { } }),
-		showManagedHover: () => { },
+		hideHover: () => {},
+		showAndFocusLastHover: () => {},
+		setupManagedHover: () => ({ dispose: () => {}, show: () => {}, hide: () => {}, update: () => {} }),
+		showManagedHover: () => {}
 	});
 	defineInstance(IDefaultAccountService, {
 		_serviceBrand: undefined,
@@ -407,10 +468,10 @@ export function createEditorServices(disposables: DisposableStore, options?: Cre
 		onDidChangeCopilotTokenInfo: new Emitter<null>().event,
 		getDefaultAccount: async () => null,
 		getDefaultAccountAuthenticationProvider: () => ({ id: 'test', name: 'Test', scopes: [], enterprise: false }),
-		setDefaultAccountProvider: () => { },
+		setDefaultAccountProvider: () => {},
 		refresh: async () => null,
 		signIn: async () => null,
-		signOut: async () => { },
+		signOut: async () => {}
 	});
 
 	// User interaction service with focus simulation enabled (all elements appear focused in fixtures)
@@ -421,14 +482,16 @@ export function createEditorServices(disposables: DisposableStore, options?: Cre
 
 	const instantiationService = disposables.add(new TestInstantiationService(services, true));
 
-	disposables.add(toDisposable(() => {
-		for (const id of serviceIdentifiers) {
-			const instanceOrDescriptor = services.get(id);
-			if (typeof instanceOrDescriptor?.dispose === 'function') {
-				instanceOrDescriptor.dispose();
+	disposables.add(
+		toDisposable(() => {
+			for (const id of serviceIdentifiers) {
+				const instanceOrDescriptor = services.get(id);
+				if (typeof instanceOrDescriptor?.dispose === 'function') {
+					instanceOrDescriptor.dispose();
+				}
 			}
-		}
-	}));
+		})
+	);
 
 	return instantiationService;
 }
@@ -439,19 +502,21 @@ export function createEditorServices(disposables: DisposableStore, options?: Cre
  */
 export function registerWorkbenchServices(registration: ServiceRegistration): void {
 	registration.defineInstance(IContextMenuService, {
-		showContextMenu: () => { },
-		onDidShowContextMenu: () => ({ dispose: () => { } }),
-		onDidHideContextMenu: () => ({ dispose: () => { } }),
-		_serviceBrand: undefined,
+		showContextMenu: () => {},
+		onDidShowContextMenu: () => ({ dispose: () => {} }),
+		onDidHideContextMenu: () => ({ dispose: () => {} }),
+		_serviceBrand: undefined
 	});
 
 	registration.defineInstance(IContextViewService, {
-		showContextView: () => ({ close: () => { } }),
-		hideContextView: () => { },
-		getContextViewElement: () => { throw new Error('Not implemented'); },
-		layout: () => { },
+		showContextView: () => ({ close: () => {} }),
+		hideContextView: () => {},
+		getContextViewElement: () => {
+			throw new Error('Not implemented');
+		},
+		layout: () => {},
 		anchorAlignment: 0,
-		_serviceBrand: undefined,
+		_serviceBrand: undefined
 	});
 
 	registration.defineInstance(ILabelService, {
@@ -460,17 +525,16 @@ export function registerWorkbenchServices(registration: ServiceRegistration): vo
 		getWorkspaceLabel: () => '',
 		getHostLabel: () => '',
 		getSeparator: () => '/',
-		registerFormatter: () => ({ dispose: () => { } }),
-		onDidChangeFormatters: () => ({ dispose: () => { } }),
-		registerCachedFormatter: () => ({ dispose: () => { } }),
+		registerFormatter: () => ({ dispose: () => {} }),
+		onDidChangeFormatters: () => ({ dispose: () => {} }),
+		registerCachedFormatter: () => ({ dispose: () => {} }),
 		_serviceBrand: undefined,
-		getHostTooltip: () => '',
+		getHostTooltip: () => ''
 	});
 
 	registration.define(IMenuService, TestMenuService);
 	registration.define(IActionViewItemService, NullActionViewItemService);
 }
-
 
 // ============================================================================
 // Text Models
@@ -490,7 +554,6 @@ export function createTextModel(
 	const languageSelection = languageId ? languageService.createById(languageId) : null;
 	return modelService.createModel(text, languageSelection, uri);
 }
-
 
 // ============================================================================
 // Fixture Adapters
@@ -536,24 +599,25 @@ type ThemedFixtures = ReturnType<typeof defineFixtureVariants>;
  * which should be sufficient for most async setup, but timing is not guaranteed.
  */
 export function defineComponentFixture(options: ComponentFixtureOptions): ThemedFixtures {
-	const createFixture = (theme: typeof darkTheme | typeof lightTheme) => defineFixture({
-		isolation: 'none',
-		displayMode: { type: 'component' },
-		properties: [],
-		background: theme === darkTheme ? 'dark' : 'light',
-		render: (container: HTMLElement) => {
-			const disposableStore = new DisposableStore();
-			setupTheme(container, theme);
-			// Start render (may be async) - component-explorer will wait 2 rAF after this returns
-			const result = options.render({ container, disposableStore, theme });
-			return isThenable(result) ? result.then(() => disposableStore) : disposableStore;
-		},
-	});
+	const createFixture = (theme: typeof darkTheme | typeof lightTheme) =>
+		defineFixture({
+			isolation: 'none',
+			displayMode: { type: 'component' },
+			properties: [],
+			background: theme === darkTheme ? 'dark' : 'light',
+			render: (container: HTMLElement) => {
+				const disposableStore = new DisposableStore();
+				setupTheme(container, theme);
+				// Start render (may be async) - component-explorer will wait 2 rAF after this returns
+				const result = options.render({ container, disposableStore, theme });
+				return isThenable(result) ? result.then(() => disposableStore) : disposableStore;
+			}
+		});
 
 	const labels = resolveLabels(options.labels);
 	return defineFixtureVariants(labels.length > 0 ? { labels } : {}, {
 		Dark: createFixture(darkTheme),
-		Light: createFixture(lightTheme),
+		Light: createFixture(lightTheme)
 	});
 }
 
@@ -568,15 +632,24 @@ type ThemedFixtureGroupFixtures = Record<string, ThemedFixtures>;
  * Creates a nested fixture group from themed fixtures.
  * E.g., { MergeEditor: { Dark: ..., Light: ... } } becomes a nested group: MergeEditor > Dark/Light
  */
-export function defineThemedFixtureGroup(options: ThemedFixtureGroupOptions, fixtures: ThemedFixtureGroupFixtures): ReturnType<typeof defineFixtureGroup>;
+export function defineThemedFixtureGroup(
+	options: ThemedFixtureGroupOptions,
+	fixtures: ThemedFixtureGroupFixtures
+): ReturnType<typeof defineFixtureGroup>;
 export function defineThemedFixtureGroup(fixtures: ThemedFixtureGroupFixtures): ReturnType<typeof defineFixtureGroup>;
-export function defineThemedFixtureGroup(optionsOrFixtures: ThemedFixtureGroupOptions | ThemedFixtureGroupFixtures, fixtures?: ThemedFixtureGroupFixtures): ReturnType<typeof defineFixtureGroup> {
+export function defineThemedFixtureGroup(
+	optionsOrFixtures: ThemedFixtureGroupOptions | ThemedFixtureGroupFixtures,
+	fixtures?: ThemedFixtureGroupFixtures
+): ReturnType<typeof defineFixtureGroup> {
 	if (fixtures) {
 		const options = optionsOrFixtures as ThemedFixtureGroupOptions;
-		return defineFixtureGroup({
-			labels: resolveLabels(options.labels),
-			path: options.path,
-		}, fixtures as ThemedFixtureGroupFixtures);
+		return defineFixtureGroup(
+			{
+				labels: resolveLabels(options.labels),
+				path: options.path
+			},
+			fixtures as ThemedFixtureGroupFixtures
+		);
 	}
 	return defineFixtureGroup(optionsOrFixtures as ThemedFixtureGroupFixtures);
 }

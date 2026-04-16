@@ -14,16 +14,20 @@ function makeFakeFolder(name: string, uri: URI): IWorkspaceFolder {
 		name,
 		uri,
 		index: 0,
-		toResource: () => uri,
+		toResource: () => uri
 	};
 }
 
-function makePair(folder: IWorkspaceFolder, cwd?: URI | IWorkspaceFolder, isAbsolute?: boolean): WorkspaceFolderCwdPair {
+function makePair(
+	folder: IWorkspaceFolder,
+	cwd?: URI | IWorkspaceFolder,
+	isAbsolute?: boolean
+): WorkspaceFolderCwdPair {
 	return {
 		folder,
-		cwd: !cwd ? folder.uri : (cwd instanceof URI ? cwd : cwd.uri),
+		cwd: !cwd ? folder.uri : cwd instanceof URI ? cwd : cwd.uri,
 		isAbsolute: !!isAbsolute,
-		isOverridden: !!cwd && cwd.toString() !== folder.uri.toString(),
+		isOverridden: !!cwd && cwd.toString() !== folder.uri.toString()
 	};
 }
 

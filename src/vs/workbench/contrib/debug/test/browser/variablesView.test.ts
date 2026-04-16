@@ -22,7 +22,11 @@ import { MockDebugService, MockSession } from '../common/mockDebug.js';
 
 const $ = dom.$;
 
-function assertVariable(disposables: Pick<DisposableStore, 'add'>, variablesRenderer: VariablesRenderer, displayType: boolean) {
+function assertVariable(
+	disposables: Pick<DisposableStore, 'add'>,
+	variablesRenderer: VariablesRenderer,
+	displayType: boolean
+) {
 	const session = new MockSession();
 	const thread = new Thread(session, 'mockthread', 1);
 	const range = {
@@ -93,7 +97,8 @@ suite('Debug - Variable Debug View', () => {
 		expressionRenderer = instantiationService.createInstance(DebugExpressionRenderer);
 		const debugService = new MockDebugService();
 		instantiationService.stub(IHoverService, NullHoverService);
-		debugService.getViewModel = () => <IViewModel>{ focusedStackFrame: undefined, getSelectedExpression: () => undefined };
+		debugService.getViewModel = () =>
+			<IViewModel>{ focusedStackFrame: undefined, getSelectedExpression: () => undefined };
 		debugService.getViewModel().getSelectedExpression = () => undefined;
 		instantiationService.stub(IDebugService, debugService);
 	});

@@ -416,7 +416,7 @@ define({
 		withShiftAltGrIsDeadKey: false
 	},
 	Minus: {
-		value: '\'',
+		value: "'",
 		valueIsDeadKey: false,
 		withShift: '?',
 		withShiftIsDeadKey: false,

@@ -10,10 +10,16 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { isURLDomainTrusted } from '../../../../../platform/url/common/trustedDomains.js';
 
 function linkAllowedByRules(link: string, rules: string[]) {
-	assert.ok(isURLDomainTrusted(URI.parse(link), rules), `Link\n${link}\n should be allowed by rules\n${JSON.stringify(rules)}`);
+	assert.ok(
+		isURLDomainTrusted(URI.parse(link), rules),
+		`Link\n${link}\n should be allowed by rules\n${JSON.stringify(rules)}`
+	);
 }
 function linkNotAllowedByRules(link: string, rules: string[]) {
-	assert.ok(!isURLDomainTrusted(URI.parse(link), rules), `Link\n${link}\n should NOT be allowed by rules\n${JSON.stringify(rules)}`);
+	assert.ok(
+		!isURLDomainTrusted(URI.parse(link), rules),
+		`Link\n${link}\n should NOT be allowed by rules\n${JSON.stringify(rules)}`
+	);
 }
 
 suite('Link protection domain matching', () => {

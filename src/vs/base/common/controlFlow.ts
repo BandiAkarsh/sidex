@@ -6,11 +6,11 @@ import { BugIndicatingError } from './errors.js';
 
 /*
  * This file contains helper classes to manage control flow.
-*/
+ */
 
 /**
  * Prevents code from being re-entrant.
-*/
+ */
 export class ReentrancyBarrier {
 	private _isOccupied = false;
 
@@ -48,13 +48,13 @@ export class ReentrancyBarrier {
 
 	/**
 	 * Indicates if some runner occupies this barrier.
-	*/
+	 */
 	public get isOccupied() {
 		return this._isOccupied;
 	}
 
 	public makeExclusiveOrSkip<TArgs extends unknown[]>(fn: (...args: TArgs) => void): (...args: TArgs) => void {
-		return ((...args: TArgs) => {
+		return (...args: TArgs) => {
 			if (this._isOccupied) {
 				return;
 			}
@@ -64,6 +64,6 @@ export class ReentrancyBarrier {
 			} finally {
 				this._isOccupied = false;
 			}
-		});
+		};
 	}
 }

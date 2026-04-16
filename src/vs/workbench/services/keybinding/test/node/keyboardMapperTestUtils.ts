@@ -36,32 +36,42 @@ function toIResolvedKeybinding(kb: ResolvedKeybinding): IResolvedKeybinding {
 	};
 }
 
-export function assertResolveKeyboardEvent(mapper: IKeyboardMapper, keyboardEvent: IKeyboardEvent, expected: IResolvedKeybinding): void {
+export function assertResolveKeyboardEvent(
+	mapper: IKeyboardMapper,
+	keyboardEvent: IKeyboardEvent,
+	expected: IResolvedKeybinding
+): void {
 	const actual = toIResolvedKeybinding(mapper.resolveKeyboardEvent(keyboardEvent));
 	assert.deepStrictEqual(actual, expected);
 }
 
-export function assertResolveKeybinding(mapper: IKeyboardMapper, keybinding: Keybinding, expected: IResolvedKeybinding[]): void {
+export function assertResolveKeybinding(
+	mapper: IKeyboardMapper,
+	keybinding: Keybinding,
+	expected: IResolvedKeybinding[]
+): void {
 	const actual: IResolvedKeybinding[] = mapper.resolveKeybinding(keybinding).map(toIResolvedKeybinding);
 	assert.deepStrictEqual(actual, expected);
 }
 
 export function readRawMapping<T>(file: string): Promise<T> {
-	return fs.promises.readFile(FileAccess.asFileUri(`vs/workbench/services/keybinding/test/node/${file}.js`).fsPath).then((buff) => {
-		const contents = buff.toString();
-		const func = new Function('define', contents);// CodeQL [SM01632] This is used in tests and we read the files as JS to avoid slowing down TS compilation
-		let rawMappings: T | null = null;
-		func(function (value: T) {
-			rawMappings = value;
+	return fs.promises
+		.readFile(FileAccess.asFileUri(`vs/workbench/services/keybinding/test/node/${file}.js`).fsPath)
+		.then(buff => {
+			const contents = buff.toString();
+			const func = new Function('define', contents); // CodeQL [SM01632] This is used in tests and we read the files as JS to avoid slowing down TS compilation
+			let rawMappings: T | null = null;
+			func(function (value: T) {
+				rawMappings = value;
+			});
+			return rawMappings!;
 		});
-		return rawMappings!;
-	});
 }
 
 export function assertMapping(writeFileIfDifferent: boolean, mapper: IKeyboardMapper, file: string): Promise<void> {
 	const filePath = path.normalize(FileAccess.asFileUri(`vs/workbench/services/keybinding/test/node/${file}`).fsPath);
 
-	return fs.promises.readFile(filePath).then((buff) => {
+	return fs.promises.readFile(filePath).then(buff => {
 		const expected = buff.toString().replace(/\r\n/g, '\n');
 		const actual = mapper.dumpDebugInfo().replace(/\r\n/g, '\n');
 		if (actual !== expected && writeFileIfDifferent) {

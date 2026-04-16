@@ -4,8 +4,31 @@
  *--------------------------------------------------------------------------------------------*/
 
 import assert from 'assert';
-import { EditorGroupModel, IGroupEditorChangeEvent, IGroupEditorCloseEvent, IGroupEditorMoveEvent, IGroupEditorOpenEvent, ISerializedEditorGroupModel, isGroupEditorChangeEvent, isGroupEditorCloseEvent, isGroupEditorMoveEvent, isGroupEditorOpenEvent } from '../../../../common/editor/editorGroupModel.js';
-import { EditorExtensions, IEditorFactoryRegistry, IFileEditorInput, IEditorSerializer, CloseDirection, EditorsOrder, IResourceDiffEditorInput, IResourceSideBySideEditorInput, SideBySideEditor, EditorCloseContext, GroupModelChangeKind } from '../../../../common/editor.js';
+import {
+	EditorGroupModel,
+	IGroupEditorChangeEvent,
+	IGroupEditorCloseEvent,
+	IGroupEditorMoveEvent,
+	IGroupEditorOpenEvent,
+	ISerializedEditorGroupModel,
+	isGroupEditorChangeEvent,
+	isGroupEditorCloseEvent,
+	isGroupEditorMoveEvent,
+	isGroupEditorOpenEvent
+} from '../../../../common/editor/editorGroupModel.js';
+import {
+	EditorExtensions,
+	IEditorFactoryRegistry,
+	IFileEditorInput,
+	IEditorSerializer,
+	CloseDirection,
+	EditorsOrder,
+	IResourceDiffEditorInput,
+	IResourceSideBySideEditorInput,
+	SideBySideEditor,
+	EditorCloseContext,
+	GroupModelChangeKind
+} from '../../../../common/editor.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { TestLifecycleService, workbenchInstantiationService } from '../../workbenchTestServices.js';
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
@@ -27,7 +50,6 @@ import { isEqual } from '../../../../../base/common/resources.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('EditorGroupModel', () => {
-
 	let testInstService: TestInstantiationService | undefined;
 
 	suiteTeardown(() => {
@@ -46,7 +68,9 @@ suite('EditorGroupModel', () => {
 		inst.stub(ITelemetryService, NullTelemetryService);
 
 		const config = new TestConfigurationService();
-		config.setUserConfiguration('workbench', { editor: { openPositioning: 'right', focusRecentEditorAfterClose: true } });
+		config.setUserConfiguration('workbench', {
+			editor: { openPositioning: 'right', focusRecentEditorAfterClose: true }
+		});
 		inst.stub(IConfigurationService, config);
 
 		return inst;
@@ -55,11 +79,13 @@ suite('EditorGroupModel', () => {
 	function createEditorGroupModel(serialized?: ISerializedEditorGroupModel): EditorGroupModel {
 		const group = disposables.add(inst().createInstance(EditorGroupModel, serialized));
 
-		disposables.add(toDisposable(() => {
-			for (const editor of group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)) {
-				group.closeEditor(editor);
-			}
-		}));
+		disposables.add(
+			toDisposable(() => {
+				for (const editor of group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)) {
+					group.closeEditor(editor);
+				}
+			})
+		);
 
 		return group;
 	}
@@ -92,7 +118,10 @@ suite('EditorGroupModel', () => {
 
 		// Both directions
 		else {
-			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).filter(editor => !editor.matches(except)).forEach(editor => group.closeEditor(editor));
+			group
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)
+				.filter(editor => !editor.matches(except))
+				.forEach(editor => group.closeEditor(editor));
 		}
 	}
 
@@ -131,80 +160,85 @@ suite('EditorGroupModel', () => {
 			disposed: []
 		};
 
-		disposables.add(group.onDidModelChange(e => {
-			if (e.kind === GroupModelChangeKind.GROUP_LOCKED) {
-				groupEvents.locked.push(group.id);
-				return;
-			} else if (e.kind === GroupModelChangeKind.GROUP_ACTIVE) {
-				groupEvents.active.push(group.id);
-				return;
-			} else if (e.kind === GroupModelChangeKind.GROUP_INDEX) {
-				groupEvents.index.push(group.id);
-				return;
-			} else if (e.kind === GroupModelChangeKind.GROUP_LABEL) {
-				groupEvents.label.push(group.id);
-				return;
-			}
-			if (!e.editor) {
-				return;
-			}
-			switch (e.kind) {
-				case GroupModelChangeKind.EDITOR_OPEN:
-					if (isGroupEditorOpenEvent(e)) {
-						groupEvents.opened.push(e);
-					}
-					break;
-				case GroupModelChangeKind.EDITOR_CLOSE:
-					if (isGroupEditorCloseEvent(e)) {
-						groupEvents.closed.push(e);
-					}
-					break;
-				case GroupModelChangeKind.EDITOR_ACTIVE:
-					if (isGroupEditorChangeEvent(e)) {
-						groupEvents.activated.push(e);
-					}
-					break;
-				case GroupModelChangeKind.EDITOR_PIN:
-					if (isGroupEditorChangeEvent(e)) {
-						group.isPinned(e.editor) ? groupEvents.pinned.push(e) : groupEvents.unpinned.push(e);
-					}
-					break;
-				case GroupModelChangeKind.EDITOR_STICKY:
-					if (isGroupEditorChangeEvent(e)) {
-						group.isSticky(e.editor) ? groupEvents.sticky.push(e) : groupEvents.unsticky.push(e);
-					}
-					break;
-				case GroupModelChangeKind.EDITOR_TRANSIENT:
-					if (isGroupEditorChangeEvent(e)) {
-						groupEvents.transient.push(e);
-					}
-					break;
-				case GroupModelChangeKind.EDITOR_MOVE:
-					if (isGroupEditorMoveEvent(e)) {
-						groupEvents.moved.push(e);
-					}
-					break;
-				case GroupModelChangeKind.EDITOR_WILL_DISPOSE:
-					if (isGroupEditorChangeEvent(e)) {
-						groupEvents.disposed.push(e);
-					}
-					break;
-			}
-		}));
+		disposables.add(
+			group.onDidModelChange(e => {
+				if (e.kind === GroupModelChangeKind.GROUP_LOCKED) {
+					groupEvents.locked.push(group.id);
+					return;
+				} else if (e.kind === GroupModelChangeKind.GROUP_ACTIVE) {
+					groupEvents.active.push(group.id);
+					return;
+				} else if (e.kind === GroupModelChangeKind.GROUP_INDEX) {
+					groupEvents.index.push(group.id);
+					return;
+				} else if (e.kind === GroupModelChangeKind.GROUP_LABEL) {
+					groupEvents.label.push(group.id);
+					return;
+				}
+				if (!e.editor) {
+					return;
+				}
+				switch (e.kind) {
+					case GroupModelChangeKind.EDITOR_OPEN:
+						if (isGroupEditorOpenEvent(e)) {
+							groupEvents.opened.push(e);
+						}
+						break;
+					case GroupModelChangeKind.EDITOR_CLOSE:
+						if (isGroupEditorCloseEvent(e)) {
+							groupEvents.closed.push(e);
+						}
+						break;
+					case GroupModelChangeKind.EDITOR_ACTIVE:
+						if (isGroupEditorChangeEvent(e)) {
+							groupEvents.activated.push(e);
+						}
+						break;
+					case GroupModelChangeKind.EDITOR_PIN:
+						if (isGroupEditorChangeEvent(e)) {
+							group.isPinned(e.editor) ? groupEvents.pinned.push(e) : groupEvents.unpinned.push(e);
+						}
+						break;
+					case GroupModelChangeKind.EDITOR_STICKY:
+						if (isGroupEditorChangeEvent(e)) {
+							group.isSticky(e.editor) ? groupEvents.sticky.push(e) : groupEvents.unsticky.push(e);
+						}
+						break;
+					case GroupModelChangeKind.EDITOR_TRANSIENT:
+						if (isGroupEditorChangeEvent(e)) {
+							groupEvents.transient.push(e);
+						}
+						break;
+					case GroupModelChangeKind.EDITOR_MOVE:
+						if (isGroupEditorMoveEvent(e)) {
+							groupEvents.moved.push(e);
+						}
+						break;
+					case GroupModelChangeKind.EDITOR_WILL_DISPOSE:
+						if (isGroupEditorChangeEvent(e)) {
+							groupEvents.disposed.push(e);
+						}
+						break;
+				}
+			})
+		);
 
 		return groupEvents;
 	}
 
 	let index = 0;
 	class TestEditorInput extends EditorInput {
-
 		readonly resource = undefined;
 
 		constructor(public id: string) {
 			super();
 		}
-		override get typeId() { return 'testEditorInputForGroups'; }
-		override async resolve(): Promise<IDisposable> { return null!; }
+		override get typeId() {
+			return 'testEditorInputForGroups';
+		}
+		override async resolve(): Promise<IDisposable> {
+			return null!;
+		}
 
 		override matches(other: TestEditorInput): boolean {
 			return other && this.id === other.id && other instanceof TestEditorInput;
@@ -220,14 +254,17 @@ suite('EditorGroupModel', () => {
 	}
 
 	class NonSerializableTestEditorInput extends EditorInput {
-
 		readonly resource = undefined;
 
 		constructor(public id: string) {
 			super();
 		}
-		override get typeId() { return 'testEditorInputForGroups-nonSerializable'; }
-		override async resolve(): Promise<IDisposable | null> { return null; }
+		override get typeId() {
+			return 'testEditorInputForGroups-nonSerializable';
+		}
+		override async resolve(): Promise<IDisposable | null> {
+			return null;
+		}
 
 		override matches(other: NonSerializableTestEditorInput): boolean {
 			return other && this.id === other.id && other instanceof NonSerializableTestEditorInput;
@@ -235,28 +272,40 @@ suite('EditorGroupModel', () => {
 	}
 
 	class TestFileEditorInput extends EditorInput implements IFileEditorInput {
-
 		readonly preferredResource;
 
-		constructor(public id: string, public resource: URI) {
+		constructor(
+			public id: string,
+			public resource: URI
+		) {
 			super();
 
 			this.preferredResource = this.resource;
 		}
-		override get typeId() { return 'testFileEditorInputForGroups'; }
-		override get editorId() { return this.id; }
-		override async resolve(): Promise<IDisposable | null> { return null; }
-		setPreferredName(name: string): void { }
-		setPreferredDescription(description: string): void { }
-		setPreferredResource(resource: URI): void { }
-		async setEncoding(encoding: string) { }
-		getEncoding() { return undefined; }
-		setPreferredEncoding(encoding: string) { }
-		setForceOpenAsBinary(): void { }
-		setPreferredContents(contents: string): void { }
-		setLanguageId(languageId: string) { }
-		setPreferredLanguageId(languageId: string) { }
-		isResolved(): boolean { return false; }
+		override get typeId() {
+			return 'testFileEditorInputForGroups';
+		}
+		override get editorId() {
+			return this.id;
+		}
+		override async resolve(): Promise<IDisposable | null> {
+			return null;
+		}
+		setPreferredName(name: string): void {}
+		setPreferredDescription(description: string): void {}
+		setPreferredResource(resource: URI): void {}
+		async setEncoding(encoding: string) {}
+		getEncoding() {
+			return undefined;
+		}
+		setPreferredEncoding(encoding: string) {}
+		setForceOpenAsBinary(): void {}
+		setPreferredContents(contents: string): void {}
+		setLanguageId(languageId: string) {}
+		setPreferredLanguageId(languageId: string) {}
+		isResolved(): boolean {
+			return false;
+		}
 
 		override matches(other: TestFileEditorInput): boolean {
 			if (super.matches(other)) {
@@ -276,7 +325,9 @@ suite('EditorGroupModel', () => {
 			return disposables.add(new TestFileEditorInput(id, resource));
 		}
 
-		return nonSerializable ? disposables.add(new NonSerializableTestEditorInput(id)) : disposables.add(new TestEditorInput(id));
+		return nonSerializable
+			? disposables.add(new NonSerializableTestEditorInput(id))
+			: disposables.add(new TestEditorInput(id));
 	}
 
 	interface ISerializedTestInput {
@@ -284,7 +335,6 @@ suite('EditorGroupModel', () => {
 	}
 
 	class TestEditorInputSerializer implements IEditorSerializer {
-
 		static disableSerialize = false;
 		static disableDeserialize = false;
 
@@ -322,7 +372,12 @@ suite('EditorGroupModel', () => {
 		TestEditorInputSerializer.disableSerialize = false;
 		TestEditorInputSerializer.disableDeserialize = false;
 
-		disposables.add(Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer('testEditorInputForGroups', TestEditorInputSerializer));
+		disposables.add(
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer(
+				'testEditorInputForGroups',
+				TestEditorInputSerializer
+			)
+		);
 	});
 
 	teardown(() => {
@@ -358,7 +413,7 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(clone.isLocked, false); // locking does not clone over
 
 		let didEditorLabelChange = false;
-		const toDispose = clone.onDidModelChange((e) => {
+		const toDispose = clone.onDidModelChange(e => {
 			if (e.kind === GroupModelChangeKind.EDITOR_LABEL) {
 				didEditorLabelChange = true;
 			}
@@ -403,8 +458,20 @@ suite('EditorGroupModel', () => {
 		const input1 = disposables.add(new TestFileEditorInput('testInput', URI.file('fake1')));
 		const input2 = disposables.add(new TestFileEditorInput('testInput', URI.file('fake2')));
 
-		const sideBySideInputSame = instantiationService.createInstance(SideBySideEditorInput, undefined, undefined, input1, input1);
-		const sideBySideInputDifferent = instantiationService.createInstance(SideBySideEditorInput, undefined, undefined, input1, input2);
+		const sideBySideInputSame = instantiationService.createInstance(
+			SideBySideEditorInput,
+			undefined,
+			undefined,
+			input1,
+			input1
+		);
+		const sideBySideInputDifferent = instantiationService.createInstance(
+			SideBySideEditorInput,
+			undefined,
+			undefined,
+			input1,
+			input2
+		);
 
 		let res = group.openEditor(sideBySideInputSame, { pinned: true, active: true });
 		assert.strictEqual(res.editor, sideBySideInputSame);
@@ -430,7 +497,13 @@ suite('EditorGroupModel', () => {
 		const group = createEditorGroupModel();
 		const input1 = disposables.add(new TestFileEditorInput('testInput', URI.file('fake1')));
 
-		const sideBySideInput = instantiationService.createInstance(SideBySideEditorInput, undefined, undefined, input1, input1);
+		const sideBySideInput = instantiationService.createInstance(
+			SideBySideEditorInput,
+			undefined,
+			undefined,
+			input1,
+			input1
+		);
 
 		group.openEditor(sideBySideInput, { pinned: true, active: true });
 		assert.strictEqual(group.indexOf(sideBySideInput), 0);
@@ -454,8 +527,22 @@ suite('EditorGroupModel', () => {
 		const untypedInput1 = { resource: URI.file('/input1'), options: { override: 'input1' } };
 		const untypedInput2 = { resource: URI.file('/input2'), options: { override: 'input2' } };
 
-		const diffInput1 = instantiationService.createInstance(DiffEditorInput, 'name', 'description', input1, input2, undefined);
-		const diffInput2 = instantiationService.createInstance(DiffEditorInput, 'name', 'description', input2, input1, undefined);
+		const diffInput1 = instantiationService.createInstance(
+			DiffEditorInput,
+			'name',
+			'description',
+			input1,
+			input2,
+			undefined
+		);
+		const diffInput2 = instantiationService.createInstance(
+			DiffEditorInput,
+			'name',
+			'description',
+			input2,
+			input1,
+			undefined
+		);
 
 		const untypedDiffInput1: IResourceDiffEditorInput = {
 			original: untypedInput1,
@@ -466,8 +553,20 @@ suite('EditorGroupModel', () => {
 			modified: untypedInput1
 		};
 
-		const sideBySideInputSame = instantiationService.createInstance(SideBySideEditorInput, 'name', undefined, input1, input1);
-		const sideBySideInputDifferent = instantiationService.createInstance(SideBySideEditorInput, 'name', undefined, input1, input2);
+		const sideBySideInputSame = instantiationService.createInstance(
+			SideBySideEditorInput,
+			'name',
+			undefined,
+			input1,
+			input1
+		);
+		const sideBySideInputDifferent = instantiationService.createInstance(
+			SideBySideEditorInput,
+			'name',
+			undefined,
+			input1,
+			input2
+		);
 
 		const untypedSideBySideInputSame: IResourceSideBySideEditorInput = {
 			primary: untypedInput1,
@@ -553,8 +652,14 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(group.contains(untypedSideBySideInputSame), true);
 		assert.strictEqual(group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.ANY }), true);
 		assert.strictEqual(group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.BOTH }), true);
-		assert.strictEqual(group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.ANY, strictEquals: true }), false);
-		assert.strictEqual(group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.BOTH, strictEquals: true }), false);
+		assert.strictEqual(
+			group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.ANY, strictEquals: true }),
+			false
+		);
+		assert.strictEqual(
+			group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.BOTH, strictEquals: true }),
+			false
+		);
 
 		group.closeEditor(sideBySideInputSame);
 
@@ -572,11 +677,37 @@ suite('EditorGroupModel', () => {
 		const input1 = input();
 		const input2 = input();
 
-		const diffInput1 = instantiationService.createInstance(DiffEditorInput, 'name', 'description', input1, input2, undefined);
-		const diffInput2 = instantiationService.createInstance(DiffEditorInput, 'name', 'description', input2, input1, undefined);
+		const diffInput1 = instantiationService.createInstance(
+			DiffEditorInput,
+			'name',
+			'description',
+			input1,
+			input2,
+			undefined
+		);
+		const diffInput2 = instantiationService.createInstance(
+			DiffEditorInput,
+			'name',
+			'description',
+			input2,
+			input1,
+			undefined
+		);
 
-		const sideBySideInputSame = instantiationService.createInstance(SideBySideEditorInput, 'name', undefined, input1, input1);
-		const sideBySideInputDifferent = instantiationService.createInstance(SideBySideEditorInput, 'name', undefined, input1, input2);
+		const sideBySideInputSame = instantiationService.createInstance(
+			SideBySideEditorInput,
+			'name',
+			undefined,
+			input1,
+			input1
+		);
+		const sideBySideInputDifferent = instantiationService.createInstance(
+			SideBySideEditorInput,
+			'name',
+			undefined,
+			input1,
+			input2
+		);
 
 		group.openEditor(input1, { pinned: true, active: true });
 
@@ -678,7 +809,9 @@ suite('EditorGroupModel', () => {
 	});
 
 	test('group serialization', function () {
-		inst().invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		inst().invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const group = createEditorGroupModel();
 
 		const input1 = input();
@@ -722,7 +855,9 @@ suite('EditorGroupModel', () => {
 	});
 
 	test('group serialization (sticky editor)', function () {
-		inst().invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		inst().invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 		const group = createEditorGroupModel();
 
 		const input1 = input();
@@ -1699,7 +1834,9 @@ suite('EditorGroupModel', () => {
 		config.setUserConfiguration('workbench', { editor: { openPositioning: 'right' } });
 		inst.stub(IConfigurationService, config);
 
-		inst.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		inst.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 
 		let group = createEditorGroupModel();
 
@@ -1734,7 +1871,9 @@ suite('EditorGroupModel', () => {
 		config.setUserConfiguration('workbench', { editor: { openPositioning: 'right' } });
 		inst.stub(IConfigurationService, config);
 
-		inst.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		inst.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 
 		let group1 = createEditorGroupModel();
 
@@ -1805,7 +1944,9 @@ suite('EditorGroupModel', () => {
 		config.setUserConfiguration('workbench', { editor: { openPositioning: 'right' } });
 		inst.stub(IConfigurationService, config);
 
-		inst.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		inst.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 
 		let group = createEditorGroupModel();
 
@@ -1850,7 +1991,9 @@ suite('EditorGroupModel', () => {
 		config.setUserConfiguration('workbench', { editor: { openPositioning: 'right' } });
 		inst.stub(IConfigurationService, config);
 
-		inst.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		inst.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 
 		let group = createEditorGroupModel();
 
@@ -1886,7 +2029,9 @@ suite('EditorGroupModel', () => {
 		config.setUserConfiguration('workbench', { editor: { openPositioning: 'right' } });
 		inst.stub(IConfigurationService, config);
 
-		inst.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		inst.invokeFunction(accessor =>
+			Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor)
+		);
 
 		let group1 = createEditorGroupModel();
 		let group2 = createEditorGroupModel();
@@ -1970,32 +2115,40 @@ suite('EditorGroupModel', () => {
 		group2.openEditor(input2, { pinned: true, active: true });
 
 		let dirty1Counter = 0;
-		disposables.add(group1.onDidModelChange((e) => {
-			if (e.kind === GroupModelChangeKind.EDITOR_DIRTY) {
-				dirty1Counter++;
-			}
-		}));
+		disposables.add(
+			group1.onDidModelChange(e => {
+				if (e.kind === GroupModelChangeKind.EDITOR_DIRTY) {
+					dirty1Counter++;
+				}
+			})
+		);
 
 		let dirty2Counter = 0;
-		disposables.add(group2.onDidModelChange((e) => {
-			if (e.kind === GroupModelChangeKind.EDITOR_DIRTY) {
-				dirty2Counter++;
-			}
-		}));
+		disposables.add(
+			group2.onDidModelChange(e => {
+				if (e.kind === GroupModelChangeKind.EDITOR_DIRTY) {
+					dirty2Counter++;
+				}
+			})
+		);
 
 		let label1ChangeCounter = 0;
-		disposables.add(group1.onDidModelChange((e) => {
-			if (e.kind === GroupModelChangeKind.EDITOR_LABEL) {
-				label1ChangeCounter++;
-			}
-		}));
+		disposables.add(
+			group1.onDidModelChange(e => {
+				if (e.kind === GroupModelChangeKind.EDITOR_LABEL) {
+					label1ChangeCounter++;
+				}
+			})
+		);
 
 		let label2ChangeCounter = 0;
-		disposables.add(group2.onDidModelChange((e) => {
-			if (e.kind === GroupModelChangeKind.EDITOR_LABEL) {
-				label2ChangeCounter++;
-			}
-		}));
+		disposables.add(
+			group2.onDidModelChange(e => {
+				if (e.kind === GroupModelChangeKind.EDITOR_LABEL) {
+					label2ChangeCounter++;
+				}
+			})
+		);
 
 		(<TestEditorInput>input1).setDirty();
 		(<TestEditorInput>input1).setLabel();

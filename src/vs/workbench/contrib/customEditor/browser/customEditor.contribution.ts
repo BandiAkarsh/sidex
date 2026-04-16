@@ -17,17 +17,18 @@ import { CustomEditorService } from './customEditors.js';
 
 registerSingleton(ICustomEditorService, CustomEditorService, InstantiationType.Delayed);
 
-Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane)
-	.registerEditorPane(
-		EditorPaneDescriptor.create(
-			WebviewEditor,
-			WebviewEditor.ID,
-			'Webview Editor',
-		), [
-		new SyncDescriptor(CustomEditorInput)
-	]);
+Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(
+	EditorPaneDescriptor.create(WebviewEditor, WebviewEditor.ID, 'Webview Editor'),
+	[new SyncDescriptor(CustomEditorInput)]
+);
 
-Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory)
-	.registerEditorSerializer(CustomEditorInputSerializer.ID, CustomEditorInputSerializer);
+Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer(
+	CustomEditorInputSerializer.ID,
+	CustomEditorInputSerializer
+);
 
-registerWorkbenchContribution2(ComplexCustomWorkingCopyEditorHandler.ID, ComplexCustomWorkingCopyEditorHandler, WorkbenchPhase.BlockStartup);
+registerWorkbenchContribution2(
+	ComplexCustomWorkingCopyEditorHandler.ID,
+	ComplexCustomWorkingCopyEditorHandler,
+	WorkbenchPhase.BlockStartup
+);

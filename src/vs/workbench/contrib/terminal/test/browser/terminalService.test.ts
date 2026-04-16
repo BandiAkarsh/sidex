@@ -35,9 +35,12 @@ suite('Workbench - TerminalService', () => {
 			}
 		});
 
-		const instantiationService = workbenchInstantiationService({
-			configurationService: () => configurationService,
-		}, store);
+		const instantiationService = workbenchInstantiationService(
+			{
+				configurationService: () => configurationService
+			},
+			store
+		);
 		instantiationService.stub(IDialogService, dialogService);
 		instantiationService.stub(ITerminalInstanceService, 'getBackend', undefined);
 		instantiationService.stub(ITerminalInstanceService, 'getRegisteredBackends', []);
@@ -161,7 +164,10 @@ suite('Workbench - TerminalService', () => {
 	});
 });
 
-async function setConfirmOnKill(configurationService: TestConfigurationService, value: 'never' | 'always' | 'panel' | 'editor') {
+async function setConfirmOnKill(
+	configurationService: TestConfigurationService,
+	value: 'never' | 'always' | 'panel' | 'editor'
+) {
 	await configurationService.setUserConfiguration(TERMINAL_CONFIG_SECTION, { confirmOnKill: value });
 	configurationService.onDidChangeConfigurationEmitter.fire({
 		affectsConfiguration: () => true,

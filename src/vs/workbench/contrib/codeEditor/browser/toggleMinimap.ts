@@ -11,15 +11,14 @@ import { Categories } from '../../../../platform/action/common/actionCommonCateg
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 
 export class ToggleMinimapAction extends Action2 {
-
 	static readonly ID = 'editor.action.toggleMinimap';
 
 	constructor() {
 		super({
 			id: ToggleMinimapAction.ID,
 			title: {
-				...localize2('toggleMinimap', "Toggle Minimap"),
-				mnemonicTitle: localize({ key: 'miMinimap', comment: ['&& denotes a mnemonic'] }, "&&Minimap"),
+				...localize2('toggleMinimap', 'Toggle Minimap'),
+				mnemonicTitle: localize({ key: 'miMinimap', comment: ['&& denotes a mnemonic'] }, '&&Minimap')
 			},
 			category: Categories.View,
 			f1: true,

@@ -17,11 +17,13 @@ export class ToggleCellToolbarPositionAction extends Action2 {
 		super({
 			id: TOGGLE_CELL_TOOLBAR_POSITION,
 			title: localize2('notebook.toggleCellToolbarPosition', 'Toggle Cell Toolbar Position'),
-			menu: [{
-				id: MenuId.NotebookCellTitle,
-				group: 'View',
-				order: 1
-			}],
+			menu: [
+				{
+					id: MenuId.NotebookCellTitle,
+					group: 'View',
+					order: 1
+				}
+			],
 			category: NOTEBOOK_ACTIONS_CATEGORY,
 			f1: false
 		});
@@ -33,7 +35,9 @@ export class ToggleCellToolbarPositionAction extends Action2 {
 			// from toolbar
 			const viewType = editor.textModel.viewType;
 			const configurationService = accessor.get(IConfigurationService);
-			const toolbarPosition = configurationService.getValue<string | { [key: string]: string }>(NotebookSetting.cellToolbarLocation);
+			const toolbarPosition = configurationService.getValue<string | { [key: string]: string }>(
+				NotebookSetting.cellToolbarLocation
+			);
 			const newConfig = this.togglePosition(viewType, toolbarPosition);
 			await configurationService.updateValue(NotebookSetting.cellToolbarLocation, newConfig);
 		}
@@ -53,7 +57,7 @@ export class ToggleCellToolbarPositionAction extends Action2 {
 			} else {
 				// invalid position
 				const config: { [key: string]: string } = {
-					default: 'right',
+					default: 'right'
 				};
 				config[viewType] = 'left';
 				return config;
@@ -67,8 +71,6 @@ export class ToggleCellToolbarPositionAction extends Action2 {
 			newConfig[viewType] = newViewValue;
 			return newConfig;
 		}
-
 	}
 }
 registerAction2(ToggleCellToolbarPositionAction);
-

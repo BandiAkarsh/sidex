@@ -13,7 +13,13 @@ import { IResolvedTextEditorModel, ITextModelService } from '../../../../editor/
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { IFileDialogService } from '../../../../platform/dialogs/common/dialogs.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
-import { EditorInputCapabilities, GroupIdentifier, IRevertOptions, ISaveOptions, IUntypedEditorInput } from '../../../common/editor.js';
+import {
+	EditorInputCapabilities,
+	GroupIdentifier,
+	IRevertOptions,
+	ISaveOptions,
+	IUntypedEditorInput
+} from '../../../common/editor.js';
 import { EditorInput } from '../../../common/editor/editorInput.js';
 import { IInteractiveDocumentService } from './interactiveDocumentService.js';
 import { IInteractiveHistoryService } from './interactiveHistoryService.js';
@@ -22,7 +28,13 @@ import { ICompositeNotebookEditorInput, NotebookEditorInput } from '../../notebo
 import { INotebookService } from '../../notebook/common/notebookService.js';
 
 export class InteractiveEditorInput extends EditorInput implements ICompositeNotebookEditorInput {
-	static create(instantiationService: IInstantiationService, resource: URI, inputResource: URI, title?: string, language?: string) {
+	static create(
+		instantiationService: IInstantiationService,
+		resource: URI,
+		inputResource: URI,
+		title?: string,
+		language?: string
+	) {
 		return instantiationService.createInstance(InteractiveEditorInput, resource, inputResource, title, language);
 	}
 
@@ -84,7 +96,6 @@ export class InteractiveEditorInput extends EditorInput implements ICompositeNot
 	private _interactiveDocumentService: IInteractiveDocumentService;
 	private _historyService: IInteractiveHistoryService;
 
-
 	constructor(
 		resource: URI,
 		inputResource: URI,
@@ -103,7 +114,10 @@ export class InteractiveEditorInput extends EditorInput implements ICompositeNot
 		this.isScratchpad = configurationService.getValue<boolean>(NotebookSetting.InteractiveWindowPromptToSave) !== true;
 		this._notebookEditorInput = input;
 		this._register(this._notebookEditorInput);
-		this.name = title ?? InteractiveEditorInput.windowNames[resource.path] ?? paths.basename(resource.path, paths.extname(resource.path));
+		this.name =
+			title ??
+			InteractiveEditorInput.windowNames[resource.path] ??
+			paths.basename(resource.path, paths.extname(resource.path));
 		this._initLanguage = languageId;
 		this._resource = resource;
 		this._inputResource = inputResource;
@@ -119,11 +133,13 @@ export class InteractiveEditorInput extends EditorInput implements ICompositeNot
 
 	private _registerListeners(): void {
 		const oncePrimaryDisposed = Event.once(this.primary.onWillDispose);
-		this._register(oncePrimaryDisposed(() => {
-			if (!this.isDisposed()) {
-				this.dispose();
-			}
-		}));
+		this._register(
+			oncePrimaryDisposed(() => {
+				if (!this.isDisposed()) {
+					this.dispose();
+				}
+			})
+		);
 
 		// Re-emit some events from the primary side to the outside
 		this._register(this.primary.onDidChangeDirty(() => this._onDidChangeDirty.fire()));
@@ -136,9 +152,7 @@ export class InteractiveEditorInput extends EditorInput implements ICompositeNot
 	override get capabilities(): EditorInputCapabilities {
 		const scratchPad = this.isScratchpad ? EditorInputCapabilities.Scratchpad : 0;
 
-		return EditorInputCapabilities.Untitled
-			| EditorInputCapabilities.Readonly
-			| scratchPad;
+		return EditorInputCapabilities.Untitled | EditorInputCapabilities.Readonly | scratchPad;
 	}
 
 	private async _resolveEditorModel() {
@@ -175,9 +189,11 @@ export class InteractiveEditorInput extends EditorInput implements ICompositeNot
 		return this._inputModelRef.object.textEditorModel;
 	}
 
-	override async save(group: GroupIdentifier, options?: ISaveOptions): Promise<EditorInput | IUntypedEditorInput | undefined> {
+	override async save(
+		group: GroupIdentifier,
+		options?: ISaveOptions
+	): Promise<EditorInput | IUntypedEditorInput | undefined> {
 		if (this._editorModelReference) {
-
 			if (this.hasCapability(EditorInputCapabilities.Untitled)) {
 				return this.saveAs(group, options);
 			} else {

@@ -47,16 +47,21 @@ export abstract class LanguagePackBaseService extends Disposable implements ILan
 
 		let result;
 		try {
-			result = await this.extensionGalleryService.query({
-				text: 'category:"language packs"',
-				pageSize: 20
-			}, timeout.token);
+			result = await this.extensionGalleryService.query(
+				{
+					text: 'category:"language packs"',
+					pageSize: 20
+				},
+				timeout.token
+			);
 		} catch (_) {
 			// This method is best effort. So, we ignore any errors.
 			return [];
 		}
 
-		const languagePackExtensions = result.firstPage.filter(e => e.properties.localizedLanguages?.length && e.tags.some(t => t.startsWith('lp-')));
+		const languagePackExtensions = result.firstPage.filter(
+			e => e.properties.localizedLanguages?.length && e.tags.some(t => t.startsWith('lp-'))
+		);
 		const allFromMarketplace: ILanguagePackItem[] = languagePackExtensions.map(lp => {
 			const languageName = lp.properties.localizedLanguages?.[0];
 			const locale = getLocale(lp)!;
@@ -73,7 +78,11 @@ export abstract class LanguagePackBaseService extends Disposable implements ILan
 		return allFromMarketplace;
 	}
 
-	protected createQuickPickItem(locale: string, languageName?: string, languagePack?: IGalleryExtension): IQuickPickItem {
+	protected createQuickPickItem(
+		locale: string,
+		languageName?: string,
+		languagePack?: IGalleryExtension
+	): IQuickPickItem {
 		const label = languageName ?? locale;
 		let description: string | undefined;
 		if (label !== locale) {
@@ -82,7 +91,7 @@ export abstract class LanguagePackBaseService extends Disposable implements ILan
 
 		if (locale.toLowerCase() === language.toLowerCase()) {
 			description ??= '';
-			description += localize('currentDisplayLanguage', " (Current)");
+			description += localize('currentDisplayLanguage', ' (Current)');
 		}
 
 		if (languagePack?.installCount) {

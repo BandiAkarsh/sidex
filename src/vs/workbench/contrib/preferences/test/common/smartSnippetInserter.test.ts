@@ -10,8 +10,10 @@ import { Position } from '../../../../../editor/common/core/position.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
 suite('SmartSnippetInserter', () => {
-
-	function testSmartSnippetInserter(text: string[], runner: (assert: (desiredPos: Position, pos: Position, prepend: string, append: string) => void) => void): void {
+	function testSmartSnippetInserter(
+		text: string[],
+		runner: (assert: (desiredPos: Position, pos: Position, prepend: string, append: string) => void) => void
+	): void {
 		const model = createTextModel(text.join('\n'));
 		runner((desiredPos, pos, prepend, append) => {
 			const actual = SmartSnippetInserter.insertSnippet(model, desiredPos);
@@ -26,29 +28,21 @@ suite('SmartSnippetInserter', () => {
 	}
 
 	test('empty text', () => {
-		testSmartSnippetInserter([
-		], (assert) => {
+		testSmartSnippetInserter([], assert => {
 			assert(new Position(1, 1), new Position(1, 1), '\n[', ']');
 		});
 
-		testSmartSnippetInserter([
-			' '
-		], (assert) => {
+		testSmartSnippetInserter([' '], assert => {
 			assert(new Position(1, 1), new Position(1, 2), '\n[', ']');
 			assert(new Position(1, 2), new Position(1, 2), '\n[', ']');
 		});
 
-		testSmartSnippetInserter([
-			'// just some text'
-		], (assert) => {
+		testSmartSnippetInserter(['// just some text'], assert => {
 			assert(new Position(1, 1), new Position(1, 18), '\n[', ']');
 			assert(new Position(1, 18), new Position(1, 18), '\n[', ']');
 		});
 
-		testSmartSnippetInserter([
-			'// just some text',
-			''
-		], (assert) => {
+		testSmartSnippetInserter(['// just some text', ''], assert => {
 			assert(new Position(1, 1), new Position(2, 1), '\n[', ']');
 			assert(new Position(1, 18), new Position(2, 1), '\n[', ']');
 			assert(new Position(2, 1), new Position(2, 1), '\n[', ']');
@@ -56,10 +50,7 @@ suite('SmartSnippetInserter', () => {
 	});
 
 	test('empty array 1', () => {
-		testSmartSnippetInserter([
-			'// just some text',
-			'[]'
-		], (assert) => {
+		testSmartSnippetInserter(['// just some text', '[]'], assert => {
 			assert(new Position(1, 1), new Position(2, 2), '', '');
 			assert(new Position(2, 1), new Position(2, 2), '', '');
 			assert(new Position(2, 2), new Position(2, 2), '', '');
@@ -68,11 +59,7 @@ suite('SmartSnippetInserter', () => {
 	});
 
 	test('empty array 2', () => {
-		testSmartSnippetInserter([
-			'// just some text',
-			'[',
-			']'
-		], (assert) => {
+		testSmartSnippetInserter(['// just some text', '[', ']'], assert => {
 			assert(new Position(1, 1), new Position(2, 2), '', '');
 			assert(new Position(2, 1), new Position(2, 2), '', '');
 			assert(new Position(2, 2), new Position(2, 2), '', '');
@@ -82,12 +69,7 @@ suite('SmartSnippetInserter', () => {
 	});
 
 	test('empty array 3', () => {
-		testSmartSnippetInserter([
-			'// just some text',
-			'[',
-			'// just some text',
-			']'
-		], (assert) => {
+		testSmartSnippetInserter(['// just some text', '[', '// just some text', ']'], assert => {
 			assert(new Position(1, 1), new Position(2, 2), '', '');
 			assert(new Position(2, 1), new Position(2, 2), '', '');
 			assert(new Position(2, 2), new Position(2, 2), '', '');
@@ -99,12 +81,7 @@ suite('SmartSnippetInserter', () => {
 	});
 
 	test('one element array 1', () => {
-		testSmartSnippetInserter([
-			'// just some text',
-			'[',
-			'{}',
-			']'
-		], (assert) => {
+		testSmartSnippetInserter(['// just some text', '[', '{}', ']'], assert => {
 			assert(new Position(1, 1), new Position(2, 2), '', ',');
 			assert(new Position(2, 1), new Position(2, 2), '', ',');
 			assert(new Position(2, 2), new Position(2, 2), '', ',');
@@ -117,13 +94,7 @@ suite('SmartSnippetInserter', () => {
 	});
 
 	test('two elements array 1', () => {
-		testSmartSnippetInserter([
-			'// just some text',
-			'[',
-			'{},',
-			'{}',
-			']'
-		], (assert) => {
+		testSmartSnippetInserter(['// just some text', '[', '{},', '{}', ']'], assert => {
 			assert(new Position(1, 1), new Position(2, 2), '', ',');
 			assert(new Position(2, 1), new Position(2, 2), '', ',');
 			assert(new Position(2, 2), new Position(2, 2), '', ',');
@@ -140,12 +111,7 @@ suite('SmartSnippetInserter', () => {
 	});
 
 	test('two elements array 2', () => {
-		testSmartSnippetInserter([
-			'// just some text',
-			'[',
-			'{},{}',
-			']'
-		], (assert) => {
+		testSmartSnippetInserter(['// just some text', '[', '{},{}', ']'], assert => {
 			assert(new Position(1, 1), new Position(2, 2), '', ',');
 			assert(new Position(2, 1), new Position(2, 2), '', ',');
 			assert(new Position(2, 2), new Position(2, 2), '', ',');

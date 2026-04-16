@@ -16,7 +16,26 @@ import { Registry } from '../../../../platform/registry/common/platform.js';
 import { IRemoteAuthorityResolverService } from '../../../../platform/remote/common/remoteAuthorityResolver.js';
 import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
 import { ISerializedTerminalCommand } from '../../../../platform/terminal/common/capabilities/capabilities.js';
-import { IPtyHostLatencyMeasurement, IShellLaunchConfig, IShellLaunchConfigDto, ITerminalBackend, ITerminalBackendRegistry, ITerminalChildProcess, ITerminalEnvironment, ITerminalLogService, ITerminalProcessOptions, ITerminalProfile, ITerminalsLayoutInfo, ITerminalsLayoutInfoById, ProcessPropertyType, TerminalExtensions, TerminalIcon, TerminalSettingId, TitleEventSource, type IProcessPropertyMap } from '../../../../platform/terminal/common/terminal.js';
+import {
+	IPtyHostLatencyMeasurement,
+	IShellLaunchConfig,
+	IShellLaunchConfigDto,
+	ITerminalBackend,
+	ITerminalBackendRegistry,
+	ITerminalChildProcess,
+	ITerminalEnvironment,
+	ITerminalLogService,
+	ITerminalProcessOptions,
+	ITerminalProfile,
+	ITerminalsLayoutInfo,
+	ITerminalsLayoutInfoById,
+	ProcessPropertyType,
+	TerminalExtensions,
+	TerminalIcon,
+	TerminalSettingId,
+	TitleEventSource,
+	type IProcessPropertyMap
+} from '../../../../platform/terminal/common/terminal.js';
 import { IProcessDetails } from '../../../../platform/terminal/common/terminalProcess.js';
 import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
 import { IWorkbenchContribution } from '../../../common/contributions.js';
@@ -42,7 +61,11 @@ export class RemoteTerminalBackendContribution implements IWorkbenchContribution
 	) {
 		const connection = remoteAgentService.getConnection();
 		if (connection?.remoteAuthority) {
-			const channel = instantiationService.createInstance(RemoteTerminalChannelClient, connection.remoteAuthority, connection.getChannel(REMOTE_TERMINAL_CHANNEL_NAME));
+			const channel = instantiationService.createInstance(
+				RemoteTerminalChannelClient,
+				connection.remoteAuthority,
+				connection.getChannel(REMOTE_TERMINAL_CHANNEL_NAME)
+			);
 			const backend = instantiationService.createInstance(RemoteTerminalBackend, connection.remoteAuthority, channel);
 			Registry.as<ITerminalBackendRegistry>(TerminalExtensions.Backend).registerTerminalBackend(backend);
 			terminalInstanceService.didRegisterBackend(backend);
@@ -54,12 +77,20 @@ class RemoteTerminalBackend extends BaseTerminalBackend implements ITerminalBack
 	private readonly _ptys: Map<number, RemotePty> = new Map();
 
 	private readonly _whenConnected = new DeferredPromise<void>();
-	get whenReady(): Promise<void> { return this._whenConnected.p; }
-	setReady(): void { this._whenConnected.complete(); }
+	get whenReady(): Promise<void> {
+		return this._whenConnected.p;
+	}
+	setReady(): void {
+		this._whenConnected.complete();
+	}
 
-	private readonly _onDidRequestDetach = this._register(new Emitter<{ requestId: number; workspaceId: string; instanceId: number }>());
+	private readonly _onDidRequestDetach = this._register(
+		new Emitter<{ requestId: number; workspaceId: string; instanceId: number }>()
+	);
 	readonly onDidRequestDetach = this._onDidRequestDetach.event;
-	private readonly _onRestoreCommands = this._register(new Emitter<{ id: number; commands: ISerializedTerminalCommand[] }>());
+	private readonly _onRestoreCommands = this._register(
+		new Emitter<{ id: number; commands: ISerializedTerminalCommand[] }>()
+	);
 	readonly onRestoreCommands = this._onRestoreCommands.event;
 
 	constructor(
@@ -77,49 +108,71 @@ class RemoteTerminalBackend extends BaseTerminalBackend implements ITerminalBack
 		@IConfigurationService private readonly _configurationService: IConfigurationService,
 		@IStatusbarService statusBarService: IStatusbarService
 	) {
-		super(_remoteTerminalChannel, logService, _historyService, configurationResolverService, statusBarService, workspaceContextService);
+		super(
+			_remoteTerminalChannel,
+			logService,
+			_historyService,
+			configurationResolverService,
+			statusBarService,
+			workspaceContextService
+		);
 
 		this._register(this._remoteTerminalChannel.onProcessData(e => this._ptys.get(e.id)?.handleData(e.event)));
-		this._register(this._remoteTerminalChannel.onProcessReplay(e => {
-			this._ptys.get(e.id)?.handleReplay(e.event);
-			if (e.event.commands.commands.length > 0) {
-				this._onRestoreCommands.fire({ id: e.id, commands: e.event.commands.commands });
-			}
-		}));
-		this._register(this._remoteTerminalChannel.onProcessOrphanQuestion(e => this._ptys.get(e.id)?.handleOrphanQuestion()));
+		this._register(
+			this._remoteTerminalChannel.onProcessReplay(e => {
+				this._ptys.get(e.id)?.handleReplay(e.event);
+				if (e.event.commands.commands.length > 0) {
+					this._onRestoreCommands.fire({ id: e.id, commands: e.event.commands.commands });
+				}
+			})
+		);
+		this._register(
+			this._remoteTerminalChannel.onProcessOrphanQuestion(e => this._ptys.get(e.id)?.handleOrphanQuestion())
+		);
 		this._register(this._remoteTerminalChannel.onDidRequestDetach(e => this._onDidRequestDetach.fire(e)));
 		this._register(this._remoteTerminalChannel.onProcessReady(e => this._ptys.get(e.id)?.handleReady(e.event)));
-		this._register(this._remoteTerminalChannel.onDidChangeProperty(e => this._ptys.get(e.id)?.handleDidChangeProperty(e.property)));
-		this._register(this._remoteTerminalChannel.onProcessExit(e => {
-			const pty = this._ptys.get(e.id);
-			if (pty) {
-				pty.handleExit(e.event);
-				pty.dispose();
-				this._ptys.delete(e.id);
-			}
-		}));
+		this._register(
+			this._remoteTerminalChannel.onDidChangeProperty(e => this._ptys.get(e.id)?.handleDidChangeProperty(e.property))
+		);
+		this._register(
+			this._remoteTerminalChannel.onProcessExit(e => {
+				const pty = this._ptys.get(e.id);
+				if (pty) {
+					pty.handleExit(e.event);
+					pty.dispose();
+					this._ptys.delete(e.id);
+				}
+			})
+		);
 
-		const allowedCommands = ['_remoteCLI.openExternal', '_remoteCLI.windowOpen', '_remoteCLI.getSystemStatus', '_remoteCLI.manageExtensions'];
-		this._register(this._remoteTerminalChannel.onExecuteCommand(async e => {
-			// Ensure this request for for this window
-			const pty = this._ptys.get(e.persistentProcessId);
-			if (!pty) {
-				return;
-			}
-			const reqId = e.reqId;
-			const commandId = e.commandId;
-			if (!allowedCommands.includes(commandId)) {
-				this._remoteTerminalChannel.sendCommandResult(reqId, true, 'Invalid remote cli command: ' + commandId);
-				return;
-			}
-			const commandArgs = e.commandArgs.map(arg => revive(arg));
-			try {
-				const result = await this._commandService.executeCommand(e.commandId, ...commandArgs);
-				this._remoteTerminalChannel.sendCommandResult(reqId, false, result);
-			} catch (err) {
-				this._remoteTerminalChannel.sendCommandResult(reqId, true, err);
-			}
-		}));
+		const allowedCommands = [
+			'_remoteCLI.openExternal',
+			'_remoteCLI.windowOpen',
+			'_remoteCLI.getSystemStatus',
+			'_remoteCLI.manageExtensions'
+		];
+		this._register(
+			this._remoteTerminalChannel.onExecuteCommand(async e => {
+				// Ensure this request for for this window
+				const pty = this._ptys.get(e.persistentProcessId);
+				if (!pty) {
+					return;
+				}
+				const reqId = e.reqId;
+				const commandId = e.commandId;
+				if (!allowedCommands.includes(commandId)) {
+					this._remoteTerminalChannel.sendCommandResult(reqId, true, 'Invalid remote cli command: ' + commandId);
+					return;
+				}
+				const commandArgs = e.commandArgs.map(arg => revive(arg));
+				try {
+					const result = await this._commandService.executeCommand(e.commandId, ...commandArgs);
+					this._remoteTerminalChannel.sendCommandResult(reqId, false, result);
+				} catch (err) {
+					this._remoteTerminalChannel.sendCommandResult(reqId, true, err);
+				}
+			})
+		);
 
 		this._onPtyHostConnected.fire();
 	}
@@ -135,7 +188,9 @@ class RemoteTerminalBackend extends BaseTerminalBackend implements ITerminalBack
 		if (!this._remoteTerminalChannel) {
 			throw new Error(`Cannot accept detached instance when there is no remote!`);
 		} else if (!persistentProcessId) {
-			this._logService.warn('Cannot attach to feature terminals, custom pty terminals, or those without a persistentProcessId');
+			this._logService.warn(
+				'Cannot attach to feature terminals, custom pty terminals, or those without a persistentProcessId'
+			);
 			return;
 		}
 
@@ -148,7 +203,12 @@ class RemoteTerminalBackend extends BaseTerminalBackend implements ITerminalBack
 		}
 		const ids = Array.from(this._ptys.keys());
 		const serialized = await this._remoteTerminalChannel.serializeTerminalState(ids);
-		this._storageService.store(TerminalStorageKeys.TerminalBufferState, serialized, StorageScope.WORKSPACE, StorageTarget.MACHINE);
+		this._storageService.store(
+			TerminalStorageKeys.TerminalBufferState,
+			serialized,
+			StorageScope.WORKSPACE,
+			StorageTarget.MACHINE
+		);
 	}
 
 	async createProcess(
@@ -174,9 +234,15 @@ class RemoteTerminalBackend extends BaseTerminalBackend implements ITerminalBack
 
 		const terminalConfig = this._configurationService.getValue<ITerminalConfiguration>(TERMINAL_CONFIG_SECTION);
 		const configuration: ICompleteTerminalConfiguration = {
-			'terminal.integrated.env.windows': this._configurationService.getValue(TerminalSettingId.EnvWindows) as ITerminalEnvironment,
-			'terminal.integrated.env.osx': this._configurationService.getValue(TerminalSettingId.EnvMacOs) as ITerminalEnvironment,
-			'terminal.integrated.env.linux': this._configurationService.getValue(TerminalSettingId.EnvLinux) as ITerminalEnvironment,
+			'terminal.integrated.env.windows': this._configurationService.getValue(
+				TerminalSettingId.EnvWindows
+			) as ITerminalEnvironment,
+			'terminal.integrated.env.osx': this._configurationService.getValue(
+				TerminalSettingId.EnvMacOs
+			) as ITerminalEnvironment,
+			'terminal.integrated.env.linux': this._configurationService.getValue(
+				TerminalSettingId.EnvLinux
+			) as ITerminalEnvironment,
 			'terminal.integrated.cwd': this._configurationService.getValue(TerminalSettingId.Cwd) as string,
 			'terminal.integrated.detectLocale': terminalConfig.detectLocale
 		};
@@ -192,9 +258,13 @@ class RemoteTerminalBackend extends BaseTerminalBackend implements ITerminalBack
 			type: shellLaunchConfig.type,
 			isFeatureTerminal: shellLaunchConfig.isFeatureTerminal,
 			tabActions: shellLaunchConfig.tabActions,
-			shellIntegrationEnvironmentReporting: shellLaunchConfig.shellIntegrationEnvironmentReporting,
+			shellIntegrationEnvironmentReporting: shellLaunchConfig.shellIntegrationEnvironmentReporting
 		};
-		const activeWorkspaceRootUri = getWorkspaceForTerminal(shellLaunchConfig.cwd, this._workspaceContextService, this._historyService)?.uri;
+		const activeWorkspaceRootUri = getWorkspaceForTerminal(
+			shellLaunchConfig.cwd,
+			this._workspaceContextService,
+			this._historyService
+		)?.uri;
 
 		const result = await this._remoteTerminalChannel.createProcess(
 			shellLaunchConfigDto,
@@ -206,7 +276,12 @@ class RemoteTerminalBackend extends BaseTerminalBackend implements ITerminalBack
 			rows,
 			unicodeVersion
 		);
-		const pty = this._instantiationService.createInstance(RemotePty, result.persistentTerminalId, shouldPersist, this._remoteTerminalChannel);
+		const pty = this._instantiationService.createInstance(
+			RemotePty,
+			result.persistentTerminalId,
+			shouldPersist,
+			this._remoteTerminalChannel
+		);
 		this._ptys.set(result.persistentTerminalId, pty);
 		return pty;
 	}
@@ -233,7 +308,7 @@ class RemoteTerminalBackend extends BaseTerminalBackend implements ITerminalBack
 		}
 
 		try {
-			const newId = await this._remoteTerminalChannel.getRevivedPtyNewId(id) ?? id;
+			const newId = (await this._remoteTerminalChannel.getRevivedPtyNewId(id)) ?? id;
 			return await this.attachToProcess(newId);
 		} catch (e) {
 			this._logService.trace(`Couldn't attach to process ${e.message}`);
@@ -258,7 +333,11 @@ class RemoteTerminalBackend extends BaseTerminalBackend implements ITerminalBack
 		];
 	}
 
-	async updateProperty<T extends ProcessPropertyType>(id: number, property: T, value: IProcessPropertyMap[T]): Promise<void> {
+	async updateProperty<T extends ProcessPropertyType>(
+		id: number,
+		property: T,
+		value: IProcessPropertyMap[T]
+	): Promise<void> {
 		await this._remoteTerminalChannel.updateProperty(id, property, value);
 	}
 
@@ -278,7 +357,11 @@ class RemoteTerminalBackend extends BaseTerminalBackend implements ITerminalBack
 		return this._remoteTerminalChannel.getDefaultSystemShell(osOverride) || '';
 	}
 
-	async getProfiles(profiles: unknown, defaultProfile: unknown, includeDetectedProfiles?: boolean): Promise<ITerminalProfile[]> {
+	async getProfiles(
+		profiles: unknown,
+		defaultProfile: unknown,
+		includeDetectedProfiles?: boolean
+	): Promise<ITerminalProfile[]> {
 		return this._remoteTerminalChannel.getProfiles(profiles, defaultProfile, includeDetectedProfiles) || [];
 	}
 
@@ -341,7 +424,11 @@ class RemoteTerminalBackend extends BaseTerminalBackend implements ITerminalBack
 				// Note that remote terminals do not get their environment re-resolved unlike in local terminals
 
 				mark('code/terminal/willReviveTerminalProcessesRemote');
-				await this._remoteTerminalChannel.reviveTerminalProcesses(workspaceId, reviveBufferState, Intl.DateTimeFormat().resolvedOptions().locale);
+				await this._remoteTerminalChannel.reviveTerminalProcesses(
+					workspaceId,
+					reviveBufferState,
+					Intl.DateTimeFormat().resolvedOptions().locale
+				);
 				mark('code/terminal/didReviveTerminalProcessesRemote');
 				this._storageService.remove(TerminalStorageKeys.TerminalBufferState, StorageScope.WORKSPACE);
 				// If reviving processes, send the terminal layout info back to the pty host as it
@@ -354,7 +441,10 @@ class RemoteTerminalBackend extends BaseTerminalBackend implements ITerminalBack
 					this._storageService.remove(TerminalStorageKeys.TerminalLayoutInfo, StorageScope.WORKSPACE);
 				}
 			} catch (e: unknown) {
-				this._logService.warn('RemoteTerminalBackend#getTerminalLayoutInfo Error', (<{ message?: string }>e).message ?? e);
+				this._logService.warn(
+					'RemoteTerminalBackend#getTerminalLayoutInfo Error',
+					(<{ message?: string }>e).message ?? e
+				);
 			}
 		}
 

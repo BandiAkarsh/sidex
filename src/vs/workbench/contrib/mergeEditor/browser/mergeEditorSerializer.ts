@@ -24,7 +24,7 @@ export class MergeEditorSerializer implements IEditorSerializer {
 			base: editor.base,
 			input1: editor.input1,
 			input2: editor.input2,
-			result: editor.result,
+			result: editor.result
 		};
 	}
 

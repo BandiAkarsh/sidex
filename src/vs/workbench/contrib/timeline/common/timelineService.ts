@@ -8,7 +8,14 @@ import { Emitter } from '../../../../base/common/event.js';
 import { Disposable, DisposableMap, IDisposable } from '../../../../base/common/lifecycle.js';
 import { URI } from '../../../../base/common/uri.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
-import { ITimelineService, TimelineChangeEvent, TimelineOptions, TimelineProvidersChangeEvent, TimelineProvider, TimelinePaneId } from './timeline.js';
+import {
+	ITimelineService,
+	TimelineChangeEvent,
+	TimelineOptions,
+	TimelineProvidersChangeEvent,
+	TimelineProvider,
+	TimelinePaneId
+} from './timeline.js';
 import { IViewsService } from '../../../services/views/common/viewsService.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { IContextKey, IContextKeyService, RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
@@ -16,7 +23,6 @@ import { IContextKey, IContextKeyService, RawContextKey } from '../../../../plat
 export const TimelineHasProviderContext = new RawContextKey<boolean>('timelineHasProvider', false);
 
 export class TimelineService extends Disposable implements ITimelineService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeProviders = this._register(new Emitter<TimelineProvidersChangeEvent>());
@@ -36,7 +42,7 @@ export class TimelineService extends Disposable implements ITimelineService {
 		@ILogService private readonly logService: ILogService,
 		@IViewsService protected viewsService: IViewsService,
 		@IConfigurationService protected configurationService: IConfigurationService,
-		@IContextKeyService protected contextKeyService: IContextKeyService,
+		@IContextKeyService protected contextKeyService: IContextKeyService
 	) {
 		super();
 
@@ -65,17 +71,20 @@ export class TimelineService extends Disposable implements ITimelineService {
 		}
 
 		return {
-			result: provider.provideTimeline(uri, options, tokenSource.token)
-				.then(result => {
-					if (result === undefined) {
-						return undefined;
-					}
+			result: provider.provideTimeline(uri, options, tokenSource.token).then(result => {
+				if (result === undefined) {
+					return undefined;
+				}
 
-					result.items = result.items.map(item => ({ ...item, source: provider.id }));
-					result.items.sort((a, b) => (b.timestamp - a.timestamp) || b.source.localeCompare(a.source, undefined, { numeric: true, sensitivity: 'base' }));
+				result.items = result.items.map(item => ({ ...item, source: provider.id }));
+				result.items.sort(
+					(a, b) =>
+						b.timestamp - a.timestamp ||
+						b.source.localeCompare(a.source, undefined, { numeric: true, sensitivity: 'base' })
+				);
 
-					return result;
-				}),
+				return result;
+			}),
 			options,
 			source: provider.id,
 			tokenSource,
@@ -95,8 +104,7 @@ export class TimelineService extends Disposable implements ITimelineService {
 			// throw new Error(`Timeline Provider ${id} already exists.`);
 			try {
 				existing?.dispose();
-			}
-			catch { }
+			} catch {}
 		}
 
 		this.providers.set(id, provider);
@@ -104,7 +112,10 @@ export class TimelineService extends Disposable implements ITimelineService {
 		this.updateHasProviderContext();
 
 		if (provider.onDidChange) {
-			this.providerSubscriptions.set(id, provider.onDidChange(e => this._onDidChangeTimeline.fire(e)));
+			this.providerSubscriptions.set(
+				id,
+				provider.onDidChange(e => this._onDidChangeTimeline.fire(e))
+			);
 		}
 		this._onDidChangeProviders.fire({ added: [id] });
 

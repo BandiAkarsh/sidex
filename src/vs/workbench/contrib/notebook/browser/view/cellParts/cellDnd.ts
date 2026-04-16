@@ -31,9 +31,7 @@ interface CellDragEvent {
 }
 
 export class CellDragAndDropPart extends CellContentPart {
-	constructor(
-		private readonly container: HTMLElement
-	) {
+	constructor(private readonly container: HTMLElement) {
 		super();
 	}
 
@@ -75,28 +73,50 @@ export class CellDragAndDropController extends Disposable {
 
 		this.listInsertionIndicator = DOM.append(notebookListContainer, $('.cell-list-insertion-indicator'));
 
-		this._register(DOM.addDisposableListener(notebookListContainer.ownerDocument.body, DOM.EventType.DRAG_START, this.onGlobalDragStart.bind(this), true));
-		this._register(DOM.addDisposableListener(notebookListContainer.ownerDocument.body, DOM.EventType.DRAG_END, this.onGlobalDragEnd.bind(this), true));
+		this._register(
+			DOM.addDisposableListener(
+				notebookListContainer.ownerDocument.body,
+				DOM.EventType.DRAG_START,
+				this.onGlobalDragStart.bind(this),
+				true
+			)
+		);
+		this._register(
+			DOM.addDisposableListener(
+				notebookListContainer.ownerDocument.body,
+				DOM.EventType.DRAG_END,
+				this.onGlobalDragEnd.bind(this),
+				true
+			)
+		);
 
 		const addCellDragListener = (eventType: string, handler: (e: CellDragEvent) => void, useCapture = false) => {
-			this._register(DOM.addDisposableListener(
-				notebookEditor.getDomNode(),
-				eventType,
-				e => {
-					const cellDragEvent = this.toCellDragEvent(e);
-					if (cellDragEvent) {
-						handler(cellDragEvent);
-					}
-				}, useCapture));
+			this._register(
+				DOM.addDisposableListener(
+					notebookEditor.getDomNode(),
+					eventType,
+					e => {
+						const cellDragEvent = this.toCellDragEvent(e);
+						if (cellDragEvent) {
+							handler(cellDragEvent);
+						}
+					},
+					useCapture
+				)
+			);
 		};
 
-		addCellDragListener(DOM.EventType.DRAG_OVER, event => {
-			if (!this.currentDraggedCell) {
-				return;
-			}
-			event.browserEvent.preventDefault();
-			this.onCellDragover(event);
-		}, true);
+		addCellDragListener(
+			DOM.EventType.DRAG_OVER,
+			event => {
+				if (!this.currentDraggedCell) {
+					return;
+				}
+				event.browserEvent.preventDefault();
+				this.onCellDragover(event);
+			},
+			true
+		);
 		addCellDragListener(DOM.EventType.DROP, event => {
 			if (!this.currentDraggedCell) {
 				return;
@@ -188,7 +208,9 @@ export class CellDragAndDropController extends Disposable {
 	}
 
 	private updateInsertIndicator(dropDirection: string, insertionIndicatorAbsolutePos: number) {
-		const { bottomToolbarGap } = this.notebookEditor.notebookOptions.computeBottomToolbarDimensions(this.notebookEditor.textModel?.viewType);
+		const { bottomToolbarGap } = this.notebookEditor.notebookOptions.computeBottomToolbarDimensions(
+			this.notebookEditor.textModel?.viewType
+		);
 		const insertionIndicatorTop = insertionIndicatorAbsolutePos - this.list.scrollTop + bottomToolbarGap / 2;
 		if (insertionIndicatorTop >= 0) {
 			this.listInsertionIndicator.style.top = `${insertionIndicatorTop}px`;
@@ -227,11 +249,18 @@ export class CellDragAndDropController extends Disposable {
 		}
 	}
 
-	private _dropImpl(draggedCell: ICellViewModel, dropDirection: 'above' | 'below', ctx: { ctrlKey: boolean; altKey: boolean }, draggedOverCell: ICellViewModel) {
+	private _dropImpl(
+		draggedCell: ICellViewModel,
+		dropDirection: 'above' | 'below',
+		ctx: { ctrlKey: boolean; altKey: boolean },
+		draggedOverCell: ICellViewModel
+	) {
 		const cellTop = this.list.getCellViewScrollTop(draggedOverCell);
 		const cellHeight = this.list.elementHeight(draggedOverCell);
 		const insertionIndicatorAbsolutePos = dropDirection === 'above' ? cellTop : cellTop + cellHeight;
-		const { bottomToolbarGap } = this.notebookEditor.notebookOptions.computeBottomToolbarDimensions(this.notebookEditor.textModel?.viewType);
+		const { bottomToolbarGap } = this.notebookEditor.notebookOptions.computeBottomToolbarDimensions(
+			this.notebookEditor.textModel?.viewType
+		);
 		const insertionIndicatorTop = insertionIndicatorAbsolutePos - this.list.scrollTop + bottomToolbarGap / 2;
 		const editorHeight = this.notebookEditor.getDomNode().getBoundingClientRect().height;
 		if (insertionIndicatorTop < 0 || insertionIndicatorTop > editorHeight) {
@@ -263,21 +292,37 @@ export class CellDragAndDropController extends Disposable {
 
 			if (originalToIdx <= range.start) {
 				finalSelection = { start: originalToIdx, end: originalToIdx + range.end - range.start };
-				finalFocus = { start: originalToIdx + draggedCellIndex - range.start, end: originalToIdx + draggedCellIndex - range.start + 1 };
+				finalFocus = {
+					start: originalToIdx + draggedCellIndex - range.start,
+					end: originalToIdx + draggedCellIndex - range.start + 1
+				};
 			} else {
-				const delta = (originalToIdx - range.start);
+				const delta = originalToIdx - range.start;
 				finalSelection = { start: range.start + delta, end: range.end + delta };
 				finalFocus = { start: draggedCellIndex + delta, end: draggedCellIndex + delta + 1 };
 			}
 
-			textModel.applyEdits([
+			textModel.applyEdits(
+				[
+					{
+						editType: CellEditType.Replace,
+						index: originalToIdx,
+						count: 0,
+						cells: cellRangesToIndexes([range]).map(index =>
+							cloneNotebookCellTextModel(this.notebookEditor.cellAt(index)!.model)
+						)
+					}
+				],
+				true,
 				{
-					editType: CellEditType.Replace,
-					index: originalToIdx,
-					count: 0,
-					cells: cellRangesToIndexes([range]).map(index => cloneNotebookCellTextModel(this.notebookEditor.cellAt(index)!.model))
-				}
-			], true, { kind: SelectionStateType.Index, focus: this.notebookEditor.getFocus(), selections: this.notebookEditor.getSelections() }, () => ({ kind: SelectionStateType.Index, focus: finalFocus, selections: [finalSelection] }), undefined, true);
+					kind: SelectionStateType.Index,
+					focus: this.notebookEditor.getFocus(),
+					selections: this.notebookEditor.getSelections()
+				},
+				() => ({ kind: SelectionStateType.Index, focus: finalFocus, selections: [finalSelection] }),
+				undefined,
+				true
+			);
 			this.notebookEditor.revealCellRangeInView(finalSelection);
 		} else {
 			performCellDropEdits(this.notebookEditor, draggedCell, dropDirection, draggedOverCell);
@@ -285,14 +330,17 @@ export class CellDragAndDropController extends Disposable {
 	}
 
 	private onCellDragLeave(event: CellDragEvent): void {
-		if (!event.browserEvent.relatedTarget || !DOM.isAncestor(event.browserEvent.relatedTarget as HTMLElement, this.notebookEditor.getDomNode())) {
+		if (
+			!event.browserEvent.relatedTarget ||
+			!DOM.isAncestor(event.browserEvent.relatedTarget as HTMLElement, this.notebookEditor.getDomNode())
+		) {
 			this.setInsertIndicatorVisibility(false);
 		}
 	}
 
 	private dragCleanup(): void {
 		if (this.currentDraggedCell) {
-			this.draggedCells.forEach(cell => cell.dragging = false);
+			this.draggedCells.forEach(cell => (cell.dragging = false));
 			this.currentDraggedCell = undefined;
 			this.draggedCells = [];
 		}
@@ -300,14 +348,22 @@ export class CellDragAndDropController extends Disposable {
 		this.setInsertIndicatorVisibility(false);
 	}
 
-	registerDragHandle(templateData: BaseCellRenderTemplate, cellRoot: HTMLElement, dragHandles: HTMLElement[], dragImageProvider: DragImageProvider): void {
+	registerDragHandle(
+		templateData: BaseCellRenderTemplate,
+		cellRoot: HTMLElement,
+		dragHandles: HTMLElement[],
+		dragImageProvider: DragImageProvider
+	): void {
 		const container = templateData.container;
 		for (const dragHandle of dragHandles) {
 			dragHandle.setAttribute('draggable', 'true');
 		}
 
 		const onDragEnd = () => {
-			if (!this.notebookEditor.notebookOptions.getDisplayOptions().dragAndDropEnabled || !!this.notebookEditor.isReadOnly) {
+			if (
+				!this.notebookEditor.notebookOptions.getDisplayOptions().dragAndDropEnabled ||
+				!!this.notebookEditor.isReadOnly
+			) {
 				return;
 			}
 
@@ -324,13 +380,19 @@ export class CellDragAndDropController extends Disposable {
 				return;
 			}
 
-			if (!this.notebookEditor.notebookOptions.getDisplayOptions().dragAndDropEnabled || !!this.notebookEditor.isReadOnly) {
+			if (
+				!this.notebookEditor.notebookOptions.getDisplayOptions().dragAndDropEnabled ||
+				!!this.notebookEditor.isReadOnly
+			) {
 				return;
 			}
 
 			this.currentDraggedCell = templateData.currentRenderedCell!;
-			this.draggedCells = this.notebookEditor.getSelections().map(range => this.notebookEditor.getCellsInRange(range)).flat();
-			this.draggedCells.forEach(cell => cell.dragging = true);
+			this.draggedCells = this.notebookEditor
+				.getSelections()
+				.map(range => this.notebookEditor.getCellsInRange(range))
+				.flat();
+			this.draggedCells.forEach(cell => (cell.dragging = true));
 
 			const dragImage = dragImageProvider();
 			cellRoot.parentElement!.appendChild(dragImage);
@@ -338,12 +400,17 @@ export class CellDragAndDropController extends Disposable {
 			setTimeout(() => dragImage.remove(), 0); // Comment this out to debug drag image layout
 		};
 		for (const dragHandle of dragHandles) {
-			templateData.templateDisposables.add(DOM.addDisposableListener(dragHandle, DOM.EventType.DRAG_START, onDragStart));
+			templateData.templateDisposables.add(
+				DOM.addDisposableListener(dragHandle, DOM.EventType.DRAG_START, onDragStart)
+			);
 		}
 	}
 
 	public startExplicitDrag(cell: ICellViewModel, _dragOffsetY: number) {
-		if (!this.notebookEditor.notebookOptions.getDisplayOptions().dragAndDropEnabled || !!this.notebookEditor.isReadOnly) {
+		if (
+			!this.notebookEditor.notebookOptions.getDisplayOptions().dragAndDropEnabled ||
+			!!this.notebookEditor.isReadOnly
+		) {
 			return;
 		}
 
@@ -352,7 +419,10 @@ export class CellDragAndDropController extends Disposable {
 	}
 
 	public explicitDrag(cell: ICellViewModel, dragOffsetY: number) {
-		if (!this.notebookEditor.notebookOptions.getDisplayOptions().dragAndDropEnabled || !!this.notebookEditor.isReadOnly) {
+		if (
+			!this.notebookEditor.notebookOptions.getDisplayOptions().dragAndDropEnabled ||
+			!!this.notebookEditor.isReadOnly
+		) {
 			return;
 		}
 
@@ -383,7 +453,7 @@ export class CellDragAndDropController extends Disposable {
 		if (eventPositionRatio < notebookViewScrollMargins) {
 			this.list.scrollTop -= maxScrollDeltaPerFrame * (1 - eventPositionRatio / notebookViewScrollMargins);
 		} else if (eventPositionRatio > 1 - notebookViewScrollMargins) {
-			this.list.scrollTop += maxScrollDeltaPerFrame * (1 - ((1 - eventPositionRatio) / notebookViewScrollMargins));
+			this.list.scrollTop += maxScrollDeltaPerFrame * (1 - (1 - eventPositionRatio) / notebookViewScrollMargins);
 		}
 	}
 
@@ -419,7 +489,12 @@ export class CellDragAndDropController extends Disposable {
 	}
 }
 
-export function performCellDropEdits(editor: INotebookEditorDelegate, draggedCell: ICellViewModel, dropDirection: 'above' | 'below', draggedOverCell: ICellViewModel): void {
+export function performCellDropEdits(
+	editor: INotebookEditorDelegate,
+	draggedCell: ICellViewModel,
+	dropDirection: 'above' | 'below',
+	draggedOverCell: ICellViewModel
+): void {
 	const draggedCellIndex = editor.getCellIndex(draggedCell)!;
 	let originalToIdx = editor.getCellIndex(draggedOverCell)!;
 
@@ -450,7 +525,6 @@ export function performCellDropEdits(editor: INotebookEditorDelegate, draggedCel
 	if (droppedInSelection) {
 		originalToIdx = droppedInSelection.start;
 	}
-
 
 	let numCells = 0;
 	let focusNewIdx = originalToIdx;
@@ -505,6 +579,8 @@ export function performCellDropEdits(editor: INotebookEditorDelegate, draggedCel
 		true,
 		{ kind: SelectionStateType.Index, focus: editor.getFocus(), selections: editor.getSelections() },
 		() => ({ kind: SelectionStateType.Index, focus: finalFocus, selections: [finalSelection] }),
-		undefined, true);
+		undefined,
+		true
+	);
 	editor.revealCellRangeInView(finalSelection);
 }

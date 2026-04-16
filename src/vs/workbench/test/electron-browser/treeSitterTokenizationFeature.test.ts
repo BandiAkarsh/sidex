@@ -12,7 +12,12 @@ import { URI } from '../../../base/common/uri.js';
 import { IFileService } from '../../../platform/files/common/files.js';
 import { ILogService, NullLogService } from '../../../platform/log/common/log.js';
 import { ITelemetryData, ITelemetryService, TelemetryLevel } from '../../../platform/telemetry/common/telemetry.js';
-import { ClassifiedEvent, OmitMetadata, IGDPRProperty, StrictPropertyCheck } from '../../../platform/telemetry/common/gdprTypings.js';
+import {
+	ClassifiedEvent,
+	OmitMetadata,
+	IGDPRProperty,
+	StrictPropertyCheck
+} from '../../../platform/telemetry/common/gdprTypings.js';
 import { IConfigurationService } from '../../../platform/configuration/common/configuration.js';
 import { TestConfigurationService } from '../../../platform/configuration/test/common/testConfigurationService.js';
 import { IEnvironmentService } from '../../../platform/environment/common/environment.js';
@@ -59,20 +64,19 @@ class MockTelemetryService implements ITelemetryService {
 	devDeviceId: string = '';
 	firstSessionDate: string = '';
 	sendErrorTelemetry: boolean = false;
-	publicLog(eventName: string, data?: ITelemetryData): void {
-	}
-	publicLog2<E extends ClassifiedEvent<OmitMetadata<T>> = never, T extends IGDPRProperty = never>(eventName: string, data?: StrictPropertyCheck<T, E>): void {
-	}
-	publicLogError(errorEventName: string, data?: ITelemetryData): void {
-	}
-	publicLogError2<E extends ClassifiedEvent<OmitMetadata<T>> = never, T extends IGDPRProperty = never>(eventName: string, data?: StrictPropertyCheck<T, E>): void {
-	}
-	setExperimentProperty(name: string, value: string): void {
-	}
-	setCommonProperty(name: string, value: string): void {
-	}
+	publicLog(eventName: string, data?: ITelemetryData): void {}
+	publicLog2<E extends ClassifiedEvent<OmitMetadata<T>> = never, T extends IGDPRProperty = never>(
+		eventName: string,
+		data?: StrictPropertyCheck<T, E>
+	): void {}
+	publicLogError(errorEventName: string, data?: ITelemetryData): void {}
+	publicLogError2<E extends ClassifiedEvent<OmitMetadata<T>> = never, T extends IGDPRProperty = never>(
+		eventName: string,
+		data?: StrictPropertyCheck<T, E>
+	): void {}
+	setExperimentProperty(name: string, value: string): void {}
+	setCommonProperty(name: string, value: string): void {}
 }
-
 
 class TestTreeSitterColorTheme extends TestColorTheme {
 	public resolveScopes(scopes: ProbeScope[], definitions?: TextMateThemingRuleDefinitions): TokenStyle | undefined {
@@ -84,7 +88,6 @@ class TestTreeSitterColorTheme extends TestColorTheme {
 }
 
 suite('Tree Sitter TokenizationFeature', function () {
-
 	let instantiationService: TestInstantiationService;
 	let modelService: IModelService;
 	let fileService: IFileService;
@@ -118,7 +121,9 @@ suite('Tree Sitter TokenizationFeature', function () {
 		instantiationService.set(IThemeService, themeService);
 		textResourcePropertiesService = instantiationService.createInstance(TestTextResourcePropertiesService);
 		instantiationService.set(ITextResourcePropertiesService, textResourcePropertiesService);
-		languageConfigurationService = disposables.add(instantiationService.createInstance(TestLanguageConfigurationService));
+		languageConfigurationService = disposables.add(
+			instantiationService.createInstance(TestLanguageConfigurationService)
+		);
 		instantiationService.set(ILanguageConfigurationService, languageConfigurationService);
 
 		fileService = disposables.add(instantiationService.createInstance(FileService));
@@ -156,15 +161,27 @@ suite('Tree Sitter TokenizationFeature', function () {
 	}
 
 	let nameNumber = 1;
-	async function getModelAndPrepTree(content: string): Promise<{ model: ITextModel; treeSitterTree: TreeSitterTree; tokenizationImpl: TreeSitterTokenizationImpl }> {
-		const model = disposables.add(modelService.createModel(content, { languageId: 'typescript', onDidChange: Event.None }, URI.file(`file${nameNumber++}.ts`)));
-		const treeSitterTreeObs = disposables.add((model.tokenization as TokenizationTextModelPart).tokens.get() as TreeSitterSyntaxTokenBackend).tree;
-		const tokenizationImplObs = disposables.add((model.tokenization as TokenizationTextModelPart).tokens.get() as TreeSitterSyntaxTokenBackend).tokenizationImpl;
-		const treeSitterTree = treeSitterTreeObs.get() ?? await waitForState(treeSitterTreeObs);
+	async function getModelAndPrepTree(
+		content: string
+	): Promise<{ model: ITextModel; treeSitterTree: TreeSitterTree; tokenizationImpl: TreeSitterTokenizationImpl }> {
+		const model = disposables.add(
+			modelService.createModel(
+				content,
+				{ languageId: 'typescript', onDidChange: Event.None },
+				URI.file(`file${nameNumber++}.ts`)
+			)
+		);
+		const treeSitterTreeObs = disposables.add(
+			(model.tokenization as TokenizationTextModelPart).tokens.get() as TreeSitterSyntaxTokenBackend
+		).tree;
+		const tokenizationImplObs = disposables.add(
+			(model.tokenization as TokenizationTextModelPart).tokens.get() as TreeSitterSyntaxTokenBackend
+		).tokenizationImpl;
+		const treeSitterTree = treeSitterTreeObs.get() ?? (await waitForState(treeSitterTreeObs));
 		if (!treeSitterTree.tree.get()) {
 			await waitForState(treeSitterTree.tree);
 		}
-		const tokenizationImpl = tokenizationImplObs.get() ?? await waitForState(tokenizationImplObs);
+		const tokenizationImpl = tokenizationImplObs.get() ?? (await waitForState(tokenizationImplObs));
 
 		assert.ok(treeSitterTree);
 		return { model, treeSitterTree, tokenizationImpl };
@@ -194,15 +211,18 @@ class y {
 
 		let updateListener: IDisposable | undefined;
 		const changePromise = new Promise<TreeParseUpdateEvent | undefined>(resolve => {
-			updateListener = autorunHandleChanges({
-				owner: this,
-				changeTracker: recordChanges({ tree: treeSitterTree.tree }),
-			}, (reader, ctx) => {
-				const changeEvent = ctx.changes.at(0)?.change;
-				if (changeEvent) {
-					resolve(changeEvent);
+			updateListener = autorunHandleChanges(
+				{
+					owner: this,
+					changeTracker: recordChanges({ tree: treeSitterTree.tree })
+				},
+				(reader, ctx) => {
+					const changeEvent = ctx.changes.at(0)?.change;
+					if (changeEvent) {
+						resolve(changeEvent);
+					}
 				}
-			});
+			);
 		});
 
 		const edit1 = new Promise<void>(resolve => {
@@ -255,7 +275,7 @@ console.log('x');
 	});
 
 	test('File with new lines at beginning and end \\r\\n', async () => {
-		const content = '\r\nconsole.log(\'x\');\r\n';
+		const content = "\r\nconsole.log('x');\r\n";
 		const { model, tokenizationImpl } = await getModelAndPrepTree(content);
 		const tokens = tokenizationImpl.getTokensInRange(new Range(1, 1, 3, 1), 0, 21);
 		verifyTokens(tokens);
@@ -279,7 +299,7 @@ console.log('7');
 	});
 
 	test('File with empty lines in the middle \\r\\n', async () => {
-		const content = '\r\nconsole.log(\'x\');\r\n\r\nconsole.log(\'7\');\r\n';
+		const content = "\r\nconsole.log('x');\r\n\r\nconsole.log('7');\r\n";
 		const { model, tokenizationImpl } = await getModelAndPrepTree(content);
 		const tokens = tokenizationImpl.getTokensInRange(new Range(1, 1, 5, 1), 0, 42);
 		verifyTokens(tokens);
@@ -303,7 +323,7 @@ console.log('7');
 	});
 
 	test('File with non-empty lines that match no scopes \\r\\n', async () => {
-		const content = 'console.log(\'x\');\r\n;\r\n{\r\n}\r\n';
+		const content = "console.log('x');\r\n;\r\n{\r\n}\r\n";
 		const { model, tokenizationImpl } = await getModelAndPrepTree(content);
 		const tokens = tokenizationImpl.getTokensInRange(new Range(1, 1, 5, 1), 0, 28);
 		verifyTokens(tokens);
@@ -328,7 +348,7 @@ console.log('x');
 	});
 
 	test('File with tree-sitter token that spans multiple lines \\r\\n', async () => {
-		const content = '/**\r\n**/\r\n\r\nconsole.log(\'x\');\r\n\r\n';
+		const content = "/**\r\n**/\r\n\r\nconsole.log('x');\r\n\r\n";
 		const { model, tokenizationImpl } = await getModelAndPrepTree(content);
 		const tokens = tokenizationImpl.getTokensInRange(new Range(1, 1, 6, 1), 0, 33);
 		verifyTokens(tokens);
@@ -387,5 +407,4 @@ class Y {
 		assert.deepStrictEqual(tokensContentSize(tokens), content.length);
 		modelService.destroyModel(model.uri);
 	});
-
 });

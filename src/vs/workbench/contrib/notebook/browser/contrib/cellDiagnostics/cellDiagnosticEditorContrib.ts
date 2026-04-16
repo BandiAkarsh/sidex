@@ -6,7 +6,12 @@
 import { Disposable, IDisposable, toDisposable } from '../../../../../../base/common/lifecycle.js';
 import { IMarkerData, IMarkerService } from '../../../../../../platform/markers/common/markers.js';
 import { IRange } from '../../../../../../editor/common/core/range.js';
-import { ICellExecutionStateChangedEvent, IExecutionStateChangedEvent, INotebookExecutionStateService, NotebookExecutionType } from '../../../common/notebookExecutionStateService.js';
+import {
+	ICellExecutionStateChangedEvent,
+	IExecutionStateChangedEvent,
+	INotebookExecutionStateService,
+	NotebookExecutionType
+} from '../../../common/notebookExecutionStateService.js';
 import { IConfigurationService } from '../../../../../../platform/configuration/common/configuration.js';
 import { CellKind, NotebookSetting } from '../../../common/notebookCommon.js';
 import { INotebookEditor, INotebookEditorContribution } from '../../notebookBrowser.js';
@@ -16,7 +21,6 @@ import { Event } from '../../../../../../base/common/event.js';
 import { autorun } from '../../../../../../base/common/observable.js';
 
 export class CellDiagnostics extends Disposable implements INotebookEditorContribution {
-
 	static ID: string = 'workbench.notebook.cellDiagnostics';
 
 	private enabled = false;
@@ -33,11 +37,13 @@ export class CellDiagnostics extends Disposable implements INotebookEditorContri
 
 		this.updateEnabled();
 
-		this._register(configurationService.onDidChangeConfiguration((e) => {
-			if (e.affectsConfiguration(NotebookSetting.cellFailureDiagnostics)) {
-				this.updateEnabled();
-			}
-		}));
+		this._register(
+			configurationService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration(NotebookSetting.cellFailureDiagnostics)) {
+					this.updateEnabled();
+				}
+			})
+		);
 	}
 
 	private updateEnabled() {
@@ -49,9 +55,12 @@ export class CellDiagnostics extends Disposable implements INotebookEditorContri
 			this.enabled = true;
 			if (!this.listening) {
 				this.listening = true;
-				this._register(Event.accumulate<ICellExecutionStateChangedEvent | IExecutionStateChangedEvent>(
-					this.notebookExecutionStateService.onDidChangeExecution, 200
-				)((e) => this.handleChangeExecutionState(e)));
+				this._register(
+					Event.accumulate<ICellExecutionStateChangedEvent | IExecutionStateChangedEvent>(
+						this.notebookExecutionStateService.onDidChangeExecution,
+						200
+					)(e => this.handleChangeExecutionState(e))
+				);
 			}
 		}
 	}
@@ -63,9 +72,13 @@ export class CellDiagnostics extends Disposable implements INotebookEditorContri
 
 		const handled = new Set<number>();
 		for (const e of changes.reverse()) {
-
 			const notebookUri = this.notebookEditor.textModel?.uri;
-			if (e.type === NotebookExecutionType.cell && notebookUri && e.affectsNotebook(notebookUri) && !handled.has(e.cellHandle)) {
+			if (
+				e.type === NotebookExecutionType.cell &&
+				notebookUri &&
+				e.affectsNotebook(notebookUri) &&
+				!handled.has(e.cellHandle)
+			) {
 				handled.add(e.cellHandle);
 				if (!!e.changed) {
 					// cell is running
@@ -107,25 +120,33 @@ export class CellDiagnostics extends Disposable implements INotebookEditorContri
 		const metadata = cell.model.internalMetadata;
 		if (cell instanceof CodeCellViewModel && !metadata.lastRunSuccess && metadata?.error?.location) {
 			const disposables: IDisposable[] = [];
-			const errorLabel = metadata.error.name ? `${metadata.error.name}: ${metadata.error.message}` : metadata.error.message;
+			const errorLabel = metadata.error.name
+				? `${metadata.error.name}: ${metadata.error.message}`
+				: metadata.error.message;
 			const marker = this.createMarkerData(errorLabel, metadata.error.location);
 			this.markerService.changeOne(CellDiagnostics.ID, cell.uri, [marker]);
 			disposables.push(toDisposable(() => this.markerService.changeOne(CellDiagnostics.ID, cell.uri, [])));
 			cell.executionErrorDiagnostic.set(metadata.error, undefined);
 			disposables.push(toDisposable(() => cell.executionErrorDiagnostic.set(undefined, undefined)));
-			disposables.push(autorun((r) => {
-				if (!cell.executionErrorDiagnostic.read(r)) {
+			disposables.push(
+				autorun(r => {
+					if (!cell.executionErrorDiagnostic.read(r)) {
+						this.clear(cellHandle);
+					}
+				})
+			);
+			disposables.push(
+				cell.model.onDidChangeOutputs(() => {
+					if (cell.model.outputs.length === 0) {
+						this.clear(cellHandle);
+					}
+				})
+			);
+			disposables.push(
+				cell.model.onDidChangeContent(() => {
 					this.clear(cellHandle);
-				}
-			}));
-			disposables.push(cell.model.onDidChangeOutputs(() => {
-				if (cell.model.outputs.length === 0) {
-					this.clear(cellHandle);
-				}
-			}));
-			disposables.push(cell.model.onDidChangeContent(() => {
-				this.clear(cellHandle);
-			}));
+				})
+			);
 			this.diagnosticsByHandle.set(cellHandle, disposables);
 		}
 	}
@@ -146,7 +167,6 @@ export class CellDiagnostics extends Disposable implements INotebookEditorContri
 		super.dispose();
 		this.clearAll();
 	}
-
 }
 
 registerNotebookContribution(CellDiagnostics.ID, CellDiagnostics);

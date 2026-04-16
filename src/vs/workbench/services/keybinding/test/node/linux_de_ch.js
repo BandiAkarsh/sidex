@@ -254,7 +254,7 @@ define({
 		withShiftAltGr: ' '
 	},
 	Minus: {
-		value: '\'',
+		value: "'",
 		withShift: '?',
 		withAltGr: '́',
 		withShiftAltGr: '¿'

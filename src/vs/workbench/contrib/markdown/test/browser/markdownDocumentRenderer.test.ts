@@ -10,7 +10,6 @@ import { TestInstantiationService } from '../../../../../platform/instantiation/
 import { IExtensionService } from '../../../../services/extensions/common/extensions.js';
 import { renderMarkdownDocument } from '../../browser/markdownDocumentRenderer.js';
 
-
 suite('Markdown Document Renderer Test', () => {
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 
@@ -32,7 +31,7 @@ suite('Markdown Document Renderer Test', () => {
 	test('Can enable images with relative paths using setting', async () => {
 		const result = await renderMarkdownDocument('![alt](src/img.png)', extensionService, languageService, {
 			sanitizerConfig: {
-				allowRelativeMediaPaths: true,
+				allowRelativeMediaPaths: true
 			}
 		});
 

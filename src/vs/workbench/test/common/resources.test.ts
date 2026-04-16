@@ -13,7 +13,6 @@ import { ResourceGlobMatcher } from '../../common/resources.js';
 import { TestContextService } from './workbenchTestServices.js';
 
 suite('ResourceGlobMatcher', () => {
-
 	const SETTING = 'test.matcher';
 
 	let contextService: IWorkspaceContextService;
@@ -36,7 +35,14 @@ suite('ResourceGlobMatcher', () => {
 	});
 
 	test('Basics', async () => {
-		const matcher = disposables.add(new ResourceGlobMatcher(() => configurationService.getValue(SETTING), e => e.affectsConfiguration(SETTING), contextService, configurationService));
+		const matcher = disposables.add(
+			new ResourceGlobMatcher(
+				() => configurationService.getValue(SETTING),
+				e => e.affectsConfiguration(SETTING),
+				contextService,
+				configurationService
+			)
+		);
 
 		// Matching
 		assert.equal(matcher.matches(URI.file('/foo/bar')), false);
@@ -49,7 +55,9 @@ suite('ResourceGlobMatcher', () => {
 
 		await configurationService.setUserConfiguration(SETTING, { '**/*.foo': true });
 		// eslint-disable-next-line local/code-no-any-casts
-		configurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration: (key: string) => key === SETTING } as any);
+		configurationService.onDidChangeConfigurationEmitter.fire({
+			affectsConfiguration: (key: string) => key === SETTING
+		} as any);
 		assert.equal(eventCounter, 1);
 
 		assert.equal(matcher.matches(URI.file('/foo/bar.md')), false);
@@ -57,7 +65,9 @@ suite('ResourceGlobMatcher', () => {
 
 		await configurationService.setUserConfiguration(SETTING, undefined);
 		// eslint-disable-next-line local/code-no-any-casts
-		configurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration: (key: string) => key === SETTING } as any);
+		configurationService.onDidChangeConfigurationEmitter.fire({
+			affectsConfiguration: (key: string) => key === SETTING
+		} as any);
 		assert.equal(eventCounter, 2);
 
 		assert.equal(matcher.matches(URI.file('/foo/bar.md')), false);
@@ -70,7 +80,9 @@ suite('ResourceGlobMatcher', () => {
 			'/bar/**': true
 		});
 		// eslint-disable-next-line local/code-no-any-casts
-		configurationService.onDidChangeConfigurationEmitter.fire({ affectsConfiguration: (key: string) => key === SETTING } as any);
+		configurationService.onDidChangeConfigurationEmitter.fire({
+			affectsConfiguration: (key: string) => key === SETTING
+		} as any);
 
 		assert.equal(matcher.matches(URI.file('/bar/foo.1')), true);
 		assert.equal(matcher.matches(URI.file('C:/bar/foo.1')), true);

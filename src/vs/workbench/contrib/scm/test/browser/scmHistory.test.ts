@@ -6,7 +6,13 @@
 import * as assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { ColorIdentifier } from '../../../../../platform/theme/common/colorUtils.js';
-import { colorRegistry, historyItemBaseRefColor, historyItemRefColor, historyItemRemoteRefColor, toISCMHistoryItemViewModelArray } from '../../browser/scmHistory.js';
+import {
+	colorRegistry,
+	historyItemBaseRefColor,
+	historyItemRefColor,
+	historyItemRemoteRefColor,
+	toISCMHistoryItemViewModelArray
+} from '../../browser/scmHistory.js';
 import { ISCMHistoryItem, ISCMHistoryItemRef, SCMIncomingHistoryItemId } from '../../common/history.js';
 
 function toSCMHistoryItem(id: string, parentIds: string[], references?: ISCMHistoryItemRef[]): ISCMHistoryItem {
@@ -14,7 +20,6 @@ function toSCMHistoryItem(id: string, parentIds: string[], references?: ISCMHist
 }
 
 suite('toISCMHistoryItemViewModelArray', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('empty graph', () => {
@@ -23,15 +28,12 @@ suite('toISCMHistoryItemViewModelArray', () => {
 		assert.strictEqual(viewModels.length, 0);
 	});
 
-
 	/**
 	 *	* a
 	 */
 
 	test('single commit', () => {
-		const models = [
-			toSCMHistoryItem('a', []),
-		];
+		const models = [toSCMHistoryItem('a', [])];
 
 		const viewModels = toISCMHistoryItemViewModelArray(models);
 
@@ -54,7 +56,7 @@ suite('toISCMHistoryItemViewModelArray', () => {
 			toSCMHistoryItem('b', ['c']),
 			toSCMHistoryItem('c', ['d']),
 			toSCMHistoryItem('d', ['e']),
-			toSCMHistoryItem('e', []),
+			toSCMHistoryItem('e', [])
 		];
 
 		const viewModels = toISCMHistoryItemViewModelArray(models);
@@ -118,7 +120,7 @@ suite('toISCMHistoryItemViewModelArray', () => {
 			toSCMHistoryItem('b', ['c', 'd']),
 			toSCMHistoryItem('d', ['c']),
 			toSCMHistoryItem('c', ['e']),
-			toSCMHistoryItem('e', ['f']),
+			toSCMHistoryItem('e', ['f'])
 		];
 
 		const viewModels = toISCMHistoryItemViewModelArray(models);
@@ -193,7 +195,7 @@ suite('toISCMHistoryItemViewModelArray', () => {
 			toSCMHistoryItem('b', ['e']),
 			toSCMHistoryItem('e', ['f']),
 			toSCMHistoryItem('f', ['d']),
-			toSCMHistoryItem('d', ['g']),
+			toSCMHistoryItem('d', ['g'])
 		];
 
 		const viewModels = toISCMHistoryItemViewModelArray(models);
@@ -291,7 +293,7 @@ suite('toISCMHistoryItemViewModelArray', () => {
 			toSCMHistoryItem('b', ['d', 'e']),
 			toSCMHistoryItem('e', ['f']),
 			toSCMHistoryItem('f', ['g']),
-			toSCMHistoryItem('d', ['h']),
+			toSCMHistoryItem('d', ['h'])
 		];
 
 		const viewModels = toISCMHistoryItemViewModelArray(models);
@@ -373,7 +375,6 @@ suite('toISCMHistoryItemViewModelArray', () => {
 		assert.strictEqual(viewModels[5].outputSwimlanes[1].color, colorRegistry[2]);
 	});
 
-
 	/**
 	 * 	* a(b,c)
 	 * 	|\
@@ -397,7 +398,7 @@ suite('toISCMHistoryItemViewModelArray', () => {
 			toSCMHistoryItem('f', ['g']),
 			toSCMHistoryItem('e', ['g']),
 			toSCMHistoryItem('d', ['g']),
-			toSCMHistoryItem('g', ['h']),
+			toSCMHistoryItem('g', ['h'])
 		] satisfies ISCMHistoryItem[];
 
 		const viewModels = toISCMHistoryItemViewModelArray(models);
@@ -528,7 +529,7 @@ suite('toISCMHistoryItemViewModelArray', () => {
 		const colorMap = new Map<string, ColorIdentifier>([
 			['topic', historyItemRefColor],
 			['origin/topic', historyItemRemoteRefColor],
-			['origin/main', historyItemBaseRefColor],
+			['origin/main', historyItemBaseRefColor]
 		]);
 
 		const viewModels = toISCMHistoryItemViewModelArray(models, colorMap);
@@ -602,7 +603,7 @@ suite('toISCMHistoryItemViewModelArray', () => {
 	 * 	|/
 	 * 	* e(f)
 	 * 	* f(g)
-	*/
+	 */
 	test('graph with incoming/outgoing changes (remote ref first)', () => {
 		const models = [
 			toSCMHistoryItem('a', ['b'], [{ id: 'origin/main', name: 'origin/main' }]),
@@ -610,7 +611,7 @@ suite('toISCMHistoryItemViewModelArray', () => {
 			toSCMHistoryItem('c', ['d'], [{ id: 'main', name: 'main' }]),
 			toSCMHistoryItem('d', ['e']),
 			toSCMHistoryItem('e', ['f']),
-			toSCMHistoryItem('f', ['g']),
+			toSCMHistoryItem('f', ['g'])
 		] satisfies ISCMHistoryItem[];
 
 		const colorMap = new Map<string, ColorIdentifier>([
@@ -733,7 +734,7 @@ suite('toISCMHistoryItemViewModelArray', () => {
 	 * 	|/
 	 * 	* e(f)
 	 * 	* f(g)
-	*/
+	 */
 	test('graph with incoming/outgoing changes (local ref first)', () => {
 		const models = [
 			toSCMHistoryItem('a', ['b'], [{ id: 'main', name: 'main' }]),
@@ -741,7 +742,7 @@ suite('toISCMHistoryItemViewModelArray', () => {
 			toSCMHistoryItem('c', ['d'], [{ id: 'origin/main', name: 'origin/main' }]),
 			toSCMHistoryItem('d', ['e']),
 			toSCMHistoryItem('e', ['f']),
-			toSCMHistoryItem('f', ['g']),
+			toSCMHistoryItem('f', ['g'])
 		] satisfies ISCMHistoryItem[];
 
 		const colorMap = new Map<string, ColorIdentifier>([
@@ -862,7 +863,7 @@ suite('toISCMHistoryItemViewModelArray', () => {
 	 *  |/
 	 * 	* e(f)
 	 * 	* f(g)
-	*/
+	 */
 	test('graph with merged incoming changes', () => {
 		const models = [
 			toSCMHistoryItem('a', ['b'], [{ id: 'origin/main', name: 'origin/main' }]),
@@ -870,7 +871,7 @@ suite('toISCMHistoryItemViewModelArray', () => {
 			toSCMHistoryItem('c', ['e'], [{ id: 'main', name: 'main' }]),
 			toSCMHistoryItem('d', ['e']),
 			toSCMHistoryItem('e', ['f']),
-			toSCMHistoryItem('f', ['g']),
+			toSCMHistoryItem('f', ['g'])
 		] satisfies ISCMHistoryItem[];
 
 		const colorMap = new Map<string, ColorIdentifier>([

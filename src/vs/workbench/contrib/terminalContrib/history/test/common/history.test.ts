@@ -17,9 +17,20 @@ import { IFileService } from '../../../../../../platform/files/common/files.js';
 import { TestInstantiationService } from '../../../../../../platform/instantiation/test/common/instantiationServiceMock.js';
 import { IRemoteAgentEnvironment } from '../../../../../../platform/remote/common/remoteAgentEnvironment.js';
 import { IStorageService } from '../../../../../../platform/storage/common/storage.js';
-import { IRemoteAgentConnection, IRemoteAgentService } from '../../../../../services/remote/common/remoteAgentService.js';
+import {
+	IRemoteAgentConnection,
+	IRemoteAgentService
+} from '../../../../../services/remote/common/remoteAgentService.js';
 import { TestStorageService } from '../../../../../test/common/workbenchTestServices.js';
-import { fetchBashHistory, fetchFishHistory, fetchPwshHistory, fetchZshHistory, sanitizeFishHistoryCmd, TerminalPersistedHistory, type ITerminalPersistedHistory } from '../../common/history.js';
+import {
+	fetchBashHistory,
+	fetchFishHistory,
+	fetchPwshHistory,
+	fetchZshHistory,
+	sanitizeFishHistoryCmd,
+	TerminalPersistedHistory,
+	type ITerminalPersistedHistory
+} from '../../common/history.js';
 
 function getConfig(limit: number) {
 	return {
@@ -63,9 +74,7 @@ suite('Terminal history', () => {
 
 		test('should support adding items to the cache and respect LRU', () => {
 			history.add('foo', 1);
-			deepStrictEqual(Array.from(history.entries), [
-				['foo', 1]
-			]);
+			deepStrictEqual(Array.from(history.entries), [['foo', 1]]);
 			history.add('bar', 2);
 			deepStrictEqual(Array.from(history.entries), [
 				['foo', 1],
@@ -153,8 +162,12 @@ suite('Terminal history', () => {
 				}
 			} as Pick<IFileService, 'readFile'>);
 			instantiationService.stub(IRemoteAgentService, {
-				async getEnvironment() { return remoteEnvironment; },
-				getConnection() { return remoteConnection; }
+				async getEnvironment() {
+					return remoteEnvironment;
+				},
+				getConnection() {
+					return remoteConnection;
+				}
 			} as Pick<IRemoteAgentService, 'getConnection' | 'getEnvironment'>);
 		});
 
@@ -246,7 +259,7 @@ suite('Terminal history', () => {
 					': 1655252330:0;two "\\',
 					'line"'
 				].join('\n')
-			},
+			}
 		];
 
 		let instantiationService: TestInstantiationService;
@@ -266,8 +279,12 @@ suite('Terminal history', () => {
 						}
 					} as Pick<IFileService, 'readFile'>);
 					instantiationService.stub(IRemoteAgentService, {
-						async getEnvironment() { return remoteEnvironment; },
-						getConnection() { return remoteConnection; }
+						async getEnvironment() {
+							return remoteEnvironment;
+						},
+						getConnection() {
+							return remoteConnection;
+						}
 					} as Pick<IRemoteAgentService, 'getConnection' | 'getEnvironment'>);
 				});
 
@@ -364,8 +381,12 @@ suite('Terminal history', () => {
 				}
 			} as Pick<IFileService, 'readFile'>);
 			instantiationService.stub(IRemoteAgentService, {
-				async getEnvironment() { return remoteEnvironment; },
-				getConnection() { return remoteConnection; }
+				async getEnvironment() {
+					return remoteEnvironment;
+				},
+				getConnection() {
+					return remoteConnection;
+				}
 			} as Pick<IRemoteAgentService, 'getConnection' | 'getEnvironment'>);
 		});
 
@@ -455,7 +476,7 @@ suite('Terminal history', () => {
 			'- cmd: git status',
 			'  when: 1650000020',
 			'- cmd: two "\\nline"',
-			'  when: 1650000030',
+			'  when: 1650000030'
 		].join('\n');
 
 		let instantiationService: TestInstantiationService;
@@ -473,8 +494,12 @@ suite('Terminal history', () => {
 				}
 			} as Pick<IFileService, 'readFile'>);
 			instantiationService.stub(IRemoteAgentService, {
-				async getEnvironment() { return remoteEnvironment; },
-				getConnection() { return remoteConnection; }
+				async getEnvironment() {
+					return remoteEnvironment;
+				},
+				getConnection() {
+					return remoteConnection;
+				}
 			} as Pick<IRemoteAgentService, 'getConnection' | 'getEnvironment'>);
 		});
 
@@ -619,7 +644,7 @@ suite('Terminal history', () => {
 					'valid in the end \\\\\\\\\\n',
 					'mixed valid \\r\\n',
 					'mixed valid \\\\\\r\\n',
-					'mixed valid \\r\\\\\\n',
+					'mixed valid \\r\\\\\\n'
 				];
 
 				for (const x of cases) {
@@ -642,14 +667,13 @@ suite('Terminal history', () => {
 					'invalid in the end \\\\\\\\n',
 					'mixed invalid \\r\\\\n',
 					'mixed invalid \\r\\\\\\\\n',
-					'echo "\\\\n"',
+					'echo "\\\\n"'
 				];
 
 				for (const x of cases) {
 					ok(!sanitizeFishHistoryCmd(x).includes('\n'));
 				}
 			});
-
 		});
 	});
 });

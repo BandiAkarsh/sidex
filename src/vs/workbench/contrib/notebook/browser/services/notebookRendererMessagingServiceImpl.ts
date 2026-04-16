@@ -5,7 +5,10 @@
 
 import { Emitter } from '../../../../../base/common/event.js';
 import { Disposable } from '../../../../../base/common/lifecycle.js';
-import { INotebookRendererMessagingService, IScopedRendererMessaging } from '../../common/notebookRendererMessagingService.js';
+import {
+	INotebookRendererMessagingService,
+	IScopedRendererMessaging
+} from '../../common/notebookRendererMessagingService.js';
 import { IExtensionService } from '../../../../services/extensions/common/extensions.js';
 
 type MessageToSend = { editorId: string; rendererId: string; message: unknown };
@@ -21,9 +24,7 @@ export class NotebookRendererMessagingService extends Disposable implements INot
 	private readonly postMessageEmitter = this._register(new Emitter<MessageToSend>());
 	public readonly onShouldPostMessage = this.postMessageEmitter.event;
 
-	constructor(
-		@IExtensionService private readonly extensionService: IExtensionService
-	) {
+	constructor(@IExtensionService private readonly extensionService: IExtensionService) {
 		super();
 	}
 
@@ -64,7 +65,7 @@ export class NotebookRendererMessagingService extends Disposable implements INot
 
 		const messaging: IScopedRendererMessaging = {
 			postMessage: (rendererId, message) => this.postMessage(editorId, rendererId, message),
-			dispose: () => this.scopedMessaging.delete(editorId),
+			dispose: () => this.scopedMessaging.delete(editorId)
 		};
 
 		this.scopedMessaging.set(editorId, messaging);

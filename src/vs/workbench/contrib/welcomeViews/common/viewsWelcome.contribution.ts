@@ -11,15 +11,17 @@ import { ViewsWelcomeContribution } from './viewsWelcomeContribution.js';
 import { ViewsWelcomeExtensionPoint, viewsWelcomeExtensionPointDescriptor } from './viewsWelcomeExtensionPoint.js';
 import { ExtensionsRegistry } from '../../../services/extensions/common/extensionsRegistry.js';
 
-const extensionPoint = ExtensionsRegistry.registerExtensionPoint<ViewsWelcomeExtensionPoint>(viewsWelcomeExtensionPointDescriptor);
+const extensionPoint = ExtensionsRegistry.registerExtensionPoint<ViewsWelcomeExtensionPoint>(
+	viewsWelcomeExtensionPointDescriptor
+);
 
 class WorkbenchConfigurationContribution {
-	constructor(
-		@IInstantiationService instantiationService: IInstantiationService,
-	) {
+	constructor(@IInstantiationService instantiationService: IInstantiationService) {
 		instantiationService.createInstance(ViewsWelcomeContribution, extensionPoint);
 	}
 }
 
-Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench)
-	.registerWorkbenchContribution(WorkbenchConfigurationContribution, LifecyclePhase.Restored);
+Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(
+	WorkbenchConfigurationContribution,
+	LifecyclePhase.Restored
+);

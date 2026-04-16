@@ -27,7 +27,10 @@ import { IEditorGroupsService } from '../../../services/editor/common/editorGrou
 import { ACTIVE_GROUP, IEditorService } from '../../../services/editor/common/editorService.js';
 import { IExtensionService } from '../../../services/extensions/common/extensions.js';
 import { getTelemetryLevel, supportsTelemetry } from '../../../../platform/telemetry/common/telemetryUtils.js';
-import { IConfigurationChangeEvent, IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
+import {
+	IConfigurationChangeEvent,
+	IConfigurationService
+} from '../../../../platform/configuration/common/configuration.js';
 import { TelemetryLevel } from '../../../../platform/telemetry/common/telemetry.js';
 import { Disposable, DisposableStore } from '../../../../base/common/lifecycle.js';
 import { SimpleSettingRenderer } from '../../markdown/browser/markdownSettingRenderer.js';
@@ -57,16 +60,20 @@ export class ReleaseNotesManager extends Disposable {
 		@IWebviewWorkbenchService private readonly _webviewWorkbenchService: IWebviewWorkbenchService,
 		@IExtensionService private readonly _extensionService: IExtensionService,
 		@IProductService private readonly _productService: IProductService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService private readonly _instantiationService: IInstantiationService
 	) {
 		super();
 
-		this._register(TokenizationRegistry.onDidChange(() => {
-			return this.updateHtml();
-		}));
+		this._register(
+			TokenizationRegistry.onDidChange(() => {
+				return this.updateHtml();
+			})
+		);
 
-		this._register(_configurationService.onDidChangeConfiguration((e) => this.onDidChangeConfiguration(e)));
-		this._register(_webviewWorkbenchService.onDidChangeActiveWebviewEditor((e) => this.onDidChangeActiveWebviewEditor(e)));
+		this._register(_configurationService.onDidChangeConfiguration(e => this.onDidChangeConfiguration(e)));
+		this._register(
+			_webviewWorkbenchService.onDidChangeActiveWebviewEditor(e => this.onDidChangeActiveWebviewEditor(e))
+		);
 		this._simpleSettingRenderer = this._instantiationService.createInstance(SimpleSettingRenderer);
 	}
 
@@ -95,13 +102,17 @@ export class ReleaseNotesManager extends Disposable {
 		const base = await this.getBase(useCurrentFile);
 		this._lastMeta = { text: releaseNoteText, base };
 		const html = await this.renderBody(this._lastMeta);
-		const title = nls.localize('releaseNotesInputName', "Release Notes: {0}", version);
+		const title = nls.localize('releaseNotesInputName', 'Release Notes: {0}', version);
 
 		const activeEditorPane = this._editorService.activeEditorPane;
 		if (this._currentReleaseNotes) {
 			this._currentReleaseNotes.setWebviewTitle(title);
 			this._currentReleaseNotes.webview.setHtml(html);
-			this._webviewWorkbenchService.revealWebview(this._currentReleaseNotes, activeEditorPane ? activeEditorPane.group : this._editorGroupService.activeGroup, false);
+			this._webviewWorkbenchService.revealWebview(
+				this._currentReleaseNotes,
+				activeEditorPane ? activeEditorPane.group : this._editorGroupService.activeGroup,
+				false
+			);
 		} else {
 			this._currentReleaseNotes = this._webviewWorkbenchService.openWebview(
 				{
@@ -109,7 +120,7 @@ export class ReleaseNotesManager extends Disposable {
 					options: {
 						tryRestoreScrollPosition: true,
 						enableFindWidget: true,
-						disableServiceWorker: useCurrentFile ? false : true,
+						disableServiceWorker: useCurrentFile ? false : true
 					},
 					contentOptions: {
 						localResourceRoots: useCurrentFile ? [base] : [],
@@ -120,26 +131,31 @@ export class ReleaseNotesManager extends Disposable {
 				'releaseNotes',
 				title,
 				Codicon.vscode,
-				{ group: ACTIVE_GROUP, preserveFocus: false });
+				{ group: ACTIVE_GROUP, preserveFocus: false }
+			);
 
 			const disposables = new DisposableStore();
 
 			disposables.add(this._currentReleaseNotes.webview.onDidClickLink(uri => this.onDidClickLink(URI.parse(uri))));
 
-			disposables.add(this._currentReleaseNotes.webview.onMessage(e => {
-				if (e.message.type === 'showReleaseNotes') {
-					this._configurationService.updateValue('update.showReleaseNotes', e.message.value);
-				} else if (e.message.type === 'clickSetting') {
-					const x = this._currentReleaseNotes?.webview.container.offsetLeft + e.message.value.x;
-					const y = this._currentReleaseNotes?.webview.container.offsetTop + e.message.value.y;
-					this._simpleSettingRenderer.updateSetting(URI.parse(e.message.value.uri), x, y);
-				}
-			}));
+			disposables.add(
+				this._currentReleaseNotes.webview.onMessage(e => {
+					if (e.message.type === 'showReleaseNotes') {
+						this._configurationService.updateValue('update.showReleaseNotes', e.message.value);
+					} else if (e.message.type === 'clickSetting') {
+						const x = this._currentReleaseNotes?.webview.container.offsetLeft + e.message.value.x;
+						const y = this._currentReleaseNotes?.webview.container.offsetTop + e.message.value.y;
+						this._simpleSettingRenderer.updateSetting(URI.parse(e.message.value.uri), x, y);
+					}
+				})
+			);
 
-			disposables.add(this._currentReleaseNotes.onWillDispose(() => {
-				disposables.dispose();
-				this._currentReleaseNotes = undefined;
-			}));
+			disposables.add(
+				this._currentReleaseNotes.onWillDispose(() => {
+					disposables.dispose();
+					this._currentReleaseNotes = undefined;
+				})
+			);
 
 			this._currentReleaseNotes.webview.setHtml(html);
 		}
@@ -156,7 +172,7 @@ export class ReleaseNotesManager extends Disposable {
 		const versionLabel = match[1].replace(/\./g, '_');
 		const baseUrl = 'https://code.visualstudio.com/raw';
 		const url = `${baseUrl}/v${versionLabel}.md`;
-		const unassigned = nls.localize('unassigned', "unassigned");
+		const unassigned = nls.localize('unassigned', 'unassigned');
 
 		const escapeMdHtml = (text: string): string => {
 			return escape(text).replace(/\\/g, '\\\\');
@@ -213,13 +229,19 @@ export class ReleaseNotesManager extends Disposable {
 					const file = this._codeEditorService.getActiveCodeEditor()?.getModel()?.getValue();
 					text = file ? file.substring(file.indexOf('#')) : undefined;
 				} else {
-					text = await asTextOrError(await this._requestService.request({ url, callSite: 'releaseNotesEditor.fetchReleaseNotes' }, CancellationToken.None));
+					text = await asTextOrError(
+						await this._requestService.request(
+							{ url, callSite: 'releaseNotesEditor.fetchReleaseNotes' },
+							CancellationToken.None
+						)
+					);
 				}
 			} catch {
 				throw new Error('Failed to fetch release notes');
 			}
 
-			if (!text || (!/^#\s/.test(text) && !useCurrentFile)) { // release notes always starts with `#` followed by whitespace, except when using the current file
+			if (!text || (!/^#\s/.test(text) && !useCurrentFile)) {
+				// release notes always starts with `#` followed by whitespace, except when using the current file
 				throw new Error('Invalid release notes');
 			}
 
@@ -231,14 +253,17 @@ export class ReleaseNotesManager extends Disposable {
 			return fetchReleaseNotes();
 		}
 		if (!this._releaseNotesCache.has(version)) {
-			this._releaseNotesCache.set(version, (async () => {
-				try {
-					return await fetchReleaseNotes();
-				} catch (err) {
-					this._releaseNotesCache.delete(version);
-					throw err;
-				}
-			})());
+			this._releaseNotesCache.set(
+				version,
+				(async () => {
+					try {
+						return await fetchReleaseNotes();
+					} catch (err) {
+						this._releaseNotesCache.delete(version);
+						throw err;
+					}
+				})()
+			);
 		}
 
 		return this._releaseNotesCache.get(version)!;
@@ -249,15 +274,24 @@ export class ReleaseNotesManager extends Disposable {
 			// handled in receive message
 		} else {
 			this.addGAParameters(uri, 'ReleaseNotes')
-				.then(updated => this._openerService.open(updated, { allowCommands: ['workbench.action.openSettings', 'summarize.release.notes'] }))
+				.then(updated =>
+					this._openerService.open(updated, {
+						allowCommands: ['workbench.action.openSettings', 'summarize.release.notes']
+					})
+				)
 				.then(undefined, onUnexpectedError);
 		}
 	}
 
 	private async addGAParameters(uri: URI, origin: string, experiment = '1'): Promise<URI> {
-		if (supportsTelemetry(this._productService, this._environmentService) && getTelemetryLevel(this._configurationService) === TelemetryLevel.USAGE) {
+		if (
+			supportsTelemetry(this._productService, this._environmentService) &&
+			getTelemetryLevel(this._configurationService) === TelemetryLevel.USAGE
+		) {
 			if (uri.scheme === 'https' && uri.authority === 'code.visualstudio.com') {
-				return uri.with({ query: `${uri.query ? uri.query + '&' : ''}utm_source=VsCode&utm_medium=${encodeURIComponent(origin)}&utm_content=${encodeURIComponent(experiment)}` });
+				return uri.with({
+					query: `${uri.query ? uri.query + '&' : ''}utm_source=VsCode&utm_medium=${encodeURIComponent(origin)}&utm_content=${encodeURIComponent(experiment)}`
+				});
 			}
 		}
 		return uri;
@@ -266,7 +300,13 @@ export class ReleaseNotesManager extends Disposable {
 	private async renderBody(fileContent: { text: string; base: URI }) {
 		const nonce = generateUuid();
 
-		const processedContent = await renderReleaseNotesMarkdown(fileContent.text, this._extensionService, this._languageService, this._simpleSettingRenderer, this._productService.quality);
+		const processedContent = await renderReleaseNotesMarkdown(
+			fileContent.text,
+			this._extensionService,
+			this._languageService,
+			this._simpleSettingRenderer,
+			this._productService.quality
+		);
 
 		const colorMap = TokenizationRegistry.getColorMap();
 		const css = colorMap ? generateTokensCSSForColorMap(colorMap) : '';
@@ -550,7 +590,7 @@ export class ReleaseNotesManager extends Disposable {
 
 					const label = document.createElement('label');
 					label.htmlFor = 'showReleaseNotes';
-					label.textContent = '${nls.localize('showOnUpdate', "Show release notes after an update")}';
+					label.textContent = '${nls.localize('showOnUpdate', 'Show release notes after an update')}';
 					container.appendChild(label);
 
 					const beforeElement = document.querySelector("body > h1")?.nextElementSibling;
@@ -651,7 +691,7 @@ export async function renderReleaseNotesMarkdown(
 	extensionService: IExtensionService,
 	languageService: ILanguageService,
 	simpleSettingRenderer: SimpleSettingRenderer,
-	quality?: string,
+	quality?: string
 ): Promise<TrustedHTML> {
 	// Remove HTML comment markers around table of contents navigation
 	text = text
@@ -677,11 +717,13 @@ export async function renderReleaseNotesMarkdown(
 			allowedTags: { augment: ['nav', 'svg', 'path'] },
 			allowedAttributes: { augment: ['aria-role', 'viewBox', 'fill', 'xmlns', 'd'] }
 		},
-		markedExtensions: [{
-			renderer: {
-				html: simpleSettingRenderer.getHtmlRenderer(),
-				codespan: simpleSettingRenderer.getCodeSpanRenderer(),
+		markedExtensions: [
+			{
+				renderer: {
+					html: simpleSettingRenderer.getHtmlRenderer(),
+					codespan: simpleSettingRenderer.getCodeSpanRenderer()
+				}
 			}
-		}]
+		]
 	});
 }

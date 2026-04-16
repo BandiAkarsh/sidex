@@ -17,7 +17,6 @@ import { workbenchInstantiationService } from '../../../../test/browser/workbenc
 import { IHighlight } from '../../../../../base/browser/ui/highlightedlabel/highlightedLabel.js';
 
 suite('Debug - Link Detector', () => {
-
 	const disposables = ensureNoDisposablesAreLeakedInTestSuite();
 	let linkDetector: LinkDetector;
 
@@ -25,7 +24,9 @@ suite('Debug - Link Detector', () => {
 	 * Instantiate a {@link LinkDetector} for use by the functions being tested.
 	 */
 	setup(() => {
-		const instantiationService: TestInstantiationService = <TestInstantiationService>workbenchInstantiationService(undefined, disposables);
+		const instantiationService: TestInstantiationService = <TestInstantiationService>(
+			workbenchInstantiationService(undefined, disposables)
+		);
 		instantiationService.stub(ITunnelService, { canTunnel: () => false });
 		linkDetector = instantiationService.createInstance(LinkDetector);
 	});
@@ -78,7 +79,9 @@ suite('Debug - Link Detector', () => {
 	test('singleLineLink', () => {
 		const hoverBehavior = { type: DebugLinkHoverBehavior.None, store: new DisposableStore() };
 		const input = isWindows ? 'C:\\foo\\bar.js:12:34' : '/Users/foo/bar.js:12:34';
-		const expectedOutput = isWindows ? '<span><a tabindex="0">C:\\foo\\bar.js:12:34<\/a><\/span>' : '<span><a tabindex="0">/Users/foo/bar.js:12:34<\/a><\/span>';
+		const expectedOutput = isWindows
+			? '<span><a tabindex="0">C:\\foo\\bar.js:12:34<\/a><\/span>'
+			: '<span><a tabindex="0">/Users/foo/bar.js:12:34<\/a><\/span>';
 		const output = linkDetector.linkify(input, hoverBehavior);
 
 		assert.strictEqual(1, output.children.length);
@@ -86,15 +89,20 @@ suite('Debug - Link Detector', () => {
 		assert.strictEqual('A', output.firstElementChild!.tagName);
 		assert.strictEqual(expectedOutput, output.outerHTML);
 		assertElementIsLink(output.firstElementChild!);
-		assert.strictEqual(isWindows ? 'C:\\foo\\bar.js:12:34' : '/Users/foo/bar.js:12:34', output.firstElementChild!.textContent);
+		assert.strictEqual(
+			isWindows ? 'C:\\foo\\bar.js:12:34' : '/Users/foo/bar.js:12:34',
+			output.firstElementChild!.textContent
+		);
 		hoverBehavior.store.dispose();
 	});
 
 	test('allows links with @ (#282635)', () => {
 		if (!isWindows) {
 			const hoverBehavior = { type: DebugLinkHoverBehavior.None, store: new DisposableStore() };
-			const input = '(/home/alexey_korepov/projects/dt2/playwright/node_modules/.pnpm/playwright-core@1.57.0/node_modules/playwright-core/lib/client/errors.js:56:16)';
-			const expectedOutput = '<span>(<a tabindex="0">/home/alexey_korepov/projects/dt2/playwright/node_modules/.pnpm/playwright-core@1.57.0/node_modules/playwright-core/lib/client/errors.js:56:16</a>)</span>';
+			const input =
+				'(/home/alexey_korepov/projects/dt2/playwright/node_modules/.pnpm/playwright-core@1.57.0/node_modules/playwright-core/lib/client/errors.js:56:16)';
+			const expectedOutput =
+				'<span>(<a tabindex="0">/home/alexey_korepov/projects/dt2/playwright/node_modules/.pnpm/playwright-core@1.57.0/node_modules/playwright-core/lib/client/errors.js:56:16</a>)</span>';
 			const output = linkDetector.linkify(input, hoverBehavior);
 
 			assert.strictEqual(expectedOutput, output.outerHTML);
@@ -118,7 +126,12 @@ suite('Debug - Link Detector', () => {
 	test('relativeLinkWithWorkspace', async () => {
 		const hoverBehavior = { type: DebugLinkHoverBehavior.None, store: new DisposableStore() };
 		const input = '\./foo/bar.js';
-		const output = linkDetector.linkify(input, hoverBehavior, false, new WorkspaceFolder({ uri: URI.file('/path/to/workspace'), name: 'ws', index: 0 }));
+		const output = linkDetector.linkify(
+			input,
+			hoverBehavior,
+			false,
+			new WorkspaceFolder({ uri: URI.file('/path/to/workspace'), name: 'ws', index: 0 })
+		);
 		assert.strictEqual('SPAN', output.tagName);
 		assert.ok(output.outerHTML.indexOf('link') >= 0);
 		hoverBehavior.store.dispose();
@@ -141,9 +154,11 @@ suite('Debug - Link Detector', () => {
 
 	test('singleLineMultipleLinks', () => {
 		const hoverBehavior = { type: DebugLinkHoverBehavior.None, store: new DisposableStore() };
-		const input = isWindows ? 'Here is a link C:/foo/bar.js:12:34 and here is another D:/boo/far.js:56:78' :
-			'Here is a link /Users/foo/bar.js:12:34 and here is another /Users/boo/far.js:56:78';
-		const expectedOutput = /^<span>Here is a link <a tabindex="0">.*\/foo\/bar.js:12:34<\/a> and here is another <a tabindex="0">.*\/boo\/far.js:56:78<\/a><\/span>$/;
+		const input = isWindows
+			? 'Here is a link C:/foo/bar.js:12:34 and here is another D:/boo/far.js:56:78'
+			: 'Here is a link /Users/foo/bar.js:12:34 and here is another /Users/boo/far.js:56:78';
+		const expectedOutput =
+			/^<span>Here is a link <a tabindex="0">.*\/foo\/bar.js:12:34<\/a> and here is another <a tabindex="0">.*\/boo\/far.js:56:78<\/a><\/span>$/;
 		const output = linkDetector.linkify(input, hoverBehavior);
 
 		assert.strictEqual(2, output.children.length);
@@ -189,9 +204,11 @@ suite('Debug - Link Detector', () => {
 
 	test('multilineWithLinks', () => {
 		const hoverBehavior = { type: DebugLinkHoverBehavior.None, store: new DisposableStore() };
-		const input = isWindows ? 'I have a link for you\nHere it is: C:/foo/bar.js:12:34\nCool, huh?' :
-			'I have a link for you\nHere it is: /Users/foo/bar.js:12:34\nCool, huh?';
-		const expectedOutput = /^<span><span>I have a link for you\n<\/span><span>Here it is: <a tabindex="0">.*\/foo\/bar.js:12:34<\/a>\n<\/span><span>Cool, huh\?<\/span><\/span>$/;
+		const input = isWindows
+			? 'I have a link for you\nHere it is: C:/foo/bar.js:12:34\nCool, huh?'
+			: 'I have a link for you\nHere it is: /Users/foo/bar.js:12:34\nCool, huh?';
+		const expectedOutput =
+			/^<span><span>I have a link for you\n<\/span><span>Here it is: <a tabindex="0">.*\/foo\/bar.js:12:34<\/a>\n<\/span><span>Cool, huh\?<\/span><\/span>$/;
 		const output = linkDetector.linkify(input, hoverBehavior, true);
 
 		assert.strictEqual(3, output.children.length);
@@ -202,7 +219,10 @@ suite('Debug - Link Detector', () => {
 		assert.strictEqual('A', output.children[1].children[0].tagName);
 		assert(expectedOutput.test(output.outerHTML));
 		assertElementIsLink(output.children[1].children[0]);
-		assert.strictEqual(isWindows ? 'C:/foo/bar.js:12:34' : '/Users/foo/bar.js:12:34', output.children[1].children[0].textContent);
+		assert.strictEqual(
+			isWindows ? 'C:/foo/bar.js:12:34' : '/Users/foo/bar.js:12:34',
+			output.children[1].children[0].textContent
+		);
 		hoverBehavior.store.dispose();
 	});
 
@@ -223,7 +243,9 @@ suite('Debug - Link Detector', () => {
 		const hoverBehavior = { type: DebugLinkHoverBehavior.None, store: new DisposableStore() };
 		const input = isWindows ? 'C:\\foo\\bar.js:12:34' : '/Users/foo/bar.js:12:34';
 		const highlights: IHighlight[] = [{ start: 0, end: 5 }];
-		const expectedOutput = isWindows ? '<span><a tabindex="0"><span class="highlight">C:\\fo</span>o\\bar.js:12:34</a></span>' : '<span><a tabindex="0"><span class="highlight">/User</span>s/foo/bar.js:12:34</a></span>';
+		const expectedOutput = isWindows
+			? '<span><a tabindex="0"><span class="highlight">C:\\fo</span>o\\bar.js:12:34</a></span>'
+			: '<span><a tabindex="0"><span class="highlight">/User</span>s/foo/bar.js:12:34</a></span>';
 		const output = linkDetector.linkify(input, hoverBehavior, false, undefined, false, highlights);
 
 		assert.strictEqual(1, output.children.length);
@@ -238,7 +260,9 @@ suite('Debug - Link Detector', () => {
 		const hoverBehavior = { type: DebugLinkHoverBehavior.None, store: new DisposableStore() };
 		const input = isWindows ? 'C:\\foo\\bar.js:12:34' : '/Users/foo/bar.js:12:34';
 		const highlights: IHighlight[] = [{ start: 0, end: 10 }];
-		const expectedOutput = isWindows ? '<span><a tabindex="0"><span class="highlight">C:\\foo\\bar</span>.js:12:34</a></span>' : '<span><a tabindex="0"><span class="highlight">/Users/foo</span>/bar.js:12:34</a></span>';
+		const expectedOutput = isWindows
+			? '<span><a tabindex="0"><span class="highlight">C:\\foo\\bar</span>.js:12:34</a></span>'
+			: '<span><a tabindex="0"><span class="highlight">/Users/foo</span>/bar.js:12:34</a></span>';
 		const output = linkDetector.linkify(input, hoverBehavior, false, undefined, false, highlights);
 
 		assert.strictEqual(1, output.children.length);
@@ -253,7 +277,9 @@ suite('Debug - Link Detector', () => {
 		const hoverBehavior = { type: DebugLinkHoverBehavior.None, store: new DisposableStore() };
 		const input = isWindows ? 'C:\\foo\\bar.js:12:34' : '/Users/foo/bar.js:12:34';
 		const highlights: IHighlight[] = [{ start: 10, end: 20 }];
-		const expectedOutput = isWindows ? '<span><a tabindex="0">C:\\foo\\bar<span class="highlight">.js:12:34</span></a></span>' : '<span><a tabindex="0">/Users/foo<span class="highlight">/bar.js:12</span>:34</a></span>';
+		const expectedOutput = isWindows
+			? '<span><a tabindex="0">C:\\foo\\bar<span class="highlight">.js:12:34</span></a></span>'
+			: '<span><a tabindex="0">/Users/foo<span class="highlight">/bar.js:12</span>:34</a></span>';
 		const output = linkDetector.linkify(input, hoverBehavior, false, undefined, false, highlights);
 
 		assert.strictEqual(1, output.children.length);
@@ -268,7 +294,9 @@ suite('Debug - Link Detector', () => {
 		const hoverBehavior = { type: DebugLinkHoverBehavior.None, store: new DisposableStore() };
 		const input = isWindows ? 'C:\\foo\\bar.js:12:34' : '/Users/foo/bar.js:12:34';
 		const highlights: IHighlight[] = [{ start: 5, end: 15 }];
-		const expectedOutput = isWindows ? '<span><a tabindex="0">C:\\fo<span class="highlight">o\\bar.js:1</span>2:34</a></span>' : '<span><a tabindex="0">/User<span class="highlight">s/foo/bar.</span>js:12:34</a></span>';
+		const expectedOutput = isWindows
+			? '<span><a tabindex="0">C:\\fo<span class="highlight">o\\bar.js:1</span>2:34</a></span>'
+			: '<span><a tabindex="0">/User<span class="highlight">s/foo/bar.</span>js:12:34</a></span>';
 		const output = linkDetector.linkify(input, hoverBehavior, false, undefined, false, highlights);
 
 		assert.strictEqual(1, output.children.length);
@@ -282,7 +310,9 @@ suite('Debug - Link Detector', () => {
 	test('csharpStackTraceFormatWithLine', () => {
 		const hoverBehavior = { type: DebugLinkHoverBehavior.None, store: new DisposableStore() };
 		const input = isWindows ? 'C:\\foo\\bar.cs:line 6' : '/Users/foo/bar.cs:line 6';
-		const expectedOutput = isWindows ? '<span><a tabindex="0">C:\\foo\\bar.cs:line 6<\/a><\/span>' : '<span><a tabindex="0">/Users/foo/bar.cs:line 6<\/a><\/span>';
+		const expectedOutput = isWindows
+			? '<span><a tabindex="0">C:\\foo\\bar.cs:line 6<\/a><\/span>'
+			: '<span><a tabindex="0">/Users/foo/bar.cs:line 6<\/a><\/span>';
 		const output = linkDetector.linkify(input, hoverBehavior);
 
 		assert.strictEqual(1, output.children.length);
@@ -290,14 +320,19 @@ suite('Debug - Link Detector', () => {
 		assert.strictEqual('A', output.firstElementChild!.tagName);
 		assert.strictEqual(expectedOutput, output.outerHTML);
 		assertElementIsLink(output.firstElementChild!);
-		assert.strictEqual(isWindows ? 'C:\\foo\\bar.cs:line 6' : '/Users/foo/bar.cs:line 6', output.firstElementChild!.textContent);
+		assert.strictEqual(
+			isWindows ? 'C:\\foo\\bar.cs:line 6' : '/Users/foo/bar.cs:line 6',
+			output.firstElementChild!.textContent
+		);
 		hoverBehavior.store.dispose();
 	});
 
 	test('csharpStackTraceFormatWithLineAndColumn', () => {
 		const hoverBehavior = { type: DebugLinkHoverBehavior.None, store: new DisposableStore() };
 		const input = isWindows ? 'C:\\foo\\bar.cs:line 6:10' : '/Users/foo/bar.cs:line 6:10';
-		const expectedOutput = isWindows ? '<span><a tabindex="0">C:\\foo\\bar.cs:line 6:10<\/a><\/span>' : '<span><a tabindex="0">/Users/foo/bar.cs:line 6:10<\/a><\/span>';
+		const expectedOutput = isWindows
+			? '<span><a tabindex="0">C:\\foo\\bar.cs:line 6:10<\/a><\/span>'
+			: '<span><a tabindex="0">/Users/foo/bar.cs:line 6:10<\/a><\/span>';
 		const output = linkDetector.linkify(input, hoverBehavior);
 
 		assert.strictEqual(1, output.children.length);
@@ -305,18 +340,22 @@ suite('Debug - Link Detector', () => {
 		assert.strictEqual('A', output.firstElementChild!.tagName);
 		assert.strictEqual(expectedOutput, output.outerHTML);
 		assertElementIsLink(output.firstElementChild!);
-		assert.strictEqual(isWindows ? 'C:\\foo\\bar.cs:line 6:10' : '/Users/foo/bar.cs:line 6:10', output.firstElementChild!.textContent);
+		assert.strictEqual(
+			isWindows ? 'C:\\foo\\bar.cs:line 6:10' : '/Users/foo/bar.cs:line 6:10',
+			output.firstElementChild!.textContent
+		);
 		hoverBehavior.store.dispose();
 	});
 
 	test('mixedStackTraceFormats', () => {
 		const hoverBehavior = { type: DebugLinkHoverBehavior.None, store: new DisposableStore() };
-		const input = isWindows ? 'C:\\foo\\bar.js:12:34 and C:\\baz\\qux.cs:line 6' :
-			'/Users/foo/bar.js:12:34 and /Users/baz/qux.cs:line 6';
+		const input = isWindows
+			? 'C:\\foo\\bar.js:12:34 and C:\\baz\\qux.cs:line 6'
+			: '/Users/foo/bar.js:12:34 and /Users/baz/qux.cs:line 6';
 		// Use flexible path separator matching for cross-platform compatibility
-		const expectedOutput = isWindows ?
-			/^<span><a tabindex="0">.*\\foo\\bar\.js:12:34<\/a> and <a tabindex="0">.*\\baz\\qux\.cs:line 6<\/a><\/span>$/ :
-			/^<span><a tabindex="0">.*\/foo\/bar\.js:12:34<\/a> and <a tabindex="0">.*\/baz\/qux\.cs:line 6<\/a><\/span>$/;
+		const expectedOutput = isWindows
+			? /^<span><a tabindex="0">.*\\foo\\bar\.js:12:34<\/a> and <a tabindex="0">.*\\baz\\qux\.cs:line 6<\/a><\/span>$/
+			: /^<span><a tabindex="0">.*\/foo\/bar\.js:12:34<\/a> and <a tabindex="0">.*\/baz\/qux\.cs:line 6<\/a><\/span>$/;
 		const output = linkDetector.linkify(input, hoverBehavior);
 
 		assert.strictEqual(2, output.children.length);
@@ -327,7 +366,10 @@ suite('Debug - Link Detector', () => {
 		assertElementIsLink(output.children[0]);
 		assertElementIsLink(output.children[1]);
 		assert.strictEqual(isWindows ? 'C:\\foo\\bar.js:12:34' : '/Users/foo/bar.js:12:34', output.children[0].textContent);
-		assert.strictEqual(isWindows ? 'C:\\baz\\qux.cs:line 6' : '/Users/baz/qux.cs:line 6', output.children[1].textContent);
+		assert.strictEqual(
+			isWindows ? 'C:\\baz\\qux.cs:line 6' : '/Users/baz/qux.cs:line 6',
+			output.children[1].textContent
+		);
 		hoverBehavior.store.dispose();
 	});
 });

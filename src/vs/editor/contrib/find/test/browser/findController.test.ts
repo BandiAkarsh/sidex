@@ -13,7 +13,16 @@ import { EditOperation } from '../../../../common/core/editOperation.js';
 import { Position } from '../../../../common/core/position.js';
 import { Range } from '../../../../common/core/range.js';
 import { Selection } from '../../../../common/core/selection.js';
-import { CommonFindController, FindStartFocusAction, IFindStartOptions, NextMatchFindAction, NextSelectionMatchFindAction, StartFindAction, StartFindReplaceAction, StartFindWithSelectionAction } from '../../browser/findController.js';
+import {
+	CommonFindController,
+	FindStartFocusAction,
+	IFindStartOptions,
+	NextMatchFindAction,
+	NextSelectionMatchFindAction,
+	StartFindAction,
+	StartFindReplaceAction,
+	StartFindWithSelectionAction
+} from '../../browser/findController.js';
 import { CONTEXT_FIND_INPUT_FOCUSED } from '../../browser/findModel.js';
 import { withAsyncTestCodeEditor } from '../../../../test/browser/testCodeEditor.js';
 import { IClipboardService } from '../../../../../platform/clipboard/common/clipboardService.js';
@@ -22,10 +31,14 @@ import { IHoverService } from '../../../../../platform/hover/browser/hover.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
 import { ServiceCollection } from '../../../../../platform/instantiation/common/serviceCollection.js';
 import { INotificationService } from '../../../../../platform/notification/common/notification.js';
-import { IStorageService, InMemoryStorageService, StorageScope, StorageTarget } from '../../../../../platform/storage/common/storage.js';
+import {
+	IStorageService,
+	InMemoryStorageService,
+	StorageScope,
+	StorageTarget
+} from '../../../../../platform/storage/common/storage.js';
 
 class TestFindController extends CommonFindController {
-
 	public hasFocus: boolean;
 	public delayUpdateHistory: boolean = false;
 
@@ -61,14 +74,18 @@ function fromSelection(slc: Selection): number[] {
 	return [slc.startLineNumber, slc.startColumn, slc.endLineNumber, slc.endColumn];
 }
 
-function executeAction(instantiationService: IInstantiationService, editor: ICodeEditor, action: EditorAction, args?: any): Promise<void> {
-	return instantiationService.invokeFunction((accessor) => {
+function executeAction(
+	instantiationService: IInstantiationService,
+	editor: ICodeEditor,
+	action: EditorAction,
+	args?: any
+): Promise<void> {
+	return instantiationService.invokeFunction(accessor => {
 		return Promise.resolve(action.runEditorCommand(accessor, editor, args));
 	});
 }
 
 suite('FindController', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	let clipboardState = '';
@@ -79,7 +96,9 @@ suite('FindController', () => {
 		// eslint-disable-next-line local/code-no-any-casts
 		serviceCollection.set(IClipboardService, <any>{
 			readFindText: () => clipboardState,
-			writeFindText: (value: any) => { clipboardState = value; }
+			writeFindText: (value: any) => {
+				clipboardState = value;
+			}
 		});
 	}
 
@@ -159,394 +178,389 @@ suite('FindController', () => {
 	}); */
 
 	test('issue #1857: F3, Find Next, acts like "Find Under Cursor"', async () => {
-		await withAsyncTestCodeEditor([
-			'ABC',
-			'ABC',
-			'XYZ',
-			'ABC'
-		], { serviceCollection: serviceCollection }, async (editor, _, instantiationService) => {
-			clipboardState = '';
-			// The cursor is at the very top, of the file, at the first ABC
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
-			const findState = findController.getState();
-			const nextMatchFindAction = NextMatchFindAction;
+		await withAsyncTestCodeEditor(
+			['ABC', 'ABC', 'XYZ', 'ABC'],
+			{ serviceCollection: serviceCollection },
+			async (editor, _, instantiationService) => {
+				clipboardState = '';
+				// The cursor is at the very top, of the file, at the first ABC
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+				const findState = findController.getState();
+				const nextMatchFindAction = NextMatchFindAction;
 
-			// I hit Ctrl+F to show the Find dialog
-			await executeAction(instantiationService, editor, StartFindAction);
+				// I hit Ctrl+F to show the Find dialog
+				await executeAction(instantiationService, editor, StartFindAction);
 
-			// I type ABC.
-			findState.change({ searchString: 'A' }, true);
-			findState.change({ searchString: 'AB' }, true);
-			findState.change({ searchString: 'ABC' }, true);
+				// I type ABC.
+				findState.change({ searchString: 'A' }, true);
+				findState.change({ searchString: 'AB' }, true);
+				findState.change({ searchString: 'ABC' }, true);
 
-			// The first ABC is highlighted.
-			assert.deepStrictEqual(fromSelection(editor.getSelection()!), [1, 1, 1, 4]);
+				// The first ABC is highlighted.
+				assert.deepStrictEqual(fromSelection(editor.getSelection()!), [1, 1, 1, 4]);
 
-			// I hit Esc to exit the Find dialog.
-			findController.closeFindWidget();
-			findController.hasFocus = false;
+				// I hit Esc to exit the Find dialog.
+				findController.closeFindWidget();
+				findController.hasFocus = false;
 
-			// The cursor is now at end of the first line, with ABC on that line highlighted.
-			assert.deepStrictEqual(fromSelection(editor.getSelection()!), [1, 1, 1, 4]);
+				// The cursor is now at end of the first line, with ABC on that line highlighted.
+				assert.deepStrictEqual(fromSelection(editor.getSelection()!), [1, 1, 1, 4]);
 
-			// I hit delete to remove it and change the text to XYZ.
-			editor.pushUndoStop();
-			editor.executeEdits('test', [EditOperation.delete(new Range(1, 1, 1, 4))]);
-			editor.executeEdits('test', [EditOperation.insert(new Position(1, 1), 'XYZ')]);
-			editor.pushUndoStop();
+				// I hit delete to remove it and change the text to XYZ.
+				editor.pushUndoStop();
+				editor.executeEdits('test', [EditOperation.delete(new Range(1, 1, 1, 4))]);
+				editor.executeEdits('test', [EditOperation.insert(new Position(1, 1), 'XYZ')]);
+				editor.pushUndoStop();
 
-			// At this point the text editor looks like this:
-			//   XYZ
-			//   ABC
-			//   XYZ
-			//   ABC
-			assert.strictEqual(editor.getModel()!.getLineContent(1), 'XYZ');
+				// At this point the text editor looks like this:
+				//   XYZ
+				//   ABC
+				//   XYZ
+				//   ABC
+				assert.strictEqual(editor.getModel()!.getLineContent(1), 'XYZ');
 
-			// The cursor is at end of the first line.
-			assert.deepStrictEqual(fromSelection(editor.getSelection()!), [1, 4, 1, 4]);
+				// The cursor is at end of the first line.
+				assert.deepStrictEqual(fromSelection(editor.getSelection()!), [1, 4, 1, 4]);
 
-			// I hit F3 to "Find Next" to find the next occurrence of ABC, but instead it searches for XYZ.
-			await editor.runAction(nextMatchFindAction);
+				// I hit F3 to "Find Next" to find the next occurrence of ABC, but instead it searches for XYZ.
+				await editor.runAction(nextMatchFindAction);
 
-			assert.strictEqual(findState.searchString, 'ABC');
-			assert.strictEqual(findController.hasFocus, false);
+				assert.strictEqual(findState.searchString, 'ABC');
+				assert.strictEqual(findController.hasFocus, false);
 
-			findController.dispose();
-		});
+				findController.dispose();
+			}
+		);
 	});
 
 	test('issue #3090: F3 does not loop with two matches on a single line', async () => {
-		await withAsyncTestCodeEditor([
-			'import nls = require(\'vs/nls\');'
-		], { serviceCollection: serviceCollection }, async (editor) => {
-			clipboardState = '';
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
-			const nextMatchFindAction = NextMatchFindAction;
+		await withAsyncTestCodeEditor(
+			["import nls = require('vs/nls');"],
+			{ serviceCollection: serviceCollection },
+			async editor => {
+				clipboardState = '';
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+				const nextMatchFindAction = NextMatchFindAction;
 
-			editor.setPosition({
-				lineNumber: 1,
-				column: 9
-			});
+				editor.setPosition({
+					lineNumber: 1,
+					column: 9
+				});
 
-			await editor.runAction(nextMatchFindAction);
-			assert.deepStrictEqual(fromSelection(editor.getSelection()!), [1, 26, 1, 29]);
+				await editor.runAction(nextMatchFindAction);
+				assert.deepStrictEqual(fromSelection(editor.getSelection()!), [1, 26, 1, 29]);
 
-			await editor.runAction(nextMatchFindAction);
-			assert.deepStrictEqual(fromSelection(editor.getSelection()!), [1, 8, 1, 11]);
+				await editor.runAction(nextMatchFindAction);
+				assert.deepStrictEqual(fromSelection(editor.getSelection()!), [1, 8, 1, 11]);
 
-			findController.dispose();
-		});
+				findController.dispose();
+			}
+		);
 	});
 
 	test('issue #6149: Auto-escape highlighted text for search and replace regex mode', async () => {
-		await withAsyncTestCodeEditor([
-			'var x = (3 * 5)',
-			'var y = (3 * 5)',
-			'var z = (3  * 5)',
-		], { serviceCollection: serviceCollection }, async (editor, _, instantiationService) => {
-			clipboardState = '';
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
-			const nextMatchFindAction = NextMatchFindAction;
+		await withAsyncTestCodeEditor(
+			['var x = (3 * 5)', 'var y = (3 * 5)', 'var z = (3  * 5)'],
+			{ serviceCollection: serviceCollection },
+			async (editor, _, instantiationService) => {
+				clipboardState = '';
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+				const nextMatchFindAction = NextMatchFindAction;
 
-			editor.setSelection(new Selection(1, 9, 1, 13));
+				editor.setSelection(new Selection(1, 9, 1, 13));
 
-			findController.toggleRegex();
-			await executeAction(instantiationService, editor, StartFindAction);
+				findController.toggleRegex();
+				await executeAction(instantiationService, editor, StartFindAction);
 
-			await editor.runAction(nextMatchFindAction);
-			assert.deepStrictEqual(fromSelection(editor.getSelection()!), [2, 9, 2, 13]);
+				await editor.runAction(nextMatchFindAction);
+				assert.deepStrictEqual(fromSelection(editor.getSelection()!), [2, 9, 2, 13]);
 
-			await editor.runAction(nextMatchFindAction);
-			assert.deepStrictEqual(fromSelection(editor.getSelection()!), [1, 9, 1, 13]);
+				await editor.runAction(nextMatchFindAction);
+				assert.deepStrictEqual(fromSelection(editor.getSelection()!), [1, 9, 1, 13]);
 
-			findController.dispose();
-		});
+				findController.dispose();
+			}
+		);
 	});
 
-	test('issue #41027: Don\'t replace find input value on replace action if find input is active', async () => {
-		await withAsyncTestCodeEditor([
-			'test',
-		], { serviceCollection: serviceCollection }, async (editor, _, instantiationService) => {
-			const testRegexString = 'tes.';
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
-			const nextMatchFindAction = NextMatchFindAction;
+	test("issue #41027: Don't replace find input value on replace action if find input is active", async () => {
+		await withAsyncTestCodeEditor(
+			['test'],
+			{ serviceCollection: serviceCollection },
+			async (editor, _, instantiationService) => {
+				const testRegexString = 'tes.';
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+				const nextMatchFindAction = NextMatchFindAction;
 
-			findController.toggleRegex();
-			findController.setSearchString(testRegexString);
-			await findController.start({
-				forceRevealReplace: false,
-				seedSearchStringFromSelection: 'none',
-				seedSearchStringFromNonEmptySelection: false,
-				seedSearchStringFromGlobalClipboard: false,
-				shouldFocus: FindStartFocusAction.FocusFindInput,
-				shouldAnimate: false,
-				updateSearchScope: false,
-				loop: true
-			});
-			await editor.runAction(nextMatchFindAction);
-			await executeAction(instantiationService, editor, StartFindReplaceAction);
+				findController.toggleRegex();
+				findController.setSearchString(testRegexString);
+				await findController.start({
+					forceRevealReplace: false,
+					seedSearchStringFromSelection: 'none',
+					seedSearchStringFromNonEmptySelection: false,
+					seedSearchStringFromGlobalClipboard: false,
+					shouldFocus: FindStartFocusAction.FocusFindInput,
+					shouldAnimate: false,
+					updateSearchScope: false,
+					loop: true
+				});
+				await editor.runAction(nextMatchFindAction);
+				await executeAction(instantiationService, editor, StartFindReplaceAction);
 
-			assert.strictEqual(findController.getState().searchString, testRegexString);
+				assert.strictEqual(findController.getState().searchString, testRegexString);
 
-			findController.dispose();
-		});
+				findController.dispose();
+			}
+		);
 	});
 
 	test('editor.find.closeOnResult: closes find widget when a match is found from explicit navigation', async () => {
-		await withAsyncTestCodeEditor([
-			'ABC',
-			'ABC',
-			'XYZ',
-		], { serviceCollection: serviceCollection, find: { closeOnResult: true } }, async (editor, _, instantiationService) => {
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
-			const findState = findController.getState();
+		await withAsyncTestCodeEditor(
+			['ABC', 'ABC', 'XYZ'],
+			{ serviceCollection: serviceCollection, find: { closeOnResult: true } },
+			async (editor, _, instantiationService) => {
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+				const findState = findController.getState();
 
-			await executeAction(instantiationService, editor, StartFindAction);
-			assert.strictEqual(findState.isRevealed, true);
+				await executeAction(instantiationService, editor, StartFindAction);
+				assert.strictEqual(findState.isRevealed, true);
 
-			findState.change({ searchString: 'ABC' }, true);
-			await editor.runAction(NextMatchFindAction);
+				findState.change({ searchString: 'ABC' }, true);
+				await editor.runAction(NextMatchFindAction);
 
-			assert.strictEqual(findState.isRevealed, false);
-			findController.dispose();
-		});
+				assert.strictEqual(findState.isRevealed, false);
+				findController.dispose();
+			}
+		);
 	});
 
 	test('editor.find.closeOnResult: keeps find widget open when no match is found', async () => {
-		await withAsyncTestCodeEditor([
-			'ABC',
-			'DEF',
-			'XYZ',
-		], { serviceCollection: serviceCollection, find: { closeOnResult: true } }, async (editor, _, instantiationService) => {
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
-			const findState = findController.getState();
+		await withAsyncTestCodeEditor(
+			['ABC', 'DEF', 'XYZ'],
+			{ serviceCollection: serviceCollection, find: { closeOnResult: true } },
+			async (editor, _, instantiationService) => {
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+				const findState = findController.getState();
 
-			await executeAction(instantiationService, editor, StartFindAction);
-			assert.strictEqual(findState.isRevealed, true);
+				await executeAction(instantiationService, editor, StartFindAction);
+				assert.strictEqual(findState.isRevealed, true);
 
-			findState.change({ searchString: 'NO_MATCH' }, true);
-			await editor.runAction(NextMatchFindAction);
+				findState.change({ searchString: 'NO_MATCH' }, true);
+				await editor.runAction(NextMatchFindAction);
 
-			assert.strictEqual(findState.matchesCount, 0);
-			assert.strictEqual(findState.isRevealed, true);
-			findController.dispose();
-		});
+				assert.strictEqual(findState.matchesCount, 0);
+				assert.strictEqual(findState.isRevealed, true);
+				findController.dispose();
+			}
+		);
 	});
 
 	test('editor.find.closeOnResult: disabled keeps find widget open after navigation', async () => {
-		await withAsyncTestCodeEditor([
-			'ABC',
-			'ABC',
-			'XYZ',
-		], { serviceCollection: serviceCollection, find: { closeOnResult: false } }, async (editor, _, instantiationService) => {
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
-			const findState = findController.getState();
+		await withAsyncTestCodeEditor(
+			['ABC', 'ABC', 'XYZ'],
+			{ serviceCollection: serviceCollection, find: { closeOnResult: false } },
+			async (editor, _, instantiationService) => {
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+				const findState = findController.getState();
 
-			await executeAction(instantiationService, editor, StartFindAction);
-			assert.strictEqual(findState.isRevealed, true);
+				await executeAction(instantiationService, editor, StartFindAction);
+				assert.strictEqual(findState.isRevealed, true);
 
-			findState.change({ searchString: 'ABC' }, true);
-			await editor.runAction(NextMatchFindAction);
+				findState.change({ searchString: 'ABC' }, true);
+				await editor.runAction(NextMatchFindAction);
 
-			assert.strictEqual(findState.isRevealed, true);
-			findController.dispose();
-		});
+				assert.strictEqual(findState.isRevealed, true);
+				findController.dispose();
+			}
+		);
 	});
 
 	test('issue #9043: Clear search scope when find widget is hidden', async () => {
-		await withAsyncTestCodeEditor([
-			'var x = (3 * 5)',
-			'var y = (3 * 5)',
-			'var z = (3 * 5)',
-		], { serviceCollection: serviceCollection }, async (editor) => {
-			clipboardState = '';
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
-			await findController.start({
-				forceRevealReplace: false,
-				seedSearchStringFromSelection: 'none',
-				seedSearchStringFromNonEmptySelection: false,
-				seedSearchStringFromGlobalClipboard: false,
-				shouldFocus: FindStartFocusAction.NoFocusChange,
-				shouldAnimate: false,
-				updateSearchScope: false,
-				loop: true
-			});
+		await withAsyncTestCodeEditor(
+			['var x = (3 * 5)', 'var y = (3 * 5)', 'var z = (3 * 5)'],
+			{ serviceCollection: serviceCollection },
+			async editor => {
+				clipboardState = '';
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+				await findController.start({
+					forceRevealReplace: false,
+					seedSearchStringFromSelection: 'none',
+					seedSearchStringFromNonEmptySelection: false,
+					seedSearchStringFromGlobalClipboard: false,
+					shouldFocus: FindStartFocusAction.NoFocusChange,
+					shouldAnimate: false,
+					updateSearchScope: false,
+					loop: true
+				});
 
-			assert.strictEqual(findController.getState().searchScope, null);
+				assert.strictEqual(findController.getState().searchScope, null);
 
-			findController.getState().change({
-				searchScope: [new Range(1, 1, 1, 5)]
-			}, false);
+				findController.getState().change(
+					{
+						searchScope: [new Range(1, 1, 1, 5)]
+					},
+					false
+				);
 
-			assert.deepStrictEqual(findController.getState().searchScope, [new Range(1, 1, 1, 5)]);
+				assert.deepStrictEqual(findController.getState().searchScope, [new Range(1, 1, 1, 5)]);
 
-			findController.closeFindWidget();
-			assert.strictEqual(findController.getState().searchScope, null);
-		});
+				findController.closeFindWidget();
+				assert.strictEqual(findController.getState().searchScope, null);
+			}
+		);
 	});
 
 	test('issue #18111: Regex replace with single space replaces with no space', async () => {
-		await withAsyncTestCodeEditor([
-			'HRESULT OnAmbientPropertyChange(DISPID   dispid);'
-		], { serviceCollection: serviceCollection }, async (editor, _, instantiationService) => {
-			clipboardState = '';
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+		await withAsyncTestCodeEditor(
+			['HRESULT OnAmbientPropertyChange(DISPID   dispid);'],
+			{ serviceCollection: serviceCollection },
+			async (editor, _, instantiationService) => {
+				clipboardState = '';
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
 
-			await executeAction(instantiationService, editor, StartFindAction);
+				await executeAction(instantiationService, editor, StartFindAction);
 
-			findController.getState().change({ searchString: '\\b\\s{3}\\b', replaceString: ' ', isRegex: true }, false);
-			findController.moveToNextMatch();
+				findController.getState().change({ searchString: '\\b\\s{3}\\b', replaceString: ' ', isRegex: true }, false);
+				findController.moveToNextMatch();
 
-			assert.deepStrictEqual(editor.getSelections()!.map(fromSelection), [
-				[1, 39, 1, 42]
-			]);
+				assert.deepStrictEqual(editor.getSelections()!.map(fromSelection), [[1, 39, 1, 42]]);
 
-			findController.replace();
+				findController.replace();
 
-			assert.deepStrictEqual(editor.getValue(), 'HRESULT OnAmbientPropertyChange(DISPID dispid);');
+				assert.deepStrictEqual(editor.getValue(), 'HRESULT OnAmbientPropertyChange(DISPID dispid);');
 
-			findController.dispose();
-		});
+				findController.dispose();
+			}
+		);
 	});
 
 	test('issue #24714: Regular expression with ^ in search & replace', async () => {
-		await withAsyncTestCodeEditor([
-			'',
-			'line2',
-			'line3'
-		], { serviceCollection: serviceCollection }, async (editor, _, instantiationService) => {
-			clipboardState = '';
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+		await withAsyncTestCodeEditor(
+			['', 'line2', 'line3'],
+			{ serviceCollection: serviceCollection },
+			async (editor, _, instantiationService) => {
+				clipboardState = '';
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
 
-			await executeAction(instantiationService, editor, StartFindAction);
+				await executeAction(instantiationService, editor, StartFindAction);
 
-			findController.getState().change({ searchString: '^', replaceString: 'x', isRegex: true }, false);
-			findController.moveToNextMatch();
+				findController.getState().change({ searchString: '^', replaceString: 'x', isRegex: true }, false);
+				findController.moveToNextMatch();
 
-			assert.deepStrictEqual(editor.getSelections()!.map(fromSelection), [
-				[2, 1, 2, 1]
-			]);
+				assert.deepStrictEqual(editor.getSelections()!.map(fromSelection), [[2, 1, 2, 1]]);
 
-			findController.replace();
+				findController.replace();
 
-			assert.deepStrictEqual(editor.getValue(), '\nxline2\nline3');
+				assert.deepStrictEqual(editor.getValue(), '\nxline2\nline3');
 
-			findController.dispose();
-		});
+				findController.dispose();
+			}
+		);
 	});
 
 	test('issue #38232: Find Next Selection, regex enabled', async () => {
-		await withAsyncTestCodeEditor([
-			'([funny]',
-			'',
-			'([funny]'
-		], { serviceCollection: serviceCollection }, async (editor) => {
-			clipboardState = '';
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
-			const nextSelectionMatchFindAction = new NextSelectionMatchFindAction();
+		await withAsyncTestCodeEditor(
+			['([funny]', '', '([funny]'],
+			{ serviceCollection: serviceCollection },
+			async editor => {
+				clipboardState = '';
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+				const nextSelectionMatchFindAction = new NextSelectionMatchFindAction();
 
-			// toggle regex
-			findController.getState().change({ isRegex: true }, false);
+				// toggle regex
+				findController.getState().change({ isRegex: true }, false);
 
-			// change selection
-			editor.setSelection(new Selection(1, 1, 1, 9));
+				// change selection
+				editor.setSelection(new Selection(1, 1, 1, 9));
 
-			// cmd+f3
-			await editor.runAction(nextSelectionMatchFindAction);
+				// cmd+f3
+				await editor.runAction(nextSelectionMatchFindAction);
 
-			assert.deepStrictEqual(editor.getSelections()!.map(fromSelection), [
-				[3, 1, 3, 9]
-			]);
+				assert.deepStrictEqual(editor.getSelections()!.map(fromSelection), [[3, 1, 3, 9]]);
 
-			findController.dispose();
-		});
+				findController.dispose();
+			}
+		);
 	});
 
 	test('issue #38232: Find Next Selection, regex enabled, find widget open', async () => {
-		await withAsyncTestCodeEditor([
-			'([funny]',
-			'',
-			'([funny]'
-		], { serviceCollection: serviceCollection }, async (editor, _, instantiationService) => {
-			clipboardState = '';
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
-			const nextSelectionMatchFindAction = new NextSelectionMatchFindAction();
+		await withAsyncTestCodeEditor(
+			['([funny]', '', '([funny]'],
+			{ serviceCollection: serviceCollection },
+			async (editor, _, instantiationService) => {
+				clipboardState = '';
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+				const nextSelectionMatchFindAction = new NextSelectionMatchFindAction();
 
-			// cmd+f - open find widget
-			await executeAction(instantiationService, editor, StartFindAction);
+				// cmd+f - open find widget
+				await executeAction(instantiationService, editor, StartFindAction);
 
-			// toggle regex
-			findController.getState().change({ isRegex: true }, false);
+				// toggle regex
+				findController.getState().change({ isRegex: true }, false);
 
-			// change selection
-			editor.setSelection(new Selection(1, 1, 1, 9));
+				// change selection
+				editor.setSelection(new Selection(1, 1, 1, 9));
 
-			// cmd+f3
-			await editor.runAction(nextSelectionMatchFindAction);
+				// cmd+f3
+				await editor.runAction(nextSelectionMatchFindAction);
 
-			assert.deepStrictEqual(editor.getSelections()!.map(fromSelection), [
-				[3, 1, 3, 9]
-			]);
+				assert.deepStrictEqual(editor.getSelections()!.map(fromSelection), [[3, 1, 3, 9]]);
 
-			findController.dispose();
-		});
+				findController.dispose();
+			}
+		);
 	});
 
 	test('issue #47400, CMD+E supports feeding multiple line of text into the find widget', async () => {
-		await withAsyncTestCodeEditor([
-			'ABC',
-			'ABC',
-			'XYZ',
-			'ABC',
-			'ABC'
-		], { serviceCollection: serviceCollection }, async (editor, _, instantiationService) => {
-			clipboardState = '';
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+		await withAsyncTestCodeEditor(
+			['ABC', 'ABC', 'XYZ', 'ABC', 'ABC'],
+			{ serviceCollection: serviceCollection },
+			async (editor, _, instantiationService) => {
+				clipboardState = '';
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
 
-			// change selection
-			editor.setSelection(new Selection(1, 1, 1, 1));
+				// change selection
+				editor.setSelection(new Selection(1, 1, 1, 1));
 
-			// cmd+f - open find widget
-			await executeAction(instantiationService, editor, StartFindAction);
+				// cmd+f - open find widget
+				await executeAction(instantiationService, editor, StartFindAction);
 
-			editor.setSelection(new Selection(1, 1, 2, 4));
-			const startFindWithSelectionAction = new StartFindWithSelectionAction();
-			await editor.runAction(startFindWithSelectionAction);
-			const findState = findController.getState();
+				editor.setSelection(new Selection(1, 1, 2, 4));
+				const startFindWithSelectionAction = new StartFindWithSelectionAction();
+				await editor.runAction(startFindWithSelectionAction);
+				const findState = findController.getState();
 
-			assert.deepStrictEqual(findState.searchString.split(/\r\n|\r|\n/g), ['ABC', 'ABC']);
+				assert.deepStrictEqual(findState.searchString.split(/\r\n|\r|\n/g), ['ABC', 'ABC']);
 
-			editor.setSelection(new Selection(3, 1, 3, 1));
-			await editor.runAction(startFindWithSelectionAction);
+				editor.setSelection(new Selection(3, 1, 3, 1));
+				await editor.runAction(startFindWithSelectionAction);
 
-			findController.dispose();
-		});
+				findController.dispose();
+			}
+		);
 	});
 
 	test('issue #109756, CMD+E with empty cursor should always work', async () => {
-		await withAsyncTestCodeEditor([
-			'ABC',
-			'ABC',
-			'XYZ',
-			'ABC',
-			'ABC'
-		], { serviceCollection: serviceCollection }, async (editor) => {
-			clipboardState = '';
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
-			editor.setSelection(new Selection(1, 2, 1, 2));
+		await withAsyncTestCodeEditor(
+			['ABC', 'ABC', 'XYZ', 'ABC', 'ABC'],
+			{ serviceCollection: serviceCollection },
+			async editor => {
+				clipboardState = '';
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+				editor.setSelection(new Selection(1, 2, 1, 2));
 
-			const startFindWithSelectionAction = new StartFindWithSelectionAction();
-			editor.runAction(startFindWithSelectionAction);
+				const startFindWithSelectionAction = new StartFindWithSelectionAction();
+				editor.runAction(startFindWithSelectionAction);
 
-			const findState = findController.getState();
-			assert.deepStrictEqual(findState.searchString, 'ABC');
-			findController.dispose();
-		});
+				const findState = findController.getState();
+				assert.deepStrictEqual(findState.searchString, 'ABC');
+				findController.dispose();
+			}
+		);
 	});
 });
 
 suite('FindController query options persistence', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	const serviceCollection = new ServiceCollection();
@@ -557,175 +571,174 @@ suite('FindController query options persistence', () => {
 	serviceCollection.set(IStorageService, storageService);
 
 	test('matchCase', async () => {
-		await withAsyncTestCodeEditor([
-			'abc',
-			'ABC',
-			'XYZ',
-			'ABC'
-		], { serviceCollection: serviceCollection }, async (editor, _, instantiationService) => {
-			storageService.store('editor.matchCase', true, StorageScope.WORKSPACE, StorageTarget.USER);
-			// The cursor is at the very top, of the file, at the first ABC
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
-			const findState = findController.getState();
+		await withAsyncTestCodeEditor(
+			['abc', 'ABC', 'XYZ', 'ABC'],
+			{ serviceCollection: serviceCollection },
+			async (editor, _, instantiationService) => {
+				storageService.store('editor.matchCase', true, StorageScope.WORKSPACE, StorageTarget.USER);
+				// The cursor is at the very top, of the file, at the first ABC
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+				const findState = findController.getState();
 
-			// I hit Ctrl+F to show the Find dialog
-			await executeAction(instantiationService, editor, StartFindAction);
+				// I hit Ctrl+F to show the Find dialog
+				await executeAction(instantiationService, editor, StartFindAction);
 
-			// I type ABC.
-			findState.change({ searchString: 'ABC' }, true);
-			// The second ABC is highlighted as matchCase is true.
-			assert.deepStrictEqual(fromSelection(editor.getSelection()!), [2, 1, 2, 4]);
+				// I type ABC.
+				findState.change({ searchString: 'ABC' }, true);
+				// The second ABC is highlighted as matchCase is true.
+				assert.deepStrictEqual(fromSelection(editor.getSelection()!), [2, 1, 2, 4]);
 
-			findController.dispose();
-		});
+				findController.dispose();
+			}
+		);
 	});
 
 	storageService.store('editor.matchCase', false, StorageScope.WORKSPACE, StorageTarget.USER);
 	storageService.store('editor.wholeWord', true, StorageScope.WORKSPACE, StorageTarget.USER);
 
 	test('wholeWord', async () => {
-		await withAsyncTestCodeEditor([
-			'ABC',
-			'AB',
-			'XYZ',
-			'ABC'
-		], { serviceCollection: serviceCollection }, async (editor, _, instantiationService) => {
-			// The cursor is at the very top, of the file, at the first ABC
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
-			const findState = findController.getState();
+		await withAsyncTestCodeEditor(
+			['ABC', 'AB', 'XYZ', 'ABC'],
+			{ serviceCollection: serviceCollection },
+			async (editor, _, instantiationService) => {
+				// The cursor is at the very top, of the file, at the first ABC
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+				const findState = findController.getState();
 
-			// I hit Ctrl+F to show the Find dialog
-			await executeAction(instantiationService, editor, StartFindAction);
+				// I hit Ctrl+F to show the Find dialog
+				await executeAction(instantiationService, editor, StartFindAction);
 
-			// I type AB.
-			findState.change({ searchString: 'AB' }, true);
-			// The second AB is highlighted as wholeWord is true.
-			assert.deepStrictEqual(fromSelection(editor.getSelection()!), [2, 1, 2, 3]);
+				// I type AB.
+				findState.change({ searchString: 'AB' }, true);
+				// The second AB is highlighted as wholeWord is true.
+				assert.deepStrictEqual(fromSelection(editor.getSelection()!), [2, 1, 2, 3]);
 
-			findController.dispose();
-		});
+				findController.dispose();
+			}
+		);
 	});
 
 	test('toggling options is saved', async () => {
-		await withAsyncTestCodeEditor([
-			'ABC',
-			'AB',
-			'XYZ',
-			'ABC'
-		], { serviceCollection: serviceCollection }, async (editor) => {
-			// The cursor is at the very top, of the file, at the first ABC
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
-			findController.toggleRegex();
-			assert.strictEqual(storageService.getBoolean('editor.isRegex', StorageScope.WORKSPACE), true);
+		await withAsyncTestCodeEditor(
+			['ABC', 'AB', 'XYZ', 'ABC'],
+			{ serviceCollection: serviceCollection },
+			async editor => {
+				// The cursor is at the very top, of the file, at the first ABC
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+				findController.toggleRegex();
+				assert.strictEqual(storageService.getBoolean('editor.isRegex', StorageScope.WORKSPACE), true);
 
-			findController.dispose();
-		});
+				findController.dispose();
+			}
+		);
 	});
 
 	test('issue #27083: Update search scope once find widget becomes visible', async () => {
-		await withAsyncTestCodeEditor([
-			'var x = (3 * 5)',
-			'var y = (3 * 5)',
-			'var z = (3 * 5)',
-		], { serviceCollection: serviceCollection, find: { autoFindInSelection: 'always', globalFindClipboard: false } }, async (editor) => {
-			// clipboardState = '';
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
-			const findConfig: IFindStartOptions = {
-				forceRevealReplace: false,
-				seedSearchStringFromSelection: 'none',
-				seedSearchStringFromNonEmptySelection: false,
-				seedSearchStringFromGlobalClipboard: false,
-				shouldFocus: FindStartFocusAction.NoFocusChange,
-				shouldAnimate: false,
-				updateSearchScope: true,
-				loop: true
-			};
+		await withAsyncTestCodeEditor(
+			['var x = (3 * 5)', 'var y = (3 * 5)', 'var z = (3 * 5)'],
+			{ serviceCollection: serviceCollection, find: { autoFindInSelection: 'always', globalFindClipboard: false } },
+			async editor => {
+				// clipboardState = '';
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+				const findConfig: IFindStartOptions = {
+					forceRevealReplace: false,
+					seedSearchStringFromSelection: 'none',
+					seedSearchStringFromNonEmptySelection: false,
+					seedSearchStringFromGlobalClipboard: false,
+					shouldFocus: FindStartFocusAction.NoFocusChange,
+					shouldAnimate: false,
+					updateSearchScope: true,
+					loop: true
+				};
 
-			editor.setSelection(new Range(1, 1, 2, 1));
-			findController.start(findConfig);
-			assert.deepStrictEqual(findController.getState().searchScope, [new Selection(1, 1, 2, 1)]);
+				editor.setSelection(new Range(1, 1, 2, 1));
+				findController.start(findConfig);
+				assert.deepStrictEqual(findController.getState().searchScope, [new Selection(1, 1, 2, 1)]);
 
-			findController.closeFindWidget();
+				findController.closeFindWidget();
 
-			editor.setSelections([new Selection(1, 1, 2, 1), new Selection(2, 1, 2, 5)]);
-			findController.start(findConfig);
-			assert.deepStrictEqual(findController.getState().searchScope, [new Selection(1, 1, 2, 1), new Selection(2, 1, 2, 5)]);
-		});
+				editor.setSelections([new Selection(1, 1, 2, 1), new Selection(2, 1, 2, 5)]);
+				findController.start(findConfig);
+				assert.deepStrictEqual(findController.getState().searchScope, [
+					new Selection(1, 1, 2, 1),
+					new Selection(2, 1, 2, 5)
+				]);
+			}
+		);
 	});
 
 	test('issue #58604: Do not update searchScope if it is empty', async () => {
-		await withAsyncTestCodeEditor([
-			'var x = (3 * 5)',
-			'var y = (3 * 5)',
-			'var z = (3 * 5)',
-		], { serviceCollection: serviceCollection, find: { autoFindInSelection: 'always', globalFindClipboard: false } }, async (editor) => {
-			// clipboardState = '';
-			editor.setSelection(new Range(1, 2, 1, 2));
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+		await withAsyncTestCodeEditor(
+			['var x = (3 * 5)', 'var y = (3 * 5)', 'var z = (3 * 5)'],
+			{ serviceCollection: serviceCollection, find: { autoFindInSelection: 'always', globalFindClipboard: false } },
+			async editor => {
+				// clipboardState = '';
+				editor.setSelection(new Range(1, 2, 1, 2));
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
 
-			await findController.start({
-				forceRevealReplace: false,
-				seedSearchStringFromSelection: 'none',
-				seedSearchStringFromNonEmptySelection: false,
-				seedSearchStringFromGlobalClipboard: false,
-				shouldFocus: FindStartFocusAction.NoFocusChange,
-				shouldAnimate: false,
-				updateSearchScope: true,
-				loop: true
-			});
+				await findController.start({
+					forceRevealReplace: false,
+					seedSearchStringFromSelection: 'none',
+					seedSearchStringFromNonEmptySelection: false,
+					seedSearchStringFromGlobalClipboard: false,
+					shouldFocus: FindStartFocusAction.NoFocusChange,
+					shouldAnimate: false,
+					updateSearchScope: true,
+					loop: true
+				});
 
-			assert.deepStrictEqual(findController.getState().searchScope, null);
-		});
+				assert.deepStrictEqual(findController.getState().searchScope, null);
+			}
+		);
 	});
 
 	test('issue #58604: Update searchScope if it is not empty', async () => {
-		await withAsyncTestCodeEditor([
-			'var x = (3 * 5)',
-			'var y = (3 * 5)',
-			'var z = (3 * 5)',
-		], { serviceCollection: serviceCollection, find: { autoFindInSelection: 'always', globalFindClipboard: false } }, async (editor) => {
-			// clipboardState = '';
-			editor.setSelection(new Range(1, 2, 1, 3));
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+		await withAsyncTestCodeEditor(
+			['var x = (3 * 5)', 'var y = (3 * 5)', 'var z = (3 * 5)'],
+			{ serviceCollection: serviceCollection, find: { autoFindInSelection: 'always', globalFindClipboard: false } },
+			async editor => {
+				// clipboardState = '';
+				editor.setSelection(new Range(1, 2, 1, 3));
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
 
-			await findController.start({
-				forceRevealReplace: false,
-				seedSearchStringFromSelection: 'none',
-				seedSearchStringFromNonEmptySelection: false,
-				seedSearchStringFromGlobalClipboard: false,
-				shouldFocus: FindStartFocusAction.NoFocusChange,
-				shouldAnimate: false,
-				updateSearchScope: true,
-				loop: true
-			});
+				await findController.start({
+					forceRevealReplace: false,
+					seedSearchStringFromSelection: 'none',
+					seedSearchStringFromNonEmptySelection: false,
+					seedSearchStringFromGlobalClipboard: false,
+					shouldFocus: FindStartFocusAction.NoFocusChange,
+					shouldAnimate: false,
+					updateSearchScope: true,
+					loop: true
+				});
 
-			assert.deepStrictEqual(findController.getState().searchScope, [new Selection(1, 2, 1, 3)]);
-		});
+				assert.deepStrictEqual(findController.getState().searchScope, [new Selection(1, 2, 1, 3)]);
+			}
+		);
 	});
 
-
 	test('issue #27083: Find in selection when multiple lines are selected', async () => {
-		await withAsyncTestCodeEditor([
-			'var x = (3 * 5)',
-			'var y = (3 * 5)',
-			'var z = (3 * 5)',
-		], { serviceCollection: serviceCollection, find: { autoFindInSelection: 'multiline', globalFindClipboard: false } }, async (editor) => {
-			// clipboardState = '';
-			editor.setSelection(new Range(1, 6, 2, 1));
-			const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
+		await withAsyncTestCodeEditor(
+			['var x = (3 * 5)', 'var y = (3 * 5)', 'var z = (3 * 5)'],
+			{ serviceCollection: serviceCollection, find: { autoFindInSelection: 'multiline', globalFindClipboard: false } },
+			async editor => {
+				// clipboardState = '';
+				editor.setSelection(new Range(1, 6, 2, 1));
+				const findController = editor.registerAndInstantiateContribution(TestFindController.ID, TestFindController);
 
-			await findController.start({
-				forceRevealReplace: false,
-				seedSearchStringFromSelection: 'none',
-				seedSearchStringFromNonEmptySelection: false,
-				seedSearchStringFromGlobalClipboard: false,
-				shouldFocus: FindStartFocusAction.NoFocusChange,
-				shouldAnimate: false,
-				updateSearchScope: true,
-				loop: true
-			});
+				await findController.start({
+					forceRevealReplace: false,
+					seedSearchStringFromSelection: 'none',
+					seedSearchStringFromNonEmptySelection: false,
+					seedSearchStringFromGlobalClipboard: false,
+					shouldFocus: FindStartFocusAction.NoFocusChange,
+					shouldAnimate: false,
+					updateSearchScope: true,
+					loop: true
+				});
 
-			assert.deepStrictEqual(findController.getState().searchScope, [new Selection(1, 6, 2, 1)]);
-		});
+				assert.deepStrictEqual(findController.getState().searchScope, [new Selection(1, 6, 2, 1)]);
+			}
+		);
 	});
 });

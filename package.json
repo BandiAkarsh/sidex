@@ -10,8 +10,8 @@
     "postbuild": "node scripts/postbuild.js",
     "preview": "vite preview",
     "tauri": "cross-env tauri",
-    "lint": "eslint 'src/**/*.ts' 'src/**/*.tsx'",
-    "lint:fix": "eslint --fix 'src/**/*.ts' 'src/**/*.tsx'",
+    "lint": "eslint 'src/**/*.ts'",
+    "lint:fix": "eslint --fix 'src/**/*.ts'",
     "format": "prettier --write 'src/**/*.{ts,tsx,js,json}'",
     "format:check": "prettier --check 'src/**/*.{ts,tsx,js,json}'",
     "rust:check": "cd src-tauri && cargo check",
@@ -48,8 +48,13 @@
   "devDependencies": {
     "@tauri-apps/cli": "^2.10.1",
     "@tauri-apps/plugin-dialog": "^2.6.0",
+    "@typescript-eslint/eslint-plugin": "^8.58.2",
+    "@typescript-eslint/parser": "^8.58.2",
     "cross-env": "^10.1.0",
+    "eslint": "^9.39.4",
+    "prettier": "^3.8.3",
     "typescript": "~5.6.2",
+    "typescript-eslint": "^8.58.2",
     "vite": "^6.0.3",
     "vite-plugin-static-copy": "^2.2.0"
   }

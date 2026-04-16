@@ -19,7 +19,7 @@ import {
 	TestAccessService,
 	TestExtensionsService,
 	TestAuthenticationService,
-	createProvider,
+	createProvider
 } from './authenticationQueryServiceMocks.js';
 
 /**
@@ -85,7 +85,10 @@ suite('AuthenticationQueryService Integration Tests', () => {
 		assert.strictEqual(sameExtensionQuery.isAccessAllowed(), true);
 
 		// Different extension should be unaffected
-		const otherExtensionQuery = queryService.provider('github').account('user@example.com').extension('other-extension');
+		const otherExtensionQuery = queryService
+			.provider('github')
+			.account('user@example.com')
+			.extension('other-extension');
 		assert.strictEqual(otherExtensionQuery.isAccessAllowed(), undefined);
 	});
 
@@ -185,8 +188,16 @@ suite('AuthenticationQueryService Integration Tests', () => {
 		authService.registerAuthenticationProvider('azure', azureProvider);
 
 		// Set up data using provider-first approach
-		queryService.provider('github').account('user@example.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
-		queryService.provider('azure').account('admin@example.com').extension('my-extension').setAccessAllowed(false, 'My Extension');
+		queryService
+			.provider('github')
+			.account('user@example.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('azure')
+			.account('admin@example.com')
+			.extension('my-extension')
+			.setAccessAllowed(false, 'My Extension');
 
 		// Query using extension-first approach should return all providers
 		const extensionQuery = queryService.extension('my-extension');
@@ -213,7 +224,11 @@ suite('AuthenticationQueryService Integration Tests', () => {
 
 		try {
 			// Trigger an access change that should fire an event
-			queryService.provider('github').account('user@example.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
+			queryService
+				.provider('github')
+				.account('user@example.com')
+				.extension('my-extension')
+				.setAccessAllowed(true, 'My Extension');
 
 			// Verify the event was fired
 			assert.strictEqual(eventFired, true);
@@ -541,10 +556,26 @@ suite('AuthenticationQueryService Integration Tests', () => {
 		authService.addAccounts('__internal2', [{ id: 'user4', label: 'internal2@example.com' }]);
 
 		// Set up access for all providers
-		queryService.provider('github').account('user@github.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
-		queryService.provider('azure').account('user@azure.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
-		queryService.provider('__internal1').account('internal1@example.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
-		queryService.provider('__internal2').account('internal2@example.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('github')
+			.account('user@github.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('azure')
+			.account('user@azure.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('__internal1')
+			.account('internal1@example.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('__internal2')
+			.account('internal2@example.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
 
 		// Test extension query - should exclude internal providers by default
 		const extensionQuery = queryService.extension('my-extension');
@@ -570,8 +601,16 @@ suite('AuthenticationQueryService Integration Tests', () => {
 		authService.addAccounts('__internal1', [{ id: 'user2', label: 'internal@example.com' }]);
 
 		// Set up access for all providers
-		queryService.provider('github').account('user@github.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
-		queryService.provider('__internal1').account('internal@example.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('github')
+			.account('user@github.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('__internal1')
+			.account('internal@example.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
 
 		// Test extension query - should include internal providers when requested
 		const extensionQuery = queryService.extension('my-extension');
@@ -598,8 +637,16 @@ suite('AuthenticationQueryService Integration Tests', () => {
 		authService.addAccounts('no-access', [{ id: 'user3', label: 'user@noaccess.com' }]);
 
 		// Set up access only for normal and internal providers
-		queryService.provider('normal').account('user@normal.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
-		queryService.provider('__internal').account('internal@example.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('normal')
+			.account('user@normal.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('__internal')
+			.account('internal@example.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
 		// Note: no-access provider deliberately has no access set
 
 		const extensionQuery = queryService.extension('my-extension');
@@ -641,11 +688,31 @@ suite('AuthenticationQueryService Integration Tests', () => {
 		authService.addAccounts('mid_underscore', [{ id: 'user5', label: 'user@middle.com' }]);
 
 		// Set up access for all providers
-		queryService.provider('regular').account('user@regular.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
-		queryService.provider('_single').account('user@single.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
-		queryService.provider('__double').account('user@double.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
-		queryService.provider('___triple').account('user@triple.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
-		queryService.provider('mid_underscore').account('user@middle.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('regular')
+			.account('user@regular.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('_single')
+			.account('user@single.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('__double')
+			.account('user@double.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('___triple')
+			.account('user@triple.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('mid_underscore')
+			.account('user@middle.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
 
 		const extensionQuery = queryService.extension('my-extension');
 
@@ -710,19 +777,39 @@ suite('AuthenticationQueryService Integration Tests', () => {
 		authService.addAccounts('__internal', [{ id: 'user2', label: 'internal@example.com' }]);
 
 		// Set up some data
-		queryService.provider('github').account('user@github.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
-		queryService.provider('__internal').account('internal@example.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('github')
+			.account('user@github.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('__internal')
+			.account('internal@example.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
 
 		// Verify data exists
-		assert.strictEqual(queryService.provider('github').account('user@github.com').extension('my-extension').isAccessAllowed(), true);
-		assert.strictEqual(queryService.provider('__internal').account('internal@example.com').extension('my-extension').isAccessAllowed(), true);
+		assert.strictEqual(
+			queryService.provider('github').account('user@github.com').extension('my-extension').isAccessAllowed(),
+			true
+		);
+		assert.strictEqual(
+			queryService.provider('__internal').account('internal@example.com').extension('my-extension').isAccessAllowed(),
+			true
+		);
 
 		// Clear all data (should include internal providers by default)
 		await queryService.clearAllData('CLEAR_ALL_AUTH_DATA');
 
 		// Verify all data is cleared
-		assert.strictEqual(queryService.provider('github').account('user@github.com').extension('my-extension').isAccessAllowed(), undefined);
-		assert.strictEqual(queryService.provider('__internal').account('internal@example.com').extension('my-extension').isAccessAllowed(), undefined);
+		assert.strictEqual(
+			queryService.provider('github').account('user@github.com').extension('my-extension').isAccessAllowed(),
+			undefined
+		);
+		assert.strictEqual(
+			queryService.provider('__internal').account('internal@example.com').extension('my-extension').isAccessAllowed(),
+			undefined
+		);
 	});
 
 	test('clearAllData can exclude internal providers when specified', async () => {
@@ -735,15 +822,29 @@ suite('AuthenticationQueryService Integration Tests', () => {
 		authService.addAccounts('__internal', [{ id: 'user2', label: 'internal@example.com' }]);
 
 		// Set up some data
-		queryService.provider('github').account('user@github.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
-		queryService.provider('__internal').account('internal@example.com').extension('my-extension').setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('github')
+			.account('user@github.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
+		queryService
+			.provider('__internal')
+			.account('internal@example.com')
+			.extension('my-extension')
+			.setAccessAllowed(true, 'My Extension');
 
 		// Clear data excluding internal providers
 		await queryService.clearAllData('CLEAR_ALL_AUTH_DATA', false);
 
 		// Verify only non-internal data is cleared
-		assert.strictEqual(queryService.provider('github').account('user@github.com').extension('my-extension').isAccessAllowed(), undefined);
-		assert.strictEqual(queryService.provider('__internal').account('internal@example.com').extension('my-extension').isAccessAllowed(), true);
+		assert.strictEqual(
+			queryService.provider('github').account('user@github.com').extension('my-extension').isAccessAllowed(),
+			undefined
+		);
+		assert.strictEqual(
+			queryService.provider('__internal').account('internal@example.com').extension('my-extension').isAccessAllowed(),
+			true
+		);
 	});
 
 	test('getAllowedExtensions returns extension data with trusted state', () => {

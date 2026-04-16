@@ -12,12 +12,23 @@ import { LineRangeEdit } from './editing.js';
 import { MergeEditorLineRange } from './lineRange.js';
 import { ReentrancyBarrier } from '../../../../../base/common/controlFlow.js';
 import { IMergeDiffComputer } from './diffComputer.js';
-import { autorun, IObservableWithChange, IReader, ITransaction, observableSignal, observableValue, transaction } from '../../../../../base/common/observable.js';
+import {
+	autorun,
+	IObservableWithChange,
+	IReader,
+	ITransaction,
+	observableSignal,
+	observableValue,
+	transaction
+} from '../../../../../base/common/observable.js';
 import { UndoRedoGroup } from '../../../../../platform/undoRedo/common/undoRedo.js';
 
 export class TextModelDiffs extends Disposable {
 	private _recomputeCount = 0;
-	private readonly _state = observableValue<TextModelDiffState, TextModelDiffChangeReason>(this, TextModelDiffState.initializing);
+	private readonly _state = observableValue<TextModelDiffState, TextModelDiffChangeReason>(
+		this,
+		TextModelDiffState.initializing
+	);
 	private readonly _diffs = observableValue<DetailedLineRangeMapping[], TextModelDiffChangeReason>(this, []);
 
 	private readonly _barrier = new ReentrancyBarrier();
@@ -30,17 +41,19 @@ export class TextModelDiffs extends Disposable {
 	constructor(
 		private readonly baseTextModel: ITextModel,
 		private readonly textModel: ITextModel,
-		private readonly diffComputer: IMergeDiffComputer,
+		private readonly diffComputer: IMergeDiffComputer
 	) {
 		super();
 
 		const recomputeSignal = observableSignal('recompute');
 
-		this._register(autorun(reader => {
-			/** @description Update diff state */
-			recomputeSignal.read(reader);
-			this._recompute(reader);
-		}));
+		this._register(
+			autorun(reader => {
+				/** @description Update diff state */
+				recomputeSignal.read(reader);
+				this._recompute(reader);
+			})
+		);
 
 		this._register(
 			baseTextModel.onDidChangeContent(
@@ -56,9 +69,11 @@ export class TextModelDiffs extends Disposable {
 				})
 			)
 		);
-		this._register(toDisposable(() => {
-			this._isDisposed = true;
-		}));
+		this._register(
+			toDisposable(() => {
+				this._isDisposed = true;
+			})
+		);
 	}
 
 	public get state(): IObservableWithChange<TextModelDiffState, TextModelDiffChangeReason> {
@@ -67,7 +82,7 @@ export class TextModelDiffs extends Disposable {
 
 	/**
 	 * Diffs from base to input.
-	*/
+	 */
 	public get diffs(): IObservableWithChange<DetailedLineRangeMapping[], TextModelDiffChangeReason> {
 		return this._diffs;
 	}
@@ -93,7 +108,7 @@ export class TextModelDiffs extends Disposable {
 
 		const result = this.diffComputer.computeDiff(this.baseTextModel, this.textModel, reader);
 
-		result.then((result) => {
+		result.then(result => {
 			if (this._isDisposed) {
 				return;
 			}
@@ -122,10 +137,14 @@ export class TextModelDiffs extends Disposable {
 		}
 	}
 
-	public removeDiffs(diffToRemoves: DetailedLineRangeMapping[], transaction: ITransaction | undefined, group?: UndoRedoGroup): void {
+	public removeDiffs(
+		diffToRemoves: DetailedLineRangeMapping[],
+		transaction: ITransaction | undefined,
+		group?: UndoRedoGroup
+	): void {
 		this.ensureUpToDate();
 
-		diffToRemoves.sort(compareBy((d) => d.inputRange.startLineNumber, numberComparator));
+		diffToRemoves.sort(compareBy(d => d.inputRange.startLineNumber, numberComparator));
 		diffToRemoves.reverse(); // process from bottom of document upward
 
 		const diffs = this._diffs.get();
@@ -168,7 +187,11 @@ export class TextModelDiffs extends Disposable {
 	/**
 	 * Edit must be conflict free.
 	 */
-	public applyEditRelativeToOriginal(edit: LineRangeEdit, transaction: ITransaction | undefined, group?: UndoRedoGroup): void {
+	public applyEditRelativeToOriginal(
+		edit: LineRangeEdit,
+		transaction: ITransaction | undefined,
+		group?: UndoRedoGroup
+	): void {
 		this.ensureUpToDate();
 
 		const editMapping = new DetailedLineRangeMapping(
@@ -247,14 +270,14 @@ export class TextModelDiffs extends Disposable {
 
 export const enum TextModelDiffChangeReason {
 	other = 0,
-	textChange = 1,
+	textChange = 1
 }
 
 export const enum TextModelDiffState {
 	initializing = 1,
 	upToDate = 2,
 	updating = 3,
-	error = 4,
+	error = 4
 }
 
 export interface ITextModelDiffsState {

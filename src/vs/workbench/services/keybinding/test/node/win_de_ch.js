@@ -308,7 +308,7 @@ define({
 	},
 	Minus: {
 		vkey: 'VK_OEM_4',
-		value: '\'',
+		value: "'",
 		withShift: '?',
 		withAltGr: '´',
 		withShiftAltGr: ''

@@ -8,18 +8,16 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { DocumentDropEdit } from '../../../../common/languages.js';
 import { sortEditsByYieldTo } from '../../browser/edit.js';
 
-
 function createTestEdit(kind: string, args?: Partial<DocumentDropEdit>): DocumentDropEdit {
 	return {
 		title: '',
 		insertText: '',
 		kind: new HierarchicalKind(kind),
-		...args,
+		...args
 	};
 }
 
 suite('sortEditsByYieldTo', () => {
-
 	test('Should noop for empty edits', () => {
 		const edits: DocumentDropEdit[] = [];
 
@@ -29,9 +27,12 @@ suite('sortEditsByYieldTo', () => {
 	test('Yielded to edit should get sorted after target', () => {
 		const edits: DocumentDropEdit[] = [
 			createTestEdit('a', { yieldTo: [{ kind: new HierarchicalKind('b') }] }),
-			createTestEdit('b'),
+			createTestEdit('b')
 		];
-		assert.deepStrictEqual(sortEditsByYieldTo(edits).map(x => x.kind?.value), ['b', 'a']);
+		assert.deepStrictEqual(
+			sortEditsByYieldTo(edits).map(x => x.kind?.value),
+			['b', 'a']
+		);
 	});
 
 	test('Should handle chain of yield to', () => {
@@ -39,19 +40,25 @@ suite('sortEditsByYieldTo', () => {
 			const edits: DocumentDropEdit[] = [
 				createTestEdit('c', { yieldTo: [{ kind: new HierarchicalKind('a') }] }),
 				createTestEdit('a', { yieldTo: [{ kind: new HierarchicalKind('b') }] }),
-				createTestEdit('b'),
+				createTestEdit('b')
 			];
 
-			assert.deepStrictEqual(sortEditsByYieldTo(edits).map(x => x.kind?.value), ['b', 'a', 'c']);
+			assert.deepStrictEqual(
+				sortEditsByYieldTo(edits).map(x => x.kind?.value),
+				['b', 'a', 'c']
+			);
 		}
 		{
 			const edits: DocumentDropEdit[] = [
 				createTestEdit('a', { yieldTo: [{ kind: new HierarchicalKind('b') }] }),
 				createTestEdit('c', { yieldTo: [{ kind: new HierarchicalKind('a') }] }),
-				createTestEdit('b'),
+				createTestEdit('b')
 			];
 
-			assert.deepStrictEqual(sortEditsByYieldTo(edits).map(x => x.kind?.value), ['b', 'a', 'c']);
+			assert.deepStrictEqual(
+				sortEditsByYieldTo(edits).map(x => x.kind?.value),
+				['b', 'a', 'c']
+			);
 		}
 	});
 
@@ -59,10 +66,13 @@ suite('sortEditsByYieldTo', () => {
 		const edits: DocumentDropEdit[] = [
 			createTestEdit('c', { yieldTo: [{ kind: new HierarchicalKind('x') }] }),
 			createTestEdit('a', { yieldTo: [{ kind: new HierarchicalKind('y') }] }),
-			createTestEdit('b'),
+			createTestEdit('b')
 		];
 
-		assert.deepStrictEqual(sortEditsByYieldTo(edits).map(x => x.kind?.value), ['c', 'a', 'b']);
+		assert.deepStrictEqual(
+			sortEditsByYieldTo(edits).map(x => x.kind?.value),
+			['c', 'a', 'b']
+		);
 	});
 
 	ensureNoDisposablesAreLeakedInTestSuite();

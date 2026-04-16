@@ -47,7 +47,7 @@ export function aggregateSessionsByDay(sessions: readonly ISessionData[]): IDail
 				totalTypedChars: 0,
 				inlineSuggestions: 0,
 				chatEdits: 0,
-				sessionCount: 0,
+				sessionCount: 0
 			};
 			dayMap.set(isoDate, aggregate);
 		}
@@ -74,9 +74,7 @@ export interface IAiStatsChartOptions {
 	viewMode: ChartViewMode;
 }
 
-export function createAiStatsChart(
-	options: IAiStatsChartOptions
-): HTMLElement {
+export function createAiStatsChart(options: IAiStatsChartOptions): HTMLElement {
 	const { sessions: sessionsData, viewMode: mode } = options;
 
 	const width = 280;
@@ -107,7 +105,7 @@ export function createAiStatsChart(
 		text.setAttribute('text-anchor', 'middle');
 		text.setAttribute('fill', asCssVariable(chartsForeground));
 		text.setAttribute('font-size', '11px');
-		text.textContent = localize('noData', "No data yet");
+		text.textContent = localize('noData', 'No data yet');
 		g.appendChild(text);
 		return container;
 	}

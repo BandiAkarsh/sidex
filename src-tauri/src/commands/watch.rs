@@ -386,11 +386,13 @@ fn spawn_debounce_task(
                 .enable_all()
                 .build()
                 .unwrap();
-            let abort_handle = sentinel_rt.spawn(async move {
-                // Keep stop_tx alive until this task is aborted
-                let _keep = stop_tx;
-                std::future::pending::<()>().await;
-            }).abort_handle();
+            let abort_handle = sentinel_rt
+                .spawn(async move {
+                    // Keep stop_tx alive until this task is aborted
+                    let _keep = stop_tx;
+                    std::future::pending::<()>().await;
+                })
+                .abort_handle();
             std::mem::forget(sentinel_rt);
             return (tx, abort_handle);
         }

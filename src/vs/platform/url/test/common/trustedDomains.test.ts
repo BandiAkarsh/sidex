@@ -9,11 +9,9 @@ import { URI } from '../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 
 suite('trustedDomains', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	suite('isURLDomainTrusted', () => {
-
 		test('localhost is always trusted', () => {
 			assert.strictEqual(isURLDomainTrusted(URI.parse('http://localhost:3000'), []), true);
 			assert.strictEqual(isURLDomainTrusted(URI.parse('http://127.0.0.1:3000'), []), true);
@@ -41,9 +39,15 @@ suite('trustedDomains', () => {
 		});
 
 		test('path matching', () => {
-			assert.strictEqual(isURLDomainTrusted(URI.parse('https://example.com/api/v1'), ['https://example.com/api/*']), true);
+			assert.strictEqual(
+				isURLDomainTrusted(URI.parse('https://example.com/api/v1'), ['https://example.com/api/*']),
+				true
+			);
 			// Path without trailing content doesn't match a wildcard pattern requiring more path segments
-			assert.strictEqual(isURLDomainTrusted(URI.parse('https://example.com/api'), ['https://example.com/api/*']), false);
+			assert.strictEqual(
+				isURLDomainTrusted(URI.parse('https://example.com/api'), ['https://example.com/api/*']),
+				false
+			);
 		});
 
 		test('scheme must match', () => {
@@ -64,13 +68,18 @@ suite('trustedDomains', () => {
 		});
 
 		test('case normalization for github', () => {
-			assert.strictEqual(isURLDomainTrusted(URI.parse('https://github.com/Microsoft/VSCode'), ['https://github.com/microsoft/vscode']), true);
-			assert.strictEqual(isURLDomainTrusted(URI.parse('https://github.com/microsoft/vscode'), ['https://github.com/Microsoft/VSCode']), true);
+			assert.strictEqual(
+				isURLDomainTrusted(URI.parse('https://github.com/Microsoft/VSCode'), ['https://github.com/microsoft/vscode']),
+				true
+			);
+			assert.strictEqual(
+				isURLDomainTrusted(URI.parse('https://github.com/microsoft/vscode'), ['https://github.com/Microsoft/VSCode']),
+				true
+			);
 		});
 	});
 
 	suite('normalizeURL', () => {
-
 		test('normalizes github.com URLs to lowercase path', () => {
 			assert.strictEqual(normalizeURL('https://github.com/Microsoft/VSCode'), 'https://github.com/microsoft/vscode');
 			assert.strictEqual(normalizeURL('https://github.com/OWNER/REPO'), 'https://github.com/owner/repo');
@@ -93,7 +102,6 @@ suite('trustedDomains', () => {
 	});
 
 	suite('isLocalhostAuthority', () => {
-
 		test('recognizes localhost', () => {
 			assert.strictEqual(isLocalhostAuthority('localhost'), true);
 			assert.strictEqual(isLocalhostAuthority('localhost:3000'), true);

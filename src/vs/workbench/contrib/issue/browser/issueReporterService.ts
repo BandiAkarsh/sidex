@@ -35,7 +35,21 @@ export class IssueWebReporter extends BaseIssueReporterService {
 		@IAuthenticationService authenticationService: IAuthenticationService,
 		@IOpenerService openerService: IOpenerService
 	) {
-		super(disableExtensions, data, os, product, window, true, issueFormService, themeService, fileService, fileDialogService, contextMenuService, authenticationService, openerService);
+		super(
+			disableExtensions,
+			data,
+			os,
+			product,
+			window,
+			true,
+			issueFormService,
+			themeService,
+			fileService,
+			fileDialogService,
+			contextMenuService,
+			authenticationService,
+			openerService
+		);
 
 		// eslint-disable-next-line no-restricted-syntax
 		const target = this.window.document.querySelector<HTMLElement>('.block-system .block-info');
@@ -61,7 +75,7 @@ export class IssueWebReporter extends BaseIssueReporterService {
 			// eslint-disable-next-line no-restricted-syntax
 			const descriptionTextArea = <HTMLInputElement>this.getElementById('issue-title');
 			if (descriptionTextArea) {
-				descriptionTextArea.placeholder = localize('undefinedPlaceholder', "Please enter a title");
+				descriptionTextArea.placeholder = localize('undefinedPlaceholder', 'Please enter a title');
 			}
 
 			this.updateButtonStates();

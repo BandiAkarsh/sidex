@@ -4,10 +4,22 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Event } from '../../../../base/common/event.js';
-import { INotification, INotificationHandle, INotificationService, INotificationSource, INotificationSourceFilter, IPromptChoice, IPromptOptions, IStatusHandle, IStatusMessageOptions, NoOpNotification, NotificationsFilter, Severity } from '../../common/notification.js';
+import {
+	INotification,
+	INotificationHandle,
+	INotificationService,
+	INotificationSource,
+	INotificationSourceFilter,
+	IPromptChoice,
+	IPromptOptions,
+	IStatusHandle,
+	IStatusMessageOptions,
+	NoOpNotification,
+	NotificationsFilter,
+	Severity
+} from '../../common/notification.js';
 
 export class TestNotificationService implements INotificationService {
-
 	readonly onDidChangeFilter: Event<void> = Event.None;
 
 	declare readonly _serviceBrand: undefined;
@@ -36,11 +48,11 @@ export class TestNotificationService implements INotificationService {
 
 	status(message: string | Error, options?: IStatusMessageOptions): IStatusHandle {
 		return {
-			close: () => { }
+			close: () => {}
 		};
 	}
 
-	setFilter(): void { }
+	setFilter(): void {}
 
 	getFilter(source?: INotificationSource | undefined): NotificationsFilter {
 		return NotificationsFilter.OFF;
@@ -50,5 +62,5 @@ export class TestNotificationService implements INotificationService {
 		return [];
 	}
 
-	removeFilter(sourceId: string): void { }
+	removeFilter(sourceId: string): void {}
 }

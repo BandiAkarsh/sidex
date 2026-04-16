@@ -19,8 +19,14 @@ import { NotebookInsertedCellDecorator } from './notebookInsertedCellDecorator.j
 import { INotebookLoggingService } from '../../../common/notebookLoggingService.js';
 import { computeDiff } from '../../../common/notebookDiff.js';
 import { InstantiationType, registerSingleton } from '../../../../../../platform/instantiation/common/extensions.js';
-import { INotebookOriginalModelReferenceFactory, NotebookOriginalModelReferenceFactory } from './notebookOriginalModelRefFactory.js';
-import { INotebookOriginalCellModelFactory, OriginalNotebookCellModelFactory } from './notebookOriginalCellModelFactory.js';
+import {
+	INotebookOriginalModelReferenceFactory,
+	NotebookOriginalModelReferenceFactory
+} from './notebookOriginalModelRefFactory.js';
+import {
+	INotebookOriginalCellModelFactory,
+	OriginalNotebookCellModelFactory
+} from './notebookOriginalCellModelFactory.js';
 
 export class NotebookInlineDiffDecorationContribution extends Disposable implements INotebookEditorContribution {
 	static ID: string = 'workbench.notebook.inlineDiffDecoration';
@@ -41,22 +47,23 @@ export class NotebookInlineDiffDecorationContribution extends Disposable impleme
 		super();
 		this.logService.debug('inlineDiff', 'Watching for previous model');
 
-		this._register(autorun((reader) => {
-			this.previous = this.notebookEditor.notebookOptions.previousModelToCompare.read(reader);
-			if (this.previous) {
-				this.logService.debug('inlineDiff', 'Previous model set');
-				if (this.notebookEditor.hasModel()) {
-					this.initialize();
-				} else {
-					this.logService.debug('inlineDiff', 'Waiting for model to attach');
-					this.listeners.push(Event.once(this.notebookEditor.onDidAttachViewModel)(() => this.initialize()));
+		this._register(
+			autorun(reader => {
+				this.previous = this.notebookEditor.notebookOptions.previousModelToCompare.read(reader);
+				if (this.previous) {
+					this.logService.debug('inlineDiff', 'Previous model set');
+					if (this.notebookEditor.hasModel()) {
+						this.initialize();
+					} else {
+						this.logService.debug('inlineDiff', 'Waiting for model to attach');
+						this.listeners.push(Event.once(this.notebookEditor.onDidAttachViewModel)(() => this.initialize()));
+					}
 				}
-			}
-		}));
+			})
+		);
 	}
 
 	private clear() {
-
 		this.listeners.forEach(l => l.dispose());
 		this.cellDecorators.forEach((v, cell) => {
 			v.dispose();
@@ -82,16 +89,47 @@ export class NotebookInlineDiffDecorationContribution extends Disposable impleme
 			return;
 		}
 
-		this.insertedCellDecorator = this.instantiationService.createInstance(NotebookInsertedCellDecorator, this.notebookEditor);
-		this.deletedCellDecorator = this.instantiationService.createInstance(NotebookDeletedCellDecorator, this.notebookEditor, undefined);
+		this.insertedCellDecorator = this.instantiationService.createInstance(
+			NotebookInsertedCellDecorator,
+			this.notebookEditor
+		);
+		this.deletedCellDecorator = this.instantiationService.createInstance(
+			NotebookDeletedCellDecorator,
+			this.notebookEditor,
+			undefined
+		);
 
 		this._update();
-		const onVisibleChange = Event.debounce(this.notebookEditor.onDidChangeVisibleRanges, (e) => e, 100, undefined, undefined, undefined, this._store);
+		const onVisibleChange = Event.debounce(
+			this.notebookEditor.onDidChangeVisibleRanges,
+			e => e,
+			100,
+			undefined,
+			undefined,
+			undefined,
+			this._store
+		);
 		this.listeners.push(onVisibleChange(() => this._update()));
 		this.listeners.push(this.notebookEditor.onDidChangeModel(() => this._update()));
 		if (this.notebookEditor.textModel) {
-			const onContentChange = Event.debounce(this.notebookEditor.textModel!.onDidChangeContent, (_, event) => event, 100, undefined, undefined, undefined, this._store);
-			const onOriginalContentChange = Event.debounce(this.previous.onDidChangeContent, (_, event) => event, 100, undefined, undefined, undefined, this._store);
+			const onContentChange = Event.debounce(
+				this.notebookEditor.textModel!.onDidChangeContent,
+				(_, event) => event,
+				100,
+				undefined,
+				undefined,
+				undefined,
+				this._store
+			);
+			const onOriginalContentChange = Event.debounce(
+				this.previous.onDidChangeContent,
+				(_, event) => event,
+				100,
+				undefined,
+				undefined,
+				undefined,
+				this._store
+			);
 			this.listeners.push(onContentChange(() => this._update()));
 			this.listeners.push(onOriginalContentChange(() => this._update()));
 		}
@@ -105,10 +143,11 @@ export class NotebookInlineDiffDecorationContribution extends Disposable impleme
 			return;
 		}
 
-		if (!this.cachedNotebookDiff ||
+		if (
+			!this.cachedNotebookDiff ||
 			this.cachedNotebookDiff.originalVersion !== this.previous.versionId ||
-			this.cachedNotebookDiff.version !== current.versionId) {
-
+			this.cachedNotebookDiff.version !== current.versionId
+		) {
 			let diffInfo: { cellDiffInfo: CellDiffInfo[] } = { cellDiffInfo: [] };
 			try {
 				const notebookDiff = await this.notebookEditorWorkerService.computeDiff(this.previous.uri, current.uri);
@@ -118,7 +157,11 @@ export class NotebookInlineDiffDecorationContribution extends Disposable impleme
 				return;
 			}
 
-			this.cachedNotebookDiff = { cellDiffInfo: diffInfo.cellDiffInfo, originalVersion: this.previous.versionId, version: current.versionId };
+			this.cachedNotebookDiff = {
+				cellDiffInfo: diffInfo.cellDiffInfo,
+				originalVersion: this.previous.versionId,
+				version: current.versionId
+			};
 
 			this.insertedCellDecorator?.apply(diffInfo.cellDiffInfo);
 			this.deletedCellDecorator?.apply(diffInfo.cellDiffInfo, this.previous);
@@ -129,25 +172,33 @@ export class NotebookInlineDiffDecorationContribution extends Disposable impleme
 
 	private async updateCells(original: NotebookTextModel, modified: NotebookTextModel, cellDiffs: CellDiffInfo[]) {
 		const validDiffDecorators = new Set<NotebookCellDiffDecorator>();
-		cellDiffs.forEach((diff) => {
+		cellDiffs.forEach(diff => {
 			if (diff.type === 'modified') {
 				const modifiedCell = modified.cells[diff.modifiedCellIndex];
 				const originalCell = original.cells[diff.originalCellIndex];
-				const editor = this.notebookEditor.codeEditors.find(([vm,]) => vm.handle === modifiedCell.handle)?.[1];
+				const editor = this.notebookEditor.codeEditors.find(([vm]) => vm.handle === modifiedCell.handle)?.[1];
 
 				if (editor) {
 					const currentDecorator = this.cellDecorators.get(modifiedCell);
-					if ((currentDecorator?.modifiedCell !== modifiedCell || currentDecorator?.originalCell !== originalCell)) {
+					if (currentDecorator?.modifiedCell !== modifiedCell || currentDecorator?.originalCell !== originalCell) {
 						currentDecorator?.dispose();
-						const decorator = this.instantiationService.createInstance(NotebookCellDiffDecorator, this.notebookEditor, modifiedCell, originalCell, editor);
+						const decorator = this.instantiationService.createInstance(
+							NotebookCellDiffDecorator,
+							this.notebookEditor,
+							modifiedCell,
+							originalCell,
+							editor
+						);
 						this.cellDecorators.set(modifiedCell, decorator);
 						validDiffDecorators.add(decorator);
-						this._register(editor.onDidDispose(() => {
-							decorator.dispose();
-							if (this.cellDecorators.get(modifiedCell) === decorator) {
-								this.cellDecorators.delete(modifiedCell);
-							}
-						}));
+						this._register(
+							editor.onDidDispose(() => {
+								decorator.dispose();
+								if (this.cellDecorators.get(modifiedCell) === decorator) {
+									this.cellDecorators.delete(modifiedCell);
+								}
+							})
+						);
 					} else if (currentDecorator) {
 						validDiffDecorators.add(currentDecorator);
 					}
@@ -166,5 +217,9 @@ export class NotebookInlineDiffDecorationContribution extends Disposable impleme
 }
 
 registerNotebookContribution(NotebookInlineDiffDecorationContribution.ID, NotebookInlineDiffDecorationContribution);
-registerSingleton(INotebookOriginalModelReferenceFactory, NotebookOriginalModelReferenceFactory, InstantiationType.Delayed);
+registerSingleton(
+	INotebookOriginalModelReferenceFactory,
+	NotebookOriginalModelReferenceFactory,
+	InstantiationType.Delayed
+);
 registerSingleton(INotebookOriginalCellModelFactory, OriginalNotebookCellModelFactory, InstantiationType.Delayed);

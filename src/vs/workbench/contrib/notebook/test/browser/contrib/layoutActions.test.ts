@@ -38,27 +38,36 @@ suite('Notebook Layout Actions', () => {
 		});
 
 		// no user config, default value
-		assert.deepStrictEqual(action.togglePosition('test-nb', {
-			default: 'right'
-		}), {
-			default: 'right',
-			'test-nb': 'left'
-		});
+		assert.deepStrictEqual(
+			action.togglePosition('test-nb', {
+				default: 'right'
+			}),
+			{
+				default: 'right',
+				'test-nb': 'left'
+			}
+		);
 
 		// user config, default to left
-		assert.deepStrictEqual(action.togglePosition('test-nb', {
-			default: 'left'
-		}), {
-			default: 'left',
-			'test-nb': 'right'
-		});
+		assert.deepStrictEqual(
+			action.togglePosition('test-nb', {
+				default: 'left'
+			}),
+			{
+				default: 'left',
+				'test-nb': 'right'
+			}
+		);
 
 		// user config, default to hidden
-		assert.deepStrictEqual(action.togglePosition('test-nb', {
-			default: 'hidden'
-		}), {
-			default: 'hidden',
-			'test-nb': 'right'
-		});
+		assert.deepStrictEqual(
+			action.togglePosition('test-nb', {
+				default: 'hidden'
+			}),
+			{
+				default: 'hidden',
+				'test-nb': 'right'
+			}
+		);
 	});
 });

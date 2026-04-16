@@ -16,7 +16,10 @@ import { isSemanticColoringEnabled, SEMANTIC_HIGHLIGHTING_SETTING_ID } from '../
 import { toMultilineTokens2 } from '../../../common/services/semanticTokensProviderStyling.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { IThemeService } from '../../../../platform/theme/common/themeService.js';
-import { IFeatureDebounceInformation, ILanguageFeatureDebounceService } from '../../../common/services/languageFeatureDebounce.js';
+import {
+	IFeatureDebounceInformation,
+	ILanguageFeatureDebounceService
+} from '../../../common/services/languageFeatureDebounce.js';
 import { StopWatch } from '../../../../base/common/stopwatch.js';
 import { LanguageFeatureRegistry } from '../../../common/languageFeatureRegistry.js';
 import { DocumentRangeSemanticTokensProvider } from '../../../common/languages.js';
@@ -24,7 +27,6 @@ import { ILanguageFeaturesService } from '../../../common/services/languageFeatu
 import { ISemanticTokensStylingService } from '../../../common/services/semanticTokensStyling.js';
 
 export class ViewportSemanticTokensContribution extends Disposable implements IEditorContribution {
-
 	public static readonly ID = 'editor.contrib.viewportSemanticTokens';
 
 	public static get(editor: ICodeEditor): ViewportSemanticTokensContribution | null {
@@ -47,17 +49,22 @@ export class ViewportSemanticTokensContribution extends Disposable implements IE
 		@IThemeService private readonly _themeService: IThemeService,
 		@IConfigurationService private readonly _configurationService: IConfigurationService,
 		@ILanguageFeatureDebounceService languageFeatureDebounceService: ILanguageFeatureDebounceService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService
 	) {
 		super();
 		this._editor = editor;
 		this._provider = languageFeaturesService.documentRangeSemanticTokensProvider;
-		this._debounceInformation = languageFeatureDebounceService.for(this._provider, 'DocumentRangeSemanticTokens', { min: 300, max: 1000 });
+		this._debounceInformation = languageFeatureDebounceService.for(this._provider, 'DocumentRangeSemanticTokens', {
+			min: 300,
+			max: 1000
+		});
 		this._tokenizeViewport = this._register(new RunOnceScheduler(() => this._tokenizeViewportNow(), 100));
-		this._scrollEndScheduler = this._register(new RunOnceScheduler(() => {
-			this._isScrolling = false;
-			this._tokenizeViewport.schedule();
-		}, 150));
+		this._scrollEndScheduler = this._register(
+			new RunOnceScheduler(() => {
+				this._isScrolling = false;
+				this._tokenizeViewport.schedule();
+			}, 150)
+		);
 		this._outstandingRequests = [];
 		this._rangeProvidersChangeListeners = [];
 		const scheduleTokenizeViewport = () => {
@@ -81,43 +88,57 @@ export class ViewportSemanticTokensContribution extends Disposable implements IE
 			}
 		};
 
-		this._register(this._editor.onDidScrollChange(() => {
-			this._isScrolling = true;
-			this._scrollEndScheduler.schedule();
-			// Don't schedule tokenization during scroll, will be scheduled when scroll ends
-		}));
-		this._register(this._editor.onDidChangeModel(() => {
-			bindRangeProvidersChangeListeners();
-			this._cancelAll();
-			scheduleTokenizeViewport();
-		}));
-		this._register(this._editor.onDidChangeModelLanguage(() => {
-			// The cleanup of the model's semantic tokens happens in the DocumentSemanticTokensFeature
-			bindRangeProvidersChangeListeners();
-			this._cancelAll();
-			scheduleTokenizeViewport();
-		}));
-		this._register(this._editor.onDidChangeModelContent((e) => {
-			this._cancelAll();
-			scheduleTokenizeViewport();
-		}));
-
-		bindRangeProvidersChangeListeners();
-		this._register(this._provider.onDidChange(() => {
-			bindRangeProvidersChangeListeners();
-			this._cancelAll();
-			scheduleTokenizeViewport();
-		}));
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(SEMANTIC_HIGHLIGHTING_SETTING_ID)) {
+		this._register(
+			this._editor.onDidScrollChange(() => {
+				this._isScrolling = true;
+				this._scrollEndScheduler.schedule();
+				// Don't schedule tokenization during scroll, will be scheduled when scroll ends
+			})
+		);
+		this._register(
+			this._editor.onDidChangeModel(() => {
+				bindRangeProvidersChangeListeners();
 				this._cancelAll();
 				scheduleTokenizeViewport();
-			}
-		}));
-		this._register(this._themeService.onDidColorThemeChange(() => {
-			this._cancelAll();
-			scheduleTokenizeViewport();
-		}));
+			})
+		);
+		this._register(
+			this._editor.onDidChangeModelLanguage(() => {
+				// The cleanup of the model's semantic tokens happens in the DocumentSemanticTokensFeature
+				bindRangeProvidersChangeListeners();
+				this._cancelAll();
+				scheduleTokenizeViewport();
+			})
+		);
+		this._register(
+			this._editor.onDidChangeModelContent(e => {
+				this._cancelAll();
+				scheduleTokenizeViewport();
+			})
+		);
+
+		bindRangeProvidersChangeListeners();
+		this._register(
+			this._provider.onDidChange(() => {
+				bindRangeProvidersChangeListeners();
+				this._cancelAll();
+				scheduleTokenizeViewport();
+			})
+		);
+		this._register(
+			this._configurationService.onDidChangeConfiguration(e => {
+				if (e.affectsConfiguration(SEMANTIC_HIGHLIGHTING_SETTING_ID)) {
+					this._cancelAll();
+					scheduleTokenizeViewport();
+				}
+			})
+		);
+		this._register(
+			this._themeService.onDidColorThemeChange(() => {
+				this._cancelAll();
+				scheduleTokenizeViewport();
+			})
+		);
 		scheduleTokenizeViewport();
 	}
 
@@ -183,22 +204,31 @@ export class ViewportSemanticTokensContribution extends Disposable implements IE
 		// Cancel existing requests before creating new ones
 		this._cancelOutstandingRequests();
 
-		this._outstandingRequests = this._outstandingRequests.concat(visibleRanges.map(range => this._requestRange(model, range)));
+		this._outstandingRequests = this._outstandingRequests.concat(
+			visibleRanges.map(range => this._requestRange(model, range))
+		);
 	}
 
 	private _requestRange(model: ITextModel, range: Range): CancelablePromise<unknown> {
 		const requestVersionId = model.getVersionId();
-		const request = createCancelablePromise(token => Promise.resolve(getDocumentRangeSemanticTokens(this._provider, model, range, token)));
+		const request = createCancelablePromise(token =>
+			Promise.resolve(getDocumentRangeSemanticTokens(this._provider, model, range, token))
+		);
 		const sw = new StopWatch(false);
-		request.then((r) => {
-			this._debounceInformation.update(model, sw.elapsed());
-			if (!r || !r.tokens || model.isDisposed() || model.getVersionId() !== requestVersionId) {
-				return;
-			}
-			const { provider, tokens: result } = r;
-			const styling = this._semanticTokensStylingService.getStyling(provider);
-			model.tokenization.setPartialSemanticTokens(range, toMultilineTokens2(result, styling, model.getLanguageId()));
-		}).then(() => this._removeOutstandingRequest(request), () => this._removeOutstandingRequest(request));
+		request
+			.then(r => {
+				this._debounceInformation.update(model, sw.elapsed());
+				if (!r || !r.tokens || model.isDisposed() || model.getVersionId() !== requestVersionId) {
+					return;
+				}
+				const { provider, tokens: result } = r;
+				const styling = this._semanticTokensStylingService.getStyling(provider);
+				model.tokenization.setPartialSemanticTokens(range, toMultilineTokens2(result, styling, model.getLanguageId()));
+			})
+			.then(
+				() => this._removeOutstandingRequest(request),
+				() => this._removeOutstandingRequest(request)
+			);
 		return request;
 	}
 }

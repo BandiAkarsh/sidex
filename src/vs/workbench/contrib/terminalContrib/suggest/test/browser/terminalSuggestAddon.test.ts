@@ -5,7 +5,11 @@
 
 import { strictEqual } from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../../base/test/common/utils.js';
-import { PosixShellType, WindowsShellType, GeneralShellType } from '../../../../../../platform/terminal/common/terminal.js';
+import {
+	PosixShellType,
+	WindowsShellType,
+	GeneralShellType
+} from '../../../../../../platform/terminal/common/terminal.js';
 import { isInlineCompletionSupported } from '../../browser/terminalSuggestAddon.js';
 
 suite('Terminal Suggest Addon - Inline Completion, Shell Type Support', () => {

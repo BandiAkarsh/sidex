@@ -5,13 +5,21 @@
 
 import * as nls from '../../../../nls.js';
 import { language } from '../../../../base/common/platform.js';
-import { IWorkbenchContributionsRegistry, IWorkbenchContribution, Extensions as WorkbenchExtensions } from '../../../common/contributions.js';
+import {
+	IWorkbenchContributionsRegistry,
+	IWorkbenchContribution,
+	Extensions as WorkbenchExtensions
+} from '../../../common/contributions.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
 import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
 import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
 import { LifecyclePhase } from '../../../services/lifecycle/common/lifecycle.js';
-import { Severity, INotificationService, NotificationPriority } from '../../../../platform/notification/common/notification.js';
+import {
+	Severity,
+	INotificationService,
+	NotificationPriority
+} from '../../../../platform/notification/common/notification.js';
 import { IOpenerService } from '../../../../platform/opener/common/opener.js';
 import { URI } from '../../../../base/common/uri.js';
 import { platform } from '../../../../base/common/process.js';
@@ -24,7 +32,6 @@ const SKIP_VERSION_KEY = 'nps/skipVersion';
 const IS_CANDIDATE_KEY = 'nps/isCandidate';
 
 class NPSContribution implements IWorkbenchContribution {
-
 	constructor(
 		@IStorageService storageService: IStorageService,
 		@INotificationService notificationService: INotificationService,
@@ -43,7 +50,11 @@ class NPSContribution implements IWorkbenchContribution {
 		}
 
 		const date = new Date().toDateString();
-		const lastSessionDate = storageService.get(LAST_SESSION_DATE_KEY, StorageScope.APPLICATION, new Date(0).toDateString());
+		const lastSessionDate = storageService.get(
+			LAST_SESSION_DATE_KEY,
+			StorageScope.APPLICATION,
+			new Date(0).toDateString()
+		);
 
 		if (date === lastSessionDate) {
 			return;
@@ -57,8 +68,8 @@ class NPSContribution implements IWorkbenchContribution {
 			return;
 		}
 
-		const isCandidate = storageService.getBoolean(IS_CANDIDATE_KEY, StorageScope.APPLICATION, false)
-			|| Math.random() < PROBABILITY;
+		const isCandidate =
+			storageService.getBoolean(IS_CANDIDATE_KEY, StorageScope.APPLICATION, false) || Math.random() < PROBABILITY;
 
 		storageService.store(IS_CANDIDATE_KEY, isCandidate, StorageScope.APPLICATION, StorageTarget.USER);
 
@@ -69,24 +80,43 @@ class NPSContribution implements IWorkbenchContribution {
 
 		notificationService.prompt(
 			Severity.Info,
-			nls.localize('surveyQuestion', "Do you mind taking a quick feedback survey?"),
-			[{
-				label: nls.localize('takeSurvey', "Take Survey"),
-				run: () => {
-					openerService.open(URI.parse(`${productService.npsSurveyUrl}?o=${encodeURIComponent(platform)}&v=${encodeURIComponent(productService.version)}&m=${encodeURIComponent(telemetryService.machineId)}`));
-					storageService.store(IS_CANDIDATE_KEY, false, StorageScope.APPLICATION, StorageTarget.USER);
-					storageService.store(SKIP_VERSION_KEY, productService.version, StorageScope.APPLICATION, StorageTarget.USER);
+			nls.localize('surveyQuestion', 'Do you mind taking a quick feedback survey?'),
+			[
+				{
+					label: nls.localize('takeSurvey', 'Take Survey'),
+					run: () => {
+						openerService.open(
+							URI.parse(
+								`${productService.npsSurveyUrl}?o=${encodeURIComponent(platform)}&v=${encodeURIComponent(productService.version)}&m=${encodeURIComponent(telemetryService.machineId)}`
+							)
+						);
+						storageService.store(IS_CANDIDATE_KEY, false, StorageScope.APPLICATION, StorageTarget.USER);
+						storageService.store(
+							SKIP_VERSION_KEY,
+							productService.version,
+							StorageScope.APPLICATION,
+							StorageTarget.USER
+						);
+					}
+				},
+				{
+					label: nls.localize('remindLater', 'Remind Me Later'),
+					run: () =>
+						storageService.store(SESSION_COUNT_KEY, sessionCount - 3, StorageScope.APPLICATION, StorageTarget.USER)
+				},
+				{
+					label: nls.localize('neverAgain', "Don't Show Again"),
+					run: () => {
+						storageService.store(IS_CANDIDATE_KEY, false, StorageScope.APPLICATION, StorageTarget.USER);
+						storageService.store(
+							SKIP_VERSION_KEY,
+							productService.version,
+							StorageScope.APPLICATION,
+							StorageTarget.USER
+						);
+					}
 				}
-			}, {
-				label: nls.localize('remindLater', "Remind Me Later"),
-				run: () => storageService.store(SESSION_COUNT_KEY, sessionCount - 3, StorageScope.APPLICATION, StorageTarget.USER)
-			}, {
-				label: nls.localize('neverAgain', "Don't Show Again"),
-				run: () => {
-					storageService.store(IS_CANDIDATE_KEY, false, StorageScope.APPLICATION, StorageTarget.USER);
-					storageService.store(SKIP_VERSION_KEY, productService.version, StorageScope.APPLICATION, StorageTarget.USER);
-				}
-			}],
+			],
 			{ priority: NotificationPriority.URGENT }
 		);
 	}

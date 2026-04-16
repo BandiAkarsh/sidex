@@ -290,9 +290,9 @@ define({
 		withShiftAltGr: ':'
 	},
 	Quote: {
-		value: '\'',
+		value: "'",
 		withShift: '"',
-		withAltGr: '\'',
+		withAltGr: "'",
 		withShiftAltGr: '"'
 	},
 	Backquote: {
@@ -493,5 +493,4 @@ define({
 	MailReply: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
 	MailForward: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' },
 	MailSend: { value: '', withShift: '', withAltGr: '', withShiftAltGr: '' }
-
 });

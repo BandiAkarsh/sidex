@@ -5,14 +5,28 @@
 
 import assert from 'assert';
 import { VSBuffer } from '../../../../../base/common/buffer.js';
-import { IDefaultAccount, IDefaultAccountAuthenticationProvider, IPolicyData } from '../../../../../base/common/defaultAccount.js';
+import {
+	IDefaultAccount,
+	IDefaultAccountAuthenticationProvider,
+	IPolicyData
+} from '../../../../../base/common/defaultAccount.js';
 import { Event } from '../../../../../base/common/event.js';
 import { PolicyCategory } from '../../../../../base/common/policy.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { Extensions, IConfigurationNode, IConfigurationRegistry } from '../../../../../platform/configuration/common/configurationRegistry.js';
-import { DefaultConfiguration, PolicyConfiguration } from '../../../../../platform/configuration/common/configurations.js';
-import { IDefaultAccountProvider, IDefaultAccountService } from '../../../../../platform/defaultAccount/common/defaultAccount.js';
+import {
+	Extensions,
+	IConfigurationNode,
+	IConfigurationRegistry
+} from '../../../../../platform/configuration/common/configurationRegistry.js';
+import {
+	DefaultConfiguration,
+	PolicyConfiguration
+} from '../../../../../platform/configuration/common/configurations.js';
+import {
+	IDefaultAccountProvider,
+	IDefaultAccountService
+} from '../../../../../platform/defaultAccount/common/defaultAccount.js';
 import { IFileService } from '../../../../../platform/files/common/files.js';
 import { FileService } from '../../../../../platform/files/common/fileService.js';
 import { InMemoryFileSystemProvider } from '../../../../../platform/files/common/inMemoryFilesystemProvider.js';
@@ -28,15 +42,14 @@ const BASE_DEFAULT_ACCOUNT: IDefaultAccount = {
 	authenticationProvider: {
 		id: 'github',
 		name: 'GitHub',
-		enterprise: false,
+		enterprise: false
 	},
 	accountName: 'testuser',
 	enterprise: false,
-	sessionId: 'abc123',
+	sessionId: 'abc123'
 };
 
 class DefaultAccountProvider implements IDefaultAccountProvider {
-
 	readonly onDidChangeDefaultAccount = Event.None;
 	readonly onDidChangePolicyData = Event.None;
 	readonly copilotTokenInfo = null;
@@ -44,8 +57,8 @@ class DefaultAccountProvider implements IDefaultAccountProvider {
 
 	constructor(
 		readonly defaultAccount: IDefaultAccount,
-		readonly policyData: IPolicyData = {},
-	) { }
+		readonly policyData: IPolicyData = {}
+	) {}
 
 	getDefaultAccountAuthenticationProvider(): IDefaultAccountAuthenticationProvider {
 		return this.defaultAccount.authenticationProvider;
@@ -59,11 +72,10 @@ class DefaultAccountProvider implements IDefaultAccountProvider {
 		return null;
 	}
 
-	async signOut(): Promise<void> { }
+	async signOut(): Promise<void> {}
 }
 
 suite('MultiplexPolicyService', () => {
-
 	const disposables = ensureNoDisposablesAreLeakedInTestSuite();
 
 	let policyService: MultiplexPolicyService;
@@ -74,14 +86,14 @@ suite('MultiplexPolicyService', () => {
 
 	const policyFile = URI.file('policyFile').with({ scheme: 'vscode-tests' });
 	const policyConfigurationNode: IConfigurationNode = {
-		'id': 'policyConfiguration',
-		'order': 1,
-		'title': 'a',
-		'type': 'object',
-		'properties': {
+		id: 'policyConfiguration',
+		order: 1,
+		title: 'a',
+		type: 'object',
+		properties: {
 			'setting.A': {
-				'type': 'string',
-				'default': 'defaultValueA',
+				type: 'string',
+				default: 'defaultValueA',
 				policy: {
 					name: 'PolicySettingA',
 					category: PolicyCategory.Extensions,
@@ -90,48 +102,54 @@ suite('MultiplexPolicyService', () => {
 				}
 			},
 			'setting.B': {
-				'type': 'string',
-				'default': 'defaultValueB',
+				type: 'string',
+				default: 'defaultValueB',
 				policy: {
 					name: 'PolicySettingB',
 					category: PolicyCategory.Extensions,
 					minimumVersion: '1.0.0',
 					localization: { description: { key: '', value: '' } },
-					value: policyData => policyData.chat_preview_features_enabled === false ? 'policyValueB' : undefined,
+					value: policyData => (policyData.chat_preview_features_enabled === false ? 'policyValueB' : undefined)
 				}
 			},
 			'setting.C': {
-				'type': 'array',
-				'default': ['defaultValueC1', 'defaultValueC2'],
+				type: 'array',
+				default: ['defaultValueC1', 'defaultValueC2'],
 				policy: {
 					name: 'PolicySettingC',
 					category: PolicyCategory.Extensions,
 					minimumVersion: '1.0.0',
 					localization: { description: { key: '', value: '' } },
-					value: policyData => policyData.chat_preview_features_enabled === false ? JSON.stringify(['policyValueC1', 'policyValueC2']) : undefined,
+					value: policyData =>
+						policyData.chat_preview_features_enabled === false
+							? JSON.stringify(['policyValueC1', 'policyValueC2'])
+							: undefined
 				}
 			},
 			'setting.D': {
-				'type': 'boolean',
-				'default': true,
+				type: 'boolean',
+				default: true,
 				policy: {
 					name: 'PolicySettingD',
 					category: PolicyCategory.Extensions,
 					minimumVersion: '1.0.0',
 					localization: { description: { key: '', value: '' } },
-					value: policyData => policyData.chat_preview_features_enabled === false ? false : undefined,
+					value: policyData => (policyData.chat_preview_features_enabled === false ? false : undefined)
 				}
 			},
 			'setting.E': {
-				'type': 'boolean',
-				'default': true,
+				type: 'boolean',
+				default: true
 			}
 		}
 	};
 
-
-	suiteSetup(() => Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerConfiguration(policyConfigurationNode));
-	suiteTeardown(() => Registry.as<IConfigurationRegistry>(Extensions.Configuration).deregisterConfigurations([policyConfigurationNode]));
+	suiteSetup(() =>
+		Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerConfiguration(policyConfigurationNode)
+	);
+	suiteTeardown(() =>
+		Registry.as<IConfigurationRegistry>(Extensions.Configuration).deregisterConfigurations([policyConfigurationNode])
+	);
 
 	setup(async () => {
 		const defaultConfiguration = disposables.add(new DefaultConfiguration(new NullLogService()));
@@ -142,19 +160,22 @@ suite('MultiplexPolicyService', () => {
 		disposables.add(fileService.registerProvider(policyFile.scheme, diskFileSystemProvider));
 
 		defaultAccountService = disposables.add(new DefaultAccountService(TestProductService));
-		policyService = disposables.add(new MultiplexPolicyService([
-			disposables.add(new FilePolicyService(policyFile, fileService, new NullLogService())),
-			disposables.add(new AccountPolicyService(logService, defaultAccountService)),
-		], logService));
-		policyConfiguration = disposables.add(new PolicyConfiguration(defaultConfiguration, policyService, new NullLogService()));
+		policyService = disposables.add(
+			new MultiplexPolicyService(
+				[
+					disposables.add(new FilePolicyService(policyFile, fileService, new NullLogService())),
+					disposables.add(new AccountPolicyService(logService, defaultAccountService))
+				],
+				logService
+			)
+		);
+		policyConfiguration = disposables.add(
+			new PolicyConfiguration(defaultConfiguration, policyService, new NullLogService())
+		);
 	});
 
 	async function clear() {
-		await fileService.writeFile(policyFile,
-			VSBuffer.fromString(
-				JSON.stringify({})
-			)
-		);
+		await fileService.writeFile(policyFile, VSBuffer.fromString(JSON.stringify({})));
 	}
 
 	test('no policy', async () => {
@@ -196,11 +217,7 @@ suite('MultiplexPolicyService', () => {
 		defaultAccountService.setDefaultAccountProvider(new DefaultAccountProvider(BASE_DEFAULT_ACCOUNT));
 		await defaultAccountService.refresh();
 
-		await fileService.writeFile(policyFile,
-			VSBuffer.fromString(
-				JSON.stringify({ 'PolicySettingA': 'policyValueA' })
-			)
-		);
+		await fileService.writeFile(policyFile, VSBuffer.fromString(JSON.stringify({ PolicySettingA: 'policyValueA' })));
 
 		await policyConfiguration.initialize();
 
@@ -238,11 +255,7 @@ suite('MultiplexPolicyService', () => {
 		defaultAccountService.setDefaultAccountProvider(new DefaultAccountProvider(BASE_DEFAULT_ACCOUNT, policyData));
 		await defaultAccountService.refresh();
 
-		await fileService.writeFile(policyFile,
-			VSBuffer.fromString(
-				JSON.stringify({})
-			)
-		);
+		await fileService.writeFile(policyFile, VSBuffer.fromString(JSON.stringify({})));
 
 		await policyConfiguration.initialize();
 		const actualConfigurationModel = policyConfiguration.configurationModel;
@@ -279,11 +292,7 @@ suite('MultiplexPolicyService', () => {
 		defaultAccountService.setDefaultAccountProvider(new DefaultAccountProvider(BASE_DEFAULT_ACCOUNT, policyData));
 		await defaultAccountService.refresh();
 
-		await fileService.writeFile(policyFile,
-			VSBuffer.fromString(
-				JSON.stringify({ 'PolicySettingA': 'policyValueA' })
-			)
-		);
+		await fileService.writeFile(policyFile, VSBuffer.fromString(JSON.stringify({ PolicySettingA: 'policyValueA' })));
 
 		await policyConfiguration.initialize();
 		const actualConfigurationModel = policyConfiguration.configurationModel;

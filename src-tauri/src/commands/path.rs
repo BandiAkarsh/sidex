@@ -156,7 +156,9 @@ pub fn is_binary_file(path: String) -> Result<bool, String> {
     use std::io::Read;
     let mut file = std::fs::File::open(&path).map_err(|e| format!("Failed to open file: {}", e))?;
     let mut buf = [0u8; 8192];
-    let n = file.read(&mut buf).map_err(|e| format!("Failed to read: {}", e))?;
+    let n = file
+        .read(&mut buf)
+        .map_err(|e| format!("Failed to read: {}", e))?;
     Ok(buf[..n].contains(&0))
 }
 

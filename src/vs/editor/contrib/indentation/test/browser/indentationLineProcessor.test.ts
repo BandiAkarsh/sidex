@@ -7,8 +7,17 @@ import { DisposableStore } from '../../../../../base/common/lifecycle.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 import { StandardTokenType } from '../../../../common/encodedTokenAttributes.js';
 import { ILanguageConfigurationService } from '../../../../common/languages/languageConfigurationRegistry.js';
-import { IndentationContextProcessor, ProcessedIndentRulesSupport } from '../../../../common/languages/supports/indentationLineProcessor.js';
-import { Language, registerLanguage, registerLanguageConfiguration, registerTokenizationSupport, StandardTokenTypeData } from './indentation.test.js';
+import {
+	IndentationContextProcessor,
+	ProcessedIndentRulesSupport
+} from '../../../../common/languages/supports/indentationLineProcessor.js';
+import {
+	Language,
+	registerLanguage,
+	registerLanguageConfiguration,
+	registerTokenizationSupport,
+	StandardTokenTypeData
+} from './indentation.test.js';
 import { withTestCodeEditor } from '../../../../test/browser/testCodeEditor.js';
 import { createTextModel } from '../../../../test/common/testTextModel.js';
 import { Range } from '../../../../common/core/range.js';
@@ -18,7 +27,6 @@ import { TestLanguageConfigurationService } from '../../../../test/common/modes/
 import { ILanguageService } from '../../../../common/languages/language.js';
 
 suite('Indentation Context Processor - TypeScript/JavaScript', () => {
-
 	const languageId = Language.TypeScript;
 	let disposables: DisposableStore;
 	let serviceCollection: ServiceCollection;
@@ -44,18 +52,17 @@ suite('Indentation Context Processor - TypeScript/JavaScript', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('brackets inside of string', () => {
-
-		const model = createTextModel([
-			'const someVar = "{some text}"',
-		].join('\n'), languageId, {});
+		const model = createTextModel(['const someVar = "{some text}"'].join('\n'), languageId, {});
 		disposables.add(model);
 
 		withTestCodeEditor(model, { autoIndent: 'full', serviceCollection }, (editor, viewModel, instantiationService) => {
-			const tokens: StandardTokenTypeData[][] = [[
-				{ startIndex: 0, standardTokenType: StandardTokenType.Other },
-				{ startIndex: 16, standardTokenType: StandardTokenType.String },
-				{ startIndex: 28, standardTokenType: StandardTokenType.String }
-			]];
+			const tokens: StandardTokenTypeData[][] = [
+				[
+					{ startIndex: 0, standardTokenType: StandardTokenType.Other },
+					{ startIndex: 16, standardTokenType: StandardTokenType.String },
+					{ startIndex: 28, standardTokenType: StandardTokenType.String }
+				]
+			];
 			disposables.add(registerTokenizationSupport(instantiationService, tokens, languageId));
 			const languageConfigurationService = instantiationService.get(ILanguageConfigurationService);
 			const indentationContextProcessor = new IndentationContextProcessor(model, languageConfigurationService);
@@ -67,25 +74,26 @@ suite('Indentation Context Processor - TypeScript/JavaScript', () => {
 	});
 
 	test('brackets inside of comment', () => {
-
-		const model = createTextModel([
-			'const someVar2 = /*(a])*/',
-			'const someVar = /* [()] some other t{e}xt() */ "some text"',
-		].join('\n'), languageId, {});
+		const model = createTextModel(
+			['const someVar2 = /*(a])*/', 'const someVar = /* [()] some other t{e}xt() */ "some text"'].join('\n'),
+			languageId,
+			{}
+		);
 		disposables.add(model);
 
 		withTestCodeEditor(model, { autoIndent: 'full', serviceCollection }, (editor, viewModel, instantiationService) => {
 			const tokens: StandardTokenTypeData[][] = [
 				[
 					{ startIndex: 0, standardTokenType: StandardTokenType.Other },
-					{ startIndex: 17, standardTokenType: StandardTokenType.Comment },
+					{ startIndex: 17, standardTokenType: StandardTokenType.Comment }
 				],
 				[
 					{ startIndex: 0, standardTokenType: StandardTokenType.Other },
 					{ startIndex: 16, standardTokenType: StandardTokenType.Comment },
 					{ startIndex: 46, standardTokenType: StandardTokenType.Other },
 					{ startIndex: 47, standardTokenType: StandardTokenType.String }
-				]];
+				]
+			];
 			disposables.add(registerTokenizationSupport(instantiationService, tokens, languageId));
 			const languageConfigurationService = instantiationService.get(ILanguageConfigurationService);
 			const indentationContextProcessor = new IndentationContextProcessor(model, languageConfigurationService);
@@ -97,11 +105,11 @@ suite('Indentation Context Processor - TypeScript/JavaScript', () => {
 	});
 
 	test('brackets inside of regex', () => {
-
-		const model = createTextModel([
-			'const someRegex2 = /(()))]/;',
-			'const someRegex = /()a{h}{s}[(a}87(9a9()))]/;',
-		].join('\n'), languageId, {});
+		const model = createTextModel(
+			['const someRegex2 = /(()))]/;', 'const someRegex = /()a{h}{s}[(a}87(9a9()))]/;'].join('\n'),
+			languageId,
+			{}
+		);
 		disposables.add(model);
 
 		withTestCodeEditor(model, { autoIndent: 'full', serviceCollection }, (editor, viewModel, instantiationService) => {
@@ -109,12 +117,12 @@ suite('Indentation Context Processor - TypeScript/JavaScript', () => {
 				[
 					{ startIndex: 0, standardTokenType: StandardTokenType.Other },
 					{ startIndex: 19, standardTokenType: StandardTokenType.RegEx },
-					{ startIndex: 27, standardTokenType: StandardTokenType.Other },
+					{ startIndex: 27, standardTokenType: StandardTokenType.Other }
 				],
 				[
 					{ startIndex: 0, standardTokenType: StandardTokenType.Other },
 					{ startIndex: 18, standardTokenType: StandardTokenType.RegEx },
-					{ startIndex: 44, standardTokenType: StandardTokenType.Other },
+					{ startIndex: 44, standardTokenType: StandardTokenType.Other }
 				]
 			];
 			disposables.add(registerTokenizationSupport(instantiationService, tokens, languageId));
@@ -129,7 +137,6 @@ suite('Indentation Context Processor - TypeScript/JavaScript', () => {
 });
 
 suite('Processed Indent Rules Support - TypeScript/JavaScript', () => {
-
 	const languageId = Language.TypeScript;
 	let disposables: DisposableStore;
 	let serviceCollection: ServiceCollection;
@@ -155,35 +162,37 @@ suite('Processed Indent Rules Support - TypeScript/JavaScript', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('should increase', () => {
-
-		const model = createTextModel([
-			'const someVar = {',
-			'const someVar2 = "{"',
-			'const someVar3 = /*{*/'
-		].join('\n'), languageId, {});
+		const model = createTextModel(
+			['const someVar = {', 'const someVar2 = "{"', 'const someVar3 = /*{*/'].join('\n'),
+			languageId,
+			{}
+		);
 		disposables.add(model);
 
 		withTestCodeEditor(model, { autoIndent: 'full', serviceCollection }, (editor, viewModel, instantiationService) => {
 			const tokens: StandardTokenTypeData[][] = [
+				[{ startIndex: 0, standardTokenType: StandardTokenType.Other }],
 				[
-					{ startIndex: 0, standardTokenType: StandardTokenType.Other }
+					{ startIndex: 0, standardTokenType: StandardTokenType.Other },
+					{ startIndex: 17, standardTokenType: StandardTokenType.String }
 				],
 				[
 					{ startIndex: 0, standardTokenType: StandardTokenType.Other },
-					{ startIndex: 17, standardTokenType: StandardTokenType.String },
-				],
-				[
-					{ startIndex: 0, standardTokenType: StandardTokenType.Other },
-					{ startIndex: 17, standardTokenType: StandardTokenType.Comment },
+					{ startIndex: 17, standardTokenType: StandardTokenType.Comment }
 				]
 			];
 			disposables.add(registerTokenizationSupport(instantiationService, tokens, languageId));
 			const languageConfigurationService = instantiationService.get(ILanguageConfigurationService);
-			const indentationRulesSupport = languageConfigurationService.getLanguageConfiguration(languageId).indentRulesSupport;
+			const indentationRulesSupport =
+				languageConfigurationService.getLanguageConfiguration(languageId).indentRulesSupport;
 			if (!indentationRulesSupport) {
 				assert.fail('indentationRulesSupport should be defined');
 			}
-			const processedIndentRulesSupport = new ProcessedIndentRulesSupport(model, indentationRulesSupport, languageConfigurationService);
+			const processedIndentRulesSupport = new ProcessedIndentRulesSupport(
+				model,
+				indentationRulesSupport,
+				languageConfigurationService
+			);
 			assert.strictEqual(processedIndentRulesSupport.shouldIncrease(1), true);
 			assert.strictEqual(processedIndentRulesSupport.shouldIncrease(2), false);
 			assert.strictEqual(processedIndentRulesSupport.shouldIncrease(3), false);
@@ -191,12 +200,7 @@ suite('Processed Indent Rules Support - TypeScript/JavaScript', () => {
 	});
 
 	test('should decrease', () => {
-
-		const model = createTextModel([
-			'}',
-			'"])some text}"',
-			'])*/'
-		].join('\n'), languageId, {});
+		const model = createTextModel(['}', '"])some text}"', '])*/'].join('\n'), languageId, {});
 		disposables.add(model);
 
 		withTestCodeEditor(model, { autoIndent: 'full', serviceCollection }, (editor, viewModel, instantiationService) => {
@@ -207,11 +211,16 @@ suite('Processed Indent Rules Support - TypeScript/JavaScript', () => {
 			];
 			disposables.add(registerTokenizationSupport(instantiationService, tokens, languageId));
 			const languageConfigurationService = instantiationService.get(ILanguageConfigurationService);
-			const indentationRulesSupport = languageConfigurationService.getLanguageConfiguration(languageId).indentRulesSupport;
+			const indentationRulesSupport =
+				languageConfigurationService.getLanguageConfiguration(languageId).indentRulesSupport;
 			if (!indentationRulesSupport) {
 				assert.fail('indentationRulesSupport should be defined');
 			}
-			const processedIndentRulesSupport = new ProcessedIndentRulesSupport(model, indentationRulesSupport, languageConfigurationService);
+			const processedIndentRulesSupport = new ProcessedIndentRulesSupport(
+				model,
+				indentationRulesSupport,
+				languageConfigurationService
+			);
 			assert.strictEqual(processedIndentRulesSupport.shouldDecrease(1), true);
 			assert.strictEqual(processedIndentRulesSupport.shouldDecrease(2), false);
 			assert.strictEqual(processedIndentRulesSupport.shouldDecrease(3), false);
@@ -219,19 +228,16 @@ suite('Processed Indent Rules Support - TypeScript/JavaScript', () => {
 	});
 
 	test('should increase next line', () => {
-
-		const model = createTextModel([
-			'if()',
-			'const someString = "if()"',
-			'const someRegex = /if()/'
-		].join('\n'), languageId, {});
+		const model = createTextModel(
+			['if()', 'const someString = "if()"', 'const someRegex = /if()/'].join('\n'),
+			languageId,
+			{}
+		);
 		disposables.add(model);
 
 		withTestCodeEditor(model, { autoIndent: 'full', serviceCollection }, (editor, viewModel, instantiationService) => {
 			const tokens: StandardTokenTypeData[][] = [
-				[
-					{ startIndex: 0, standardTokenType: StandardTokenType.Other }
-				],
+				[{ startIndex: 0, standardTokenType: StandardTokenType.Other }],
 				[
 					{ startIndex: 0, standardTokenType: StandardTokenType.Other },
 					{ startIndex: 19, standardTokenType: StandardTokenType.String }
@@ -243,11 +249,16 @@ suite('Processed Indent Rules Support - TypeScript/JavaScript', () => {
 			];
 			disposables.add(registerTokenizationSupport(instantiationService, tokens, languageId));
 			const languageConfigurationService = instantiationService.get(ILanguageConfigurationService);
-			const indentationRulesSupport = languageConfigurationService.getLanguageConfiguration(languageId).indentRulesSupport;
+			const indentationRulesSupport =
+				languageConfigurationService.getLanguageConfiguration(languageId).indentRulesSupport;
 			if (!indentationRulesSupport) {
 				assert.fail('indentationRulesSupport should be defined');
 			}
-			const processedIndentRulesSupport = new ProcessedIndentRulesSupport(model, indentationRulesSupport, languageConfigurationService);
+			const processedIndentRulesSupport = new ProcessedIndentRulesSupport(
+				model,
+				indentationRulesSupport,
+				languageConfigurationService
+			);
 			assert.strictEqual(processedIndentRulesSupport.shouldIndentNextLine(1), true);
 			assert.strictEqual(processedIndentRulesSupport.shouldIndentNextLine(2), false);
 			assert.strictEqual(processedIndentRulesSupport.shouldIndentNextLine(3), false);

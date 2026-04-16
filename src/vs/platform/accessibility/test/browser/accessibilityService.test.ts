@@ -27,7 +27,7 @@ suite('AccessibilityService', () => {
 			'workbench.reduceMotion': 'off',
 			'workbench.reduceTransparency': 'off',
 			'accessibility.underlineLinks': false,
-			...config,
+			...config
 		});
 		instantiationService.stub(IConfigurationService, configurationService);
 
@@ -37,15 +37,16 @@ suite('AccessibilityService', () => {
 		instantiationService.stub(ILayoutService, {
 			mainContainer: container,
 			activeContainer: container,
-			getContainer() { return container; },
-			onDidLayoutContainer: Event.None,
+			getContainer() {
+				return container;
+			},
+			onDidLayoutContainer: Event.None
 		});
 
 		return store.add(instantiationService.createInstance(AccessibilityService));
 	}
 
 	suite('isTransparencyReduced', () => {
-
 		test('returns false when config is off', () => {
 			const service = createService({ 'workbench.reduceTransparency': 'off' });
 			assert.strictEqual(service.isTransparencyReduced(), false);
@@ -71,12 +72,18 @@ suite('AccessibilityService', () => {
 			assert.strictEqual(service.isTransparencyReduced(), false);
 
 			let fired = false;
-			store.add(service.onDidChangeReducedTransparency(() => { fired = true; }));
+			store.add(
+				service.onDidChangeReducedTransparency(() => {
+					fired = true;
+				})
+			);
 
 			// Simulate config change
 			configurationService.setUserConfiguration('workbench.reduceTransparency', 'on');
 			configurationService.onDidChangeConfigurationEmitter.fire({
-				affectsConfiguration(id: string) { return id === 'workbench.reduceTransparency'; },
+				affectsConfiguration(id: string) {
+					return id === 'workbench.reduceTransparency';
+				}
 			} satisfies Partial<IConfigurationChangeEvent> as unknown as IConfigurationChangeEvent);
 
 			assert.strictEqual(fired, true);
@@ -86,7 +93,6 @@ suite('AccessibilityService', () => {
 	});
 
 	suite('isMotionReduced', () => {
-
 		test('returns false when config is off', () => {
 			const service = createService({ 'workbench.reduceMotion': 'off' });
 			assert.strictEqual(service.isMotionReduced(), false);

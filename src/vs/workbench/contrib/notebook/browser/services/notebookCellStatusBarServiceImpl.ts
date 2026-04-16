@@ -12,7 +12,6 @@ import { INotebookCellStatusBarService } from '../../common/notebookCellStatusBa
 import { INotebookCellStatusBarItemList, INotebookCellStatusBarItemProvider } from '../../common/notebookCommon.js';
 
 export class NotebookCellStatusBarService extends Disposable implements INotebookCellStatusBarService {
-
 	readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeProviders = this._register(new Emitter<void>());
@@ -39,15 +38,22 @@ export class NotebookCellStatusBarService extends Disposable implements INoteboo
 		});
 	}
 
-	async getStatusBarItemsForCell(docUri: URI, cellIndex: number, viewType: string, token: CancellationToken): Promise<INotebookCellStatusBarItemList[]> {
+	async getStatusBarItemsForCell(
+		docUri: URI,
+		cellIndex: number,
+		viewType: string,
+		token: CancellationToken
+	): Promise<INotebookCellStatusBarItemList[]> {
 		const providers = this._providers.filter(p => p.viewType === viewType || p.viewType === '*');
-		return await Promise.all(providers.map(async p => {
-			try {
-				return await p.provideCellStatusBarItems(docUri, cellIndex, token) ?? { items: [] };
-			} catch (e) {
-				onUnexpectedExternalError(e);
-				return { items: [] };
-			}
-		}));
+		return await Promise.all(
+			providers.map(async p => {
+				try {
+					return (await p.provideCellStatusBarItems(docUri, cellIndex, token)) ?? { items: [] };
+				} catch (e) {
+					onUnexpectedExternalError(e);
+					return { items: [] };
+				}
+			})
+		);
 	}
 }

@@ -13,12 +13,16 @@ import * as ports from '../../../../../base/node/ports.js';
 import { SocketDebugAdapter, NamedPipeDebugAdapter, StreamDebugAdapter } from '../../node/debugAdapter.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
 
-
 function sendInitializeRequest(debugAdapter: StreamDebugAdapter): Promise<DebugProtocol.Response> {
 	return new Promise((resolve, reject) => {
-		debugAdapter.sendRequest('initialize', { adapterID: 'test' }, (result) => {
-			resolve(result);
-		}, 3000);
+		debugAdapter.sendRequest(
+			'initialize',
+			{ adapterID: 'test' },
+			result => {
+				resolve(result);
+			},
+			3000
+		);
 	});
 }
 
@@ -45,11 +49,9 @@ function serverConnection(socket: net.Socket) {
 }
 
 suite('Debug - StreamDebugAdapter', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test(`StreamDebugAdapter (NamedPipeDebugAdapter) can initialize a connection`, async () => {
-
 		const pipeName = crypto.randomBytes(10).toString('hex');
 		const pipePath = platform.isWindows ? join('\\\\.\\pipe\\', pipeName) : join(tmpdir(), pipeName);
 		const server = await new Promise<net.Server>((resolve, reject) => {
@@ -77,9 +79,13 @@ suite('Debug - StreamDebugAdapter', () => {
 	});
 
 	test(`StreamDebugAdapter (SocketDebugAdapter) can initialize a connection`, async () => {
-
 		const rndPort = Math.floor(Math.random() * 1000 + 8000);
-		const port = await ports.findFreePort(rndPort, 10 /* try 10 ports */, 3000 /* try up to 3 seconds */, 87 /* skip 87 ports between attempts */);
+		const port = await ports.findFreePort(
+			rndPort,
+			10 /* try 10 ports */,
+			3000 /* try up to 3 seconds */,
+			87 /* skip 87 ports between attempts */
+		);
 		const server = net.createServer(serverConnection).listen(port);
 		const debugAdapter = new SocketDebugAdapter({
 			type: 'server',

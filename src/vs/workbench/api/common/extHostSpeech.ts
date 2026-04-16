@@ -10,7 +10,6 @@ import type * as vscode from 'vscode';
 import { ExtensionIdentifier } from '../../../platform/extensions/common/extensions.js';
 
 export class ExtHostSpeech implements ExtHostSpeechShape {
-
 	private static ID_POOL = 1;
 
 	private readonly proxy: MainThreadSpeechShape;
@@ -19,9 +18,7 @@ export class ExtHostSpeech implements ExtHostSpeechShape {
 	private readonly sessions = new Map<number, CancellationTokenSource>();
 	private readonly synthesizers = new Map<number, vscode.TextToSpeechSession>();
 
-	constructor(
-		mainContext: IMainContext
-	) {
+	constructor(mainContext: IMainContext) {
 		this.proxy = mainContext.getProxy(MainContext.MainThreadSpeech);
 	}
 
@@ -36,18 +33,23 @@ export class ExtHostSpeech implements ExtHostSpeechShape {
 		const cts = new CancellationTokenSource();
 		this.sessions.set(session, cts);
 
-		const speechToTextSession = await provider.provideSpeechToTextSession(cts.token, language ? { language } : undefined);
+		const speechToTextSession = await provider.provideSpeechToTextSession(
+			cts.token,
+			language ? { language } : undefined
+		);
 		if (!speechToTextSession) {
 			return;
 		}
 
-		disposables.add(speechToTextSession.onDidChange(e => {
-			if (cts.token.isCancellationRequested) {
-				return;
-			}
+		disposables.add(
+			speechToTextSession.onDidChange(e => {
+				if (cts.token.isCancellationRequested) {
+					return;
+				}
 
-			this.proxy.$emitSpeechToTextEvent(session, e);
-		}));
+				this.proxy.$emitSpeechToTextEvent(session, e);
+			})
+		);
 
 		disposables.add(cts.token.onCancellationRequested(() => disposables.dispose()));
 	}
@@ -75,13 +77,15 @@ export class ExtHostSpeech implements ExtHostSpeechShape {
 
 		this.synthesizers.set(session, textToSpeech);
 
-		disposables.add(textToSpeech.onDidChange(e => {
-			if (cts.token.isCancellationRequested) {
-				return;
-			}
+		disposables.add(
+			textToSpeech.onDidChange(e => {
+				if (cts.token.isCancellationRequested) {
+					return;
+				}
 
-			this.proxy.$emitTextToSpeechEvent(session, e);
-		}));
+				this.proxy.$emitTextToSpeechEvent(session, e);
+			})
+		);
 
 		disposables.add(cts.token.onCancellationRequested(() => disposables.dispose()));
 	}
@@ -112,13 +116,15 @@ export class ExtHostSpeech implements ExtHostSpeechShape {
 			return;
 		}
 
-		disposables.add(keywordRecognitionSession.onDidChange(e => {
-			if (cts.token.isCancellationRequested) {
-				return;
-			}
+		disposables.add(
+			keywordRecognitionSession.onDidChange(e => {
+				if (cts.token.isCancellationRequested) {
+					return;
+				}
 
-			this.proxy.$emitKeywordRecognitionEvent(session, e);
-		}));
+				this.proxy.$emitKeywordRecognitionEvent(session, e);
+			})
+		);
 
 		disposables.add(cts.token.onCancellationRequested(() => disposables.dispose()));
 	}

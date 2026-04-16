@@ -10,7 +10,17 @@ import { Action, IAction, Separator } from '../../../../../../base/common/action
 import { Codicon } from '../../../../../../base/common/codicons.js';
 import { Disposable } from '../../../../../../base/common/lifecycle.js';
 import { clamp } from '../../../../../../base/common/numbers.js';
-import { autorun, autorunOpts, derived, derivedOpts, IObservable, ISettableObservable, ITransaction, observableValue, transaction } from '../../../../../../base/common/observable.js';
+import {
+	autorun,
+	autorunOpts,
+	derived,
+	derivedOpts,
+	IObservable,
+	ISettableObservable,
+	ITransaction,
+	observableValue,
+	transaction
+} from '../../../../../../base/common/observable.js';
 import { noBreakWhitespace } from '../../../../../../base/common/strings.js';
 import { ThemeIcon } from '../../../../../../base/common/themables.js';
 import { isDefined } from '../../../../../../base/common/types.js';
@@ -36,22 +46,34 @@ export class InputCodeEditorView extends CodeEditorView {
 		viewModel: IObservable<MergeEditorViewModel | undefined>,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
-		@IConfigurationService configurationService: IConfigurationService,
+		@IConfigurationService configurationService: IConfigurationService
 	) {
 		super(instantiationService, viewModel, configurationService);
 		this.otherInputNumber = this.inputNumber === 1 ? 2 : 1;
-		this.modifiedBaseRangeGutterItemInfos = derivedOpts({ debugName: `input${this.inputNumber}.modifiedBaseRangeGutterItemInfos` }, reader => {
-			const viewModel = this.viewModel.read(reader);
-			if (!viewModel) { return []; }
-			const model = viewModel.model;
-			const inputNumber = this.inputNumber;
+		this.modifiedBaseRangeGutterItemInfos = derivedOpts(
+			{ debugName: `input${this.inputNumber}.modifiedBaseRangeGutterItemInfos` },
+			reader => {
+				const viewModel = this.viewModel.read(reader);
+				if (!viewModel) {
+					return [];
+				}
+				const model = viewModel.model;
+				const inputNumber = this.inputNumber;
 
-			const showNonConflictingChanges = viewModel.showNonConflictingChanges.read(reader);
+				const showNonConflictingChanges = viewModel.showNonConflictingChanges.read(reader);
 
-			return model.modifiedBaseRanges.read(reader)
-				.filter((r) => r.getInputDiffs(this.inputNumber).length > 0 && (showNonConflictingChanges || r.isConflicting || !model.isHandled(r).read(reader)))
-				.map((baseRange, idx) => new ModifiedBaseRangeGutterItemModel(idx.toString(), baseRange, inputNumber, viewModel));
-		});
+				return model.modifiedBaseRanges
+					.read(reader)
+					.filter(
+						r =>
+							r.getInputDiffs(this.inputNumber).length > 0 &&
+							(showNonConflictingChanges || r.isConflicting || !model.isHandled(r).read(reader))
+					)
+					.map(
+						(baseRange, idx) => new ModifiedBaseRangeGutterItemModel(idx.toString(), baseRange, inputNumber, viewModel)
+					);
+			}
+		);
 		this.decorations = derivedOpts({ debugName: `input${this.inputNumber}.decorations` }, reader => {
 			const viewModel = this.viewModel.read(reader);
 			if (!viewModel) {
@@ -66,7 +88,9 @@ export class InputCodeEditorView extends CodeEditorView {
 
 			const showNonConflictingChanges = viewModel.showNonConflictingChanges.read(reader);
 			const showDeletionMarkers = this.showDeletionMarkers.read(reader);
-			const diffWithThis = viewModel.baseCodeEditorView.read(reader) !== undefined && viewModel.baseShowDiffAgainst.read(reader) === this.inputNumber;
+			const diffWithThis =
+				viewModel.baseCodeEditorView.read(reader) !== undefined &&
+				viewModel.baseShowDiffAgainst.read(reader) === this.inputNumber;
 			const useSimplifiedDecorations = !diffWithThis && this.useSimplifiedDecorations.read(reader);
 
 			for (const modifiedBaseRange of model.modifiedBaseRanges.read(reader)) {
@@ -109,16 +133,27 @@ export class InputCodeEditorView extends CodeEditorView {
 						description: 'Merge Editor',
 						minimap: {
 							position: MinimapPosition.Gutter,
-							color: { id: isHandled ? handledConflictMinimapOverViewRulerColor : unhandledConflictMinimapOverViewRulerColor },
+							color: {
+								id: isHandled ? handledConflictMinimapOverViewRulerColor : unhandledConflictMinimapOverViewRulerColor
+							}
 						},
-						overviewRuler: modifiedBaseRange.isConflicting ? {
-							position: OverviewRulerLane.Center,
-							color: { id: isHandled ? handledConflictMinimapOverViewRulerColor : unhandledConflictMinimapOverViewRulerColor },
-						} : undefined
+						overviewRuler: modifiedBaseRange.isConflicting
+							? {
+									position: OverviewRulerLane.Center,
+									color: {
+										id: isHandled
+											? handledConflictMinimapOverViewRulerColor
+											: unhandledConflictMinimapOverViewRulerColor
+									}
+								}
+							: undefined
 					}
 				});
 
-				if (!useSimplifiedDecorations && (modifiedBaseRange.isConflicting || !model.isHandled(modifiedBaseRange).read(reader))) {
+				if (
+					!useSimplifiedDecorations &&
+					(modifiedBaseRange.isConflicting || !model.isHandled(modifiedBaseRange).read(reader))
+				) {
 					const inputDiffs = modifiedBaseRange.getInputDiffs(this.inputNumber);
 					for (const diff of inputDiffs) {
 						const range = diff.outputRange.toInclusiveRange();
@@ -128,7 +163,7 @@ export class InputCodeEditorView extends CodeEditorView {
 								options: {
 									className: `merge-editor-diff ${inputClassName}`,
 									description: 'Merge Editor',
-									isWholeLine: true,
+									isWholeLine: true
 								}
 							});
 						}
@@ -139,9 +174,11 @@ export class InputCodeEditorView extends CodeEditorView {
 									result.push({
 										range: d.outputRange,
 										options: {
-											className: d.outputRange.isEmpty() ? `merge-editor-diff-empty-word ${inputClassName}` : `merge-editor-diff-word ${inputClassName}`,
+											className: d.outputRange.isEmpty()
+												? `merge-editor-diff-empty-word ${inputClassName}`
+												: `merge-editor-diff-word ${inputClassName}`,
 											description: 'Merge Editor',
-											showIfCollapsed: true,
+											showIfCollapsed: true
 										}
 									});
 								}
@@ -164,7 +201,7 @@ export class InputCodeEditorView extends CodeEditorView {
 						return [];
 					}
 				},
-				createView: (item, target) => new MergeConflictGutterItemView(item, target, contextMenuService),
+				createView: (item, target) => new MergeConflictGutterItemView(item, target, contextMenuService)
 			})
 		);
 
@@ -182,31 +219,29 @@ export class InputCodeEditorView extends CodeEditorView {
 			)
 		);
 
-		this._register(autorunOpts({ debugName: `input${this.inputNumber}: update labels & text model` }, reader => {
-			const vm = this.viewModel.read(reader);
-			if (!vm) {
-				return;
-			}
+		this._register(
+			autorunOpts({ debugName: `input${this.inputNumber}: update labels & text model` }, reader => {
+				const vm = this.viewModel.read(reader);
+				if (!vm) {
+					return;
+				}
 
-			this.editor.setModel(this.inputNumber === 1 ? vm.model.input1.textModel : vm.model.input2.textModel);
+				this.editor.setModel(this.inputNumber === 1 ? vm.model.input1.textModel : vm.model.input2.textModel);
 
-			const title = this.inputNumber === 1
-				? vm.model.input1.title || localize('input1', 'Input 1')
-				: vm.model.input2.title || localize('input2', 'Input 2');
+				const title =
+					this.inputNumber === 1
+						? vm.model.input1.title || localize('input1', 'Input 1')
+						: vm.model.input2.title || localize('input2', 'Input 2');
 
-			const description = this.inputNumber === 1
-				? vm.model.input1.description
-				: vm.model.input2.description;
+				const description = this.inputNumber === 1 ? vm.model.input1.description : vm.model.input2.description;
 
-			const detail = this.inputNumber === 1
-				? vm.model.input1.detail
-				: vm.model.input2.detail;
+				const detail = this.inputNumber === 1 ? vm.model.input1.detail : vm.model.input2.detail;
 
-			reset(this.htmlElements.title, ...renderLabelWithIcons(title));
-			reset(this.htmlElements.description, ...(description ? renderLabelWithIcons(description) : []));
-			reset(this.htmlElements.detail, ...(detail ? renderLabelWithIcons(detail) : []));
-		}));
-
+				reset(this.htmlElements.title, ...renderLabelWithIcons(title));
+				reset(this.htmlElements.description, ...(description ? renderLabelWithIcons(description) : []));
+				reset(this.htmlElements.detail, ...(detail ? renderLabelWithIcons(detail) : []));
+			})
+		);
 
 		this._register(applyObservableDecorations(this.editor, this.decorations));
 	}
@@ -230,13 +265,8 @@ export class ModifiedBaseRangeGutterItemModel implements IGutterItemInfo {
 		this.range = this.baseRange.getInputRange(this.inputNumber);
 		this.enabled = this.model.isUpToDate;
 		this.toggleState = derived(this, reader => {
-			const input = this.model
-				.getState(this.baseRange)
-				.read(reader)
-				.getInput(this.inputNumber);
-			return input === InputState.second && !this.baseRange.isOrderRelevant
-				? InputState.first
-				: input;
+			const input = this.model.getState(this.baseRange).read(reader).getInput(this.inputNumber);
+			return input === InputState.second && !this.baseRange.isOrderRelevant ? InputState.first : input;
 		});
 		this.state = derived(this, reader => {
 			const active = this.viewModel.activeModifiedBaseRange.read(reader);
@@ -245,7 +275,7 @@ export class ModifiedBaseRangeGutterItemModel implements IGutterItemInfo {
 			}
 			return {
 				handled: this.model.isHandled(this.baseRange).read(reader),
-				focused: this.baseRange === active,
+				focused: this.baseRange === active
 			};
 		});
 	}
@@ -259,10 +289,7 @@ export class ModifiedBaseRangeGutterItemModel implements IGutterItemInfo {
 	public setState(value: boolean, tx: ITransaction): void {
 		this.viewModel.setState(
 			this.baseRange,
-			this.model
-				.getState(this.baseRange)
-				.get()
-				.withInputValue(this.inputNumber, value),
+			this.model.getState(this.baseRange).get().withInputValue(this.inputNumber, value),
 			tx,
 			this.inputNumber
 		);
@@ -270,14 +297,10 @@ export class ModifiedBaseRangeGutterItemModel implements IGutterItemInfo {
 	public toggleBothSides(): void {
 		transaction(tx => {
 			/** @description Context Menu: toggle both sides */
-			const state = this.model
-				.getState(this.baseRange)
-				.get();
+			const state = this.model.getState(this.baseRange).get();
 			this.model.setState(
 				this.baseRange,
-				state
-					.toggle(this.inputNumber)
-					.toggle(this.inputNumber === 1 ? 2 : 1),
+				state.toggle(this.inputNumber).toggle(this.inputNumber === 1 ? 2 : 1),
 				true,
 				tx
 			);
@@ -307,45 +330,36 @@ export class ModifiedBaseRangeGutterItemModel implements IGutterItemInfo {
 		return [
 			this.baseRange.input1Diffs.length > 0
 				? action(
-					'mergeEditor.acceptInput1',
-					localize('mergeEditor.accept', 'Accept {0}', this.model.input1.title),
-					state.toggle(1),
-					state.includesInput1
-				)
+						'mergeEditor.acceptInput1',
+						localize('mergeEditor.accept', 'Accept {0}', this.model.input1.title),
+						state.toggle(1),
+						state.includesInput1
+					)
 				: undefined,
 			this.baseRange.input2Diffs.length > 0
 				? action(
-					'mergeEditor.acceptInput2',
-					localize('mergeEditor.accept', 'Accept {0}', this.model.input2.title),
-					state.toggle(2),
-					state.includesInput2
-				)
+						'mergeEditor.acceptInput2',
+						localize('mergeEditor.accept', 'Accept {0}', this.model.input2.title),
+						state.toggle(2),
+						state.includesInput2
+					)
 				: undefined,
 			this.baseRange.isConflicting
 				? setFields(
-					action(
-						'mergeEditor.acceptBoth',
-						localize(
+						action(
 							'mergeEditor.acceptBoth',
-							'Accept Both'
+							localize('mergeEditor.acceptBoth', 'Accept Both'),
+							state.withInputValue(1, !both).withInputValue(2, !both),
+							both
 						),
-						state.withInputValue(1, !both).withInputValue(2, !both),
-						both
-					),
-					{ enabled: this.baseRange.canBeCombined }
-				)
+						{ enabled: this.baseRange.canBeCombined }
+					)
 				: undefined,
 			new Separator(),
 			this.baseRange.isConflicting
-				? setFields(
-					action(
-						'mergeEditor.swap',
-						localize('mergeEditor.swap', 'Swap'),
-						state.swap(),
-						false
-					),
-					{ enabled: !state.kind && (!both || this.baseRange.isOrderRelevant) }
-				)
+				? setFields(action('mergeEditor.swap', localize('mergeEditor.swap', 'Swap'), state.swap(), false), {
+						enabled: !state.kind && (!both || this.baseRange.isOrderRelevant)
+					})
 				: undefined,
 
 			setFields(
@@ -355,29 +369,28 @@ export class ModifiedBaseRangeGutterItemModel implements IGutterItemInfo {
 					undefined,
 					true,
 					() => {
-						transaction((tx) => {
+						transaction(tx => {
 							/** @description Context Menu: Mark as handled */
 							this.model.setHandled(this.baseRange, !handled, tx);
 						});
 					}
 				),
 				{ checked: handled }
-			),
+			)
 		].filter(isDefined);
 	}
 }
 
-export class MergeConflictGutterItemView extends Disposable implements IGutterItemView<ModifiedBaseRangeGutterItemModel> {
+export class MergeConflictGutterItemView
+	extends Disposable
+	implements IGutterItemView<ModifiedBaseRangeGutterItemModel>
+{
 	private readonly item: ISettableObservable<ModifiedBaseRangeGutterItemModel>;
 
 	private readonly checkboxDiv: HTMLDivElement;
 	private readonly isMultiLine = observableValue(this, false);
 
-	constructor(
-		item: ModifiedBaseRangeGutterItemModel,
-		target: HTMLElement,
-		contextMenuService: IContextMenuService,
-	) {
+	constructor(item: ModifiedBaseRangeGutterItemModel, target: HTMLElement, contextMenuService: IContextMenuService) {
 		super();
 
 		this.item = observableValue(this, item);
@@ -391,7 +404,7 @@ export class MergeConflictGutterItemView extends Disposable implements IGutterIt
 		checkBox.domNode.classList.add('accept-conflict-group');
 
 		this._register(
-			addDisposableListener(checkBox.domNode, EventType.MOUSE_DOWN, (e) => {
+			addDisposableListener(checkBox.domNode, EventType.MOUSE_DOWN, e => {
 				const item = this.item.get();
 				if (!item) {
 					return;
@@ -403,9 +416,8 @@ export class MergeConflictGutterItemView extends Disposable implements IGutterIt
 
 					contextMenuService.showContextMenu({
 						getAnchor: () => checkBox.domNode,
-						getActions: () => item.getContextMenuActions(),
+						getActions: () => item.getContextMenuActions()
 					});
-
 				} else if (e.button === /* Middle */ 1) {
 					e.stopPropagation();
 					e.preventDefault();
@@ -421,10 +433,18 @@ export class MergeConflictGutterItemView extends Disposable implements IGutterIt
 				const item = this.item.read(reader)!;
 				const value = item.toggleState.read(reader);
 				const iconMap: Record<InputState, { icon: ThemeIcon | undefined; checked: boolean; title: string }> = {
-					[InputState.excluded]: { icon: undefined, checked: false, title: localize('accept.excluded', "Accept") },
-					[InputState.unrecognized]: { icon: Codicon.circleFilled, checked: false, title: localize('accept.conflicting', "Accept (result is dirty)") },
-					[InputState.first]: { icon: Codicon.check, checked: true, title: localize('accept.first', "Undo accept") },
-					[InputState.second]: { icon: Codicon.checkAll, checked: true, title: localize('accept.second', "Undo accept (currently second)") },
+					[InputState.excluded]: { icon: undefined, checked: false, title: localize('accept.excluded', 'Accept') },
+					[InputState.unrecognized]: {
+						icon: Codicon.circleFilled,
+						checked: false,
+						title: localize('accept.conflicting', 'Accept (result is dirty)')
+					},
+					[InputState.first]: { icon: Codicon.check, checked: true, title: localize('accept.first', 'Undo accept') },
+					[InputState.second]: {
+						icon: Codicon.checkAll,
+						checked: true,
+						title: localize('accept.second', 'Undo accept (currently second)')
+					}
 				};
 				const state = iconMap[value];
 				checkBox.setIcon(state.icon);
@@ -439,29 +459,31 @@ export class MergeConflictGutterItemView extends Disposable implements IGutterIt
 			})
 		);
 
-		this._register(autorun(reader => {
-			/** @description Update Checkbox CSS ClassNames */
-			const state = this.item.read(reader).state.read(reader);
-			const classNames = [
-				'merge-accept-gutter-marker',
-				state.handled && 'handled',
-				state.focused && 'focused',
-				this.isMultiLine.read(reader) ? 'multi-line' : 'single-line',
-			];
-			target.className = classNames.filter(c => typeof c === 'string').join(' ');
-		}));
+		this._register(
+			autorun(reader => {
+				/** @description Update Checkbox CSS ClassNames */
+				const state = this.item.read(reader).state.read(reader);
+				const classNames = [
+					'merge-accept-gutter-marker',
+					state.handled && 'handled',
+					state.focused && 'focused',
+					this.isMultiLine.read(reader) ? 'multi-line' : 'single-line'
+				];
+				target.className = classNames.filter(c => typeof c === 'string').join(' ');
+			})
+		);
 
-		this._register(checkBox.onChange(() => {
-			transaction(tx => {
-				/** @description Handle Checkbox Change */
-				this.item.get()!.setState(checkBox.checked, tx);
-			});
-		}));
+		this._register(
+			checkBox.onChange(() => {
+				transaction(tx => {
+					/** @description Handle Checkbox Change */
+					this.item.get()!.setState(checkBox.checked, tx);
+				});
+			})
+		);
 
 		target.appendChild(h('div.background', [noBreakWhitespace]).root);
-		target.appendChild(
-			this.checkboxDiv = h('div.checkbox', [h('div.checkbox-background', [checkBox.domNode])]).root
-		);
+		target.appendChild((this.checkboxDiv = h('div.checkbox', [h('div.checkbox-background', [checkBox.domNode])]).root));
 	}
 
 	layout(top: number, height: number, viewTop: number, viewHeight: number): void {
@@ -472,15 +494,9 @@ export class MergeConflictGutterItemView extends Disposable implements IGutterIt
 
 		let effectiveCheckboxTop = top + middleHeight;
 
-		const preferredViewPortRange = [
-			margin,
-			viewTop + viewHeight - margin - checkboxHeight
-		];
+		const preferredViewPortRange = [margin, viewTop + viewHeight - margin - checkboxHeight];
 
-		const preferredParentRange = [
-			top + margin,
-			top + height - checkboxHeight - margin
-		];
+		const preferredParentRange = [top + margin, top + height - checkboxHeight - margin];
 
 		if (preferredParentRange[0] < preferredParentRange[1]) {
 			effectiveCheckboxTop = clamp(effectiveCheckboxTop, preferredViewPortRange[0], preferredViewPortRange[1]);
@@ -489,7 +505,7 @@ export class MergeConflictGutterItemView extends Disposable implements IGutterIt
 
 		this.checkboxDiv.style.top = `${effectiveCheckboxTop - top}px`;
 
-		transaction((tx) => {
+		transaction(tx => {
 			/** @description MergeConflictGutterItemView: Update Is Multi Line */
 			this.isMultiLine.set(height > 30, tx);
 		});

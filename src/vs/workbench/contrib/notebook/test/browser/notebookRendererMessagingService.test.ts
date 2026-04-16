@@ -52,9 +52,6 @@ suite('NotebookRendererMessaging', () => {
 
 		scoped.postMessage('foo', 3);
 
-		assert.deepStrictEqual(sent, [
-			...expected,
-			{ editorId: 'some-editor', rendererId: 'foo', message: 3 }
-		]);
+		assert.deepStrictEqual(sent, [...expected, { editorId: 'some-editor', rendererId: 'foo', message: 3 }]);
 	});
 });

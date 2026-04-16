@@ -61,12 +61,14 @@ suite('secrets', () => {
 		setup(() => {
 			sandbox = sinon.createSandbox();
 			spyEncryptionService = sandbox.spy(new TestEncryptionService());
-			service = store.add(new BaseSecretStorageService(
-				true,
-				store.add(new InMemoryStorageService()),
-				spyEncryptionService,
-				store.add(new NullLogService())
-			));
+			service = store.add(
+				new BaseSecretStorageService(
+					true,
+					store.add(new InMemoryStorageService()),
+					spyEncryptionService,
+					store.add(new NullLogService())
+				)
+			);
 		});
 
 		teardown(() => {
@@ -106,10 +108,12 @@ suite('secrets', () => {
 			const key = 'my-secret';
 			const value = 'my-secret-value';
 			let eventFired = false;
-			store.add(service.onDidChangeSecret((changedKey) => {
-				assert.strictEqual(changedKey, key);
-				eventFired = true;
-			}));
+			store.add(
+				service.onDidChangeSecret(changedKey => {
+					assert.strictEqual(changedKey, key);
+					eventFired = true;
+				})
+			);
 			await service.set(key, value);
 			assert.strictEqual(eventFired, true);
 		});
@@ -123,11 +127,13 @@ suite('secrets', () => {
 		setup(() => {
 			sandbox = sinon.createSandbox();
 			spyEncryptionService = sandbox.spy(new TestEncryptionService());
-			service = store.add(new BaseSecretStorageService(
-				false,
-				store.add(new InMemoryStorageService()),
-				spyEncryptionService,
-				store.add(new NullLogService()))
+			service = store.add(
+				new BaseSecretStorageService(
+					false,
+					store.add(new InMemoryStorageService()),
+					spyEncryptionService,
+					store.add(new NullLogService())
+				)
 			);
 		});
 
@@ -168,10 +174,12 @@ suite('secrets', () => {
 			const key = 'my-secret';
 			const value = 'my-secret-value';
 			let eventFired = false;
-			store.add(service.onDidChangeSecret((changedKey) => {
-				assert.strictEqual(changedKey, key);
-				eventFired = true;
-			}));
+			store.add(
+				service.onDidChangeSecret(changedKey => {
+					assert.strictEqual(changedKey, key);
+					eventFired = true;
+				})
+			);
 			await service.set(key, value);
 			assert.strictEqual(eventFired, true);
 		});
@@ -185,11 +193,13 @@ suite('secrets', () => {
 		setup(() => {
 			sandbox = sinon.createSandbox();
 			spyNoEncryptionService = sandbox.spy(new TestNoEncryptionService());
-			service = store.add(new BaseSecretStorageService(
-				false,
-				store.add(new InMemoryStorageService()),
-				spyNoEncryptionService,
-				store.add(new NullLogService()))
+			service = store.add(
+				new BaseSecretStorageService(
+					false,
+					store.add(new InMemoryStorageService()),
+					spyNoEncryptionService,
+					store.add(new NullLogService())
+				)
 			);
 		});
 

@@ -7,7 +7,12 @@ import { Emitter, Event } from '../../../../../base/common/event.js';
 import { Disposable, IDisposable } from '../../../../../base/common/lifecycle.js';
 import { basename, normalize } from '../../../../../base/common/path.js';
 import { URI } from '../../../../../base/common/uri.js';
-import { IFormatterChangeEvent, ILabelService, ResourceLabelFormatter, Verbosity } from '../../../../../platform/label/common/label.js';
+import {
+	IFormatterChangeEvent,
+	ILabelService,
+	ResourceLabelFormatter,
+	Verbosity
+} from '../../../../../platform/label/common/label.js';
 import { IWorkspace, IWorkspaceIdentifier } from '../../../../../platform/workspace/common/workspace.js';
 
 export class MockLabelService implements ILabelService {

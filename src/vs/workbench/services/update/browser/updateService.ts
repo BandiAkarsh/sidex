@@ -15,7 +15,6 @@ export interface IUpdate {
 }
 
 export interface IUpdateProvider {
-
 	/**
 	 * Should return with the `IUpdate` object if an update is
 	 * available or `null` otherwise to signal that there are
@@ -25,14 +24,15 @@ export interface IUpdateProvider {
 }
 
 export class BrowserUpdateService extends Disposable implements IUpdateService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private _onStateChange = this._register(new Emitter<State>());
 	readonly onStateChange: Event<State> = this._onStateChange.event;
 
 	private _state: State = State.Uninitialized;
-	get state(): State { return this._state; }
+	get state(): State {
+		return this._state;
+	}
 	set state(state: State) {
 		this._state = state;
 		this._onStateChange.fire(state);
@@ -60,7 +60,9 @@ export class BrowserUpdateService extends Disposable implements IUpdateService {
 		await this.doCheckForUpdates(explicit);
 	}
 
-	private async doCheckForUpdates(explicit: boolean): Promise<IUpdate | null /* no update available */ | undefined /* no update provider */> {
+	private async doCheckForUpdates(
+		explicit: boolean
+	): Promise<IUpdate | null /* no update available */ | undefined /* no update provider */> {
 		if (this.environmentService.options && this.environmentService.options.updateProvider) {
 			const updateProvider = this.environmentService.options.updateProvider;
 

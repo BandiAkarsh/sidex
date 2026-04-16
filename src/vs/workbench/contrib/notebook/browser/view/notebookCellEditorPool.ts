@@ -30,7 +30,7 @@ export class NotebookCellEditorPool extends Disposable {
 		private readonly contextKeyServiceProvider: (container: HTMLElement) => IScopedContextKeyService,
 		@ITextModelService private readonly textModelService: ITextModelService,
 		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService private readonly _instantiationService: IInstantiationService
 	) {
 		super();
 
@@ -45,26 +45,39 @@ export class NotebookCellEditorPool extends Disposable {
 		this._editorContextKeyService = this._register(this.contextKeyServiceProvider(this._focusedEditorDOM));
 
 		const editorContainer = DOM.prepend(this._focusedEditorDOM, DOM.$('.cell-editor-container'));
-		const editorInstaService = this._register(this._instantiationService.createChild(new ServiceCollection([IContextKeyService, this._editorContextKeyService])));
+		const editorInstaService = this._register(
+			this._instantiationService.createChild(new ServiceCollection([IContextKeyService, this._editorContextKeyService]))
+		);
 		EditorContextKeys.inCompositeEditor.bindTo(this._editorContextKeyService).set(true);
-		const editorOptions = new CellEditorOptions(this.notebookEditor.getBaseCellEditorOptions(cell.language), this.notebookEditor.notebookOptions, this._configurationService);
+		const editorOptions = new CellEditorOptions(
+			this.notebookEditor.getBaseCellEditorOptions(cell.language),
+			this.notebookEditor.notebookOptions,
+			this._configurationService
+		);
 
-		this._editor = this._register(editorInstaService.createInstance(CodeEditorWidget, editorContainer, {
-			...editorOptions.getDefaultValue(),
-			dimension: {
-				width: 0,
-				height: 0
-			},
-			scrollbar: {
-				vertical: 'hidden',
-				horizontal: 'auto',
-				handleMouseWheel: false,
-				useShadows: false,
-			},
-			allowVariableLineHeights: false,
-		}, {
-			contributions: this.notebookEditor.creationOptions.cellEditorContributions
-		}));
+		this._editor = this._register(
+			editorInstaService.createInstance(
+				CodeEditorWidget,
+				editorContainer,
+				{
+					...editorOptions.getDefaultValue(),
+					dimension: {
+						width: 0,
+						height: 0
+					},
+					scrollbar: {
+						vertical: 'hidden',
+						horizontal: 'auto',
+						handleMouseWheel: false,
+						useShadows: false
+					},
+					allowVariableLineHeights: false
+				},
+				{
+					contributions: this.notebookEditor.creationOptions.cellEditorContributions
+				}
+			)
+		);
 		editorOptions.dispose();
 		this._isInitialized = true;
 	}
@@ -102,27 +115,33 @@ export class NotebookCellEditorPool extends Disposable {
 				ref.dispose();
 			};
 
-			editorDisposable.add(this._editor.onDidChangeModelContent((e) => {
-				_update();
-			}));
-
-			editorDisposable.add(this._editor.onDidChangeCursorSelection(e => {
-				if (e.source === 'keyboard' || e.source === 'mouse') {
+			editorDisposable.add(
+				this._editor.onDidChangeModelContent(e => {
 					_update();
-				}
-			}));
+				})
+			);
 
-			editorDisposable.add(this.notebookEditor.onDidChangeActiveEditor(() => {
-				const latestActiveCell = this.notebookEditor.getActiveCell();
+			editorDisposable.add(
+				this._editor.onDidChangeCursorSelection(e => {
+					if (e.source === 'keyboard' || e.source === 'mouse') {
+						_update();
+					}
+				})
+			);
 
-				if (latestActiveCell !== cell || latestActiveCell.focusMode !== CellFocusMode.Editor) {
-					// focus moves to another cell or cell container
-					// we should stop preserving the editor
-					this._editorDisposable.clear();
-					this._editor.setModel(null);
-					ref.dispose();
-				}
-			}));
+			editorDisposable.add(
+				this.notebookEditor.onDidChangeActiveEditor(() => {
+					const latestActiveCell = this.notebookEditor.getActiveCell();
+
+					if (latestActiveCell !== cell || latestActiveCell.focusMode !== CellFocusMode.Editor) {
+						// focus moves to another cell or cell container
+						// we should stop preserving the editor
+						this._editorDisposable.clear();
+						this._editor.setModel(null);
+						ref.dispose();
+					}
+				})
+			);
 
 			this._editorDisposable.value = editorDisposable;
 		});

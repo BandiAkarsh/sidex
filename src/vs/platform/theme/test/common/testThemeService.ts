@@ -7,17 +7,23 @@ import { Color } from '../../../../base/common/color.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
 import { IconContribution } from '../../common/iconRegistry.js';
 import { ColorScheme } from '../../common/theme.js';
-import { IColorTheme, IFileIconTheme, IProductIconTheme, IThemeService, IFontTokenOptions, ITokenStyle } from '../../common/themeService.js';
+import {
+	IColorTheme,
+	IFileIconTheme,
+	IProductIconTheme,
+	IThemeService,
+	IFontTokenOptions,
+	ITokenStyle
+} from '../../common/themeService.js';
 
 export class TestColorTheme implements IColorTheme {
-
 	public readonly label = 'test';
 
 	constructor(
 		private colors: { [id: string]: string | undefined } = {},
 		public type = ColorScheme.DARK,
 		public readonly semanticHighlighting = false
-	) { }
+	) {}
 
 	getColor(color: string, useDefault?: boolean): Color | undefined {
 		const value = this.colors[color];
@@ -57,7 +63,6 @@ class UnthemedProductIconTheme implements IProductIconTheme {
 }
 
 export class TestThemeService implements IThemeService {
-
 	declare readonly _serviceBrand: undefined;
 	_colorTheme: IColorTheme;
 	_fileIconTheme: IFileIconTheme;
@@ -66,7 +71,11 @@ export class TestThemeService implements IThemeService {
 	_onFileIconThemeChange = new Emitter<IFileIconTheme>();
 	_onProductIconThemeChange = new Emitter<IProductIconTheme>();
 
-	constructor(theme: IColorTheme = new TestColorTheme(), fileIconTheme: IFileIconTheme = new TestFileIconTheme(), productIconTheme: IProductIconTheme = new UnthemedProductIconTheme()) {
+	constructor(
+		theme: IColorTheme = new TestColorTheme(),
+		fileIconTheme: IFileIconTheme = new TestFileIconTheme(),
+		productIconTheme: IProductIconTheme = new UnthemedProductIconTheme()
+	) {
 		this._colorTheme = theme;
 		this._fileIconTheme = fileIconTheme;
 		this._productIconTheme = productIconTheme;

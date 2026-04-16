@@ -13,14 +13,13 @@ import { INotebookEditorModelResolverService } from '../../common/notebookEditor
 import { isEqual } from '../../../../../base/common/resources.js';
 import { NotebookCellTextModel } from '../../common/model/notebookCellTextModel.js';
 
-
 class ResolvedNotebookOutputEditorInputModel implements IDisposable {
 	constructor(
 		readonly resolvedNotebookEditorModel: IResolvedNotebookEditorModel,
 		readonly notebookUri: URI,
 		readonly cell: NotebookCellTextModel,
-		readonly outputId: string,
-	) { }
+		readonly outputId: string
+	) {}
 
 	dispose(): void {
 		this.resolvedNotebookEditorModel.dispose();
@@ -50,7 +49,8 @@ export class NotebookOutputEditorInput extends EditorInput {
 		cellIndex: number,
 		outputId: string | undefined,
 		outputIndex: number,
-		@INotebookEditorModelResolverService private readonly notebookEditorModelResolverService: INotebookEditorModelResolverService,
+		@INotebookEditorModelResolverService
+		private readonly notebookEditorModelResolverService: INotebookEditorModelResolverService
 	) {
 		super();
 		this._notebookUri = notebookUri;
@@ -91,7 +91,7 @@ export class NotebookOutputEditorInput extends EditorInput {
 			this._notebookRef.object,
 			this._notebookUri,
 			cell,
-			resolvedOutputId,
+			resolvedOutputId
 		);
 	}
 
@@ -117,12 +117,12 @@ export class NotebookOutputEditorInput extends EditorInput {
 		return {
 			notebookUri: this._notebookUri,
 			cellIndex: cellIndex,
-			outputIndex: outputIndex,
+			outputIndex: outputIndex
 		};
 	}
 
 	override getName(): string {
-		return nls.localize('notebookOutputEditorInput', "Notebook Output Preview");
+		return nls.localize('notebookOutputEditorInput', 'Notebook Output Preview');
 	}
 
 	override get editorId(): string {

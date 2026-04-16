@@ -59,7 +59,7 @@ export class JsonRpcError extends Error {
 	constructor(
 		public readonly code: number,
 		message: string,
-		public readonly data?: unknown,
+		public readonly data?: unknown
 	) {
 		super(message);
 	}
@@ -78,7 +78,7 @@ export class JsonRpcProtocol extends Disposable {
 
 	constructor(
 		private readonly _send: (message: JsonRpcMessage) => void,
-		private readonly _handlers: IJsonRpcProtocolHandlers,
+		private readonly _handlers: IJsonRpcProtocolHandlers
 	) {
 		super();
 	}
@@ -86,11 +86,15 @@ export class JsonRpcProtocol extends Disposable {
 	public sendNotification(notification: Omit<IJsonRpcNotification, 'jsonrpc'>): void {
 		this._send({
 			jsonrpc: '2.0',
-			...notification,
+			...notification
 		});
 	}
 
-	public sendRequest<T = unknown>(request: Omit<IJsonRpcRequest, 'jsonrpc' | 'id'>, token: CancellationToken = CancellationToken.None, onCancel?: (id: JsonRpcId) => void): Promise<T> {
+	public sendRequest<T = unknown>(
+		request: Omit<IJsonRpcRequest, 'jsonrpc' | 'id'>,
+		token: CancellationToken = CancellationToken.None,
+		onCancel?: (id: JsonRpcId) => void
+	): Promise<T> {
 		if (this._store.isDisposed) {
 			return Promise.reject(new CancellationError());
 		}
@@ -113,7 +117,7 @@ export class JsonRpcProtocol extends Disposable {
 		this._send({
 			jsonrpc: '2.0',
 			id,
-			...request,
+			...request
 		});
 
 		return promise.p.finally(() => {
@@ -219,7 +223,7 @@ export class JsonRpcProtocol extends Disposable {
 				id: request.id,
 				error: {
 					code: JsonRpcProtocol.MethodNotFound,
-					message: `Method not found: ${request.method}`,
+					message: `Method not found: ${request.method}`
 				}
 			};
 			this._send(response);
@@ -235,7 +239,7 @@ export class JsonRpcProtocol extends Disposable {
 			const response: IJsonRpcSuccessResponse = {
 				jsonrpc: '2.0',
 				id: request.id,
-				result,
+				result
 			};
 			this._send(response);
 			return response;
@@ -248,7 +252,7 @@ export class JsonRpcProtocol extends Disposable {
 					error: {
 						code: error.code,
 						message: error.message,
-						data: error.data,
+						data: error.data
 					}
 				};
 			} else {
@@ -257,7 +261,7 @@ export class JsonRpcProtocol extends Disposable {
 					id: request.id,
 					error: {
 						code: JsonRpcProtocol.InternalError,
-						message: error instanceof Error ? error.message : 'Internal error',
+						message: error instanceof Error ? error.message : 'Internal error'
 					}
 				};
 			}
@@ -279,7 +283,7 @@ export class JsonRpcProtocol extends Disposable {
 			error: {
 				code: JsonRpcProtocol.ParseError,
 				message,
-				data,
+				data
 			}
 		};
 	}
@@ -296,7 +300,6 @@ export function isJsonRpcResponse(message: JsonRpcMessage): message is IJsonRpcS
 export function isJsonRpcNotification(message: JsonRpcMessage): message is IJsonRpcNotification {
 	return hasKey(message, { method: true }) && !hasKey(message, { id: true });
 }
-
 
 function isThenable<T>(value: T | Promise<T>): value is Promise<T> {
 	return typeof value === 'object' && value !== null && 'then' in value && typeof value.then === 'function';

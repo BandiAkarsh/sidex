@@ -32,7 +32,6 @@ try {
 }
 
 registerThemingParticipant((theme, collector) => {
-
 	// Background (helps for subpixel-antialiasing on Windows)
 	const workbenchBackground = WORKBENCH_BACKGROUND(theme);
 	collector.addRule(`.monaco-workbench { background-color: ${workbenchBackground}; }`);

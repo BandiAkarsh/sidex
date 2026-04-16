@@ -15,7 +15,14 @@ import { IEnvironmentService } from '../../../environment/common/environment.js'
 import { UserDataSyncClient, UserDataSyncTestServer } from './userDataSyncClient.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
 import { IUserDataProfile, IUserDataProfilesService } from '../../../userDataProfile/common/userDataProfile.js';
-import { IResourcePreview, ISyncData, IUserDataSyncStoreService, PREVIEW_DIR_NAME, SyncResource, SyncStatus } from '../../common/userDataSync.js';
+import {
+	IResourcePreview,
+	ISyncData,
+	IUserDataSyncStoreService,
+	PREVIEW_DIR_NAME,
+	SyncResource,
+	SyncStatus
+} from '../../common/userDataSync.js';
 
 const PROMPT1_TEXT = 'Write a poem about a programmer who falls in love with their code.';
 const PROMPT2_TEXT = 'Explain quantum physics using only emojis and cat memes.';
@@ -41,12 +48,9 @@ suite('PromptsSync', () => {
 		testClient = disposableStore.add(new UserDataSyncClient(server));
 		await testClient.setUp(true);
 
-		const maybeSynchronizer = testClient.getSynchronizer(SyncResource.Prompts) as (PromptsSynchronizer | undefined);
+		const maybeSynchronizer = testClient.getSynchronizer(SyncResource.Prompts) as PromptsSynchronizer | undefined;
 
-		assertDefined(
-			maybeSynchronizer,
-			'Prompts synchronizer object must be defined.',
-		);
+		assertDefined(maybeSynchronizer, 'Prompts synchronizer object must be defined.');
 
 		testObject = maybeSynchronizer;
 
@@ -68,10 +72,7 @@ suite('PromptsSync', () => {
 
 		const lastSyncUserData = await testObject.getLastSyncUserData();
 
-		assertDefined(
-			lastSyncUserData,
-			'Last sync user data must be defined.',
-		);
+		assertDefined(lastSyncUserData, 'Last sync user data must be defined.');
 
 		const remoteUserData = await testObject.getRemoteUserData(null);
 		assert.deepStrictEqual(lastSyncUserData.ref, remoteUserData.ref);
@@ -99,29 +100,24 @@ suite('PromptsSync', () => {
 		await testObject.sync(manifest);
 
 		assert.deepStrictEqual(server.requests, [
-			{ type: 'POST', url: `${server.url}/v1/resource/${testObject.resource}`, headers: { 'If-Match': lastSyncUserData?.ref } },
+			{
+				type: 'POST',
+				url: `${server.url}/v1/resource/${testObject.resource}`,
+				headers: { 'If-Match': lastSyncUserData?.ref }
+			}
 		]);
 
 		lastSyncUserData = await testObject.getLastSyncUserData();
 
-		assertDefined(
-			lastSyncUserData,
-			'Last sync user data must be defined.',
-		);
+		assertDefined(lastSyncUserData, 'Last sync user data must be defined.');
 
 		const remoteUserData = await testObject.getRemoteUserData(null);
 		assert.deepStrictEqual(lastSyncUserData.ref, remoteUserData.ref);
 		assert.deepStrictEqual(lastSyncUserData.syncData, remoteUserData.syncData);
 
-		assertDefined(
-			lastSyncUserData.syncData,
-			'Last sync user sync data must be defined.',
-		);
+		assertDefined(lastSyncUserData.syncData, 'Last sync user sync data must be defined.');
 
-		assert.deepStrictEqual(
-			lastSyncUserData.syncData.content,
-			JSON.stringify({ 'prompt3.prompt.md': PROMPT3_TEXT }),
-		);
+		assert.deepStrictEqual(lastSyncUserData.syncData.content, JSON.stringify({ 'prompt3.prompt.md': PROMPT3_TEXT }));
 	});
 
 	test('first time sync - outgoing to server (no prompts)', async () => {
@@ -133,18 +129,13 @@ suite('PromptsSync', () => {
 		assert.deepStrictEqual(testObject.conflicts.conflicts, []);
 
 		const { content } = await testClient.read(testObject.resource);
-		assertDefined(
-			content,
-			'Test object content must be defined.',
-		);
+		assertDefined(content, 'Test object content must be defined.');
 
 		const actual = parsePrompts(content);
-		assert.deepStrictEqual(
-			actual,
-			{
-				'prompt3.prompt.md': PROMPT3_TEXT,
-				'prompt1.prompt.md': PROMPT1_TEXT,
-			});
+		assert.deepStrictEqual(actual, {
+			'prompt3.prompt.md': PROMPT3_TEXT,
+			'prompt1.prompt.md': PROMPT1_TEXT
+		});
 	});
 
 	test('first time sync - incoming from server (no prompts)', async () => {
@@ -177,18 +168,13 @@ suite('PromptsSync', () => {
 		assert.strictEqual(actual2, PROMPT1_TEXT);
 
 		const { content } = await testClient.read(testObject.resource);
-		assertDefined(
-			content,
-			'Test object content must be defined.',
-		);
+		assertDefined(content, 'Test object content must be defined.');
 
 		const actual = parsePrompts(content);
-		assert.deepStrictEqual(
-			actual,
-			{
-				'prompt3.prompt.md': PROMPT3_TEXT,
-				'prompt1.prompt.md': PROMPT1_TEXT,
-			});
+		assert.deepStrictEqual(actual, {
+			'prompt3.prompt.md': PROMPT3_TEXT,
+			'prompt1.prompt.md': PROMPT1_TEXT
+		});
 	});
 
 	test('first time sync when prompts exists - has conflicts', async () => {
@@ -203,8 +189,9 @@ suite('PromptsSync', () => {
 		const environmentService = testClient.instantiationService.get(IEnvironmentService);
 		const local = joinPath(
 			environmentService.userDataSyncHome,
-			testObject.resource, PREVIEW_DIR_NAME,
-			'prompt3.prompt.md',
+			testObject.resource,
+			PREVIEW_DIR_NAME,
+			'prompt3.prompt.md'
 		);
 
 		assertPreviews(testObject.conflicts.conflicts, [local]);
@@ -227,10 +214,7 @@ suite('PromptsSync', () => {
 		assert.strictEqual(actual1, PROMPT3_TEXT);
 
 		const { content } = await testClient.read(testObject.resource);
-		assertDefined(
-			content,
-			'Test object content must be defined.',
-		);
+		assertDefined(content, 'Test object content must be defined.');
 
 		const actual = parsePrompts(content);
 		assert.deepStrictEqual(actual, { 'prompt3.prompt.md': PROMPT3_TEXT });
@@ -247,8 +231,18 @@ suite('PromptsSync', () => {
 
 		assert.strictEqual(testObject.status, SyncStatus.HasConflicts);
 		const environmentService = testClient.instantiationService.get(IEnvironmentService);
-		const local1 = joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'prompt3.prompt.md');
-		const local2 = joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'prompt1.prompt.md');
+		const local1 = joinPath(
+			environmentService.userDataSyncHome,
+			testObject.resource,
+			PREVIEW_DIR_NAME,
+			'prompt3.prompt.md'
+		);
+		const local2 = joinPath(
+			environmentService.userDataSyncHome,
+			testObject.resource,
+			PREVIEW_DIR_NAME,
+			'prompt1.prompt.md'
+		);
 		assertPreviews(testObject.conflicts.conflicts, [local1, local2]);
 	});
 
@@ -267,7 +261,12 @@ suite('PromptsSync', () => {
 		conflicts = testObject.conflicts.conflicts;
 		assert.strictEqual(testObject.status, SyncStatus.HasConflicts);
 		const environmentService = testClient.instantiationService.get(IEnvironmentService);
-		const local = joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'prompt1.prompt.md');
+		const local = joinPath(
+			environmentService.userDataSyncHome,
+			testObject.resource,
+			PREVIEW_DIR_NAME,
+			'prompt1.prompt.md'
+		);
 		assertPreviews(testObject.conflicts.conflicts, [local]);
 	});
 
@@ -294,10 +293,7 @@ suite('PromptsSync', () => {
 		assert.strictEqual(actual2, PROMPT1_TEXT);
 
 		const { content } = await testClient.read(testObject.resource);
-		assertDefined(
-			content,
-			'Test object content must be defined.',
-		);
+		assertDefined(content, 'Test object content must be defined.');
 
 		const actual = parsePrompts(content);
 		assert.deepStrictEqual(actual, { 'prompt3.prompt.md': PROMPT4_TEXT, 'prompt1.prompt.md': PROMPT1_TEXT });
@@ -387,7 +383,12 @@ suite('PromptsSync', () => {
 		await testObject.sync(await testClient.getLatestRef(SyncResource.Prompts));
 		assert.strictEqual(testObject.status, SyncStatus.HasConflicts);
 		const environmentService = testClient.instantiationService.get(IEnvironmentService);
-		const local = joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'some.prompt.md');
+		const local = joinPath(
+			environmentService.userDataSyncHome,
+			testObject.resource,
+			PREVIEW_DIR_NAME,
+			'some.prompt.md'
+		);
 		assertPreviews(testObject.conflicts.conflicts, [local]);
 	});
 
@@ -432,10 +433,7 @@ suite('PromptsSync', () => {
 		assert.strictEqual(actual2, null);
 
 		const { content } = await testClient.read(testObject.resource);
-		assertDefined(
-			content,
-			'Test object content must be defined.',
-		);
+		assertDefined(content, 'Test object content must be defined.');
 
 		const actual = parsePrompts(content);
 		assert.deepStrictEqual(actual, { 'chat.prompt.md': PROMPT1_TEXT });
@@ -495,7 +493,12 @@ suite('PromptsSync', () => {
 
 		assert.strictEqual(testObject.status, SyncStatus.HasConflicts);
 		const environmentService = testClient.instantiationService.get(IEnvironmentService);
-		const local = joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'common.prompt.md');
+		const local = joinPath(
+			environmentService.userDataSyncHome,
+			testObject.resource,
+			PREVIEW_DIR_NAME,
+			'common.prompt.md'
+		);
 		assertPreviews(testObject.conflicts.conflicts, [local]);
 	});
 
@@ -522,10 +525,7 @@ suite('PromptsSync', () => {
 		assert.strictEqual(actual2, PROMPT5_TEXT);
 
 		const { content } = await testClient.read(testObject.resource);
-		assertDefined(
-			content,
-			'Test object content must be defined.',
-		);
+		assertDefined(content, 'Test object content must be defined.');
 
 		const actual = parsePrompts(content);
 		assert.deepStrictEqual(actual, { 'hot.prompt.md': PROMPT1_TEXT, 'uncommon.prompt.md': PROMPT5_TEXT });
@@ -554,10 +554,7 @@ suite('PromptsSync', () => {
 		assert.strictEqual(actual2, null);
 
 		const { content } = await testClient.read(testObject.resource);
-		assertDefined(
-			content,
-			'Test object content must be defined.',
-		);
+		assertDefined(content, 'Test object content must be defined.');
 
 		const actual = parsePrompts(content);
 		assert.deepStrictEqual(actual, { 'refactor.prompt.md': PROMPT1_TEXT });
@@ -578,10 +575,7 @@ suite('PromptsSync', () => {
 		assert.strictEqual(actual2, PROMPT6_TEXT);
 
 		const { content } = await testClient.read(testObject.resource);
-		assertDefined(
-			content,
-			'Test object content must be defined.',
-		);
+		assertDefined(content, 'Test object content must be defined.');
 
 		const actual = parsePrompts(content);
 		assert.deepStrictEqual(actual, { 'roaming.prompt.md': PROMPT3_TEXT, 'first.prompt.md': PROMPT6_TEXT });
@@ -623,7 +617,7 @@ suite('PromptsSync', () => {
 		await testObject.apply(false);
 
 		const fileService = testClient.instantiationService.get(IFileService);
-		assert.ok(!await fileService.exists(dirname(conflicts[0].previewResource)));
+		assert.ok(!(await fileService.exists(dirname(conflicts[0].previewResource))));
 	});
 
 	test('merge when there are multiple prompts and all prompts are merged', async () => {
@@ -634,11 +628,10 @@ suite('PromptsSync', () => {
 		const preview = await testObject.sync(await testClient.getLatestRef(SyncResource.Prompts), true);
 
 		assert.strictEqual(testObject.status, SyncStatus.Syncing);
-		assertPreviews(preview!.resourcePreviews,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'sublime.prompt.md'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'tests.prompt.md'),
-			]);
+		assertPreviews(preview!.resourcePreviews, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'sublime.prompt.md'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'tests.prompt.md')
+		]);
 		assert.deepStrictEqual(testObject.conflicts.conflicts, []);
 	});
 
@@ -664,11 +657,10 @@ suite('PromptsSync', () => {
 		const preview = await testObject.sync(await testClient.getLatestRef(SyncResource.Prompts), true);
 
 		assert.strictEqual(testObject.status, SyncStatus.Syncing);
-		assertPreviews(preview!.resourcePreviews,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'exploring.prompt.md'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'coding.prompt.md'),
-			]);
+		assertPreviews(preview!.resourcePreviews, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'exploring.prompt.md'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'coding.prompt.md')
+		]);
 		assert.deepStrictEqual(testObject.conflicts.conflicts, []);
 	});
 
@@ -699,16 +691,14 @@ suite('PromptsSync', () => {
 		const preview = await testObject.sync(await testClient.getLatestRef(SyncResource.Prompts), true);
 
 		assert.strictEqual(testObject.status, SyncStatus.HasConflicts);
-		assertPreviews(preview!.resourcePreviews,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'reverse.prompt.md'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'recycle.prompt.md'),
-			]);
-		assertPreviews(testObject.conflicts.conflicts,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'reverse.prompt.md'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'recycle.prompt.md'),
-			]);
+		assertPreviews(preview!.resourcePreviews, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'reverse.prompt.md'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'recycle.prompt.md')
+		]);
+		assertPreviews(testObject.conflicts.conflicts, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'reverse.prompt.md'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'recycle.prompt.md')
+		]);
 	});
 
 	test('accept when there are multiple prompts with conflicts and only one prompt is accepted', async () => {
@@ -723,29 +713,25 @@ suite('PromptsSync', () => {
 		let preview = await testObject.sync(await testClient.getLatestRef(SyncResource.Prompts), true);
 
 		assert.strictEqual(testObject.status, SyncStatus.HasConflicts);
-		assertPreviews(preview!.resourcePreviews,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'current.prompt.md'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'future.prompt.md'),
-			]);
-		assertPreviews(testObject.conflicts.conflicts,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'current.prompt.md'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'future.prompt.md'),
-			]);
+		assertPreviews(preview!.resourcePreviews, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'current.prompt.md'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'future.prompt.md')
+		]);
+		assertPreviews(testObject.conflicts.conflicts, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'current.prompt.md'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'future.prompt.md')
+		]);
 
 		preview = await testObject.accept(preview!.resourcePreviews[0].previewResource, PROMPT4_TEXT);
 
 		assert.strictEqual(testObject.status, SyncStatus.HasConflicts);
-		assertPreviews(preview!.resourcePreviews,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'current.prompt.md'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'future.prompt.md'),
-			]);
-		assertPreviews(testObject.conflicts.conflicts,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'future.prompt.md'),
-			]);
+		assertPreviews(preview!.resourcePreviews, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'current.prompt.md'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'future.prompt.md')
+		]);
+		assertPreviews(testObject.conflicts.conflicts, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'future.prompt.md')
+		]);
 	});
 
 	test('accept when there are multiple prompts with conflicts and all prompts are accepted', async () => {
@@ -760,26 +746,23 @@ suite('PromptsSync', () => {
 		let preview = await testObject.sync(await testClient.getLatestRef(SyncResource.Prompts), true);
 
 		assert.strictEqual(testObject.status, SyncStatus.HasConflicts);
-		assertPreviews(preview!.resourcePreviews,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'dynamic.prompt.md'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'static.prompt.md'),
-			]);
-		assertPreviews(testObject.conflicts.conflicts,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'dynamic.prompt.md'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'static.prompt.md'),
-			]);
+		assertPreviews(preview!.resourcePreviews, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'dynamic.prompt.md'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'static.prompt.md')
+		]);
+		assertPreviews(testObject.conflicts.conflicts, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'dynamic.prompt.md'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'static.prompt.md')
+		]);
 
 		preview = await testObject.accept(preview!.resourcePreviews[0].previewResource, PROMPT4_TEXT);
 		preview = await testObject.accept(preview!.resourcePreviews[1].previewResource, PROMPT2_TEXT);
 
 		assert.strictEqual(testObject.status, SyncStatus.Syncing);
-		assertPreviews(preview!.resourcePreviews,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'dynamic.prompt.md'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'static.prompt.md'),
-			]);
+		assertPreviews(preview!.resourcePreviews, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'dynamic.prompt.md'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'static.prompt.md')
+		]);
 		assert.deepStrictEqual(testObject.conflicts.conflicts, []);
 	});
 
@@ -793,40 +776,28 @@ suite('PromptsSync', () => {
 		await updatePrompt('unknown.prompt.md', PROMPT2_TEXT, testClient);
 		let preview = await testObject.sync(await testClient.getLatestRef(SyncResource.Prompts), true);
 
-		assertDefined(
-			preview,
-			'Preview must be defined.',
-		);
+		assertDefined(preview, 'Preview must be defined.');
 
 		assert.strictEqual(testObject.status, SyncStatus.HasConflicts);
-		assertPreviews(preview.resourcePreviews,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'edicational.prompt.md'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'unknown.prompt.md'),
-			]);
-		assertPreviews(testObject.conflicts.conflicts,
-			[
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'edicational.prompt.md'),
-				joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'unknown.prompt.md'),
-			]);
+		assertPreviews(preview.resourcePreviews, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'edicational.prompt.md'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'unknown.prompt.md')
+		]);
+		assertPreviews(testObject.conflicts.conflicts, [
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'edicational.prompt.md'),
+			joinPath(environmentService.userDataSyncHome, testObject.resource, PREVIEW_DIR_NAME, 'unknown.prompt.md')
+		]);
 
 		preview = await testObject.accept(preview.resourcePreviews[0].previewResource, PROMPT4_TEXT);
 
-		assertDefined(
-			preview,
-			'Preview must be defined after accept.',
-		);
+		assertDefined(preview, 'Preview must be defined after accept.');
 
 		preview = await testObject.accept(preview.resourcePreviews[1].previewResource, PROMPT2_TEXT);
 		preview = await testObject.apply(false);
 
 		assert.strictEqual(testObject.status, SyncStatus.Idle);
 
-		assert.strictEqual(
-			preview,
-			null,
-			'Preview after the last apply must be `null`.',
-		);
+		assert.strictEqual(preview, null, 'Preview after the last apply must be `null`.');
 
 		assert.deepStrictEqual(testObject.conflicts.conflicts, []);
 	});
@@ -840,7 +811,9 @@ suite('PromptsSync', () => {
 
 		await testClient.sync();
 
-		const syncedProfile = testClient.instantiationService.get(IUserDataProfilesService).profiles.find(p => p.id === profile.id)!;
+		const syncedProfile = testClient.instantiationService
+			.get(IUserDataProfilesService)
+			.profiles.find(p => p.id === profile.id)!;
 		const content = await readPrompt('my.prompt.md', testClient, syncedProfile);
 		assert.strictEqual(content, PROMPT3_TEXT);
 	});
@@ -854,7 +827,7 @@ suite('PromptsSync', () => {
 		name: string,
 		content: string,
 		client: UserDataSyncClient,
-		profile?: IUserDataProfile,
+		profile?: IUserDataProfile
 	): Promise<void> {
 		const fileService = client.instantiationService.get(IFileService);
 		const userDataProfilesService = client.instantiationService.get(IUserDataProfilesService);
@@ -869,7 +842,11 @@ suite('PromptsSync', () => {
 		await fileService.del(promptsResource);
 	}
 
-	async function readPrompt(name: string, client: UserDataSyncClient, profile?: IUserDataProfile): Promise<string | null> {
+	async function readPrompt(
+		name: string,
+		client: UserDataSyncClient,
+		profile?: IUserDataProfile
+	): Promise<string | null> {
 		const fileService = client.instantiationService.get(IFileService);
 		const userDataProfilesService = client.instantiationService.get(IUserDataProfilesService);
 		const promptsResource = joinPath((profile ?? userDataProfilesService.defaultProfile).promptsHome, name);
@@ -883,7 +860,7 @@ suite('PromptsSync', () => {
 	function assertPreviews(actual: IResourcePreview[], expected: URI[]) {
 		assert.deepStrictEqual(
 			actual.map(({ previewResource }) => previewResource.toString()),
-			expected.map(uri => uri.toString()),
+			expected.map(uri => uri.toString())
 		);
 	}
 });

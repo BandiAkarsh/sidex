@@ -10,18 +10,39 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/c
 import { NullLogService } from '../../../log/common/log.js';
 import { IProductService } from '../../../product/common/productService.js';
 import { ITerminalProcessOptions } from '../../common/terminal.js';
-import { getShellIntegrationInjection, IShellIntegrationConfigInjection, type IShellIntegrationInjectionFailure, sanitizeEnvForLogging } from '../../node/terminalEnvironment.js';
+import {
+	getShellIntegrationInjection,
+	IShellIntegrationConfigInjection,
+	type IShellIntegrationInjectionFailure,
+	sanitizeEnvForLogging
+} from '../../node/terminalEnvironment.js';
 import { getWindowsBuildNumberSync } from '../../../../base/node/windowsVersion.js';
 
-const enabledProcessOptions: ITerminalProcessOptions = { shellIntegration: { enabled: true, suggestEnabled: false, nonce: '' }, windowsUseConptyDll: false, environmentVariableCollections: undefined, workspaceFolder: undefined, isScreenReaderOptimized: false };
-const disabledProcessOptions: ITerminalProcessOptions = { shellIntegration: { enabled: false, suggestEnabled: false, nonce: '' }, windowsUseConptyDll: false, environmentVariableCollections: undefined, workspaceFolder: undefined, isScreenReaderOptimized: false };
+const enabledProcessOptions: ITerminalProcessOptions = {
+	shellIntegration: { enabled: true, suggestEnabled: false, nonce: '' },
+	windowsUseConptyDll: false,
+	environmentVariableCollections: undefined,
+	workspaceFolder: undefined,
+	isScreenReaderOptimized: false
+};
+const disabledProcessOptions: ITerminalProcessOptions = {
+	shellIntegration: { enabled: false, suggestEnabled: false, nonce: '' },
+	windowsUseConptyDll: false,
+	environmentVariableCollections: undefined,
+	workspaceFolder: undefined,
+	isScreenReaderOptimized: false
+};
 const pwshExe = process.platform === 'win32' ? 'pwsh.exe' : 'pwsh';
-const repoRoot = process.platform === 'win32' ? process.cwd()[0].toLowerCase() + process.cwd().substring(1) : process.cwd();
+const repoRoot =
+	process.platform === 'win32' ? process.cwd()[0].toLowerCase() + process.cwd().substring(1) : process.cwd();
 const logService = new NullLogService();
 const productService = { applicationName: 'vscode' } as IProductService;
 const defaultEnvironment = {};
 
-function deepStrictEqualIgnoreStableVar(actual: IShellIntegrationConfigInjection | IShellIntegrationInjectionFailure | undefined, expected: IShellIntegrationConfigInjection) {
+function deepStrictEqualIgnoreStableVar(
+	actual: IShellIntegrationConfigInjection | IShellIntegrationInjectionFailure | undefined,
+	expected: IShellIntegrationConfigInjection
+) {
 	if (actual?.type === 'injection' && actual.envMixin) {
 		delete actual.envMixin['VSCODE_STABLE'];
 	}
@@ -33,81 +54,280 @@ suite('platform - terminalEnvironment', async () => {
 	suite('getShellIntegrationInjection', async () => {
 		suite('should not enable', async () => {
 			// This test is only expected to work on Windows 10 build 18309 and above
-			(getWindowsBuildNumberSync() < 18309 ? test.skip : test)('when isFeatureTerminal or when no executable is provided', async () => {
-				strictEqual((await getShellIntegrationInjection({ executable: pwshExe, args: ['-l', '-NoLogo'], isFeatureTerminal: true }, enabledProcessOptions, defaultEnvironment, logService, productService, true)).type, 'failure');
-				strictEqual((await getShellIntegrationInjection({ executable: pwshExe, args: ['-l', '-NoLogo'], isFeatureTerminal: false }, enabledProcessOptions, defaultEnvironment, logService, productService, true)).type, 'injection');
-			});
+			(getWindowsBuildNumberSync() < 18309 ? test.skip : test)(
+				'when isFeatureTerminal or when no executable is provided',
+				async () => {
+					strictEqual(
+						(
+							await getShellIntegrationInjection(
+								{ executable: pwshExe, args: ['-l', '-NoLogo'], isFeatureTerminal: true },
+								enabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							)
+						).type,
+						'failure'
+					);
+					strictEqual(
+						(
+							await getShellIntegrationInjection(
+								{ executable: pwshExe, args: ['-l', '-NoLogo'], isFeatureTerminal: false },
+								enabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							)
+						).type,
+						'injection'
+					);
+				}
+			);
 		});
 
 		// These tests are only expected to work on Windows 10 build 18309 and above
 		(getWindowsBuildNumberSync() < 18309 ? suite.skip : suite)('pwsh', async () => {
-			const expectedPs1 = process.platform === 'win32'
-				? `try { . "${repoRoot}\\out\\vs\\workbench\\contrib\\terminal\\common\\scripts\\shellIntegration.ps1" } catch {}`
-				: `. "${repoRoot}/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration.ps1"`;
+			const expectedPs1 =
+				process.platform === 'win32'
+					? `try { . "${repoRoot}\\out\\vs\\workbench\\contrib\\terminal\\common\\scripts\\shellIntegration.ps1" } catch {}`
+					: `. "${repoRoot}/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration.ps1"`;
 			suite('should override args', async () => {
 				const enabledExpectedResult = Object.freeze<IShellIntegrationConfigInjection>({
 					type: 'injection',
-					newArgs: [
-						'-noexit',
-						'-command',
-						expectedPs1
-					],
+					newArgs: ['-noexit', '-command', expectedPs1],
 					envMixin: {
 						VSCODE_A11Y_MODE: '0',
 						VSCODE_INJECTION: '1'
 					}
 				});
 				test('when undefined, []', async () => {
-					deepStrictEqualIgnoreStableVar(await getShellIntegrationInjection({ executable: pwshExe, args: [] }, enabledProcessOptions, defaultEnvironment, logService, productService, true), enabledExpectedResult);
-					deepStrictEqualIgnoreStableVar(await getShellIntegrationInjection({ executable: pwshExe, args: undefined }, enabledProcessOptions, defaultEnvironment, logService, productService, true), enabledExpectedResult);
+					deepStrictEqualIgnoreStableVar(
+						await getShellIntegrationInjection(
+							{ executable: pwshExe, args: [] },
+							enabledProcessOptions,
+							defaultEnvironment,
+							logService,
+							productService,
+							true
+						),
+						enabledExpectedResult
+					);
+					deepStrictEqualIgnoreStableVar(
+						await getShellIntegrationInjection(
+							{ executable: pwshExe, args: undefined },
+							enabledProcessOptions,
+							defaultEnvironment,
+							logService,
+							productService,
+							true
+						),
+						enabledExpectedResult
+					);
 				});
 				suite('when no logo', async () => {
 					test('array - case insensitive', async () => {
-						deepStrictEqualIgnoreStableVar(await getShellIntegrationInjection({ executable: pwshExe, args: ['-NoLogo'] }, enabledProcessOptions, defaultEnvironment, logService, productService, true), enabledExpectedResult);
-						deepStrictEqualIgnoreStableVar(await getShellIntegrationInjection({ executable: pwshExe, args: ['-NOLOGO'] }, enabledProcessOptions, defaultEnvironment, logService, productService, true), enabledExpectedResult);
-						deepStrictEqualIgnoreStableVar(await getShellIntegrationInjection({ executable: pwshExe, args: ['-nol'] }, enabledProcessOptions, defaultEnvironment, logService, productService, true), enabledExpectedResult);
-						deepStrictEqualIgnoreStableVar(await getShellIntegrationInjection({ executable: pwshExe, args: ['-NOL'] }, enabledProcessOptions, defaultEnvironment, logService, productService, true), enabledExpectedResult);
+						deepStrictEqualIgnoreStableVar(
+							await getShellIntegrationInjection(
+								{ executable: pwshExe, args: ['-NoLogo'] },
+								enabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							),
+							enabledExpectedResult
+						);
+						deepStrictEqualIgnoreStableVar(
+							await getShellIntegrationInjection(
+								{ executable: pwshExe, args: ['-NOLOGO'] },
+								enabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							),
+							enabledExpectedResult
+						);
+						deepStrictEqualIgnoreStableVar(
+							await getShellIntegrationInjection(
+								{ executable: pwshExe, args: ['-nol'] },
+								enabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							),
+							enabledExpectedResult
+						);
+						deepStrictEqualIgnoreStableVar(
+							await getShellIntegrationInjection(
+								{ executable: pwshExe, args: ['-NOL'] },
+								enabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							),
+							enabledExpectedResult
+						);
 					});
 					test('string - case insensitive', async () => {
-						deepStrictEqualIgnoreStableVar(await getShellIntegrationInjection({ executable: pwshExe, args: '-NoLogo' }, enabledProcessOptions, defaultEnvironment, logService, productService, true), enabledExpectedResult);
-						deepStrictEqualIgnoreStableVar(await getShellIntegrationInjection({ executable: pwshExe, args: '-NOLOGO' }, enabledProcessOptions, defaultEnvironment, logService, productService, true), enabledExpectedResult);
-						deepStrictEqualIgnoreStableVar(await getShellIntegrationInjection({ executable: pwshExe, args: '-nol' }, enabledProcessOptions, defaultEnvironment, logService, productService, true), enabledExpectedResult);
-						deepStrictEqualIgnoreStableVar(await getShellIntegrationInjection({ executable: pwshExe, args: '-NOL' }, enabledProcessOptions, defaultEnvironment, logService, productService, true), enabledExpectedResult);
+						deepStrictEqualIgnoreStableVar(
+							await getShellIntegrationInjection(
+								{ executable: pwshExe, args: '-NoLogo' },
+								enabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							),
+							enabledExpectedResult
+						);
+						deepStrictEqualIgnoreStableVar(
+							await getShellIntegrationInjection(
+								{ executable: pwshExe, args: '-NOLOGO' },
+								enabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							),
+							enabledExpectedResult
+						);
+						deepStrictEqualIgnoreStableVar(
+							await getShellIntegrationInjection(
+								{ executable: pwshExe, args: '-nol' },
+								enabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							),
+							enabledExpectedResult
+						);
+						deepStrictEqualIgnoreStableVar(
+							await getShellIntegrationInjection(
+								{ executable: pwshExe, args: '-NOL' },
+								enabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							),
+							enabledExpectedResult
+						);
 					});
 				});
 			});
 			suite('should incorporate login arg', async () => {
 				const enabledExpectedResult = Object.freeze<IShellIntegrationConfigInjection>({
 					type: 'injection',
-					newArgs: [
-						'-l',
-						'-noexit',
-						'-command',
-						expectedPs1
-					],
+					newArgs: ['-l', '-noexit', '-command', expectedPs1],
 					envMixin: {
 						VSCODE_A11Y_MODE: '0',
 						VSCODE_INJECTION: '1'
 					}
 				});
 				test('when array contains no logo and login', async () => {
-					deepStrictEqualIgnoreStableVar(await getShellIntegrationInjection({ executable: pwshExe, args: ['-l', '-NoLogo'] }, enabledProcessOptions, defaultEnvironment, logService, productService, true), enabledExpectedResult);
+					deepStrictEqualIgnoreStableVar(
+						await getShellIntegrationInjection(
+							{ executable: pwshExe, args: ['-l', '-NoLogo'] },
+							enabledProcessOptions,
+							defaultEnvironment,
+							logService,
+							productService,
+							true
+						),
+						enabledExpectedResult
+					);
 				});
 				test('when string', async () => {
-					deepStrictEqualIgnoreStableVar(await getShellIntegrationInjection({ executable: pwshExe, args: '-l' }, enabledProcessOptions, defaultEnvironment, logService, productService, true), enabledExpectedResult);
+					deepStrictEqualIgnoreStableVar(
+						await getShellIntegrationInjection(
+							{ executable: pwshExe, args: '-l' },
+							enabledProcessOptions,
+							defaultEnvironment,
+							logService,
+							productService,
+							true
+						),
+						enabledExpectedResult
+					);
 				});
 			});
 			suite('should not modify args', async () => {
 				test('when shell integration is disabled', async () => {
-					strictEqual((await getShellIntegrationInjection({ executable: pwshExe, args: ['-l'] }, disabledProcessOptions, defaultEnvironment, logService, productService, true)).type, 'failure');
-					strictEqual((await getShellIntegrationInjection({ executable: pwshExe, args: '-l' }, disabledProcessOptions, defaultEnvironment, logService, productService, true)).type, 'failure');
-					strictEqual((await getShellIntegrationInjection({ executable: pwshExe, args: undefined }, disabledProcessOptions, defaultEnvironment, logService, productService, true)).type, 'failure');
+					strictEqual(
+						(
+							await getShellIntegrationInjection(
+								{ executable: pwshExe, args: ['-l'] },
+								disabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							)
+						).type,
+						'failure'
+					);
+					strictEqual(
+						(
+							await getShellIntegrationInjection(
+								{ executable: pwshExe, args: '-l' },
+								disabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							)
+						).type,
+						'failure'
+					);
+					strictEqual(
+						(
+							await getShellIntegrationInjection(
+								{ executable: pwshExe, args: undefined },
+								disabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							)
+						).type,
+						'failure'
+					);
 				});
 				test('when using unrecognized arg', async () => {
-					strictEqual((await getShellIntegrationInjection({ executable: pwshExe, args: ['-l', '-NoLogo', '-i'] }, disabledProcessOptions, defaultEnvironment, logService, productService, true)).type, 'failure');
+					strictEqual(
+						(
+							await getShellIntegrationInjection(
+								{ executable: pwshExe, args: ['-l', '-NoLogo', '-i'] },
+								disabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							)
+						).type,
+						'failure'
+					);
 				});
 				test('when using unrecognized arg (string)', async () => {
-					strictEqual((await getShellIntegrationInjection({ executable: pwshExe, args: '-i' }, disabledProcessOptions, defaultEnvironment, logService, productService, true)).type, 'failure');
+					strictEqual(
+						(
+							await getShellIntegrationInjection(
+								{ executable: pwshExe, args: '-i' },
+								disabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							)
+						).type,
+						'failure'
+					);
 				});
 			});
 		});
@@ -146,37 +366,108 @@ suite('platform - terminalEnvironment', async () => {
 						ok(result.filesToCopy[3].source.match(expectedSources[3]));
 					}
 					test('when undefined, []', async () => {
-						const result1 = await getShellIntegrationInjection({ executable: 'zsh', args: [] }, enabledProcessOptions, defaultEnvironment, logService, productService, true) as IShellIntegrationConfigInjection;
+						const result1 = (await getShellIntegrationInjection(
+							{ executable: 'zsh', args: [] },
+							enabledProcessOptions,
+							defaultEnvironment,
+							logService,
+							productService,
+							true
+						)) as IShellIntegrationConfigInjection;
 						deepStrictEqual(result1?.newArgs, ['-i']);
 						assertIsEnabled(result1);
-						const result2 = await getShellIntegrationInjection({ executable: 'zsh', args: undefined }, enabledProcessOptions, defaultEnvironment, logService, productService, true) as IShellIntegrationConfigInjection;
+						const result2 = (await getShellIntegrationInjection(
+							{ executable: 'zsh', args: undefined },
+							enabledProcessOptions,
+							defaultEnvironment,
+							logService,
+							productService,
+							true
+						)) as IShellIntegrationConfigInjection;
 						deepStrictEqual(result2?.newArgs, ['-i']);
 						assertIsEnabled(result2);
 					});
 					suite('should incorporate login arg', async () => {
 						test('when array', async () => {
-							const result = await getShellIntegrationInjection({ executable: 'zsh', args: ['-l'] }, enabledProcessOptions, defaultEnvironment, logService, productService, true) as IShellIntegrationConfigInjection;
+							const result = (await getShellIntegrationInjection(
+								{ executable: 'zsh', args: ['-l'] },
+								enabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							)) as IShellIntegrationConfigInjection;
 							deepStrictEqual(result?.newArgs, ['-il']);
 							assertIsEnabled(result);
 						});
 					});
 					suite('should not modify args', async () => {
 						test('when shell integration is disabled', async () => {
-							strictEqual((await getShellIntegrationInjection({ executable: 'zsh', args: ['-l'] }, disabledProcessOptions, defaultEnvironment, logService, productService, true)).type, 'failure');
-							strictEqual((await getShellIntegrationInjection({ executable: 'zsh', args: undefined }, disabledProcessOptions, defaultEnvironment, logService, productService, true)).type, 'failure');
+							strictEqual(
+								(
+									await getShellIntegrationInjection(
+										{ executable: 'zsh', args: ['-l'] },
+										disabledProcessOptions,
+										defaultEnvironment,
+										logService,
+										productService,
+										true
+									)
+								).type,
+								'failure'
+							);
+							strictEqual(
+								(
+									await getShellIntegrationInjection(
+										{ executable: 'zsh', args: undefined },
+										disabledProcessOptions,
+										defaultEnvironment,
+										logService,
+										productService,
+										true
+									)
+								).type,
+								'failure'
+							);
 						});
 						test('when using unrecognized arg', async () => {
-							strictEqual((await getShellIntegrationInjection({ executable: 'zsh', args: ['-l', '-fake'] }, disabledProcessOptions, defaultEnvironment, logService, productService, true)).type, 'failure');
+							strictEqual(
+								(
+									await getShellIntegrationInjection(
+										{ executable: 'zsh', args: ['-l', '-fake'] },
+										disabledProcessOptions,
+										defaultEnvironment,
+										logService,
+										productService,
+										true
+									)
+								).type,
+								'failure'
+							);
 						});
 					});
 					suite('should incorporate global ZDOTDIR env variable', async () => {
 						test('when custom ZDOTDIR', async () => {
-							const result1 = await getShellIntegrationInjection({ executable: 'zsh', args: [] }, enabledProcessOptions, { ...defaultEnvironment, ZDOTDIR: customZdotdir }, logService, productService, true) as IShellIntegrationConfigInjection;
+							const result1 = (await getShellIntegrationInjection(
+								{ executable: 'zsh', args: [] },
+								enabledProcessOptions,
+								{ ...defaultEnvironment, ZDOTDIR: customZdotdir },
+								logService,
+								productService,
+								true
+							)) as IShellIntegrationConfigInjection;
 							deepStrictEqual(result1?.newArgs, ['-i']);
 							assertIsEnabled(result1, customZdotdir);
 						});
 						test('when undefined', async () => {
-							const result1 = await getShellIntegrationInjection({ executable: 'zsh', args: [] }, enabledProcessOptions, undefined, logService, productService, true) as IShellIntegrationConfigInjection;
+							const result1 = (await getShellIntegrationInjection(
+								{ executable: 'zsh', args: [] },
+								enabledProcessOptions,
+								undefined,
+								logService,
+								productService,
+								true
+							)) as IShellIntegrationConfigInjection;
 							deepStrictEqual(result1?.newArgs, ['-i']);
 							assertIsEnabled(result1);
 						});
@@ -196,9 +487,39 @@ suite('platform - terminalEnvironment', async () => {
 								VSCODE_INJECTION: '1'
 							}
 						});
-						deepStrictEqualIgnoreStableVar(await getShellIntegrationInjection({ executable: 'bash', args: [] }, enabledProcessOptions, defaultEnvironment, logService, productService, true), enabledExpectedResult);
-						deepStrictEqualIgnoreStableVar(await getShellIntegrationInjection({ executable: 'bash', args: '' }, enabledProcessOptions, defaultEnvironment, logService, productService, true), enabledExpectedResult);
-						deepStrictEqualIgnoreStableVar(await getShellIntegrationInjection({ executable: 'bash', args: undefined }, enabledProcessOptions, defaultEnvironment, logService, productService, true), enabledExpectedResult);
+						deepStrictEqualIgnoreStableVar(
+							await getShellIntegrationInjection(
+								{ executable: 'bash', args: [] },
+								enabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							),
+							enabledExpectedResult
+						);
+						deepStrictEqualIgnoreStableVar(
+							await getShellIntegrationInjection(
+								{ executable: 'bash', args: '' },
+								enabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							),
+							enabledExpectedResult
+						);
+						deepStrictEqualIgnoreStableVar(
+							await getShellIntegrationInjection(
+								{ executable: 'bash', args: undefined },
+								enabledProcessOptions,
+								defaultEnvironment,
+								logService,
+								productService,
+								true
+							),
+							enabledExpectedResult
+						);
 					});
 					suite('should set login env variable and not modify args', async () => {
 						const enabledExpectedResult = Object.freeze<IShellIntegrationConfigInjection>({
@@ -213,16 +534,62 @@ suite('platform - terminalEnvironment', async () => {
 							}
 						});
 						test('when array', async () => {
-							deepStrictEqualIgnoreStableVar(await getShellIntegrationInjection({ executable: 'bash', args: ['-l'] }, enabledProcessOptions, defaultEnvironment, logService, productService, true), enabledExpectedResult);
+							deepStrictEqualIgnoreStableVar(
+								await getShellIntegrationInjection(
+									{ executable: 'bash', args: ['-l'] },
+									enabledProcessOptions,
+									defaultEnvironment,
+									logService,
+									productService,
+									true
+								),
+								enabledExpectedResult
+							);
 						});
 					});
 					suite('should not modify args', async () => {
 						test('when shell integration is disabled', async () => {
-							strictEqual((await getShellIntegrationInjection({ executable: 'bash', args: ['-l'] }, disabledProcessOptions, defaultEnvironment, logService, productService, true)).type, 'failure');
-							strictEqual((await getShellIntegrationInjection({ executable: 'bash', args: undefined }, disabledProcessOptions, defaultEnvironment, logService, productService, true)).type, 'failure');
+							strictEqual(
+								(
+									await getShellIntegrationInjection(
+										{ executable: 'bash', args: ['-l'] },
+										disabledProcessOptions,
+										defaultEnvironment,
+										logService,
+										productService,
+										true
+									)
+								).type,
+								'failure'
+							);
+							strictEqual(
+								(
+									await getShellIntegrationInjection(
+										{ executable: 'bash', args: undefined },
+										disabledProcessOptions,
+										defaultEnvironment,
+										logService,
+										productService,
+										true
+									)
+								).type,
+								'failure'
+							);
 						});
 						test('when custom array entry', async () => {
-							strictEqual((await getShellIntegrationInjection({ executable: 'bash', args: ['-l', '-i'] }, disabledProcessOptions, defaultEnvironment, logService, productService, true)).type, 'failure');
+							strictEqual(
+								(
+									await getShellIntegrationInjection(
+										{ executable: 'bash', args: ['-l', '-i'] },
+										disabledProcessOptions,
+										defaultEnvironment,
+										logService,
+										productService,
+										true
+									)
+								).type,
+								'failure'
+							);
 						});
 					});
 				});
@@ -269,71 +636,90 @@ suite('platform - terminalEnvironment', async () => {
 		});
 
 		test('should pass through non-sensitive values', () => {
-			deepStrictEqual(sanitizeEnvForLogging({
-				PATH: '/usr/bin',
-				HOME: '/home/user',
-				TERM: 'xterm-256color'
-			}), {
-				PATH: '/usr/bin',
-				HOME: '/home/user',
-				TERM: 'xterm-256color'
-			});
+			deepStrictEqual(
+				sanitizeEnvForLogging({
+					PATH: '/usr/bin',
+					HOME: '/home/user',
+					TERM: 'xterm-256color'
+				}),
+				{
+					PATH: '/usr/bin',
+					HOME: '/home/user',
+					TERM: 'xterm-256color'
+				}
+			);
 		});
 
 		test('should redact sensitive env var names', () => {
-			deepStrictEqual(sanitizeEnvForLogging({
-				API_KEY: 'secret123',
-				GITHUB_TOKEN: 'ghp_xxxx',
-				MY_SECRET: 'hidden',
-				PASSWORD: 'pass123',
-				AWS_ACCESS_KEY: 'AKIA...',
-				DATABASE_PASSWORD: 'dbpass',
-				CLIENT_SECRET: 'client_secret_value',
-				AUTH_TOKEN: 'auth_value',
-				PRIVATE_KEY: 'private_key_value'
-			}), {
-				API_KEY: '<REDACTED>',
-				GITHUB_TOKEN: '<REDACTED>',
-				MY_SECRET: '<REDACTED>',
-				PASSWORD: '<REDACTED>',
-				AWS_ACCESS_KEY: '<REDACTED>',
-				DATABASE_PASSWORD: '<REDACTED>',
-				CLIENT_SECRET: '<REDACTED>',
-				AUTH_TOKEN: '<REDACTED>',
-				PRIVATE_KEY: '<REDACTED>'
-			});
+			deepStrictEqual(
+				sanitizeEnvForLogging({
+					API_KEY: 'secret123',
+					GITHUB_TOKEN: 'ghp_xxxx',
+					MY_SECRET: 'hidden',
+					PASSWORD: 'pass123',
+					AWS_ACCESS_KEY: 'AKIA...',
+					DATABASE_PASSWORD: 'dbpass',
+					CLIENT_SECRET: 'client_secret_value',
+					AUTH_TOKEN: 'auth_value',
+					PRIVATE_KEY: 'private_key_value'
+				}),
+				{
+					API_KEY: '<REDACTED>',
+					GITHUB_TOKEN: '<REDACTED>',
+					MY_SECRET: '<REDACTED>',
+					PASSWORD: '<REDACTED>',
+					AWS_ACCESS_KEY: '<REDACTED>',
+					DATABASE_PASSWORD: '<REDACTED>',
+					CLIENT_SECRET: '<REDACTED>',
+					AUTH_TOKEN: '<REDACTED>',
+					PRIVATE_KEY: '<REDACTED>'
+				}
+			);
 		});
 
 		test('should redact JWT tokens by value pattern', () => {
-			deepStrictEqual(sanitizeEnvForLogging({
-				SOME_VAR: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U'
-			}), {
-				SOME_VAR: '<REDACTED>'
-			});
+			deepStrictEqual(
+				sanitizeEnvForLogging({
+					SOME_VAR:
+						'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U'
+				}),
+				{
+					SOME_VAR: '<REDACTED>'
+				}
+			);
 		});
 
 		test('should redact GitHub tokens by value pattern', () => {
-			deepStrictEqual(sanitizeEnvForLogging({
-				MY_GH: 'ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
-			}), {
-				MY_GH: '<REDACTED>'
-			});
+			deepStrictEqual(
+				sanitizeEnvForLogging({
+					MY_GH: 'ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+				}),
+				{
+					MY_GH: '<REDACTED>'
+				}
+			);
 		});
 
 		test('should redact Google API keys by value pattern', () => {
-			deepStrictEqual(sanitizeEnvForLogging({
-				GOOGLE_KEY: 'AIzaSyDaGmWKa4JsXZ-HjGw7ISLn_3namBGewQe'
-			}), {
-				GOOGLE_KEY: '<REDACTED>'
-			});
+			deepStrictEqual(
+				sanitizeEnvForLogging({
+					GOOGLE_KEY: 'AIzaSyDaGmWKa4JsXZ-HjGw7ISLn_3namBGewQe'
+				}),
+				{
+					GOOGLE_KEY: '<REDACTED>'
+				}
+			);
 		});
 
 		test('should redact long alphanumeric strings (potential secrets)', () => {
-			deepStrictEqual(sanitizeEnvForLogging({
-				LONG_VALUE: 'abcdefghijklmnopqrstuvwxyz123456'
-			}), {
-				LONG_VALUE: '<REDACTED>'
-			});
+			deepStrictEqual(
+				sanitizeEnvForLogging({
+					LONG_VALUE: 'abcdefghijklmnopqrstuvwxyz123456'
+				}),
+				{
+					LONG_VALUE: '<REDACTED>'
+				}
+			);
 		});
 
 		test('should skip undefined values', () => {

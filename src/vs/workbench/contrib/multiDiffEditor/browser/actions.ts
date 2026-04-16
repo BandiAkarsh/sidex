@@ -32,8 +32,8 @@ export class GoToFileAction extends Action2 {
 				when: ActiveEditorContext.isEqualTo(MultiDiffEditor.ID),
 				id: MenuId.MultiDiffEditorFileToolbar,
 				order: 22,
-				group: 'navigation',
-			},
+				group: 'navigation'
+			}
 		});
 	}
 
@@ -62,8 +62,8 @@ export class GoToFileAction extends Action2 {
 			resource: targetUri,
 			options: {
 				selection: selections?.[0],
-				selectionRevealType: TextEditorSelectionRevealType.CenterIfOutsideViewport,
-			} satisfies ITextEditorOptions,
+				selectionRevealType: TextEditorSelectionRevealType.CenterIfOutsideViewport
+			} satisfies ITextEditorOptions
 		});
 	}
 }
@@ -84,9 +84,9 @@ export class GoToNextChangeAction extends Action2 {
 			keybinding: {
 				primary: KeyMod.Alt | KeyCode.F5,
 				weight: KeybindingWeight.EditorContrib,
-				when: ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID),
+				when: ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID)
 			},
-			f1: true,
+			f1: true
 		});
 	}
 
@@ -118,9 +118,9 @@ export class GoToPreviousChangeAction extends Action2 {
 			keybinding: {
 				primary: KeyMod.Alt | KeyMod.Shift | KeyCode.F5,
 				weight: KeybindingWeight.EditorContrib,
-				when: ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID),
+				when: ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID)
 			},
-			f1: true,
+			f1: true
 		});
 	}
 
@@ -142,19 +142,30 @@ export class CollapseAllAction extends Action2 {
 			id: 'multiDiffEditor.collapseAll',
 			title: localize2('collapseAllDiffs', 'Collapse All Diffs'),
 			icon: Codicon.collapseAll,
-			precondition: ContextKeyExpr.and(ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID), ContextKeyExpr.not('multiDiffEditorAllCollapsed')),
+			precondition: ContextKeyExpr.and(
+				ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID),
+				ContextKeyExpr.not('multiDiffEditorAllCollapsed')
+			),
 			menu: [MenuId.EditorTitle, MenuId.CompactWindowEditorTitle].map(id => ({
 				id,
-				when: ContextKeyExpr.and(ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID), ContextKeyExpr.not('multiDiffEditorAllCollapsed')),
+				when: ContextKeyExpr.and(
+					ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID),
+					ContextKeyExpr.not('multiDiffEditorAllCollapsed')
+				),
 				group: 'navigation',
 				order: 100
 			})),
-			f1: true,
+			f1: true
 		});
 	}
 
 	async run(accessor: ServicesAccessor, ...args: unknown[]): Promise<void> {
-		const resolvedContext = resolveCommandsContext(args, accessor.get(IEditorService), accessor.get(IEditorGroupsService), accessor.get(IListService));
+		const resolvedContext = resolveCommandsContext(
+			args,
+			accessor.get(IEditorService),
+			accessor.get(IEditorGroupsService),
+			accessor.get(IListService)
+		);
 
 		const groupContext = resolvedContext.groupedEditors[0];
 		if (!groupContext) {
@@ -175,19 +186,30 @@ export class ExpandAllAction extends Action2 {
 			id: 'multiDiffEditor.expandAll',
 			title: localize2('ExpandAllDiffs', 'Expand All Diffs'),
 			icon: Codicon.expandAll,
-			precondition: ContextKeyExpr.and(ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID), ContextKeyExpr.has('multiDiffEditorAllCollapsed')),
+			precondition: ContextKeyExpr.and(
+				ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID),
+				ContextKeyExpr.has('multiDiffEditorAllCollapsed')
+			),
 			menu: [MenuId.EditorTitle, MenuId.CompactWindowEditorTitle].map(id => ({
 				id,
-				when: ContextKeyExpr.and(ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID), ContextKeyExpr.has('multiDiffEditorAllCollapsed')),
+				when: ContextKeyExpr.and(
+					ContextKeyExpr.equals('activeEditor', MultiDiffEditor.ID),
+					ContextKeyExpr.has('multiDiffEditorAllCollapsed')
+				),
 				group: 'navigation',
 				order: 100
 			})),
-			f1: true,
+			f1: true
 		});
 	}
 
 	async run(accessor: ServicesAccessor, ...args: unknown[]): Promise<void> {
-		const resolvedContext = resolveCommandsContext(args, accessor.get(IEditorService), accessor.get(IEditorGroupsService), accessor.get(IListService));
+		const resolvedContext = resolveCommandsContext(
+			args,
+			accessor.get(IEditorService),
+			accessor.get(IEditorGroupsService),
+			accessor.get(IListService)
+		);
 
 		const groupContext = resolvedContext.groupedEditors[0];
 		if (!groupContext) {

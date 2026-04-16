@@ -40,7 +40,9 @@ export class DiffNestedCellViewModel extends Disposable implements IDiffNestedCe
 		return this.textModel.handle;
 	}
 
-	protected readonly _onDidChangeState: Emitter<CellViewModelStateChangeEvent> = this._register(new Emitter<CellViewModelStateChangeEvent>());
+	protected readonly _onDidChangeState: Emitter<CellViewModelStateChangeEvent> = this._register(
+		new Emitter<CellViewModelStateChangeEvent>()
+	);
 
 	private _hoveringOutput: boolean = false;
 	public get outputIsHovered(): boolean {
@@ -90,15 +92,23 @@ export class DiffNestedCellViewModel extends Disposable implements IDiffNestedCe
 		super();
 		this._id = generateUuid();
 
-		this._outputViewModels = this.textModel.outputs.map(output => new CellOutputViewModel(this, output, this._notebookService));
-		this._register(this.textModel.onDidChangeOutputs((splice) => {
-			this._outputCollection.splice(splice.start, splice.deleteCount, ...splice.newOutputs.map(() => 0));
-			const removed = this._outputViewModels.splice(splice.start, splice.deleteCount, ...splice.newOutputs.map(output => new CellOutputViewModel(this, output, this._notebookService)));
-			removed.forEach(vm => vm.dispose());
+		this._outputViewModels = this.textModel.outputs.map(
+			output => new CellOutputViewModel(this, output, this._notebookService)
+		);
+		this._register(
+			this.textModel.onDidChangeOutputs(splice => {
+				this._outputCollection.splice(splice.start, splice.deleteCount, ...splice.newOutputs.map(() => 0));
+				const removed = this._outputViewModels.splice(
+					splice.start,
+					splice.deleteCount,
+					...splice.newOutputs.map(output => new CellOutputViewModel(this, output, this._notebookService))
+				);
+				removed.forEach(vm => vm.dispose());
 
-			this._outputsTop = null;
-			this._onDidChangeOutputLayout.fire();
-		}));
+				this._outputsTop = null;
+				this._onDidChangeOutputLayout.fire();
+			})
+		);
 		this._outputCollection = new Array(this.textModel.outputs.length);
 	}
 

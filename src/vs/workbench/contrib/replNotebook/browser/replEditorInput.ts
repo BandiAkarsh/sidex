@@ -29,7 +29,11 @@ import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js'
 import { IWorkbenchEnvironmentService } from '../../../services/environment/common/environmentService.js';
 import { IPathService } from '../../../services/path/common/pathService.js';
 
-const replTabIcon = registerIcon('repl-editor-label-icon', Codicon.debugLineByLine, localize('replEditorLabelIcon', 'Icon of the REPL editor label.'));
+const replTabIcon = registerIcon(
+	'repl-editor-label-icon',
+	Codicon.debugLineByLine,
+	localize('replEditorLabelIcon', 'Icon of the REPL editor label.')
+);
 
 export class ReplEditorInput extends NotebookEditorInput implements ICompositeNotebookEditorInput {
 	static override ID: string = 'workbench.editorinputs.replEditorInput';
@@ -58,8 +62,27 @@ export class ReplEditorInput extends NotebookEditorInput implements ICompositeNo
 		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
 		@IPathService pathService: IPathService
 	) {
-		super(resource, undefined, 'jupyter-notebook', {}, _notebookService, _notebookModelResolverService, _fileDialogService, labelService, fileService, filesConfigurationService, extensionService, editorService, textResourceConfigurationService, customEditorLabelService, environmentService, pathService);
-		this.isScratchpad = resource.scheme === 'untitled' && configurationService.getValue<boolean>(NotebookSetting.InteractiveWindowPromptToSave) !== true;
+		super(
+			resource,
+			undefined,
+			'jupyter-notebook',
+			{},
+			_notebookService,
+			_notebookModelResolverService,
+			_fileDialogService,
+			labelService,
+			fileService,
+			filesConfigurationService,
+			extensionService,
+			editorService,
+			textResourceConfigurationService,
+			customEditorLabelService,
+			environmentService,
+			pathService
+		);
+		this.isScratchpad =
+			resource.scheme === 'untitled' &&
+			configurationService.getValue<boolean>(NotebookSetting.InteractiveWindowPromptToSave) !== true;
 		this.label = label ?? this.createEditorLabel(resource);
 	}
 
@@ -103,9 +126,7 @@ export class ReplEditorInput extends NotebookEditorInput implements ICompositeNo
 		const capabilities = super.capabilities;
 		const scratchPad = this.isScratchpad ? EditorInputCapabilities.Scratchpad : 0;
 
-		return capabilities
-			| EditorInputCapabilities.Readonly
-			| scratchPad;
+		return capabilities | EditorInputCapabilities.Readonly | scratchPad;
 	}
 
 	override async resolve() {
@@ -120,23 +141,35 @@ export class ReplEditorInput extends NotebookEditorInput implements ICompositeNo
 	private ensureInputBoxCell(notebook: NotebookTextModel) {
 		const lastCell = notebook.cells[notebook.cells.length - 1];
 
-		if (!lastCell || lastCell.cellKind === CellKind.Markup || lastCell.outputs.length > 0 || lastCell.internalMetadata.executionOrder !== undefined) {
-			notebook.applyEdits([
-				{
-					editType: CellEditType.Replace,
-					index: notebook.cells.length,
-					count: 0,
-					cells: [
-						{
-							cellKind: CellKind.Code,
-							language: 'python',
-							mime: undefined,
-							outputs: [],
-							source: ''
-						}
-					]
-				}
-			], true, undefined, () => undefined, undefined, false);
+		if (
+			!lastCell ||
+			lastCell.cellKind === CellKind.Markup ||
+			lastCell.outputs.length > 0 ||
+			lastCell.internalMetadata.executionOrder !== undefined
+		) {
+			notebook.applyEdits(
+				[
+					{
+						editType: CellEditType.Replace,
+						index: notebook.cells.length,
+						count: 0,
+						cells: [
+							{
+								cellKind: CellKind.Code,
+								language: 'python',
+								mime: undefined,
+								outputs: [],
+								source: ''
+							}
+						]
+					}
+				],
+				true,
+				undefined,
+				() => undefined,
+				undefined,
+				false
+			);
 		}
 	}
 

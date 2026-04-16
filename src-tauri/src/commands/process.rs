@@ -925,9 +925,7 @@ pub async fn exec(
                 timed_out: false,
             })
         }
-        Ok(Err(e)) => {
-            Err(format!("Process error: {}", e))
-        }
+        Ok(Err(e)) => Err(format!("Process error: {}", e)),
         Err(_) => {
             let _ = child.kill().await;
 

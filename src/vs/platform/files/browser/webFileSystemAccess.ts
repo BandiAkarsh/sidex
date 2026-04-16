@@ -9,7 +9,6 @@
  * Use `supported(window)` to find out if the browser supports this kind of API.
  */
 export namespace WebFileSystemAccess {
-
 	export function supported(obj: typeof globalThis): boolean {
 		if (typeof (obj as typeof globalThis & { showDirectoryPicker?: unknown })?.showDirectoryPicker === 'function') {
 			return true;
@@ -24,7 +23,11 @@ export namespace WebFileSystemAccess {
 			return false;
 		}
 
-		return typeof candidate.kind === 'string' && typeof candidate.queryPermission === 'function' && typeof candidate.requestPermission === 'function';
+		return (
+			typeof candidate.kind === 'string' &&
+			typeof candidate.queryPermission === 'function' &&
+			typeof candidate.requestPermission === 'function'
+		);
 	}
 
 	export function isFileSystemFileHandle(handle: FileSystemHandle): handle is FileSystemFileHandle {
@@ -37,14 +40,13 @@ export namespace WebFileSystemAccess {
 }
 
 export namespace WebFileSystemObserver {
-
 	export function supported(obj: typeof globalThis): boolean {
 		return typeof (obj as typeof globalThis & { FileSystemObserver?: unknown })?.FileSystemObserver === 'function';
 	}
 }
 
 export interface FileSystemObserver {
-	new(callback: (records: FileSystemObserverRecord[], observer: FileSystemObserver) => void): FileSystemObserver;
+	new (callback: (records: FileSystemObserverRecord[], observer: FileSystemObserver) => void): FileSystemObserver;
 
 	observe(handle: FileSystemHandle): Promise<void>;
 	observe(handle: FileSystemDirectoryHandle, options?: { recursive: boolean }): Promise<void>;
@@ -54,7 +56,6 @@ export interface FileSystemObserver {
 }
 
 export interface FileSystemObserverRecord {
-
 	/**
 	 * The handle passed to the `FileSystemObserver.observe()` function
 	 */
@@ -87,7 +88,6 @@ export interface FileSystemObserverRecord {
 }
 
 export declare class FileSystemObserver {
-
 	constructor(callback: (records: FileSystemObserverRecord[], observer: FileSystemObserver) => void);
 
 	observe(handle: FileSystemHandle, options?: { recursive: boolean }): Promise<void>;

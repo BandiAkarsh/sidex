@@ -13,7 +13,6 @@ import { URI } from '../../../../base/common/uri.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
 
 class WelcomeBannerContribution {
-
 	private static readonly WELCOME_BANNER_DISMISSED_KEY = 'workbench.banner.welcome.dismissed';
 
 	constructor(
@@ -26,7 +25,9 @@ class WelcomeBannerContribution {
 			return; // welcome banner is not enabled
 		}
 
-		if (storageService.getBoolean(WelcomeBannerContribution.WELCOME_BANNER_DISMISSED_KEY, StorageScope.PROFILE, false)) {
+		if (
+			storageService.getBoolean(WelcomeBannerContribution.WELCOME_BANNER_DISMISSED_KEY, StorageScope.PROFILE, false)
+		) {
 			return; // welcome banner dismissed
 		}
 
@@ -43,11 +44,18 @@ class WelcomeBannerContribution {
 			icon,
 			actions: welcomeBanner.actions,
 			onClose: () => {
-				storageService.store(WelcomeBannerContribution.WELCOME_BANNER_DISMISSED_KEY, true, StorageScope.PROFILE, StorageTarget.MACHINE);
+				storageService.store(
+					WelcomeBannerContribution.WELCOME_BANNER_DISMISSED_KEY,
+					true,
+					StorageScope.PROFILE,
+					StorageTarget.MACHINE
+				);
 			}
 		});
 	}
 }
 
-Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench)
-	.registerWorkbenchContribution(WelcomeBannerContribution, LifecyclePhase.Restored);
+Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(
+	WelcomeBannerContribution,
+	LifecyclePhase.Restored
+);

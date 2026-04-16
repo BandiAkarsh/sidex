@@ -13,7 +13,7 @@ import { INotebookCellExecution } from './notebookExecutionStateService.js';
 export enum CellExecutionUpdateType {
 	Output = 1,
 	OutputItems = 2,
-	ExecutionState = 3,
+	ExecutionState = 3
 }
 
 export interface ICellExecuteOutputEdit {
@@ -35,7 +35,11 @@ export const INotebookExecutionService = createDecorator<INotebookExecutionServi
 export interface INotebookExecutionService {
 	_serviceBrand: undefined;
 
-	executeNotebookCells(notebook: INotebookTextModel, cells: Iterable<NotebookCellTextModel>, contextKeyService: IContextKeyService): Promise<void>;
+	executeNotebookCells(
+		notebook: INotebookTextModel,
+		cells: Iterable<NotebookCellTextModel>,
+		contextKeyService: IContextKeyService
+	): Promise<void>;
 	cancelNotebookCells(notebook: INotebookTextModel, cells: Iterable<NotebookCellTextModel>): Promise<void>;
 	cancelNotebookCellHandles(notebook: INotebookTextModel, cells: Iterable<number>): Promise<void>;
 	registerExecutionParticipant(participant: ICellExecutionParticipant): IDisposable;

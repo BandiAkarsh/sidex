@@ -98,18 +98,18 @@ export function formatTimeRemaining(seconds: number): string {
 	if (hours >= 1) {
 		const formattedHours = formatDecimal(hours);
 		if (formattedHours === '1') {
-			return localize('update.timeRemainingHour', "{0} hour", formattedHours);
+			return localize('update.timeRemainingHour', '{0} hour', formattedHours);
 		} else {
-			return localize('update.timeRemainingHours', "{0} hours", formattedHours);
+			return localize('update.timeRemainingHours', '{0} hours', formattedHours);
 		}
 	}
 
 	const minutes = Math.floor(seconds / 60);
 	if (minutes >= 1) {
-		return localize('update.timeRemainingMinutes', "{0} min", minutes);
+		return localize('update.timeRemainingMinutes', '{0} min', minutes);
 	}
 
-	return localize('update.timeRemainingSeconds', "{0}s", seconds);
+	return localize('update.timeRemainingSeconds', '{0}s', seconds);
 }
 
 /**
@@ -117,21 +117,21 @@ export function formatTimeRemaining(seconds: number): string {
  */
 export function formatBytes(bytes: number): string {
 	if (bytes < 1024) {
-		return localize('update.bytes', "{0} B", bytes);
+		return localize('update.bytes', '{0} B', bytes);
 	}
 
 	const kb = bytes / 1024;
 	if (kb < 1024) {
-		return localize('update.kilobytes', "{0} KB", formatDecimal(kb));
+		return localize('update.kilobytes', '{0} KB', formatDecimal(kb));
 	}
 
 	const mb = kb / 1024;
 	if (mb < 1024) {
-		return localize('update.megabytes', "{0} MB", formatDecimal(mb));
+		return localize('update.megabytes', '{0} MB', formatDecimal(mb));
 	}
 
 	const gb = mb / 1024;
-	return localize('update.gigabytes', "{0} GB", formatDecimal(gb));
+	return localize('update.gigabytes', '{0} GB', formatDecimal(gb));
 }
 
 /**

@@ -9,7 +9,11 @@ import { URI, UriComponents } from '../../../../base/common/uri.js';
 import { IRange } from '../../../../editor/common/core/range.js';
 import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 import { NotebookCellExecutionState, NotebookExecutionState } from './notebookCommon.js';
-import { CellExecutionUpdateType, ICellExecuteOutputEdit, ICellExecuteOutputItemEdit } from './notebookExecutionService.js';
+import {
+	CellExecutionUpdateType,
+	ICellExecuteOutputEdit,
+	ICellExecuteOutputItemEdit
+} from './notebookExecutionService.js';
 
 export type ICellExecuteUpdate = ICellExecuteOutputEdit | ICellExecuteOutputItemEdit | ICellExecutionStateUpdate;
 
@@ -78,7 +82,9 @@ export interface IFailedCellInfo {
 	visible: boolean;
 }
 
-export const INotebookExecutionStateService = createDecorator<INotebookExecutionStateService>('INotebookExecutionStateService');
+export const INotebookExecutionStateService = createDecorator<INotebookExecutionStateService>(
+	'INotebookExecutionStateService'
+);
 
 export interface INotebookExecutionStateService {
 	_serviceBrand: undefined;

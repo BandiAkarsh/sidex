@@ -18,17 +18,16 @@ export enum NotebookDiffViewEventType {
 export class NotebookDiffLayoutChangedEvent {
 	public readonly type = NotebookDiffViewEventType.LayoutChanged;
 
-	constructor(readonly source: NotebookLayoutChangeEvent, readonly value: NotebookLayoutInfo) {
-
-	}
+	constructor(
+		readonly source: NotebookLayoutChangeEvent,
+		readonly value: NotebookLayoutInfo
+	) {}
 }
 
 export class NotebookCellLayoutChangedEvent {
 	public readonly type = NotebookDiffViewEventType.CellLayoutChanged;
 
-	constructor(readonly source: IDiffElementLayoutInfo) {
-
-	}
+	constructor(readonly source: IDiffElementLayoutInfo) {}
 }
 
 export type NotebookDiffViewEvent = NotebookDiffLayoutChangedEvent | NotebookCellLayoutChangedEvent;

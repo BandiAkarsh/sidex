@@ -6,9 +6,19 @@
 import { VSBuffer } from '../../../../base/common/buffer.js';
 import { FileOperationError, FileOperationResult, IFileService } from '../../../../platform/files/common/files.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
-import { IProfileResource, IProfileResourceChildTreeItem, IProfileResourceInitializer, IProfileResourceTreeItem, IUserDataProfileService } from '../common/userDataProfile.js';
+import {
+	IProfileResource,
+	IProfileResourceChildTreeItem,
+	IProfileResourceInitializer,
+	IProfileResourceTreeItem,
+	IUserDataProfileService
+} from '../common/userDataProfile.js';
 // Stub function to avoid importing heavy userDataSync module
-const updateIgnoredSettings = (settingsContent: string, _ignoredSettings: string[], _formattingOptions: unknown): string => settingsContent;
+const updateIgnoredSettings = (
+	settingsContent: string,
+	_ignoredSettings: string[],
+	_formattingOptions: unknown
+): string => settingsContent;
 // Inline interface to avoid importing heavy userDataSync module
 export const IUserDataSyncUtilService = Symbol('IUserDataSyncUtilService');
 export interface IUserDataSyncUtilService {
@@ -27,13 +37,11 @@ interface ISettingsContent {
 }
 
 export class SettingsResourceInitializer implements IProfileResourceInitializer {
-
 	constructor(
 		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
 		@IFileService private readonly fileService: IFileService,
-		@ILogService private readonly logService: ILogService,
-	) {
-	}
+		@ILogService private readonly logService: ILogService
+	) {}
 
 	async initialize(content: string): Promise<void> {
 		const settingsContent: ISettingsContent = JSON.parse(content);
@@ -41,17 +49,18 @@ export class SettingsResourceInitializer implements IProfileResourceInitializer 
 			this.logService.info(`Initializing Profile: No settings to apply...`);
 			return;
 		}
-		await this.fileService.writeFile(this.userDataProfileService.currentProfile.settingsResource, VSBuffer.fromString(settingsContent.settings));
+		await this.fileService.writeFile(
+			this.userDataProfileService.currentProfile.settingsResource,
+			VSBuffer.fromString(settingsContent.settings)
+		);
 	}
 }
 
 export class SettingsResource implements IProfileResource {
-
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@ILogService private readonly logService: ILogService,
-	) {
-	}
+		@ILogService private readonly logService: ILogService
+	) {}
 
 	async getContent(profile: IUserDataProfile): Promise<string> {
 		const settingsContent = await this.getSettingsContent(profile);
@@ -89,14 +98,12 @@ export class SettingsResource implements IProfileResource {
 			}
 		}
 	}
-
 }
 
 export class SettingsResourceTreeItem implements IProfileResourceTreeItem {
-
 	readonly type = ProfileResourceType.Settings;
 	readonly handle = ProfileResourceType.Settings;
-	readonly label = { label: localize('settings', "Settings") };
+	readonly label = { label: localize('settings', 'Settings') };
 	readonly collapsibleState = TreeItemCollapsibleState.Expanded;
 	checkbox: ITreeItemCheckboxState | undefined;
 
@@ -104,27 +111,31 @@ export class SettingsResourceTreeItem implements IProfileResourceTreeItem {
 		private readonly profile: IUserDataProfile,
 		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
 		@IInstantiationService private readonly instantiationService: IInstantiationService
-	) { }
+	) {}
 
 	async getChildren(): Promise<IProfileResourceChildTreeItem[]> {
-		return [{
-			handle: this.profile.settingsResource.toString(),
-			resourceUri: this.profile.settingsResource,
-			collapsibleState: TreeItemCollapsibleState.None,
-			parent: this,
-			accessibilityInformation: {
-				label: this.uriIdentityService.extUri.basename(this.profile.settingsResource)
-			},
-			command: {
-				id: API_OPEN_EDITOR_COMMAND_ID,
-				title: '',
-				arguments: [this.profile.settingsResource, undefined, undefined]
+		return [
+			{
+				handle: this.profile.settingsResource.toString(),
+				resourceUri: this.profile.settingsResource,
+				collapsibleState: TreeItemCollapsibleState.None,
+				parent: this,
+				accessibilityInformation: {
+					label: this.uriIdentityService.extUri.basename(this.profile.settingsResource)
+				},
+				command: {
+					id: API_OPEN_EDITOR_COMMAND_ID,
+					title: '',
+					arguments: [this.profile.settingsResource, undefined, undefined]
+				}
 			}
-		}];
+		];
 	}
 
 	async hasContent(): Promise<boolean> {
-		const settingsContent = await this.instantiationService.createInstance(SettingsResource).getSettingsContent(this.profile);
+		const settingsContent = await this.instantiationService
+			.createInstance(SettingsResource)
+			.getSettingsContent(this.profile);
 		return settingsContent.settings !== null;
 	}
 
@@ -135,5 +146,4 @@ export class SettingsResourceTreeItem implements IProfileResourceTreeItem {
 	isFromDefaultProfile(): boolean {
 		return !this.profile.isDefault && !!this.profile.useDefaultFlags?.settings;
 	}
-
 }

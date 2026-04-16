@@ -44,11 +44,10 @@ const OpenIssueReporterCommandMetadata: ICommandMetadata = {
 								type: 'string'
 							}
 						}
-
 					}
 				]
 			}
-		},
+		}
 	]
 };
 
@@ -62,19 +61,20 @@ interface OpenIssueReporterArgs {
 export class BaseIssueContribution extends Disposable implements IWorkbenchContribution {
 	constructor(
 		@IProductService productService: IProductService,
-		@IConfigurationService configurationService: IConfigurationService,
+		@IConfigurationService configurationService: IConfigurationService
 	) {
 		super();
 
 		if (!configurationService.getValue<boolean>('telemetry.feedback.enabled')) {
-			this._register(CommandsRegistry.registerCommand({
-				id: 'workbench.action.openIssueReporter',
-				handler: function (accessor) {
-					const data = accessor.get(INotificationService);
-					data.info('Feedback is disabled.');
-
-				},
-			}));
+			this._register(
+				CommandsRegistry.registerCommand({
+					id: 'workbench.action.openIssueReporter',
+					handler: function (accessor) {
+						const data = accessor.get(INotificationService);
+						data.info('Feedback is disabled.');
+					}
+				})
+			);
 			return;
 		}
 
@@ -82,51 +82,69 @@ export class BaseIssueContribution extends Disposable implements IWorkbenchContr
 			return;
 		}
 
-		this._register(CommandsRegistry.registerCommand({
-			id: OpenIssueReporterActionId,
-			handler: function (accessor, args?: string | [string] | OpenIssueReporterArgs) {
-				const data: Partial<IssueReporterData> =
-					typeof args === 'string'
-						? { extensionId: args }
-						: Array.isArray(args)
-							? { extensionId: args[0] }
-							: args ?? {};
+		this._register(
+			CommandsRegistry.registerCommand({
+				id: OpenIssueReporterActionId,
+				handler: function (accessor, args?: string | [string] | OpenIssueReporterArgs) {
+					const data: Partial<IssueReporterData> =
+						typeof args === 'string'
+							? { extensionId: args }
+							: Array.isArray(args)
+								? { extensionId: args[0] }
+								: (args ?? {});
 
-				return accessor.get(IWorkbenchIssueService).openReporter(data);
-			},
-			metadata: OpenIssueReporterCommandMetadata
-		}));
+					return accessor.get(IWorkbenchIssueService).openReporter(data);
+				},
+				metadata: OpenIssueReporterCommandMetadata
+			})
+		);
 
-		this._register(CommandsRegistry.registerCommand({
-			id: OpenIssueReporterApiId,
-			handler: function (accessor, args?: string | [string] | OpenIssueReporterArgs) {
-				const data: Partial<IssueReporterData> =
-					typeof args === 'string'
-						? { extensionId: args }
-						: Array.isArray(args)
-							? { extensionId: args[0] }
-							: args ?? {};
+		this._register(
+			CommandsRegistry.registerCommand({
+				id: OpenIssueReporterApiId,
+				handler: function (accessor, args?: string | [string] | OpenIssueReporterArgs) {
+					const data: Partial<IssueReporterData> =
+						typeof args === 'string'
+							? { extensionId: args }
+							: Array.isArray(args)
+								? { extensionId: args[0] }
+								: (args ?? {});
 
-				return accessor.get(IWorkbenchIssueService).openReporter(data);
-			},
-			metadata: OpenIssueReporterCommandMetadata
-		}));
+					return accessor.get(IWorkbenchIssueService).openReporter(data);
+				},
+				metadata: OpenIssueReporterCommandMetadata
+			})
+		);
 
 		const reportIssue: ICommandAction = {
 			id: OpenIssueReporterActionId,
-			title: localize2({ key: 'reportIssueInEnglish', comment: ['Translate this to "Report Issue in English" in all languages please!'] }, "Report Issue..."),
+			title: localize2(
+				{
+					key: 'reportIssueInEnglish',
+					comment: ['Translate this to "Report Issue in English" in all languages please!']
+				},
+				'Report Issue...'
+			),
 			category: Categories.Help
 		};
 
 		this._register(MenuRegistry.appendMenuItem(MenuId.CommandPalette, { command: reportIssue }));
 
-		this._register(MenuRegistry.appendMenuItem(MenuId.MenubarHelpMenu, {
-			group: '3_feedback',
-			command: {
-				id: OpenIssueReporterActionId,
-				title: localize({ key: 'miReportIssue', comment: ['&& denotes a mnemonic', 'Translate this to "Report Issue in English" in all languages please!'] }, "Report &&Issue")
-			},
-			order: 3
-		}));
+		this._register(
+			MenuRegistry.appendMenuItem(MenuId.MenubarHelpMenu, {
+				group: '3_feedback',
+				command: {
+					id: OpenIssueReporterActionId,
+					title: localize(
+						{
+							key: 'miReportIssue',
+							comment: ['&& denotes a mnemonic', 'Translate this to "Report Issue in English" in all languages please!']
+						},
+						'Report &&Issue'
+					)
+				},
+				order: 3
+			})
+		);
 	}
 }

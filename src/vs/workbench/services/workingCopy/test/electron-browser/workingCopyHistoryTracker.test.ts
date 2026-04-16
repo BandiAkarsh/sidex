@@ -30,7 +30,6 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/tes
 import { TestWorkingCopyHistoryService } from './workingCopyHistoryService.test.js';
 
 suite('WorkingCopyHistoryTracker', () => {
-
 	let testDir: URI;
 	let historyHome: URI;
 	let workHome: URI;
@@ -48,20 +47,23 @@ suite('WorkingCopyHistoryTracker', () => {
 	const disposables = new DisposableStore();
 
 	const testFile1PathContents = 'Hello Foo';
-	const testFile2PathContents = [
-		'Lorem ipsum ',
-		'dolor öäü sit amet ',
-		'adipiscing ßß elit',
-		'consectetur '
-	].join('').repeat(1000);
+	const testFile2PathContents = ['Lorem ipsum ', 'dolor öäü sit amet ', 'adipiscing ßß elit', 'consectetur ']
+		.join('')
+		.repeat(1000);
 
 	let increasingTimestampCounter = 1;
 
-	async function addEntry(descriptor: IWorkingCopyHistoryEntryDescriptor, token: CancellationToken): Promise<IWorkingCopyHistoryEntry> {
-		const entry = await workingCopyHistoryService.addEntry({
-			...descriptor,
-			timestamp: increasingTimestampCounter++ // very important to get tests to not be flaky with stable sort order
-		}, token);
+	async function addEntry(
+		descriptor: IWorkingCopyHistoryEntryDescriptor,
+		token: CancellationToken
+	): Promise<IWorkingCopyHistoryEntry> {
+		const entry = await workingCopyHistoryService.addEntry(
+			{
+				...descriptor,
+				timestamp: increasingTimestampCounter++ // very important to get tests to not be flaky with stable sort order
+			},
+			token
+		);
 
 		return assertReturnsDefined(entry);
 	}
@@ -118,15 +120,20 @@ suite('WorkingCopyHistoryTracker', () => {
 
 		const saveResult = new DeferredPromise<void>();
 		let addedCounter = 0;
-		disposables.add(workingCopyHistoryService.onDidAddEntry(e => {
-			if (isEqual(e.entry.workingCopy.resource, workingCopy1.resource) || isEqual(e.entry.workingCopy.resource, workingCopy2.resource)) {
-				addedCounter++;
+		disposables.add(
+			workingCopyHistoryService.onDidAddEntry(e => {
+				if (
+					isEqual(e.entry.workingCopy.resource, workingCopy1.resource) ||
+					isEqual(e.entry.workingCopy.resource, workingCopy2.resource)
+				) {
+					addedCounter++;
 
-				if (addedCounter === 2) {
-					saveResult.complete();
+					if (addedCounter === 2) {
+						saveResult.complete();
+					}
 				}
-			}
-		}));
+			})
+		);
 
 		await workingCopy1.save(undefined, stat1);
 		await workingCopy2.save(undefined, stat2);
@@ -167,15 +174,17 @@ suite('WorkingCopyHistoryTracker', () => {
 		disposables.add(workingCopyService.registerWorkingCopy(workingCopy2));
 
 		const saveResult = new DeferredPromise<void>();
-		disposables.add(workingCopyHistoryService.onDidAddEntry(e => {
-			if (isEqual(e.entry.workingCopy.resource, workingCopy1.resource)) {
-				assert.fail('Unexpected working copy history entry: ' + e.entry.workingCopy.resource.toString());
-			}
+		disposables.add(
+			workingCopyHistoryService.onDidAddEntry(e => {
+				if (isEqual(e.entry.workingCopy.resource, workingCopy1.resource)) {
+					assert.fail('Unexpected working copy history entry: ' + e.entry.workingCopy.resource.toString());
+				}
 
-			if (isEqual(e.entry.workingCopy.resource, workingCopy2.resource)) {
-				saveResult.complete();
-			}
-		}));
+				if (isEqual(e.entry.workingCopy.resource, workingCopy2.resource)) {
+					saveResult.complete();
+				}
+			})
+		);
 
 		await workingCopy1.save(undefined, stat1);
 		await workingCopy2.save(undefined, stat2);
@@ -307,7 +316,10 @@ suite('WorkingCopyHistoryTracker', () => {
 		const all = await workingCopyHistoryService.getAll(CancellationToken.None);
 		assert.strictEqual(all.length, 2);
 		for (const resource of all) {
-			if (resource.toString() !== renamedWorkingCopy1Resource.toString() && resource.toString() !== renamedWorkingCopy2Resource.toString()) {
+			if (
+				resource.toString() !== renamedWorkingCopy1Resource.toString() &&
+				resource.toString() !== renamedWorkingCopy2Resource.toString()
+			) {
 				assert.fail(`Unexpected history resource: ${resource.toString()}`);
 			}
 		}

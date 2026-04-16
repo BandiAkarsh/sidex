@@ -9,7 +9,12 @@ import { Position } from '../../../../common/core/position.js';
 import { OffsetRange } from '../../../../common/core/ranges/offsetRange.js';
 import { StringEdit } from '../../../../common/core/edits/stringEdit.js';
 import { createTextModel } from '../../../../test/common/testTextModel.js';
-import { computeEditKind, InsertProperties, DeleteProperties, ReplaceProperties } from '../../browser/model/editKind.js';
+import {
+	computeEditKind,
+	InsertProperties,
+	DeleteProperties,
+	ReplaceProperties
+} from '../../browser/model/editKind.js';
 
 suite('computeEditKind', () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
@@ -455,7 +460,7 @@ suite('computeEditKind', () => {
 			const model = createTextModel('hello world');
 			const edit = new StringEdit([
 				StringEdit.insert(0, 'A').replacements[0],
-				StringEdit.insert(5, 'B').replacements[0],
+				StringEdit.insert(5, 'B').replacements[0]
 			]);
 			const result = computeEditKind(edit, model);
 
@@ -470,7 +475,7 @@ suite('computeEditKind', () => {
 			const model = createTextModel('hello world');
 			const edit = new StringEdit([
 				StringEdit.insert(0, 'prefix').replacements[0],
-				StringEdit.delete(new OffsetRange(5, 6)).replacements[0],
+				StringEdit.delete(new OffsetRange(5, 6)).replacements[0]
 			]);
 			const result = computeEditKind(edit, model);
 

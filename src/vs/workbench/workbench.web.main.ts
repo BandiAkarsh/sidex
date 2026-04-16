@@ -3,13 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-
 // #######################################################################
 // ###                                                                 ###
 // ### !!! PLEASE ADD COMMON IMPORTS INTO WORKBENCH.COMMON.MAIN.TS !!! ###
 // ###                                                                 ###
 // #######################################################################
-
 
 //#region --- workbench common
 
@@ -17,20 +15,17 @@ import './workbench.common.main.js';
 
 //#endregion
 
-
 //#region --- workbench parts
 
 import './browser/parts/dialogs/dialog.web.contribution.js';
 
 //#endregion
 
-
 //#region --- workbench (web main)
 
 import './browser/web.main.js';
 
 //#endregion
-
 
 //#region --- workbench services
 
@@ -92,7 +87,12 @@ import { ITimerService, TimerService } from './services/timer/browser/timerServi
 import { IDiagnosticsService, NullDiagnosticsService } from '../platform/diagnostics/common/diagnostics.js';
 import { ILanguagePackService } from '../platform/languagePacks/common/languagePacks.js';
 import { WebLanguagePacksService } from '../platform/languagePacks/browser/languagePacks.js';
-import { IWebContentExtractorService, NullWebContentExtractorService, ISharedWebContentExtractorService, NullSharedWebContentExtractorService } from '../platform/webContentExtractor/common/webContentExtractor.js';
+import {
+	IWebContentExtractorService,
+	NullWebContentExtractorService,
+	ISharedWebContentExtractorService,
+	NullSharedWebContentExtractorService
+} from '../platform/webContentExtractor/common/webContentExtractor.js';
 
 registerSingleton(IWorkbenchExtensionManagementService, ExtensionManagementService, InstantiationType.Delayed);
 registerSingleton(IAccessibilityService, AccessibilityService, InstantiationType.Delayed);
@@ -107,7 +107,6 @@ registerSingleton(IWebContentExtractorService, NullWebContentExtractorService, I
 registerSingleton(ISharedWebContentExtractorService, NullSharedWebContentExtractorService, InstantiationType.Delayed);
 
 //#endregion
-
 
 //#region --- workbench contributions
 

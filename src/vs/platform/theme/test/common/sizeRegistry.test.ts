@@ -5,16 +5,35 @@
 
 import assert from 'assert';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/common/utils.js';
-import { getSizeRegistry, registerSize, size, sizeForAllThemes, sizeValueToCss, asCssVariableName, asCssVariable } from '../../common/sizeRegistry.js';
+import {
+	getSizeRegistry,
+	registerSize,
+	size,
+	sizeForAllThemes,
+	sizeValueToCss,
+	asCssVariableName,
+	asCssVariable
+} from '../../common/sizeRegistry.js';
 // Import baseSizes to ensure base size tokens are registered
-import { bodyFontSize, bodyFontSizeSmall, codiconFontSize, cornerRadiusMedium, cornerRadiusSmall, cornerRadiusLarge, strokeThickness } from '../../common/sizes/baseSizes.js';
+import {
+	bodyFontSize,
+	bodyFontSizeSmall,
+	codiconFontSize,
+	cornerRadiusMedium,
+	cornerRadiusSmall,
+	cornerRadiusLarge,
+	strokeThickness
+} from '../../common/sizes/baseSizes.js';
 
 suite('Size Registry', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	test('registerSize should register a size token', () => {
-		const id = registerSize('test.size', { dark: size(10, 'px'), light: size(10, 'px'), hcDark: size(10, 'px'), hcLight: size(10, 'px') }, 'Test size');
+		const id = registerSize(
+			'test.size',
+			{ dark: size(10, 'px'), light: size(10, 'px'), hcDark: size(10, 'px'), hcLight: size(10, 'px') },
+			'Test size'
+		);
 		assert.strictEqual(id, 'test.size');
 
 		const sizes = getSizeRegistry().getSizes();
@@ -44,7 +63,11 @@ suite('Size Registry', () => {
 	});
 
 	test('deregisterSize should remove a size token', () => {
-		registerSize('test.remove', { dark: size(5, 'px'), light: size(5, 'px'), hcDark: size(5, 'px'), hcLight: size(5, 'px') }, 'Test remove');
+		registerSize(
+			'test.remove',
+			{ dark: size(5, 'px'), light: size(5, 'px'), hcDark: size(5, 'px'), hcLight: size(5, 'px') },
+			'Test remove'
+		);
 
 		let sizes = getSizeRegistry().getSizes();
 		assert.ok(sizes.find(s => s.id === 'test.remove'));
@@ -59,13 +82,34 @@ suite('Size Registry', () => {
 		const sizes = getSizeRegistry().getSizes();
 
 		// Check that base sizes are registered
-		assert.ok(sizes.find(s => s.id === bodyFontSize), 'bodyFontSize should be registered');
-		assert.ok(sizes.find(s => s.id === bodyFontSizeSmall), 'bodyFontSizeSmall should be registered');
-		assert.ok(sizes.find(s => s.id === codiconFontSize), 'codiconFontSize should be registered');
-		assert.ok(sizes.find(s => s.id === cornerRadiusMedium), 'cornerRadius.medium should be registered');
-		assert.ok(sizes.find(s => s.id === cornerRadiusSmall), 'cornerRadius.small should be registered');
-		assert.ok(sizes.find(s => s.id === cornerRadiusLarge), 'cornerRadius.large should be registered');
-		assert.ok(sizes.find(s => s.id === strokeThickness), 'strokeThickness should be registered');
+		assert.ok(
+			sizes.find(s => s.id === bodyFontSize),
+			'bodyFontSize should be registered'
+		);
+		assert.ok(
+			sizes.find(s => s.id === bodyFontSizeSmall),
+			'bodyFontSizeSmall should be registered'
+		);
+		assert.ok(
+			sizes.find(s => s.id === codiconFontSize),
+			'codiconFontSize should be registered'
+		);
+		assert.ok(
+			sizes.find(s => s.id === cornerRadiusMedium),
+			'cornerRadius.medium should be registered'
+		);
+		assert.ok(
+			sizes.find(s => s.id === cornerRadiusSmall),
+			'cornerRadius.small should be registered'
+		);
+		assert.ok(
+			sizes.find(s => s.id === cornerRadiusLarge),
+			'cornerRadius.large should be registered'
+		);
+		assert.ok(
+			sizes.find(s => s.id === strokeThickness),
+			'strokeThickness should be registered'
+		);
 	});
 
 	test('sizeForAllThemes should create same value for all themes', () => {

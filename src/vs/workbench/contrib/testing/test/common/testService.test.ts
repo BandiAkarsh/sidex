@@ -21,22 +21,21 @@ suite('Workbench - Test Service', () => {
 					},
 					c2: {
 						d: undefined
-					},
+					}
 				},
-				b2: undefined,
+				b2: undefined
 			}
 		} as const;
 
 		test('noop on single item', async () => {
 			const c = await getInitializedMainTestCollection(makeSimpleStubTree(tree1));
 
-			const t = simplifyTestsToExecute(c, [
-				c.getNodeById(new TestId(['ctrlId', 'a', 'b1']).toString())!
-			]);
+			const t = simplifyTestsToExecute(c, [c.getNodeById(new TestId(['ctrlId', 'a', 'b1']).toString())!]);
 
-			assert.deepStrictEqual(t.map(t => t.item.extId.toString()), [
-				new TestId(['ctrlId', 'a', 'b1']).toString()
-			]);
+			assert.deepStrictEqual(
+				t.map(t => t.item.extId.toString()),
+				[new TestId(['ctrlId', 'a', 'b1']).toString()]
+			);
 		});
 
 		test('goes to common root 1', async () => {
@@ -44,12 +43,13 @@ suite('Workbench - Test Service', () => {
 
 			const t = simplifyTestsToExecute(c, [
 				c.getNodeById(new TestId(['ctrlId', 'a', 'b1', 'c1', 'd']).toString())!,
-				c.getNodeById(new TestId(['ctrlId', 'a', 'b1', 'c2']).toString())!,
+				c.getNodeById(new TestId(['ctrlId', 'a', 'b1', 'c2']).toString())!
 			]);
 
-			assert.deepStrictEqual(t.map(t => t.item.extId.toString()), [
-				new TestId(['ctrlId', 'a', 'b1']).toString()
-			]);
+			assert.deepStrictEqual(
+				t.map(t => t.item.extId.toString()),
+				[new TestId(['ctrlId', 'a', 'b1']).toString()]
+			);
 		});
 
 		test('goes to common root 2', async () => {
@@ -57,12 +57,13 @@ suite('Workbench - Test Service', () => {
 
 			const t = simplifyTestsToExecute(c, [
 				c.getNodeById(new TestId(['ctrlId', 'a', 'b1', 'c1']).toString())!,
-				c.getNodeById(new TestId(['ctrlId', 'a', 'b1']).toString())!,
+				c.getNodeById(new TestId(['ctrlId', 'a', 'b1']).toString())!
 			]);
 
-			assert.deepStrictEqual(t.map(t => t.item.extId.toString()), [
-				new TestId(['ctrlId', 'a', 'b1']).toString()
-			]);
+			assert.deepStrictEqual(
+				t.map(t => t.item.extId.toString()),
+				[new TestId(['ctrlId', 'a', 'b1']).toString()]
+			);
 		});
 
 		test('goes to common root 3', async () => {
@@ -70,12 +71,13 @@ suite('Workbench - Test Service', () => {
 
 			const t = simplifyTestsToExecute(c, [
 				c.getNodeById(new TestId(['ctrlId', 'a', 'b1', 'c1', 'd']).toString())!,
-				c.getNodeById(new TestId(['ctrlId', 'a', 'b1', 'c2']).toString())!,
+				c.getNodeById(new TestId(['ctrlId', 'a', 'b1', 'c2']).toString())!
 			]);
 
-			assert.deepStrictEqual(t.map(t => t.item.extId.toString()), [
-				new TestId(['ctrlId', 'a', 'b1']).toString()
-			]);
+			assert.deepStrictEqual(
+				t.map(t => t.item.extId.toString()),
+				[new TestId(['ctrlId', 'a', 'b1']).toString()]
+			);
 		});
 
 		test('goes to common root 4', async () => {
@@ -83,12 +85,13 @@ suite('Workbench - Test Service', () => {
 
 			const t = simplifyTestsToExecute(c, [
 				c.getNodeById(new TestId(['ctrlId', 'a', 'b2']).toString())!,
-				c.getNodeById(new TestId(['ctrlId', 'a', 'b1']).toString())!,
+				c.getNodeById(new TestId(['ctrlId', 'a', 'b1']).toString())!
 			]);
 
-			assert.deepStrictEqual(t.map(t => t.item.extId.toString()), [
-				new TestId(['ctrlId']).toString()
-			]);
+			assert.deepStrictEqual(
+				t.map(t => t.item.extId.toString()),
+				[new TestId(['ctrlId']).toString()]
+			);
 		});
 
 		test('no-op divergent trees', async () => {
@@ -96,13 +99,13 @@ suite('Workbench - Test Service', () => {
 
 			const t = simplifyTestsToExecute(c, [
 				c.getNodeById(new TestId(['ctrlId', 'a', 'b1', 'c2']).toString())!,
-				c.getNodeById(new TestId(['ctrlId', 'a', 'b2']).toString())!,
+				c.getNodeById(new TestId(['ctrlId', 'a', 'b2']).toString())!
 			]);
 
-			assert.deepStrictEqual(t.map(t => t.item.extId.toString()), [
-				new TestId(['ctrlId', 'a', 'b1', 'c2']).toString(),
-				new TestId(['ctrlId', 'a', 'b2']).toString(),
-			]);
+			assert.deepStrictEqual(
+				t.map(t => t.item.extId.toString()),
+				[new TestId(['ctrlId', 'a', 'b1', 'c2']).toString(), new TestId(['ctrlId', 'a', 'b2']).toString()]
+			);
 		});
 	});
 });

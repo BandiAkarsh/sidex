@@ -8,15 +8,13 @@ import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../base/test/c
 import { cleanRemoteAuthority } from '../../common/telemetryUtils.js';
 
 suite('TelemetryUtils', () => {
-
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	suite('cleanRemoteAuthority', () => {
-
 		test('returns "none" when remoteAuthority is undefined', () => {
 			const config = {
 				remoteExtensionTips: { 'ssh-remote': {} },
-				virtualWorkspaceExtensionTips: { 'codespaces': {} }
+				virtualWorkspaceExtensionTips: { codespaces: {} }
 			};
 
 			const result = cleanRemoteAuthority(undefined, config);
@@ -28,7 +26,7 @@ suite('TelemetryUtils', () => {
 				remoteExtensionTips: {
 					'ssh-remote': {},
 					'dev-container': {},
-					'wsl': {}
+					wsl: {}
 				}
 			};
 
@@ -41,8 +39,8 @@ suite('TelemetryUtils', () => {
 			const config = {
 				remoteExtensionTips: {},
 				virtualWorkspaceExtensionTips: {
-					'codespaces': {},
-					'tunnel': {}
+					codespaces: {},
+					tunnel: {}
 				}
 			};
 
@@ -57,7 +55,7 @@ suite('TelemetryUtils', () => {
 					'dev-container': {}
 				},
 				virtualWorkspaceExtensionTips: {
-					'codespaces': {}
+					codespaces: {}
 				}
 			};
 
@@ -77,7 +75,7 @@ suite('TelemetryUtils', () => {
 		test('handles config with undefined remoteExtensionTips', () => {
 			const config = {
 				virtualWorkspaceExtensionTips: {
-					'codespaces': {}
+					codespaces: {}
 				}
 			};
 

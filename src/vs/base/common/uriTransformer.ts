@@ -28,7 +28,13 @@ function createRawURITransformer(remoteAuthority: string): IRawURITransformer {
 		},
 		transformOutgoing: (uri: UriParts): UriParts => {
 			if (uri.scheme === 'file') {
-				return { scheme: 'vscode-remote', authority: remoteAuthority, path: uri.path, query: uri.query, fragment: uri.fragment };
+				return {
+					scheme: 'vscode-remote',
+					authority: remoteAuthority,
+					path: uri.path,
+					query: uri.query,
+					fragment: uri.fragment
+				};
 			}
 			if (uri.scheme === 'vscode-local') {
 				return { scheme: 'file', path: uri.path, query: uri.query, fragment: uri.fragment };

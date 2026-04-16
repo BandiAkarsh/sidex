@@ -5,7 +5,14 @@
 
 import { h, reset } from '../../../../../base/browser/dom.js';
 import { Disposable, IDisposable, toDisposable } from '../../../../../base/common/lifecycle.js';
-import { autorun, IReader, observableFromEvent, observableSignal, observableSignalFromEvent, transaction } from '../../../../../base/common/observable.js';
+import {
+	autorun,
+	IReader,
+	observableFromEvent,
+	observableSignal,
+	observableSignalFromEvent,
+	transaction
+} from '../../../../../base/common/observable.js';
 import { CodeEditorWidget } from '../../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
 import { MergeEditorLineRange } from '../model/lineRange.js';
 
@@ -24,23 +31,26 @@ export class EditorGutter<T extends IGutterItemInfo = IGutterItemInfo> extends D
 		private readonly itemProvider: IGutterItemProvider<T>
 	) {
 		super();
-		this.scrollTop = observableFromEvent(this,
-			this._editor.onDidScrollChange,
-			(e) => /** @description editor.onDidScrollChange */ this._editor.getScrollTop()
+		this.scrollTop = observableFromEvent(this, this._editor.onDidScrollChange, e =>
+			/** @description editor.onDidScrollChange */ this._editor.getScrollTop()
 		);
-		this.isScrollTopZero = this.scrollTop.map((scrollTop) => /** @description isScrollTopZero */ scrollTop === 0);
-		this.modelAttached = observableFromEvent(this,
-			this._editor.onDidChangeModel,
-			(e) => /** @description editor.onDidChangeModel */ this._editor.hasModel()
+		this.isScrollTopZero = this.scrollTop.map(scrollTop => /** @description isScrollTopZero */ scrollTop === 0);
+		this.modelAttached = observableFromEvent(this, this._editor.onDidChangeModel, e =>
+			/** @description editor.onDidChangeModel */ this._editor.hasModel()
 		);
-		this.editorOnDidChangeViewZones = observableSignalFromEvent('onDidChangeViewZones', this._editor.onDidChangeViewZones);
-		this.editorOnDidContentSizeChange = observableSignalFromEvent('onDidContentSizeChange', this._editor.onDidContentSizeChange);
+		this.editorOnDidChangeViewZones = observableSignalFromEvent(
+			'onDidChangeViewZones',
+			this._editor.onDidChangeViewZones
+		);
+		this.editorOnDidContentSizeChange = observableSignalFromEvent(
+			'onDidContentSizeChange',
+			this._editor.onDidContentSizeChange
+		);
 		this.domNodeSizeChanged = observableSignal('domNodeSizeChanged');
 		this.views = new Map<string, ManagedGutterItemView>();
 		this._domNode.className = 'gutter monaco-editor';
 		const scrollDecoration = this._domNode.appendChild(
-			h('div.scroll-decoration', { role: 'presentation', ariaHidden: 'true', style: { width: '100%' } })
-				.root
+			h('div.scroll-decoration', { role: 'presentation', ariaHidden: 'true', style: { width: '100%' } }).root
 		);
 
 		const o = new ResizeObserver(() => {
@@ -52,10 +62,12 @@ export class EditorGutter<T extends IGutterItemInfo = IGutterItemInfo> extends D
 		o.observe(this._domNode);
 		this._register(toDisposable(() => o.disconnect()));
 
-		this._register(autorun(reader => {
-			/** @description update scroll decoration */
-			scrollDecoration.className = this.isScrollTopZero.read(reader) ? '' : 'scroll-decoration';
-		}));
+		this._register(
+			autorun(reader => {
+				/** @description update scroll decoration */
+				scrollDecoration.className = this.isScrollTopZero.read(reader) ? '' : 'scroll-decoration';
+			})
+		);
 
 		this._register(autorun(reader => /** @description EditorGutter.Render */ this.render(reader)));
 	}
@@ -90,10 +102,7 @@ export class EditorGutter<T extends IGutterItemInfo = IGutterItemInfo> extends D
 				visibleRange.endLineNumber - visibleRange.startLineNumber
 			).deltaEnd(1);
 
-			const gutterItems = this.itemProvider.getIntersectingGutterItems(
-				visibleRange2,
-				reader
-			);
+			const gutterItems = this.itemProvider.getIntersectingGutterItems(visibleRange2, reader);
 
 			for (const gutterItem of gutterItems) {
 				if (!gutterItem.range.intersectsOrTouches(visibleRange2)) {
@@ -105,10 +114,7 @@ export class EditorGutter<T extends IGutterItemInfo = IGutterItemInfo> extends D
 				if (!view) {
 					const viewDomNode = document.createElement('div');
 					this._domNode.appendChild(viewDomNode);
-					const itemView = this.itemProvider.createView(
-						gutterItem,
-						viewDomNode
-					);
+					const itemView = this.itemProvider.createView(gutterItem, viewDomNode);
 					view = new ManagedGutterItemView(itemView, viewDomNode);
 					this.views.set(gutterItem.id, view);
 				} else {
@@ -119,7 +125,8 @@ export class EditorGutter<T extends IGutterItemInfo = IGutterItemInfo> extends D
 					gutterItem.range.startLineNumber <= this._editor.getModel()!.getLineCount()
 						? this._editor.getTopForLineNumber(gutterItem.range.startLineNumber, true) - scrollTop
 						: this._editor.getBottomForLineNumber(gutterItem.range.startLineNumber - 1, false) - scrollTop;
-				const bottom = this._editor.getBottomForLineNumber(gutterItem.range.endLineNumberExclusive - 1, true) - scrollTop;
+				const bottom =
+					this._editor.getBottomForLineNumber(gutterItem.range.endLineNumberExclusive - 1, true) - scrollTop;
 
 				const height = bottom - top;
 
@@ -143,7 +150,7 @@ class ManagedGutterItemView {
 	constructor(
 		public readonly gutterItemView: IGutterItemView<any>,
 		public readonly domNode: HTMLDivElement
-	) { }
+	) {}
 }
 
 export interface IGutterItemProvider<TItem extends IGutterItemInfo> {

@@ -5,8 +5,17 @@
 
 import * as fs from 'fs';
 import { Registry } from '../../../../../platform/registry/common/platform.js';
-import { IColorRegistry, Extensions, ColorContribution, asCssVariableName } from '../../../../../platform/theme/common/colorRegistry.js';
-import { ISizeRegistry, Extensions as SizeExtensions, asCssVariableName as asSizeCssVariableName } from '../../../../../platform/theme/common/sizeUtils.js';
+import {
+	IColorRegistry,
+	Extensions,
+	ColorContribution,
+	asCssVariableName
+} from '../../../../../platform/theme/common/colorRegistry.js';
+import {
+	ISizeRegistry,
+	Extensions as SizeExtensions,
+	asCssVariableName as asSizeCssVariableName
+} from '../../../../../platform/theme/common/sizeUtils.js';
 import * as pfs from '../../../../../base/node/pfs.js';
 import * as path from '../../../../../base/common/path.js';
 import assert from 'assert';
@@ -27,11 +36,9 @@ interface DescriptionDiff {
 
 export const experimental: string[] = []; // 'settings.modifiedItemForeground', 'editorUnnecessary.foreground' ];
 
-
 const knwonVariablesFileName = 'vscode-known-variables.json';
 
 suite('Color Registry', function () {
-
 	test(`update colors in ${knwonVariablesFileName}`, async function () {
 		const varFilePath = FileAccess.asFileUri(`vs/../../build/lib/stylelint/${knwonVariablesFileName}`).fsPath;
 		const content = (await fs.promises.readFile(varFilePath)).toString();
@@ -70,7 +77,7 @@ suite('Color Registry', function () {
 			errorText += `\n\Removing the following colors:\n\n${superfluousKeys.join('\n')}\n`;
 		}
 
-		const sizesArray = variablesInfo.sizes as string[] || [];
+		const sizesArray = (variablesInfo.sizes as string[]) || [];
 		const sizes = new Set(sizesArray);
 		const updatedSizes = [];
 		const missingSizes = [];
@@ -119,7 +126,7 @@ suite('Color Registry', function () {
 		let m: RegExpExecArray | null;
 		const colorsInDoc: { [id: string]: ColorInfo } = Object.create(null);
 		let nColorsInDoc = 0;
-		while (m = expression.exec(content)) {
+		while ((m = expression.exec(content))) {
 			colorsInDoc[m[1]] = { description: m[2], offset: m.index, length: m.length };
 			nColorsInDoc++;
 		}
@@ -162,7 +169,6 @@ suite('Color Registry', function () {
 		const superfluousKeys = Object.keys(colorsInDoc);
 		const undocumentedKeys = Object.keys(missing).map(k => `\`${k}\`: ${missing[k]}`);
 
-
 		let errorText = '';
 		if (undocumentedKeys.length > 0) {
 			errorText += `\n\nAdd the following colors:\n\n${undocumentedKeys.join('\n')}\n`;
@@ -172,7 +178,9 @@ suite('Color Registry', function () {
 		}
 
 		if (errorText.length > 0) {
-			assert.fail(`\n\nOpen https://github.dev/microsoft/vscode-docs/blob/vnext/api/references/theme-color.md#50${errorText}`);
+			assert.fail(
+				`\n\nOpen https://github.dev/microsoft/vscode-docs/blob/vnext/api/references/theme-color.md#50${errorText}`
+			);
 		}
 	});
 });
@@ -191,7 +199,9 @@ async function getColorsFromExtension(): Promise<{ [id: string]: string }> {
 	const result: { [id: string]: string } = Object.create(null);
 	for (const folder of extFolders) {
 		try {
-			const packageJSON = JSON.parse((await fs.promises.readFile(path.join(extPath, folder, 'package.json'))).toString());
+			const packageJSON = JSON.parse(
+				(await fs.promises.readFile(path.join(extPath, folder, 'package.json'))).toString()
+			);
 			const contributes = packageJSON['contributes'];
 			if (contributes) {
 				const colors = contributes['colors'];
@@ -207,7 +217,6 @@ async function getColorsFromExtension(): Promise<{ [id: string]: string }> {
 		} catch (e) {
 			// ignore
 		}
-
 	}
 	return result;
 }

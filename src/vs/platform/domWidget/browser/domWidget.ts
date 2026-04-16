@@ -5,7 +5,14 @@
 
 import { isHotReloadEnabled } from '../../../base/common/hotReload.js';
 import { Disposable, DisposableStore, toDisposable } from '../../../base/common/lifecycle.js';
-import { ISettableObservable, IObservable, autorun, constObservable, derived, observableValue } from '../../../base/common/observable.js';
+import {
+	ISettableObservable,
+	IObservable,
+	autorun,
+	constObservable,
+	derived,
+	observableValue
+} from '../../../base/common/observable.js';
 import { IInstantiationService, GetLeadingNonServiceArgs } from '../../instantiation/common/instantiation.js';
 
 /**
@@ -13,12 +20,17 @@ import { IInstantiationService, GetLeadingNonServiceArgs } from '../../instantia
  * It is disposable and defines a single root element of type HTMLElement.
  * It also provides static helper methods to create and append widgets to the DOM,
  * with support for hot module replacement during development.
-*/
+ */
 export abstract class DomWidget extends Disposable {
 	/**
 	 * Appends the widget to the provided DOM element.
-	*/
-	public static createAppend<TArgs extends unknown[], T extends DomWidget>(this: DomWidgetCtor<TArgs, T>, dom: HTMLElement, store: DisposableStore, ...params: TArgs): void {
+	 */
+	public static createAppend<TArgs extends unknown[], T extends DomWidget>(
+		this: DomWidgetCtor<TArgs, T>,
+		dom: HTMLElement,
+		store: DisposableStore,
+		...params: TArgs
+	): void {
 		if (!isHotReloadEnabled()) {
 			const widget = new this(...params);
 			dom.appendChild(widget.element);
@@ -27,18 +39,24 @@ export abstract class DomWidget extends Disposable {
 		}
 
 		const observable = this.createObservable(store, ...params);
-		store.add(autorun((reader) => {
-			const widget = observable.read(reader);
-			dom.appendChild(widget.element);
-			reader.store.add(toDisposable(() => widget.element.remove()));
-			reader.store.add(widget);
-		}));
+		store.add(
+			autorun(reader => {
+				const widget = observable.read(reader);
+				dom.appendChild(widget.element);
+				reader.store.add(toDisposable(() => widget.element.remove()));
+				reader.store.add(widget);
+			})
+		);
 	}
 
 	/**
 	 * Creates the widget in a new div element with "display: contents".
-	*/
-	public static createInContents<TArgs extends unknown[], T extends DomWidget>(this: DomWidgetCtor<TArgs, T>, store: DisposableStore, ...params: TArgs): HTMLDivElement {
+	 */
+	public static createInContents<TArgs extends unknown[], T extends DomWidget>(
+		this: DomWidgetCtor<TArgs, T>,
+		store: DisposableStore,
+		...params: TArgs
+	): HTMLDivElement {
 		const div = document.createElement('div');
 		div.style.display = 'contents';
 		this.createAppend(div, store, ...params);
@@ -48,8 +66,12 @@ export abstract class DomWidget extends Disposable {
 	/**
 	 * Creates an observable instance of the widget.
 	 * The observable will change when hot module replacement occurs.
-	*/
-	public static createObservable<TArgs extends unknown[], T extends DomWidget>(this: DomWidgetCtor<TArgs, T>, store: DisposableStore, ...params: TArgs): IObservable<T> {
+	 */
+	public static createObservable<TArgs extends unknown[], T extends DomWidget>(
+		this: DomWidgetCtor<TArgs, T>,
+		store: DisposableStore,
+		...params: TArgs
+	): IObservable<T> {
 		if (!isHotReloadEnabled()) {
 			return constObservable(new this(...params));
 		}
@@ -69,8 +91,14 @@ export abstract class DomWidget extends Disposable {
 
 	/**
 	 * Appends the widget to the provided DOM element.
-	*/
-	public static instantiateAppend<TArgs extends unknown[], T extends DomWidget>(this: DomWidgetCtor<TArgs, T>, instantiationService: IInstantiationService, dom: HTMLElement, store: DisposableStore, ...params: GetLeadingNonServiceArgs<TArgs>): void {
+	 */
+	public static instantiateAppend<TArgs extends unknown[], T extends DomWidget>(
+		this: DomWidgetCtor<TArgs, T>,
+		instantiationService: IInstantiationService,
+		dom: HTMLElement,
+		store: DisposableStore,
+		...params: GetLeadingNonServiceArgs<TArgs>
+	): void {
 		if (!isHotReloadEnabled()) {
 			const widget = instantiationService.createInstance(this as unknown as new (...args: unknown[]) => T, ...params);
 			dom.appendChild(widget.element);
@@ -80,24 +108,31 @@ export abstract class DomWidget extends Disposable {
 
 		const observable = this.instantiateObservable(instantiationService, store, ...params);
 		let lastWidget: DomWidget | undefined = undefined;
-		store.add(autorun((reader) => {
-			const widget = observable.read(reader);
-			if (lastWidget) {
-				lastWidget.element.replaceWith(widget.element);
-			} else {
-				dom.appendChild(widget.element);
-			}
-			lastWidget = widget;
+		store.add(
+			autorun(reader => {
+				const widget = observable.read(reader);
+				if (lastWidget) {
+					lastWidget.element.replaceWith(widget.element);
+				} else {
+					dom.appendChild(widget.element);
+				}
+				lastWidget = widget;
 
-			reader.delayedStore.add(widget);
-		}));
+				reader.delayedStore.add(widget);
+			})
+		);
 	}
 
 	/**
 	 * Creates the widget in a new div element with "display: contents".
 	 * If possible, prefer `instantiateAppend`, as it avoids an extra div in the DOM.
-	*/
-	public static instantiateInContents<TArgs extends unknown[], T extends DomWidget>(this: DomWidgetCtor<TArgs, T>, instantiationService: IInstantiationService, store: DisposableStore, ...params: GetLeadingNonServiceArgs<TArgs>): HTMLDivElement {
+	 */
+	public static instantiateInContents<TArgs extends unknown[], T extends DomWidget>(
+		this: DomWidgetCtor<TArgs, T>,
+		instantiationService: IInstantiationService,
+		store: DisposableStore,
+		...params: GetLeadingNonServiceArgs<TArgs>
+	): HTMLDivElement {
 		const div = document.createElement('div');
 		div.style.display = 'contents';
 		this.instantiateAppend(instantiationService, div, store, ...params);
@@ -107,17 +142,26 @@ export abstract class DomWidget extends Disposable {
 	/**
 	 * Creates an observable instance of the widget.
 	 * The observable will change when hot module replacement occurs.
-	*/
-	public static instantiateObservable<TArgs extends unknown[], T extends DomWidget>(this: DomWidgetCtor<TArgs, T>, instantiationService: IInstantiationService, store: DisposableStore, ...params: GetLeadingNonServiceArgs<TArgs>): IObservable<T> {
+	 */
+	public static instantiateObservable<TArgs extends unknown[], T extends DomWidget>(
+		this: DomWidgetCtor<TArgs, T>,
+		instantiationService: IInstantiationService,
+		store: DisposableStore,
+		...params: GetLeadingNonServiceArgs<TArgs>
+	): IObservable<T> {
 		if (!isHotReloadEnabled()) {
-			return constObservable(instantiationService.createInstance(this as unknown as new (...args: unknown[]) => T, ...params));
+			return constObservable(
+				instantiationService.createInstance(this as unknown as new (...args: unknown[]) => T, ...params)
+			);
 		}
 
 		const id = (this as unknown as HotReloadable)[_hotReloadId];
 		const observable = id ? hotReloadedWidgets.get(id) : undefined;
 
 		if (!observable) {
-			return constObservable(instantiationService.createInstance(this as unknown as new (...args: unknown[]) => T, ...params));
+			return constObservable(
+				instantiationService.createInstance(this as unknown as new (...args: unknown[]) => T, ...params)
+			);
 		}
 
 		return derived(reader => {
@@ -128,7 +172,7 @@ export abstract class DomWidget extends Disposable {
 
 	/**
 	 * @deprecated Do not call manually! Only for use by the hot reload system (a vite plugin will inject calls to this method in dev mode).
-	*/
+	 */
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	public static registerWidgetHotReplacement(this: new (...args: any[]) => DomWidget, id: string): void {
 		if (!isHotReloadEnabled()) {
@@ -157,10 +201,19 @@ interface HotReloadable {
 }
 
 type DomWidgetCtor<TArgs extends unknown[], T extends DomWidget> = {
-	new(...args: TArgs): T;
+	new (...args: TArgs): T;
 
 	createObservable(store: DisposableStore, ...params: TArgs): IObservable<T>;
-	instantiateObservable(instantiationService: IInstantiationService, store: DisposableStore, ...params: GetLeadingNonServiceArgs<TArgs>): IObservable<T>;
+	instantiateObservable(
+		instantiationService: IInstantiationService,
+		store: DisposableStore,
+		...params: GetLeadingNonServiceArgs<TArgs>
+	): IObservable<T>;
 	createAppend(dom: HTMLElement, store: DisposableStore, ...params: TArgs): void;
-	instantiateAppend(instantiationService: IInstantiationService, dom: HTMLElement, store: DisposableStore, ...params: GetLeadingNonServiceArgs<TArgs>): void;
+	instantiateAppend(
+		instantiationService: IInstantiationService,
+		dom: HTMLElement,
+		store: DisposableStore,
+		...params: GetLeadingNonServiceArgs<TArgs>
+	): void;
 };

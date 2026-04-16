@@ -13,7 +13,6 @@ import { ITerminalChatService, ITerminalService } from './terminal.js';
 import * as dom from '../../../../base/browser/dom.js';
 
 export class TerminalTabsChatEntry extends Disposable {
-
 	private readonly _entry: HTMLElement;
 	private readonly _label: HTMLElement;
 	private readonly _deleteButton: HTMLElement;
@@ -30,7 +29,7 @@ export class TerminalTabsChatEntry extends Disposable {
 		private readonly _tabContainer: HTMLElement,
 		@ICommandService private readonly _commandService: ICommandService,
 		@ITerminalChatService private readonly _terminalChatService: ITerminalChatService,
-		@ITerminalService private readonly _terminalService: ITerminalService,
+		@ITerminalService private readonly _terminalService: ITerminalService
 	) {
 		super();
 
@@ -48,42 +47,56 @@ export class TerminalTabsChatEntry extends Disposable {
 		this._deleteButton.classList.add(...ThemeIcon.asClassNameArray(Codicon.trashcan));
 		this._deleteButton.tabIndex = 0;
 		this._deleteButton.setAttribute('role', 'button');
-		this._deleteButton.setAttribute('aria-label', localize('terminal.tabs.chatEntryDeleteAriaLabel', "Kill all hidden chat terminals"));
-		this._deleteButton.setAttribute('title', localize('terminal.tabs.chatEntryDeleteTooltip', "Kill all hidden chat terminals"));
+		this._deleteButton.setAttribute(
+			'aria-label',
+			localize('terminal.tabs.chatEntryDeleteAriaLabel', 'Kill all hidden chat terminals')
+		);
+		this._deleteButton.setAttribute(
+			'title',
+			localize('terminal.tabs.chatEntryDeleteTooltip', 'Kill all hidden chat terminals')
+		);
 
 		const runChatTerminalsCommand = () => {
 			void this._commandService.executeCommand('workbench.action.terminal.chat.viewHiddenChatTerminals');
 		};
-		this._register(dom.addDisposableListener(this._entry, dom.EventType.CLICK, e => {
-			// Don't trigger if clicking on the delete button
-			if (e.target === this._deleteButton || this._deleteButton.contains(e.target as Node)) {
-				return;
-			}
-			e.preventDefault();
-			runChatTerminalsCommand();
-		}));
-		this._register(dom.addDisposableListener(this._entry, dom.EventType.KEY_DOWN, e => {
-			if (e.key === 'Enter' || e.key === ' ') {
+		this._register(
+			dom.addDisposableListener(this._entry, dom.EventType.CLICK, e => {
+				// Don't trigger if clicking on the delete button
+				if (e.target === this._deleteButton || this._deleteButton.contains(e.target as Node)) {
+					return;
+				}
 				e.preventDefault();
 				runChatTerminalsCommand();
-			}
-		}));
+			})
+		);
+		this._register(
+			dom.addDisposableListener(this._entry, dom.EventType.KEY_DOWN, e => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					runChatTerminalsCommand();
+				}
+			})
+		);
 
 		// Delete button click handler
-		this._register(dom.addDisposableListener(this._deleteButton, dom.EventType.CLICK, async (e) => {
-			e.preventDefault();
-			e.stopPropagation();
-			await this._deleteAllHiddenTerminals();
-		}));
-
-		// Delete button keyboard handler
-		this._register(dom.addDisposableListener(this._deleteButton, dom.EventType.KEY_DOWN, async (e) => {
-			if (e.key === 'Enter' || e.key === ' ') {
+		this._register(
+			dom.addDisposableListener(this._deleteButton, dom.EventType.CLICK, async e => {
 				e.preventDefault();
 				e.stopPropagation();
 				await this._deleteAllHiddenTerminals();
-			}
-		}));
+			})
+		);
+
+		// Delete button keyboard handler
+		this._register(
+			dom.addDisposableListener(this._deleteButton, dom.EventType.KEY_DOWN, async e => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					e.stopPropagation();
+					await this._deleteAllHiddenTerminals();
+				}
+			})
+		);
 
 		this.update();
 	}
@@ -109,20 +122,22 @@ export class TerminalTabsChatEntry extends Disposable {
 		}
 
 		this._entry.style.display = '';
-		const tooltip = localize('terminal.tabs.chatEntryTooltip', "Show hidden chat terminals");
+		const tooltip = localize('terminal.tabs.chatEntryTooltip', 'Show hidden chat terminals');
 		this._entry.setAttribute('title', tooltip);
 		const hasText = this._tabContainer.classList.contains('has-text');
 		if (hasText) {
-			this._label.textContent = hiddenChatTerminalCount === 1
-				? localize('terminal.tabs.chatEntryLabelSingle', "{0} Hidden Terminal", hiddenChatTerminalCount)
-				: localize('terminal.tabs.chatEntryLabelPlural', "{0} Hidden Terminals", hiddenChatTerminalCount);
+			this._label.textContent =
+				hiddenChatTerminalCount === 1
+					? localize('terminal.tabs.chatEntryLabelSingle', '{0} Hidden Terminal', hiddenChatTerminalCount)
+					: localize('terminal.tabs.chatEntryLabelPlural', '{0} Hidden Terminals', hiddenChatTerminalCount);
 		} else {
 			this._label.textContent = `${hiddenChatTerminalCount}`;
 		}
 
-		const ariaLabel = hiddenChatTerminalCount === 1
-			? localize('terminal.tabs.chatEntryAriaLabelSingle', "Show 1 hidden chat terminal")
-			: localize('terminal.tabs.chatEntryAriaLabelPlural', "Show {0} hidden chat terminals", hiddenChatTerminalCount);
+		const ariaLabel =
+			hiddenChatTerminalCount === 1
+				? localize('terminal.tabs.chatEntryAriaLabelSingle', 'Show 1 hidden chat terminal')
+				: localize('terminal.tabs.chatEntryAriaLabelPlural', 'Show {0} hidden chat terminals', hiddenChatTerminalCount);
 		this._entry.setAttribute('aria-label', ariaLabel);
 	}
 }

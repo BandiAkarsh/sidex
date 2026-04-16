@@ -8,7 +8,10 @@ import { Event } from '../../../../../base/common/event.js';
 import { Schemas } from '../../../../../base/common/network.js';
 import { URI } from '../../../../../base/common/uri.js';
 import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../../../base/test/common/utils.js';
-import { IConfigurationService, type IConfigurationChangeEvent } from '../../../../../platform/configuration/common/configuration.js';
+import {
+	IConfigurationService,
+	type IConfigurationChangeEvent
+} from '../../../../../platform/configuration/common/configuration.js';
 import { TestConfigurationService } from '../../../../../platform/configuration/test/common/testConfigurationService.js';
 import { ITerminalChildProcess, type ITerminalBackend } from '../../../../../platform/terminal/common/terminal.js';
 import { ITerminalInstanceService, ITerminalService } from '../../browser/terminal.js';
@@ -17,11 +20,10 @@ import { workbenchInstantiationService } from '../../../../test/browser/workbenc
 
 class TestTerminalChildProcess implements ITerminalChildProcess {
 	id: number = 0;
-	get capabilities() { return []; }
-	constructor(
-		readonly shouldPersist: boolean
-	) {
+	get capabilities() {
+		return [];
 	}
+	constructor(readonly shouldPersist: boolean) {}
 	updateProperty(property: any, value: any): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
@@ -36,18 +38,26 @@ class TestTerminalChildProcess implements ITerminalChildProcess {
 	onProcessReady = Event.None;
 	onProcessTitleChanged = Event.None;
 	onProcessShellTypeChanged = Event.None;
-	async start(): Promise<undefined> { return undefined; }
-	shutdown(immediate: boolean): void { }
-	input(data: string): void { }
-	sendSignal(signal: string): void { }
-	resize(cols: number, rows: number): void { }
-	clearBuffer(): void { }
-	acknowledgeDataEvent(charCount: number): void { }
-	async setUnicodeVersion(version: '6' | '11'): Promise<void> { }
-	async getInitialCwd(): Promise<string> { return ''; }
-	async getCwd(): Promise<string> { return ''; }
-	async processBinary(data: string): Promise<void> { }
-	refreshProperty(property: any): Promise<any> { return Promise.resolve(''); }
+	async start(): Promise<undefined> {
+		return undefined;
+	}
+	shutdown(immediate: boolean): void {}
+	input(data: string): void {}
+	sendSignal(signal: string): void {}
+	resize(cols: number, rows: number): void {}
+	clearBuffer(): void {}
+	acknowledgeDataEvent(charCount: number): void {}
+	async setUnicodeVersion(version: '6' | '11'): Promise<void> {}
+	async getInitialCwd(): Promise<string> {
+		return '';
+	}
+	async getCwd(): Promise<string> {
+		return '';
+	}
+	async processBinary(data: string): Promise<void> {}
+	refreshProperty(property: any): Promise<any> {
+		return Promise.resolve('');
+	}
 }
 
 class TestTerminalInstanceService implements Partial<ITerminalInstanceService> {
@@ -94,26 +104,32 @@ suite('Workbench - TerminalProcessManager', () => {
 			}
 		});
 		configurationService.onDidChangeConfigurationEmitter.fire({
-			affectsConfiguration: () => true,
+			affectsConfiguration: () => true
 		} satisfies Partial<IConfigurationChangeEvent> as unknown as IConfigurationChangeEvent);
 		instantiationService.stub(ITerminalInstanceService, new TestTerminalInstanceService());
-		instantiationService.stub(ITerminalService, { setNextCommandId: async () => { } } as Partial<ITerminalService>);
+		instantiationService.stub(ITerminalService, { setNextCommandId: async () => {} } as Partial<ITerminalService>);
 
-		manager = store.add(instantiationService.createInstance(TerminalProcessManager, 1, undefined, undefined, undefined));
+		manager = store.add(
+			instantiationService.createInstance(TerminalProcessManager, 1, undefined, undefined, undefined)
+		);
 	});
 
 	suite('process persistence', () => {
 		suite('local', () => {
 			test('regular terminal should persist', async () => {
-				const p = await manager.createProcess({
-				}, 1, 1, false);
+				const p = await manager.createProcess({}, 1, 1, false);
 				strictEqual(p, undefined);
 				strictEqual(manager.shouldPersist, true);
 			});
 			test('task terminal should not persist', async () => {
-				const p = await manager.createProcess({
-					isFeatureTerminal: true
-				}, 1, 1, false);
+				const p = await manager.createProcess(
+					{
+						isFeatureTerminal: true
+					},
+					1,
+					1,
+					false
+				);
 				strictEqual(p, undefined);
 				strictEqual(manager.shouldPersist, false);
 			});
@@ -125,17 +141,27 @@ suite('Workbench - TerminalProcessManager', () => {
 			});
 
 			test('regular terminal should persist', async () => {
-				const p = await manager.createProcess({
-					cwd: remoteCwd
-				}, 1, 1, false);
+				const p = await manager.createProcess(
+					{
+						cwd: remoteCwd
+					},
+					1,
+					1,
+					false
+				);
 				strictEqual(p, undefined);
 				strictEqual(manager.shouldPersist, true);
 			});
 			test('task terminal should not persist', async () => {
-				const p = await manager.createProcess({
-					isFeatureTerminal: true,
-					cwd: remoteCwd
-				}, 1, 1, false);
+				const p = await manager.createProcess(
+					{
+						isFeatureTerminal: true,
+						cwd: remoteCwd
+					},
+					1,
+					1,
+					false
+				);
 				strictEqual(p, undefined);
 				strictEqual(manager.shouldPersist, false);
 			});

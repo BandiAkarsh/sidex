@@ -6,7 +6,12 @@
 import { URI } from '../../../../base/common/uri.js';
 import { ITextModelService, ITextModelContentProvider } from '../../../../editor/common/services/resolverService.js';
 import { IModelService } from '../../../../editor/common/services/model.js';
-import { ITextModel, DefaultEndOfLine, EndOfLinePreference, ITextBufferFactory } from '../../../../editor/common/model.js';
+import {
+	ITextModel,
+	DefaultEndOfLine,
+	EndOfLinePreference,
+	ITextBufferFactory
+} from '../../../../editor/common/model.js';
 import { ILanguageService } from '../../../../editor/common/languages/language.js';
 import { IWorkbenchContribution } from '../../../common/contributions.js';
 import * as marked from '../../../../base/common/marked/marked.js';
@@ -21,7 +26,6 @@ interface IWalkThroughContentProvider {
 }
 
 class WalkThroughContentProviderRegistry {
-
 	private readonly providers = new Map<string, IWalkThroughContentProvider>();
 
 	registerProvider(moduleId: string, provider: IWalkThroughContentProvider): void {
@@ -53,7 +57,6 @@ export async function moduleToContent(instantiationService: IInstantiationServic
 }
 
 export class WalkThroughSnippetContentProvider implements ITextModelContentProvider, IWorkbenchContribution {
-
 	static readonly ID = 'workbench.contrib.walkThroughSnippetContentProvider';
 
 	private loads = new Map<string, Promise<ITextBufferFactory>>();
@@ -62,7 +65,7 @@ export class WalkThroughSnippetContentProvider implements ITextModelContentProvi
 		@ITextModelService private readonly textModelResolverService: ITextModelService,
 		@ILanguageService private readonly languageService: ILanguageService,
 		@IModelService private readonly modelService: IModelService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService private readonly instantiationService: IInstantiationService
 	) {
 		this.textModelResolverService.registerTextModelContentProvider(Schemas.walkThroughSnippet, this);
 	}
@@ -90,8 +93,14 @@ export class WalkThroughSnippetContentProvider implements ITextModelContentProvi
 				const languageId = typeof lang === 'string' ? this.languageService.getLanguageIdByLanguageName(lang) || '' : '';
 				const languageSelection = this.languageService.createById(languageId);
 				// Create all models for this resource in one go... we'll need them all and we don't want to re-parse markdown each time
-				const model = this.modelService.createModel(text, languageSelection, resource.with({ fragment: `${i}.${lang}` }));
-				if (i === j) { codeEditorModel = model; }
+				const model = this.modelService.createModel(
+					text,
+					languageSelection,
+					resource.with({ fragment: `${i}.${lang}` })
+				);
+				if (i === j) {
+					codeEditorModel = model;
+				}
 				return '';
 			};
 			const textBuffer = factory.create(DefaultEndOfLine.LF).textBuffer;

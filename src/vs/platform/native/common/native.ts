@@ -6,14 +6,31 @@
 import { VSBuffer } from '../../../base/common/buffer.js';
 import { Event } from '../../../base/common/event.js';
 import { URI } from '../../../base/common/uri.js';
-import { MessageBoxOptions, MessageBoxReturnValue, OpenDevToolsOptions, OpenDialogOptions, OpenDialogReturnValue, SaveDialogOptions, SaveDialogReturnValue } from '../../../base/parts/sandbox/common/electronTypes.js';
+import {
+	MessageBoxOptions,
+	MessageBoxReturnValue,
+	OpenDevToolsOptions,
+	OpenDialogOptions,
+	OpenDialogReturnValue,
+	SaveDialogOptions,
+	SaveDialogReturnValue
+} from '../../../base/parts/sandbox/common/electronTypes.js';
 import { ISerializableCommandAction } from '../../action/common/action.js';
 import { INativeOpenDialogOptions } from '../../dialogs/common/dialogs.js';
 import { createDecorator } from '../../instantiation/common/instantiation.js';
 import { IV8Profile } from '../../profiling/common/profiling.js';
 import { AuthInfo, Credentials } from '../../request/common/request.js';
 import { IPartsSplash } from '../../theme/common/themeService.js';
-import { IColorScheme, IOpenedAuxiliaryWindow, IOpenedMainWindow, IOpenEmptyWindowOptions, IOpenWindowOptions, IPoint, IRectangle, IWindowOpenable } from '../../window/common/window.js';
+import {
+	IColorScheme,
+	IOpenedAuxiliaryWindow,
+	IOpenedMainWindow,
+	IOpenEmptyWindowOptions,
+	IOpenWindowOptions,
+	IPoint,
+	IRectangle,
+	IWindowOpenable
+} from '../../window/common/window.js';
 
 export interface IToastOptions {
 	readonly id: string;
@@ -57,7 +74,6 @@ export interface INativeHostOptions {
 }
 
 export const enum FocusMode {
-
 	/**
 	 * (Default) Transfer focus to the target window
 	 * when the editor is focused.
@@ -75,11 +91,10 @@ export const enum FocusMode {
 	 * Force the window to be focused, even if the editor
 	 * is not currently focused.
 	 */
-	Force,
+	Force
 }
 
 export interface ICommonNativeHostService {
-
 	readonly _serviceBrand: undefined;
 
 	// Properties
@@ -116,7 +131,11 @@ export interface ICommonNativeHostService {
 
 	readonly onDidChangePassword: Event<{ readonly service: string; readonly account: string }>;
 
-	readonly onDidTriggerWindowSystemContextMenu: Event<{ readonly windowId: number; readonly x: number; readonly y: number }>;
+	readonly onDidTriggerWindowSystemContextMenu: Event<{
+		readonly windowId: number;
+		readonly x: number;
+		readonly y: number;
+	}>;
 
 	// Window
 	getWindows(options: { includeAuxiliaryWindows: true }): Promise<Array<IOpenedMainWindow | IOpenedAuxiliaryWindow>>;
@@ -147,7 +166,14 @@ export interface ICommonNativeHostService {
 	toggleWindowAlwaysOnTop(options?: INativeHostOptions): Promise<void>;
 	setWindowAlwaysOnTop(alwaysOnTop: boolean, options?: INativeHostOptions): Promise<void>;
 
-	updateWindowControls(options: INativeHostOptions & { height?: number; backgroundColor?: string; foregroundColor?: string; dimmed?: boolean }): Promise<void>;
+	updateWindowControls(
+		options: INativeHostOptions & {
+			height?: number;
+			backgroundColor?: string;
+			foregroundColor?: string;
+			dimmed?: boolean;
+		}
+	): Promise<void>;
 
 	updateWindowAccentColor(color: 'default' | 'off' | string, inactiveColor: string | undefined): Promise<void>;
 
@@ -252,7 +278,11 @@ export interface ICommonNativeHostService {
 	findFreePort(startPort: number, giveUpAfter: number, timeout: number, stride?: number): Promise<number>;
 
 	// Registry (Windows only)
-	windowsGetStringRegKey(hive: 'HKEY_CURRENT_USER' | 'HKEY_LOCAL_MACHINE' | 'HKEY_CLASSES_ROOT' | 'HKEY_USERS' | 'HKEY_CURRENT_CONFIG', path: string, name: string): Promise<string | undefined>;
+	windowsGetStringRegKey(
+		hive: 'HKEY_CURRENT_USER' | 'HKEY_LOCAL_MACHINE' | 'HKEY_CLASSES_ROOT' | 'HKEY_USERS' | 'HKEY_CURRENT_CONFIG',
+		path: string,
+		name: string
+	): Promise<string | undefined>;
 
 	// Toast Notifications
 	showToast(options: IToastOptions): Promise<IToastResult>;
@@ -302,4 +332,4 @@ export const INativeHostService = createDecorator<INativeHostService>('nativeHos
  * @see {@link IHostService} for methods that can be used in native and web
  * hosts.
  */
-export interface INativeHostService extends ICommonNativeHostService { }
+export interface INativeHostService extends ICommonNativeHostService {}

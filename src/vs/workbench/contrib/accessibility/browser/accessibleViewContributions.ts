@@ -6,7 +6,12 @@
 import { Disposable } from '../../../../base/common/lifecycle.js';
 import { accessibleViewIsShown } from './accessibilityConfiguration.js';
 import { AccessibilityHelpAction, AccessibleViewAction } from './accessibleViewActions.js';
-import { AccessibleViewType, AccessibleContentProvider, ExtensionContentProvider, IAccessibleViewService } from '../../../../platform/accessibility/browser/accessibleView.js';
+import {
+	AccessibleViewType,
+	AccessibleContentProvider,
+	ExtensionContentProvider,
+	IAccessibleViewService
+} from '../../../../platform/accessibility/browser/accessibleView.js';
 import { AccessibleViewRegistry } from '../../../../platform/accessibility/browser/accessibleViewRegistry.js';
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 
@@ -14,10 +19,17 @@ export class AccesibleViewHelpContribution extends Disposable {
 	static ID: 'accesibleViewHelpContribution';
 	constructor() {
 		super();
-		this._register(AccessibilityHelpAction.addImplementation(115, 'accessible-view-help', accessor => {
-			accessor.get(IAccessibleViewService).showAccessibleViewHelp();
-			return true;
-		}, accessibleViewIsShown));
+		this._register(
+			AccessibilityHelpAction.addImplementation(
+				115,
+				'accessible-view-help',
+				accessor => {
+					accessor.get(IAccessibleViewService).showAccessibleViewHelp();
+					return true;
+				},
+				accessibleViewIsShown
+			)
+		);
 	}
 }
 

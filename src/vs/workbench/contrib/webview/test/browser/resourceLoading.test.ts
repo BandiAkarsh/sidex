@@ -23,7 +23,10 @@ suite('Webview Resource Loading - getResourceToLoad', () => {
 		const instantiationService = disposableStore.add(new TestInstantiationService());
 		instantiationService.stub(ILogService, NullLogService);
 		const fileService = disposableStore.add(new FileService(instantiationService.get(ILogService)));
-		uriIdentityService = instantiationService.stub(IUriIdentityService, disposableStore.add(new UriIdentityService(fileService)));
+		uriIdentityService = instantiationService.stub(
+			IUriIdentityService,
+			disposableStore.add(new UriIdentityService(fileService))
+		);
 	});
 
 	test('Returns resource when file is under root', () => {
@@ -114,14 +117,22 @@ suite('Webview Resource Loading - getResourceToLoad', () => {
 	suite('Different authorities', () => {
 		test('Returns resource when authorities match', () => {
 			const root = URI.from({ scheme: 'test-scheme', authority: 'ssh-remote+myserver', path: '/home/user/project' });
-			const resource = URI.from({ scheme: 'test-scheme', authority: 'ssh-remote+myserver', path: '/home/user/project/file.txt' });
+			const resource = URI.from({
+				scheme: 'test-scheme',
+				authority: 'ssh-remote+myserver',
+				path: '/home/user/project/file.txt'
+			});
 			const result = getResourceToLoad(resource, [root], uriIdentityService);
 			assert.ok(result);
 		});
 
 		test('Fails when authorities differ', () => {
 			const root = URI.from({ scheme: 'test-scheme', authority: 'ssh-remote+server1', path: '/home/user/project' });
-			const resource = URI.from({ scheme: 'test-scheme', authority: 'ssh-remote+server2', path: '/home/user/project/file.txt' });
+			const resource = URI.from({
+				scheme: 'test-scheme',
+				authority: 'ssh-remote+server2',
+				path: '/home/user/project/file.txt'
+			});
 			const result = getResourceToLoad(resource, [root], uriIdentityService);
 			assert.strictEqual(result, undefined);
 		});
@@ -203,31 +214,21 @@ suite('Webview Resource Loading - getResourceToLoad', () => {
 
 	suite('Multiple roots', () => {
 		test('Returns resource when file is under one of multiple roots', () => {
-			const roots = [
-				URI.file('/home/user/project1'),
-				URI.file('/home/user/project2'),
-				URI.file('/home/user/project3')
-			];
+			const roots = [URI.file('/home/user/project1'), URI.file('/home/user/project2'), URI.file('/home/user/project3')];
 			const resource = URI.file('/home/user/project2/file.txt');
 			const result = getResourceToLoad(resource, roots, uriIdentityService);
 			assert.strictEqual(result?.toString(), resource.toString());
 		});
 
 		test('Fails when file is not under any root', () => {
-			const roots = [
-				URI.file('/home/user/project1'),
-				URI.file('/home/user/project2')
-			];
+			const roots = [URI.file('/home/user/project1'), URI.file('/home/user/project2')];
 			const resource = URI.file('/home/user/other/file.txt');
 			const result = getResourceToLoad(resource, roots, uriIdentityService);
 			assert.strictEqual(result, undefined);
 		});
 
 		test('Returns resource matching first valid root', () => {
-			const roots = [
-				URI.file('/home/user/project'),
-				URI.file('/home/user/project/subdir')
-			];
+			const roots = [URI.file('/home/user/project'), URI.file('/home/user/project/subdir')];
 			const resource = URI.file('/home/user/project/subdir/file.txt');
 			const result = getResourceToLoad(resource, roots, uriIdentityService);
 			// Should match first root in the list

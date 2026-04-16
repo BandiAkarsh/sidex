@@ -16,7 +16,8 @@ import { ITextEditorSelection } from '../../../../../platform/editor/common/edit
 import type { IHoverAction } from '../../../../../base/browser/ui/hover/hover.js';
 import type { MaybePromise } from '../../../../../base/common/async.js';
 
-export const ITerminalLinkProviderService = createDecorator<ITerminalLinkProviderService>('terminalLinkProviderService');
+export const ITerminalLinkProviderService =
+	createDecorator<ITerminalLinkProviderService>('terminalLinkProviderService');
 export interface ITerminalLinkProviderService {
 	readonly _serviceBrand: undefined;
 
@@ -30,7 +31,13 @@ export interface ITerminalLinkProviderService {
 }
 
 export interface ITerminalLinkResolver {
-	resolveLink(processManager: Pick<ITerminalProcessManager, 'initialCwd' | 'os' | 'remoteAuthority' | 'userHome'> & { backend?: Pick<ITerminalBackend, 'getWslPath'> }, link: string, uri?: URI): Promise<ResolvedLink>;
+	resolveLink(
+		processManager: Pick<ITerminalProcessManager, 'initialCwd' | 'os' | 'remoteAuthority' | 'userHome'> & {
+			backend?: Pick<ITerminalBackend, 'getWslPath'>;
+		},
+		link: string,
+		uri?: URI
+	): Promise<ResolvedLink>;
 }
 
 /**

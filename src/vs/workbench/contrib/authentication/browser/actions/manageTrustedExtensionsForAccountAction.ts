@@ -12,9 +12,16 @@ import { Action2 } from '../../../../../platform/actions/common/actions.js';
 import { ICommandService } from '../../../../../platform/commands/common/commands.js';
 import { IDialogService } from '../../../../../platform/dialogs/common/dialogs.js';
 import { IInstantiationService, ServicesAccessor } from '../../../../../platform/instantiation/common/instantiation.js';
-import { IQuickInputService, IQuickPickItem, IQuickPickSeparator } from '../../../../../platform/quickinput/common/quickInput.js';
+import {
+	IQuickInputService,
+	IQuickPickItem,
+	IQuickPickSeparator
+} from '../../../../../platform/quickinput/common/quickInput.js';
 import { AllowedExtension, IAuthenticationService } from '../../../../services/authentication/common/authentication.js';
-import { IAuthenticationQueryService, IAccountQuery } from '../../../../services/authentication/common/authenticationQuery.js';
+import {
+	IAuthenticationQueryService,
+	IAccountQuery
+} from '../../../../services/authentication/common/authenticationQuery.js';
 import { IExtensionService } from '../../../../services/extensions/common/extensions.js';
 import { IExtensionsWorkbenchService } from '../../../extensions/common/extensions.js';
 
@@ -22,8 +29,8 @@ export class ManageTrustedExtensionsForAccountAction extends Action2 {
 	constructor() {
 		super({
 			id: '_manageTrustedExtensionsForAccount',
-			title: localize2('manageTrustedExtensionsForAccount', "Manage Trusted Extensions For Account"),
-			category: localize2('accounts', "Accounts"),
+			title: localize2('manageTrustedExtensionsForAccount', 'Manage Trusted Extensions For Account'),
+			category: localize2('accounts', 'Accounts'),
 			f1: true
 		});
 	}
@@ -41,13 +48,13 @@ interface TrustedExtensionsQuickPickItem extends IQuickPickItem {
 
 class ManageTrustedExtensionsForAccountActionImpl {
 	private readonly _viewDetailsButton = {
-		tooltip: localize('viewExtensionDetails', "View extension details"),
-		iconClass: ThemeIcon.asClassName(Codicon.info),
+		tooltip: localize('viewExtensionDetails', 'View extension details'),
+		iconClass: ThemeIcon.asClassName(Codicon.info)
 	};
 
 	private readonly _managePreferencesButton = {
-		tooltip: localize('accountPreferences', "Manage account preferences for this extension"),
-		iconClass: ThemeIcon.asClassName(Codicon.settingsGear),
+		tooltip: localize('accountPreferences', 'Manage account preferences for this extension'),
+		iconClass: ThemeIcon.asClassName(Codicon.settingsGear)
 	};
 
 	constructor(
@@ -58,7 +65,7 @@ class ManageTrustedExtensionsForAccountActionImpl {
 		@IAuthenticationQueryService private readonly _authenticationQueryService: IAuthenticationQueryService,
 		@ICommandService private readonly _commandService: ICommandService,
 		@IExtensionsWorkbenchService private readonly _extensionsWorkbenchService: IExtensionsWorkbenchService
-	) { }
+	) {}
 
 	async run(options?: { providerId: string; accountLabel: string }) {
 		const accountQuery = await this._resolveAccountQuery(options?.providerId, options?.accountLabel);
@@ -72,21 +79,26 @@ class ManageTrustedExtensionsForAccountActionImpl {
 		}
 		const picker = this._createQuickPick(accountQuery);
 		picker.items = items;
-		picker.selectedItems = items.filter((i): i is TrustedExtensionsQuickPickItem => i.type !== 'separator' && !!i.picked);
+		picker.selectedItems = items.filter(
+			(i): i is TrustedExtensionsQuickPickItem => i.type !== 'separator' && !!i.picked
+		);
 		picker.show();
 	}
 
 	//#region Account Query Resolution
 
-	private async _resolveAccountQuery(providerId: string | undefined, accountLabel: string | undefined): Promise<IAccountQuery | undefined> {
+	private async _resolveAccountQuery(
+		providerId: string | undefined,
+		accountLabel: string | undefined
+	): Promise<IAccountQuery | undefined> {
 		if (providerId && accountLabel) {
 			return this._authenticationQueryService.provider(providerId).account(accountLabel);
 		}
 
 		const accounts = await this._getAllAvailableAccounts();
 		const pick = await this._quickInputService.pick(accounts, {
-			placeHolder: localize('pickAccount', "Pick an account to manage trusted extensions for"),
-			matchOnDescription: true,
+			placeHolder: localize('pickAccount', 'Pick an account to manage trusted extensions for'),
+			matchOnDescription: true
 		});
 
 		return pick ? this._authenticationQueryService.provider(pick.providerId).account(pick.label) : undefined;
@@ -122,7 +134,9 @@ class ManageTrustedExtensionsForAccountActionImpl {
 		const extensionIdToDisplayName = new Map<string, string>();
 
 		// Get display names for all allowed extensions
-		const resolvedExtensions = await Promise.all(allowedExtensions.map(ext => this._extensionService.getExtension(ext.id)));
+		const resolvedExtensions = await Promise.all(
+			allowedExtensions.map(ext => this._extensionService.getExtension(ext.id))
+		);
 		resolvedExtensions.forEach((resolved, i) => {
 			if (resolved) {
 				extensionIdToDisplayName.set(allowedExtensions[i].id, resolved.displayName || resolved.name);
@@ -143,7 +157,7 @@ class ManageTrustedExtensionsForAccountActionImpl {
 			});
 
 		if (!filteredExtensions.length) {
-			this._dialogService.info(localize('noTrustedExtensions', "This account has not been used by any extensions."));
+			this._dialogService.info(localize('noTrustedExtensions', 'This account has not been used by any extensions.'));
 			return [];
 		}
 
@@ -154,7 +168,7 @@ class ManageTrustedExtensionsForAccountActionImpl {
 		const _toQuickPickItem = this._toQuickPickItem.bind(this);
 		return [
 			...otherExtensions.sort(sortByLastUsed).map(_toQuickPickItem),
-			{ type: 'separator', label: localize('trustedExtensions', "Trusted by Microsoft") } satisfies IQuickPickSeparator,
+			{ type: 'separator', label: localize('trustedExtensions', 'Trusted by Microsoft') } satisfies IQuickPickSeparator,
 			...trustedExtensions.sort(sortByLastUsed).map(_toQuickPickItem)
 		];
 	}
@@ -162,12 +176,22 @@ class ManageTrustedExtensionsForAccountActionImpl {
 	private _toQuickPickItem(extension: AllowedExtension): TrustedExtensionsQuickPickItem {
 		const lastUsed = extension.lastUsed;
 		const description = lastUsed
-			? localize({ key: 'accountLastUsedDate', comment: ['The placeholder {0} is a string with time information, such as "3 days ago"'] }, "Last used this account {0}", fromNow(lastUsed, true))
-			: localize('notUsed', "Has not used this account");
+			? localize(
+					{
+						key: 'accountLastUsedDate',
+						comment: ['The placeholder {0} is a string with time information, such as "3 days ago"']
+					},
+					'Last used this account {0}',
+					fromNow(lastUsed, true)
+				)
+			: localize('notUsed', 'Has not used this account');
 		let tooltip: string | undefined;
 		let disabled: boolean | undefined;
 		if (extension.trusted) {
-			tooltip = localize('trustedExtensionTooltip', "This extension is trusted by Microsoft and\nalways has access to this account");
+			tooltip = localize(
+				'trustedExtensionTooltip',
+				'This extension is trusted by Microsoft and\nalways has access to this account'
+			);
 			disabled = true;
 		}
 		return {
@@ -183,39 +207,49 @@ class ManageTrustedExtensionsForAccountActionImpl {
 
 	private _createQuickPick(accountQuery: IAccountQuery) {
 		const disposableStore = new DisposableStore();
-		const quickPick = disposableStore.add(this._quickInputService.createQuickPick<TrustedExtensionsQuickPickItem>({ useSeparators: true }));
+		const quickPick = disposableStore.add(
+			this._quickInputService.createQuickPick<TrustedExtensionsQuickPickItem>({ useSeparators: true })
+		);
 
 		// Configure quick pick
 		quickPick.canSelectMany = true;
 		quickPick.customButton = true;
 		quickPick.customLabel = localize('manageTrustedExtensions.cancel', 'Cancel');
 		quickPick.customButtonSecondary = true;
-		quickPick.title = localize('manageTrustedExtensions', "Manage Trusted Extensions");
-		quickPick.placeholder = localize('manageExtensions', "Choose which extensions can access this account");
+		quickPick.title = localize('manageTrustedExtensions', 'Manage Trusted Extensions');
+		quickPick.placeholder = localize('manageExtensions', 'Choose which extensions can access this account');
 
 		// Set up event handlers
-		disposableStore.add(quickPick.onDidAccept(() => {
-			const updatedAllowedList = quickPick.items
-				.filter((item): item is TrustedExtensionsQuickPickItem => item.type !== 'separator')
-				.map(i => i.extension);
+		disposableStore.add(
+			quickPick.onDidAccept(() => {
+				const updatedAllowedList = quickPick.items
+					.filter((item): item is TrustedExtensionsQuickPickItem => item.type !== 'separator')
+					.map(i => i.extension);
 
-			const allowedExtensionsSet = new Set(quickPick.selectedItems.map(i => i.extension));
-			for (const extension of updatedAllowedList) {
-				const allowed = allowedExtensionsSet.has(extension);
-				accountQuery.extension(extension.id).setAccessAllowed(allowed, extension.name);
-			}
-			quickPick.hide();
-		}));
+				const allowedExtensionsSet = new Set(quickPick.selectedItems.map(i => i.extension));
+				for (const extension of updatedAllowedList) {
+					const allowed = allowedExtensionsSet.has(extension);
+					accountQuery.extension(extension.id).setAccessAllowed(allowed, extension.name);
+				}
+				quickPick.hide();
+			})
+		);
 
 		disposableStore.add(quickPick.onDidHide(() => disposableStore.dispose()));
 		disposableStore.add(quickPick.onDidCustom(() => quickPick.hide()));
-		disposableStore.add(quickPick.onDidTriggerItemButton(e => {
-			if (e.button === this._managePreferencesButton) {
-				this._commandService.executeCommand('_manageAccountPreferencesForExtension', e.item.extension.id, accountQuery.providerId);
-			} else if (e.button === this._viewDetailsButton) {
-				this._extensionsWorkbenchService.open(e.item.extension.id);
-			}
-		}));
+		disposableStore.add(
+			quickPick.onDidTriggerItemButton(e => {
+				if (e.button === this._managePreferencesButton) {
+					this._commandService.executeCommand(
+						'_manageAccountPreferencesForExtension',
+						e.item.extension.id,
+						accountQuery.providerId
+					);
+				} else if (e.button === this._viewDetailsButton) {
+					this._extensionsWorkbenchService.open(e.item.extension.id);
+				}
+			})
+		);
 
 		return quickPick;
 	}

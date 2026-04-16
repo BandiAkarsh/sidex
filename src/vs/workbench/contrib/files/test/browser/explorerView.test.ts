@@ -17,7 +17,6 @@ import { TestConfigurationService } from '../../../../../platform/configuration/
 import { NullFilesConfigurationService, TestFileService } from '../../../../test/common/workbenchTestServices.js';
 
 suite('Files - ExplorerView', () => {
-
 	const $ = dom.$;
 
 	const ds = ensureNoDisposablesAreLeakedInTestSuite();
@@ -25,9 +24,31 @@ suite('Files - ExplorerView', () => {
 	const fileService = new TestFileService();
 	const configService = new TestConfigurationService();
 
-
-	function createStat(this: any, path: string, name: string, isFolder: boolean, hasChildren: boolean, size: number, mtime: number, isSymLink = false, isUnknown = false): ExplorerItem {
-		return new ExplorerItem(toResource.call(this, path), fileService, configService, NullFilesConfigurationService, undefined, isFolder, isSymLink, false, false, name, mtime, isUnknown);
+	function createStat(
+		this: any,
+		path: string,
+		name: string,
+		isFolder: boolean,
+		hasChildren: boolean,
+		size: number,
+		mtime: number,
+		isSymLink = false,
+		isUnknown = false
+	): ExplorerItem {
+		return new ExplorerItem(
+			toResource.call(this, path),
+			fileService,
+			configService,
+			NullFilesConfigurationService,
+			undefined,
+			isFolder,
+			isSymLink,
+			false,
+			false,
+			name,
+			mtime,
+			isUnknown
+		);
 	}
 
 	test('getContext', async function () {
@@ -86,17 +107,23 @@ suite('Files - ExplorerView', () => {
 		dom.append(label, labelName3);
 		const emitter = new Emitter<void>();
 
-		const navigationController = new CompressedNavigationController('id', [s1, s2, s3], {
-			container,
-			templateDisposables: ds.add(new DisposableStore()),
-			elementDisposables: ds.add(new DisposableStore()),
-			contribs: [],
-			// eslint-disable-next-line local/code-no-any-casts
-			label: <any>{
-				container: label,
-				onDidRender: emitter.event
+		const navigationController = new CompressedNavigationController(
+			'id',
+			[s1, s2, s3],
+			{
+				container,
+				templateDisposables: ds.add(new DisposableStore()),
+				elementDisposables: ds.add(new DisposableStore()),
+				contribs: [],
+				// eslint-disable-next-line local/code-no-any-casts
+				label: <any>{
+					container: label,
+					onDidRender: emitter.event
+				}
 			},
-		}, 1, false);
+			1,
+			false
+		);
 
 		ds.add(navigationController);
 

@@ -29,10 +29,11 @@ suite('RawDebugSession', () => {
 			dbgr as any as IDebugger,
 			'sessionId',
 			'name',
-			new (mock<IExtensionHostDebugService>()),
-			new (mock<IOpenerService>()),
-			new (mock<INotificationService>()),
-			new (mock<IDialogService>()));
+			new (mock<IExtensionHostDebugService>())(),
+			new (mock<IOpenerService>())(),
+			new (mock<INotificationService>())(),
+			new (mock<IDialogService>())()
+		);
 		disposables.add(session);
 		disposables.add(debugAdapter);
 
