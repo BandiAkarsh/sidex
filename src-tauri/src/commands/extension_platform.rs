@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fs;
-use std::io::Read as _;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
@@ -103,14 +102,6 @@ pub fn path_to_uri_path(path: &str) -> String {
     } else {
         format!("/{p}")
     }
-}
-
-/// Parsed from a VSIX archive (extension/package.json).
-#[derive(Debug)]
-pub struct VsixManifest {
-    pub id: String,
-    pub name: String,
-    pub version: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -265,29 +256,16 @@ pub struct InitDataRemote {
     pub connection_data: Option<serde_json::Value>,
 }
 
-pub fn sidex_data_dir() -> PathBuf {
-    dirs::home_dir()
-        .unwrap_or_else(|| PathBuf::from("."))
-        .join(".sidex")
-}
-
 pub fn user_extensions_dir() -> PathBuf {
-    let dir = sidex_data_dir().join("extensions");
-    let _ = fs::create_dir_all(&dir);
-    dir
+    sidex_extensions::paths::user_extensions_dir()
 }
 
 pub fn global_storage_dir() -> PathBuf {
-    let dir = sidex_data_dir()
-        .join("data")
-        .join("User")
-        .join("globalStorage");
-    let _ = fs::create_dir_all(&dir);
-    dir
+    sidex_extensions::paths::global_storage_dir()
 }
 
 fn user_data_dir() -> PathBuf {
-    sidex_data_dir().join("data")
+    sidex_extensions::paths::user_data_dir()
 }
 
 pub fn resolve_server_script(app: &AppHandle) -> PathBuf {
@@ -417,17 +395,6 @@ pub fn resolve_node_runtime(app: &AppHandle) -> Result<ResolvedNode, String> {
     Err("Node runtime not found. Bundle Node with SideX or install Node.js (>=18).".into())
 }
 
-pub fn sanitize_ext_id(id: &str) -> Result<String, String> {
-    let clean: String = id
-        .chars()
-        .filter(|c| c.is_alphanumeric() || *c == '.' || *c == '-' || *c == '_')
-        .collect();
-    if clean.is_empty() || clean.contains("..") {
-        return Err(format!("invalid extension id: {id}"));
-    }
-    Ok(clean)
-}
-
 fn extension_source(app: &AppHandle, path: &Path) -> (String, bool) {
     let builtin_dir = resolve_builtin_extensions_dir(app);
     let user_dir = user_extensions_dir();
@@ -440,27 +407,8 @@ fn extension_source(app: &AppHandle, path: &Path) -> (String, bool) {
     }
 }
 
-fn version_weight(version: &str) -> Vec<u32> {
-    version
-        .split(['.', '-'])
-        .map(|part| part.parse::<u32>().unwrap_or(0))
-        .collect()
-}
-
 fn is_version_greater(a: &str, b: &str) -> bool {
-    let wa = version_weight(a);
-    let wb = version_weight(b);
-    let len = wa.len().max(wb.len());
-    for idx in 0..len {
-        let av = *wa.get(idx).unwrap_or(&0);
-        let bv = *wb.get(idx).unwrap_or(&0);
-        match av.cmp(&bv) {
-            std::cmp::Ordering::Greater => return true,
-            std::cmp::Ordering::Less => return false,
-            std::cmp::Ordering::Equal => {}
-        }
-    }
-    false
+    sidex_extensions::manifest::is_version_greater(a, b)
 }
 
 fn manifest_entry_exists(ext_dir: &Path, entry: &str) -> bool {
@@ -786,42 +734,6 @@ pub fn build_init_data(
         },
         ui_kind: 1,
     }
-}
-
-pub fn read_vsix_manifest<R: std::io::Read + std::io::Seek>(
-    archive: &mut zip::ZipArchive<R>,
-) -> Result<VsixManifest, String> {
-    let pkg_path = "extension/package.json";
-    let mut entry = archive
-        .by_name(pkg_path)
-        .map_err(|_| "VSIX missing extension/package.json".to_string())?;
-    let mut buf = String::new();
-    entry
-        .read_to_string(&mut buf)
-        .map_err(|e| format!("read manifest: {e}"))?;
-    let val: serde_json::Value =
-        serde_json::from_str(&buf).map_err(|e| format!("parse manifest: {e}"))?;
-    let publisher = val
-        .get("publisher")
-        .and_then(|v| v.as_str())
-        .unwrap_or("unknown");
-    let name = val
-        .get("name")
-        .and_then(|v| v.as_str())
-        .ok_or("manifest missing 'name'")?;
-    let version = val
-        .get("version")
-        .and_then(|v| v.as_str())
-        .unwrap_or("0.0.0");
-    Ok(VsixManifest {
-        id: format!("{publisher}.{name}"),
-        name: val
-            .get("displayName")
-            .and_then(|v| v.as_str())
-            .unwrap_or(name)
-            .to_string(),
-        version: version.to_string(),
-    })
 }
 
 #[tauri::command]

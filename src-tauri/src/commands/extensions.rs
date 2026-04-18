@@ -1,12 +1,12 @@
-use crate::commands::extension_platform::{
-    read_extension_manifest, read_vsix_manifest, sanitize_ext_id, user_extensions_dir,
-    ExtensionManifest,
-};
+use crate::commands::extension_platform::{read_extension_manifest, ExtensionManifest};
 use serde::Serialize;
-use sidex_extensions::marketplace::MarketplaceClient;
 use sidex_extensions::contributions::{parse_contributions, ContributionPoint};
-use std::fs::{self, File};
-use std::io::{Cursor, Read};
+use sidex_extensions::installer::{install_from_vsix as crate_install_from_vsix, uninstall as crate_uninstall};
+use sidex_extensions::manifest::sanitize_ext_id;
+use sidex_extensions::marketplace::MarketplaceClient;
+use sidex_extensions::paths::user_extensions_dir;
+use sidex_extensions::vsix::{install_package, unpack_vsix, validate_vsix};
+use std::fs;
 use std::path::Path;
 use tauri::AppHandle;
 
@@ -18,6 +18,22 @@ pub struct InstalledExtension {
     pub path: String,
 }
 
+fn to_installed(
+    manifest: &sidex_extensions::manifest::ExtensionManifest,
+    path: &Path,
+) -> InstalledExtension {
+    InstalledExtension {
+        id: manifest.canonical_id(),
+        name: if manifest.display_name.is_empty() {
+            manifest.name.clone()
+        } else {
+            manifest.display_name.clone()
+        },
+        version: manifest.version.clone(),
+        path: path.to_string_lossy().to_string(),
+    }
+}
+
 #[tauri::command]
 pub async fn install_extension(vsix_path: String) -> Result<InstalledExtension, String> {
     let vsix = Path::new(&vsix_path);
@@ -25,112 +41,15 @@ pub async fn install_extension(vsix_path: String) -> Result<InstalledExtension, 
         return Err(format!("VSIX not found: {vsix_path}"));
     }
 
-    let file = File::open(vsix).map_err(|e| format!("open: {e}"))?;
-    let mut archive = zip::ZipArchive::new(file).map_err(|e| format!("bad vsix: {e}"))?;
+    let target_dir = user_extensions_dir();
+    let installed = crate_install_from_vsix(vsix, &target_dir)
+        .map_err(|e| format!("install: {e:#}"))?;
+    let safe_id = sanitize_ext_id(&installed.canonical_id())
+        .map_err(|e| format!("{e:#}"))?;
+    let ext_dir = target_dir.join(&safe_id);
 
-    let manifest = read_vsix_manifest(&mut archive)?;
-
-    let safe_id = sanitize_ext_id(&manifest.id)?;
-    let ext_dir = user_extensions_dir().join(&safe_id);
-    if ext_dir.exists() {
-        fs::remove_dir_all(&ext_dir).map_err(|e| format!("cleanup: {e}"))?;
-    }
-    fs::create_dir_all(&ext_dir).map_err(|e| format!("mkdir: {e}"))?;
-
-    let prefix = "extension/";
-    for i in 0..archive.len() {
-        let mut entry = archive.by_index(i).map_err(|e| format!("entry: {e}"))?;
-        let raw_name = entry.name().to_string();
-
-        if !raw_name.starts_with(prefix) {
-            continue;
-        }
-
-        let rel = &raw_name[prefix.len()..];
-        if rel.is_empty() || rel.contains("..") {
-            continue;
-        }
-
-        let target = ext_dir.join(rel);
-
-        if entry.is_dir() {
-            fs::create_dir_all(&target).map_err(|e| format!("mkdir {rel}: {e}"))?;
-        } else {
-            if let Some(parent) = target.parent() {
-                fs::create_dir_all(parent).ok();
-            }
-            #[allow(clippy::cast_possible_truncation)]
-            let mut buf = Vec::with_capacity(entry.size() as usize);
-            entry
-                .read_to_end(&mut buf)
-                .map_err(|e| format!("read {rel}: {e}"))?;
-            fs::write(&target, &buf).map_err(|e| format!("write {rel}: {e}"))?;
-            #[cfg(unix)]
-            if entry.unix_mode().is_some_and(|m| m & 0o111 != 0) || rel.starts_with("bin/") {
-                use std::os::unix::fs::PermissionsExt;
-                fs::set_permissions(&target, fs::Permissions::from_mode(0o755)).ok();
-            }
-        }
-    }
-
-    log::info!("installed extension {} to {}", safe_id, ext_dir.display());
-
-    Ok(InstalledExtension {
-        id: safe_id,
-        name: manifest.name,
-        version: manifest.version,
-        path: ext_dir.to_string_lossy().to_string(),
-    })
-}
-
-fn extract_vsix_bytes(data: &[u8]) -> Result<InstalledExtension, String> {
-    let cursor = Cursor::new(data);
-    let mut archive = zip::ZipArchive::new(cursor).map_err(|e| format!("bad vsix: {e}"))?;
-    let manifest = read_vsix_manifest(&mut archive)?;
-    let safe_id = sanitize_ext_id(&manifest.id)?;
-    let ext_dir = user_extensions_dir().join(&safe_id);
-    if ext_dir.exists() {
-        fs::remove_dir_all(&ext_dir).map_err(|e| format!("cleanup: {e}"))?;
-    }
-    fs::create_dir_all(&ext_dir).map_err(|e| format!("mkdir: {e}"))?;
-    let prefix = "extension/";
-    for i in 0..archive.len() {
-        let mut entry = archive.by_index(i).map_err(|e| format!("entry: {e}"))?;
-        let raw_name = entry.name().to_string();
-        if !raw_name.starts_with(prefix) {
-            continue;
-        }
-        let rel = &raw_name[prefix.len()..];
-        if rel.is_empty() || rel.contains("..") {
-            continue;
-        }
-        let target = ext_dir.join(rel);
-        if entry.is_dir() {
-            fs::create_dir_all(&target).map_err(|e| format!("mkdir {rel}: {e}"))?;
-        } else {
-            if let Some(parent) = target.parent() {
-                fs::create_dir_all(parent).ok();
-            }
-            #[allow(clippy::cast_possible_truncation)]
-            let mut buf = Vec::with_capacity(entry.size() as usize);
-            entry
-                .read_to_end(&mut buf)
-                .map_err(|e| format!("read {rel}: {e}"))?;
-            fs::write(&target, &buf).map_err(|e| format!("write {rel}: {e}"))?;
-            #[cfg(unix)]
-            if entry.unix_mode().is_some_and(|m| m & 0o111 != 0) || rel.starts_with("bin/") {
-                use std::os::unix::fs::PermissionsExt;
-                fs::set_permissions(&target, fs::Permissions::from_mode(0o755)).ok();
-            }
-        }
-    }
-    log::info!("installed extension {} to {}", safe_id, ext_dir.display());
-    Ok(InstalledExtension {
-        id: safe_id,
-        name: manifest.name,
-        version: manifest.version,
-        path: ext_dir.to_string_lossy().to_string(),
-    })
+    log::info!("installed extension {safe_id} to {}", ext_dir.display());
+    Ok(to_installed(&installed, &ext_dir))
 }
 
 #[tauri::command]
@@ -143,17 +62,43 @@ pub async fn install_extension_from_url(url: String) -> Result<InstalledExtensio
         return Err(format!("download failed: HTTP {}", resp.status()));
     }
     let bytes = resp.bytes().await.map_err(|e| format!("read body: {e}"))?;
-    extract_vsix_bytes(&bytes)
+
+    let tmp_path = std::env::temp_dir().join(format!("sidex-{}.vsix", uuid::Uuid::new_v4()));
+    fs::write(&tmp_path, &bytes).map_err(|e| format!("write tempfile: {e}"))?;
+
+    let result = (|| -> Result<InstalledExtension, String> {
+        let pkg = unpack_vsix(&tmp_path).map_err(|e| format!("unpack vsix: {e:#}"))?;
+        let validation = validate_vsix(&pkg);
+        if !validation.valid {
+            return Err(format!(
+                "vsix validation failed: {}",
+                validation.errors.join("; ")
+            ));
+        }
+        let target_dir = user_extensions_dir();
+        let installed = install_package(&pkg, &target_dir)
+            .map_err(|e| format!("install: {e:#}"))?;
+        log::info!(
+            "installed extension {} to {}",
+            installed.manifest.canonical_id(),
+            installed.install_dir.display()
+        );
+        Ok(to_installed(&installed.manifest, &installed.install_dir))
+    })();
+
+    let _ = fs::remove_file(&tmp_path);
+    result
 }
 
 #[tauri::command]
 pub async fn uninstall_extension(extension_id: String) -> Result<(), String> {
-    let safe_id = sanitize_ext_id(&extension_id)?;
-    let ext_dir = user_extensions_dir().join(&safe_id);
+    let safe_id = sanitize_ext_id(&extension_id).map_err(|e| format!("{e:#}"))?;
+    let target_dir = user_extensions_dir();
+    let ext_dir = target_dir.join(&safe_id);
     if !ext_dir.exists() {
         return Err(format!("not installed: {extension_id}"));
     }
-    fs::remove_dir_all(&ext_dir).map_err(|e| format!("remove: {e}"))?;
+    crate_uninstall(&safe_id, &target_dir).map_err(|e| format!("remove: {e:#}"))?;
     log::info!("uninstalled {extension_id}");
     Ok(())
 }
@@ -186,10 +131,6 @@ pub async fn list_installed_extensions(app: AppHandle) -> Result<Vec<InstalledEx
     }
     Ok(out)
 }
-
-// ---------------------------------------------------------------------------
-// Marketplace search
-// ---------------------------------------------------------------------------
 
 #[derive(Debug, Serialize)]
 pub struct MarketplaceResult {
@@ -240,10 +181,6 @@ pub async fn extension_search_marketplace(
         })
         .collect())
 }
-
-// ---------------------------------------------------------------------------
-// Extension contributions
-// ---------------------------------------------------------------------------
 
 #[derive(Debug, Serialize)]
 pub struct ContributionInfo {

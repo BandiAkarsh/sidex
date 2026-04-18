@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { DataTransfers } from '../../../base/browser/dnd.js';
-import { mainWindow } from '../../../base/browser/window.js';
 import { DragMouseEvent } from '../../../base/browser/mouseEvent.js';
 import { coalesce } from '../../../base/common/arrays.js';
 import { DeferredPromise } from '../../../base/common/async.js';
@@ -18,9 +17,7 @@ import { URI, UriComponents } from '../../../base/common/uri.js';
 import { localize } from '../../../nls.js';
 import { IDialogService } from '../../dialogs/common/dialogs.js';
 import { IBaseTextResourceEditorInput, ITextEditorSelection } from '../../editor/common/editor.js';
-import { HTMLFileSystemProvider } from '../../files/browser/htmlFileSystemProvider.js';
-import { WebFileSystemAccess } from '../../files/browser/webFileSystemAccess.js';
-import { ByteSize, IFileService } from '../../files/common/files.js';
+import { ByteSize } from '../../files/common/files.js';
 import { IInstantiationService, ServicesAccessor } from '../../instantiation/common/instantiation.js';
 import { extractSelection } from '../../opener/common/opener.js';
 import { Registry } from '../../registry/common/platform.js';
@@ -188,70 +185,14 @@ interface IFileTransferData {
 }
 
 async function extractFilesDropData(accessor: ServicesAccessor, event: DragEvent): Promise<IFileTransferData[]> {
-	// Try to extract via `FileSystemHandle`
-	if (WebFileSystemAccess.supported(mainWindow)) {
-		const items = event.dataTransfer?.items;
-		if (items) {
-			return extractFileTransferData(accessor, items);
-		}
-	}
-
-	// Try to extract via `FileList`
+	// SideX: drag/drop of filesystem handles is not supported — we use the Tauri
+	// backend exclusively for file I/O. Extract any files via the standard FileList API.
 	const files = event.dataTransfer?.files;
 	if (!files) {
 		return [];
 	}
 
 	return extractFileListData(accessor, files);
-}
-
-async function extractFileTransferData(
-	accessor: ServicesAccessor,
-	items: DataTransferItemList
-): Promise<IFileTransferData[]> {
-	const fileSystemProvider = accessor.get(IFileService).getProvider(Schemas.file);
-	 
-	if (!(fileSystemProvider instanceof HTMLFileSystemProvider)) {
-		return []; // only supported when running in web
-	}
-
-	const results: DeferredPromise<IFileTransferData | undefined>[] = [];
-
-	for (let i = 0; i < items.length; i++) {
-		const file = items[i];
-		if (file) {
-			const result = new DeferredPromise<IFileTransferData | undefined>();
-			results.push(result);
-
-			(async () => {
-				try {
-					const handle = await file.getAsFileSystemHandle();
-					if (!handle) {
-						result.complete(undefined);
-						return;
-					}
-
-					if (WebFileSystemAccess.isFileSystemFileHandle(handle)) {
-						result.complete({
-							resource: await fileSystemProvider.registerFileHandle(handle),
-							isDirectory: false
-						});
-					} else if (WebFileSystemAccess.isFileSystemDirectoryHandle(handle)) {
-						result.complete({
-							resource: await fileSystemProvider.registerDirectoryHandle(handle),
-							isDirectory: true
-						});
-					} else {
-						result.complete(undefined);
-					}
-				} catch (error) {
-					result.complete(undefined);
-				}
-			})();
-		}
-	}
-
-	return coalesce(await Promise.all(results.map(result => result.p)));
 }
 
 export async function extractFileListData(accessor: ServicesAccessor, files: FileList): Promise<IFileTransferData[]> {

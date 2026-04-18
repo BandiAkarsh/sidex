@@ -23,7 +23,6 @@ import {
 } from '../../../../../platform/files/common/files.js';
 import { IWorkbenchLayoutService } from '../../../../services/layout/browser/layoutService.js';
 import {
-	isTemporaryWorkspace,
 	IWorkspaceContextService,
 	WorkbenchState
 } from '../../../../../platform/workspace/common/workspace.js';
@@ -82,7 +81,7 @@ import {
 	ElementsDragAndDropData,
 	ListViewTargetSector
 } from '../../../../../base/browser/ui/list/listView.js';
-import { isMacintosh, isWeb } from '../../../../../base/common/platform.js';
+import { isMacintosh } from '../../../../../base/common/platform.js';
 import { IDialogService, getFileNamesMessage } from '../../../../../platform/dialogs/common/dialogs.js';
 import { IWorkspaceEditingService } from '../../../../services/workspaces/common/workspaceEditing.js';
 import { URI } from '../../../../../base/common/uri.js';
@@ -107,9 +106,8 @@ import { EditorInput } from '../../../../common/editor/editorInput.js';
 import { IUriIdentityService } from '../../../../../platform/uriIdentity/common/uriIdentity.js';
 import { ResourceFileEdit } from '../../../../../editor/browser/services/bulkEditService.js';
 import { IExplorerService } from '../files.js';
-import { BrowserFileUpload, ExternalFileImport, getMultipleFilesOverwriteConfirm } from '../fileImportExport.js';
+import { ExternalFileImport, getMultipleFilesOverwriteConfirm } from '../fileImportExport.js';
 import { toErrorMessage } from '../../../../../base/common/errorMessage.js';
-import { WebFileSystemAccess } from '../../../../../platform/files/browser/webFileSystemAccess.js';
 import { IgnoreFile } from '../../../../services/search/common/ignoreFile.js';
 import { ResourceSet } from '../../../../../base/common/map.js';
 import { TernarySearchTree } from '../../../../../base/common/ternarySearchTree.js';
@@ -2094,21 +2092,10 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 		try {
 			// External file DND (Import/Upload file)
 			if (data instanceof NativeDragAndDropData) {
-				// Use local file import when supported
-				if (
-					!isWeb ||
-					(isTemporaryWorkspace(this.contextService.getWorkspace()) && WebFileSystemAccess.supported(mainWindow))
-				) {
-					const fileImport = this.instantiationService.createInstance(ExternalFileImport);
-					await fileImport.import(resolvedTarget, originalEvent, mainWindow);
-				}
-				// Otherwise fallback to browser based file upload
-				else {
-					const browserUpload = this.instantiationService.createInstance(BrowserFileUpload);
-					await browserUpload.upload(target, originalEvent);
-				}
+				// SideX: always use local file import since our Tauri backend handles file I/O.
+				const fileImport = this.instantiationService.createInstance(ExternalFileImport);
+				await fileImport.import(resolvedTarget, originalEvent, mainWindow);
 			}
-
 			// In-Explorer DND (Move/Copy file)
 			else {
 				await this.handleExplorerDrop(

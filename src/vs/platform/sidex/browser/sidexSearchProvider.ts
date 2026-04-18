@@ -2,9 +2,16 @@
  *  SideX — Search provider backed by our Rust ripgrep integration.
  *  Provides a lightweight API for components that need search results without
  *  going through the full VS Code ISearchService machinery.
+ *
+ *  Registration note: VS Code's ISearchService is already provided by
+ *  `TauriSearchService` (see services/search/browser/tauriSearchService.ts).
+ *  This bridge complements it via its own decorator ISideXSearchProviderService
+ *  for components that want the simpler string-based API.
  *--------------------------------------------------------------------------------------------*/
 
 import { invoke } from '../../../sidex-bridge.js';
+import { createDecorator } from '../../instantiation/common/instantiation.js';
+import { InstantiationType, registerSingleton } from '../../instantiation/common/extensions.js';
 
 export interface FileSearchResult {
 	path: string;
@@ -16,7 +23,14 @@ export interface FileSearchResult {
 	}>;
 }
 
+export const ISideXSearchProviderService = createDecorator<ISideXSearchProviderService>('sidexSearchProviderService');
+
+export interface ISideXSearchProviderService extends SideXSearchProvider {
+	readonly _serviceBrand: undefined;
+}
+
 export class SideXSearchProvider {
+	declare readonly _serviceBrand: undefined;
 	async textSearch(
 		directory: string,
 		query: string,
@@ -56,3 +70,5 @@ export class SideXSearchProvider {
 		}
 	}
 }
+
+registerSingleton(ISideXSearchProviderService, SideXSearchProvider, InstantiationType.Delayed);

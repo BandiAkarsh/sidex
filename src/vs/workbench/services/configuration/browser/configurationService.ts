@@ -148,6 +148,7 @@ import { mainWindow } from '../../../../base/browser/window.js';
 import { runWhenWindowIdle } from '../../../../base/browser/dom.js';
 import { renderAsPlaintext } from '../../../../base/browser/markdownRenderer.js';
 import { fixSettingLinks } from '../../preferences/common/preferencesModels.js';
+import { invoke } from '@tauri-apps/api/core';
 
 function getLocalUserConfigurationScopes(
 	userDataProfile: IUserDataProfile,
@@ -1468,6 +1469,23 @@ export class WorkspaceService extends Disposable implements IWorkbenchConfigurat
 		await (
 			await this.configurationEditing
 		).writeConfiguration(editableConfigurationTarget, { key, value }, { scopes: overrides, ...options });
+
+		// Bridge write to Rust sidex-settings so the in-memory SettingsStore
+		// stays in sync with what was just persisted to disk. This is best
+		// effort: if the Tauri command is unavailable we already wrote the
+		// file above and the next reload will pick it up.
+		try {
+			const scopeForRust =
+				editableConfigurationTarget === EditableConfigurationTarget.WORKSPACE ||
+				editableConfigurationTarget === EditableConfigurationTarget.WORKSPACE_FOLDER
+					? 'workspace'
+					: 'user';
+			await invoke('settings_update', { key, value: value === undefined ? null : value, scope: scopeForRust });
+		} catch (error) {
+			this.logService.trace(
+				`WorkspaceService: settings_update bridge failed for key '${key}': ${error}`
+			);
+		}
 		switch (editableConfigurationTarget) {
 			case EditableConfigurationTarget.USER_LOCAL:
 				if (this.applicationConfiguration && this.isSettingAppliedForAllProfiles(key)) {

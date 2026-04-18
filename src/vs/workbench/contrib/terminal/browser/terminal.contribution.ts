@@ -38,7 +38,6 @@ import { terminalStrings } from '../common/terminalStrings.js';
 import './media/terminal.css';
 import './media/widgets.css';
 import './media/xterm.css';
-import { RemoteTerminalBackendContribution } from './remoteTerminalBackend.js';
 import {
 	ITerminalConfigurationService,
 	ITerminalEditingService,
@@ -79,11 +78,6 @@ registerSingleton(ITerminalProfileService, TerminalProfileService, Instantiation
 // Register workbench contributions
 // This contribution blocks startup as it's critical to enable the web embedder window.createTerminal API
 registerWorkbenchContribution2(TerminalMainContribution.ID, TerminalMainContribution, WorkbenchPhase.BlockStartup);
-registerWorkbenchContribution2(
-	RemoteTerminalBackendContribution.ID,
-	RemoteTerminalBackendContribution,
-	WorkbenchPhase.AfterRestored
-);
 registerWorkbenchContribution2(
 	TerminalTelemetryContribution.ID,
 	TerminalTelemetryContribution,

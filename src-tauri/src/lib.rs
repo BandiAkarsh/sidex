@@ -1,13 +1,15 @@
 mod commands;
 
 use commands::db_state::SidexDbState;
-use commands::debug::DebugAdapterStore;
+use commands::debug::{DapClientStore, DebugAdapterStore};
 use commands::ext_host::ExtensionPlatformSupervisor;
 use commands::extension_diagnostics::ExtensionDiagnosticsStore;
 use commands::extension_wasm::WasmExtensionRuntime;
 use commands::index::IndexStore;
 use commands::logging::LoggerStore;
+use commands::lsp::LspState;
 use commands::process::ProcessStore;
+use commands::remote::RemoteManagerStore;
 use commands::settings::SettingsStore;
 use commands::storage::StorageDb;
 use commands::tasks::TaskProcessStore;
@@ -374,6 +376,8 @@ pub fn run() {
         .manage(Arc::new(TerminalStore::new()))
         .manage(Arc::new(ProcessStore::new()))
         .manage(Arc::new(DebugAdapterStore::new()))
+        .manage(Arc::new(DapClientStore::new()))
+        .manage(Arc::new(LspState::new()))
         .manage(Arc::new(TaskProcessStore::new()))
         .manage(Arc::new(WatchStore::new()))
         .manage(Arc::new(IndexStore::new(true)))
@@ -382,6 +386,7 @@ pub fn run() {
         .manage(ExtensionDiagnosticsStore::new())
         .manage(Arc::new(SettingsStore::new()))
         .manage(Arc::new(sidex_extension_api::CommandRegistry::new()))
+        .manage(Arc::new(RemoteManagerStore::new()))
         .manage(Arc::new(
             WasmExtensionRuntime::new().expect("failed to initialize WASM runtime"),
         ))
@@ -589,6 +594,9 @@ pub fn run() {
             commands::debug_list_adapters,
             commands::dap_get_launch_configs,
             commands::dap_get_adapter_registry,
+            commands::dap_start_adapter,
+            commands::dap_send_request,
+            commands::dap_stop_adapter,
             commands::task_spawn,
             commands::task_kill,
             commands::task_list,
@@ -683,10 +691,15 @@ pub fn run() {
             // LSP management
             commands::lsp_get_server_registry,
             commands::lsp_get_supported_languages,
+            commands::lsp_start_server,
+            commands::lsp_send_request,
+            commands::lsp_stop_server,
+            commands::lsp_list_servers,
             // Syntax / language info
             commands::syntax_get_languages,
             commands::syntax_detect_language,
             commands::syntax_get_language_config,
+            commands::syntax_tokenize,
             // Theme management
             commands::theme_list,
             commands::theme_get,
@@ -695,6 +708,7 @@ pub fn run() {
             // Keymap
             commands::keymap_get_defaults,
             commands::keymap_resolve,
+            commands::keymap_resolve_chord,
             commands::keymap_get_all,
             // Editor intelligence
             commands::editor_detect_colors,
@@ -704,6 +718,11 @@ pub fn run() {
             commands::remote_list_ssh_hosts,
             commands::remote_list_wsl_distros,
             commands::remote_list_containers,
+            commands::remote_connect_ssh,
+            commands::remote_exec_ssh,
+            commands::remote_codespaces_list,
+            commands::remote_disconnect,
+            commands::remote_active_connections,
             // Extension API introspection
             commands::ext_api_get_namespaces,
             commands::ext_api_get_commands,

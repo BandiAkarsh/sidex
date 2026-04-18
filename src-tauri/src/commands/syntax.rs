@@ -1,4 +1,5 @@
 use serde::Serialize;
+use sidex_syntax::highlight::{HighlightConfig, Highlighter, SyntaxHighlighter, TokenScope};
 use sidex_syntax::language::{builtin_language_configurations, LanguageConfiguration};
 use std::path::Path;
 use std::sync::OnceLock;
@@ -30,6 +31,15 @@ pub struct LanguageConfigResponse {
     pub block_comment: Option<(String, String)>,
     pub brackets: Vec<(String, String)>,
     pub auto_closing_pairs: Vec<AutoClosePair>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SyntaxToken {
+    pub line: u32,
+    pub start: u32,
+    pub length: u32,
+    pub scope: TokenScope,
 }
 
 #[allow(clippy::unnecessary_wraps)]
@@ -96,4 +106,69 @@ pub fn syntax_get_language_config(language_id: String) -> Result<LanguageConfigR
             })
             .collect(),
     })
+}
+
+/// Minimal bundled tree-sitter highlight query for Rust.
+const RUST_HIGHLIGHT_QUERY: &str = r#"
+(line_comment) @comment
+(block_comment) @comment
+(string_literal) @string
+(raw_string_literal) @string
+(char_literal) @string
+(integer_literal) @number
+(float_literal) @number
+(boolean_literal) @constant.builtin
+"self" @variable.builtin
+(primitive_type) @type.builtin
+(type_identifier) @type
+(field_identifier) @property
+(function_item name: (identifier) @function)
+(call_expression function: (identifier) @function.call)
+(macro_invocation macro: (identifier) @function.macro)
+(attribute_item) @attribute
+[
+  "as" "async" "await" "break" "const" "continue" "crate" "dyn" "else" "enum"
+  "extern" "fn" "for" "if" "impl" "in" "let" "loop" "match" "mod" "move" "mut"
+  "pub" "ref" "return" "static" "struct" "trait" "type" "unsafe" "use" "where" "while"
+] @keyword
+"#;
+
+fn rust_highlight_config() -> Option<&'static HighlightConfig> {
+    static CONFIG: OnceLock<Option<HighlightConfig>> = OnceLock::new();
+    CONFIG
+        .get_or_init(|| {
+            let language: tree_sitter::Language = tree_sitter_rust::LANGUAGE.into();
+            HighlightConfig::new(language, RUST_HIGHLIGHT_QUERY).ok()
+        })
+        .as_ref()
+}
+
+#[allow(clippy::needless_pass_by_value)]
+#[tauri::command]
+pub fn syntax_tokenize(language: String, source: String) -> Result<Vec<SyntaxToken>, String> {
+    let config = match language.as_str() {
+        "rust" => rust_highlight_config().ok_or("rust highlight config unavailable")?,
+        _ => return Ok(Vec::new()),
+    };
+
+    let mut highlighter = Highlighter::new();
+    let events = highlighter
+        .highlight(config, &source, None)
+        .map_err(|e| e.to_string())?;
+
+    let capture_names: Vec<String> = config.capture_names().to_vec();
+    let rendered = SyntaxHighlighter::from_events(&language, &events, &source, &capture_names);
+
+    let mut tokens: Vec<SyntaxToken> = Vec::new();
+    for line in &rendered.tokens {
+        for token in &line.tokens {
+            tokens.push(SyntaxToken {
+                line: line.line,
+                start: token.start,
+                length: token.length,
+                scope: token.scope,
+            });
+        }
+    }
+    Ok(tokens)
 }

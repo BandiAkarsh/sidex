@@ -2,9 +2,6 @@
 resolver = "2"
 members = [
     "crates/sidex-text",
-    "crates/sidex-editor",
-    "crates/sidex-gpu",
-    "crates/sidex-ui",
     "crates/sidex-syntax",
     "crates/sidex-lsp",
     "crates/sidex-workspace",
@@ -19,7 +16,6 @@ members = [
     "crates/sidex-remote",
     "crates/sidex-dap",
     "crates/sidex-tasks",
-    "crates/sidex-app",
     "src-tauri",
     "sidex-extension-sdk",
 ]
@@ -37,9 +33,6 @@ repository = "https://github.com/sidenai/sidex"
 [workspace.dependencies]
 # Internal crates
 sidex-text = { path = "crates/sidex-text" }
-sidex-editor = { path = "crates/sidex-editor" }
-sidex-gpu = { path = "crates/sidex-gpu" }
-sidex-ui = { path = "crates/sidex-ui" }
 sidex-syntax = { path = "crates/sidex-syntax" }
 sidex-lsp = { path = "crates/sidex-lsp" }
 sidex-workspace = { path = "crates/sidex-workspace" }
@@ -54,6 +47,7 @@ sidex-db = { path = "crates/sidex-db" }
 sidex-remote = { path = "crates/sidex-remote" }
 sidex-extension-sdk = { path = "sidex-extension-sdk" }
 sidex-tasks = { path = "crates/sidex-tasks" }
+sidex-dap = { path = "crates/sidex-dap" }
 
 # Core
 tokio = { version = "1", features = ["full"] }
@@ -68,11 +62,6 @@ unicode-segmentation = "1"
 unicode-width = "0.2"
 regex = "1"
 memchr = "2"
-
-# Rendering
-wgpu = "24"
-cosmic-text = "0.12"
-winit = "0.30"
 
 # Syntax & Language
 tree-sitter = "0.24"

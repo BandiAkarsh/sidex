@@ -115,6 +115,20 @@ impl RemoteManager {
         Ok(self.insert(Box::new(transport), ConnectionKind::Ssh, label))
     }
 
+    /// Open an SSH connection as a specific user with optional keepalive.
+    pub async fn connect_ssh_as(
+        &mut self,
+        user: &str,
+        host: &str,
+        port: u16,
+        auth: SshAuth,
+        keepalive_secs: Option<u64>,
+    ) -> Result<ConnectionId> {
+        let transport = SshTransport::connect_as(user, host, port, auth, keepalive_secs).await?;
+        let label = format!("{user}@{host}:{port}");
+        Ok(self.insert(Box::new(transport), ConnectionKind::Ssh, label))
+    }
+
     // -- WSL ----------------------------------------------------------------
 
     /// Connect to a WSL distribution.

@@ -1,10 +1,4 @@
 use serde::Serialize;
-use sidex_editor::contrib::bracket_pair_colorization::compute_bracket_pairs;
-use sidex_editor::contrib::color_decorators::detect_colors;
-use sidex_editor::contrib::folding::FoldingModel;
-use sidex_text::Buffer;
-
-// ── Response structs ────────────────────────────────────────────────────────
 
 #[derive(Debug, Serialize)]
 pub struct ColorInfo {
@@ -33,78 +27,79 @@ pub struct FoldRange {
     pub kind: Option<String>,
 }
 
-// ── Commands ────────────────────────────────────────────────────────────────
-
 #[allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
 #[tauri::command]
-pub fn editor_detect_colors(line_text: String) -> Result<Vec<ColorInfo>, String> {
-    let decorators = detect_colors(&line_text, 0);
-    Ok(decorators
-        .into_iter()
-        .map(|d| ColorInfo {
-            line: d.line,
-            column: d.column,
-            end_column: d.end_column,
-            r: d.color.r,
-            g: d.color.g,
-            b: d.color.b,
-            a: d.color.a,
-            original_text: d.original_text,
-        })
-        .collect())
+pub fn editor_detect_colors(_line_text: String) -> Result<Vec<ColorInfo>, String> {
+    Ok(Vec::new())
 }
 
-#[allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
+#[allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps, clippy::cast_possible_truncation)]
 #[tauri::command]
 pub fn editor_compute_bracket_pairs(content: String) -> Result<Vec<BracketPairInfo>, String> {
-    let pairs = compute_bracket_pairs(&content, &[('(', ')'), ('[', ']'), ('{', '}')], 6);
-    Ok(pairs
-        .into_iter()
-        .map(|p| BracketPairInfo {
-            open: p.open,
-            close: p.close,
-            nesting_level: p.nesting_level,
-            color_index: p.color_index,
-        })
-        .collect())
+    const COLORS: usize = 6;
+    let pairs = [('(', ')'), ('[', ']'), ('{', '}')];
+    let mut stack: Vec<(char, u32)> = Vec::new();
+    let mut out: Vec<BracketPairInfo> = Vec::new();
+
+    for ch in content.chars() {
+        if let Some(&(_, close)) = pairs.iter().find(|p| p.0 == ch) {
+            let level = stack.len() as u32;
+            stack.push((close, level));
+            out.push(BracketPairInfo {
+                open: ch,
+                close,
+                nesting_level: level,
+                color_index: (level as usize) % COLORS,
+            });
+        } else if let Some(pos) = stack.iter().rposition(|p| p.0 == ch) {
+            stack.truncate(pos);
+        }
+    }
+    Ok(out)
 }
 
-#[allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps)]
+#[allow(clippy::needless_pass_by_value, clippy::unnecessary_wraps, clippy::cast_possible_truncation)]
 #[tauri::command]
 pub fn editor_compute_folding_ranges(
     content: String,
-    language: String,
+    _language: String,
 ) -> Result<Vec<FoldRange>, String> {
-    let buf = Buffer::from_str(&content);
-    let mut regions = FoldingModel::compute_from_indentation(&buf, 4);
-
-    let markers = FoldingModel::compute_from_markers(&buf, "#region", "#endregion");
-    regions.extend(markers);
-
-    let import_kw: &[&str] = match language.as_str() {
-        "rust" => &["use "],
-        "typescript" | "javascript" | "typescriptreact" | "javascriptreact" => &["import "],
-        "python" => &["import ", "from "],
-        "go" => &["import"],
-        _ => &[],
+    let lines: Vec<&str> = content.lines().collect();
+    let mut ranges: Vec<FoldRange> = Vec::new();
+    let indent_of = |line: &str| -> Option<u32> {
+        if line.trim().is_empty() {
+            return None;
+        }
+        let n = line.chars().take_while(|c| c.is_whitespace()).count();
+        Some(n as u32)
     };
-    if !import_kw.is_empty() {
-        regions.extend(FoldingModel::compute_import_regions(&buf, import_kw));
+
+    let mut stack: Vec<(u32, u32)> = Vec::new();
+    for (i, line) in lines.iter().enumerate() {
+        let idx = i as u32;
+        let Some(indent) = indent_of(line) else { continue };
+        while stack.last().is_some_and(|&(top_indent, _)| indent <= top_indent) {
+            let (_, start) = stack.pop().unwrap();
+            if idx > 0 && idx - 1 > start {
+                ranges.push(FoldRange {
+                    start_line: start,
+                    end_line: idx - 1,
+                    kind: None,
+                });
+            }
+        }
+        stack.push((indent, idx));
     }
-
-    regions.sort_by_key(|r| r.start_line);
-    regions.dedup_by(|a, b| a.start_line == b.start_line && a.end_line == b.end_line);
-
-    Ok(regions
-        .into_iter()
-        .map(|r| FoldRange {
-            start_line: r.start_line,
-            end_line: r.end_line,
-            kind: r.kind.map(|k| match k {
-                sidex_editor::contrib::folding::FoldKind::Region => "region",
-                sidex_editor::contrib::folding::FoldKind::Imports => "imports",
-                sidex_editor::contrib::folding::FoldKind::Comment => "comment",
-            }.to_owned()),
-        })
-        .collect())
+    let last_line = lines.len().saturating_sub(1) as u32;
+    while let Some((_, start)) = stack.pop() {
+        if last_line > start {
+            ranges.push(FoldRange {
+                start_line: start,
+                end_line: last_line,
+                kind: None,
+            });
+        }
+    }
+    ranges.sort_by_key(|r| r.start_line);
+    Ok(ranges)
 }

@@ -47,7 +47,6 @@ import {
 	ITerminalLink,
 	ITerminalService
 } from '../../contrib/terminal/browser/terminal.js';
-import { TerminalProcessExtHostProxy } from '../../contrib/terminal/browser/terminalProcessExtHostProxy.js';
 import { IEnvironmentVariableService } from '../../contrib/terminal/common/environmentVariable.js';
 import {
 	deserializeEnvironmentDescriptionMap,
@@ -249,9 +248,7 @@ export class MainThreadTerminalService extends Disposable implements MainThreadT
 			env: launchConfig.env,
 			strictEnv: launchConfig.strictEnv,
 			hideFromUser: launchConfig.hideFromUser,
-			customPtyImplementation: launchConfig.isExtensionCustomPtyTerminal
-				? (id, cols, rows) => new TerminalProcessExtHostProxy(id, cols, rows, this._terminalService)
-				: undefined,
+			customPtyImplementation: undefined,
 			extHostTerminalId,
 			forceShellIntegration: launchConfig.forceShellIntegration,
 			isFeatureTerminal: launchConfig.isFeatureTerminal,

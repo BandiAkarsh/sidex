@@ -4,12 +4,16 @@
  *  centralised `invoke()` wrapper from sidex-bridge.ts, consistent with
  *  the other SideX services (editor, git, search, etc.).
  *
- *  This provider is additive — it does NOT replace TauriFileSystemProvider.
- *  It can be used by higher-level SideX code that prefers the bridge
- *  abstraction over direct @tauri-apps/api/core imports.
+ *  Registration note: VS Code's IFileSystemProvider for the file:// scheme is
+ *  already registered in web.main.ts using TauriFileSystemProvider (see
+ *  platform/files/browser/tauriFileSystemProvider.ts). This class offers a
+ *  simpler string-path API and is exposed under its own decorator for SideX
+ *  UI code that doesn't want to go through URI / IFileService plumbing.
  *--------------------------------------------------------------------------------------------*/
 
 import { invoke } from '../../../sidex-bridge.js';
+import { createDecorator } from '../../instantiation/common/instantiation.js';
+import { InstantiationType, registerSingleton } from '../../instantiation/common/extensions.js';
 
 export interface SideXFileStat {
 	type: number;
@@ -25,7 +29,14 @@ export interface SideXDirEntry {
 	type: 'file' | 'directory' | 'symlink';
 }
 
+export const ISideXFileSystemProviderService = createDecorator<ISideXFileSystemProviderService>('sidexFileSystemProviderService');
+
+export interface ISideXFileSystemProviderService extends SideXFileSystemProvider {
+	readonly _serviceBrand: undefined;
+}
+
 export class SideXFileSystemProvider {
+	declare readonly _serviceBrand: undefined;
 	async readFile(path: string): Promise<Uint8Array> {
 		const bytes = await invoke<number[]>('read_file_bytes', { path });
 		if (Array.isArray(bytes)) {
@@ -119,3 +130,5 @@ export class SideXFileSystemProvider {
 		}
 	}
 }
+
+registerSingleton(ISideXFileSystemProviderService, SideXFileSystemProvider, InstantiationType.Delayed);

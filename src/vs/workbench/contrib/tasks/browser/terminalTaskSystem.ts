@@ -94,7 +94,6 @@ import {
 } from '../common/tasks.js';
 import { ITerminalGroupService, ITerminalInstance, ITerminalService } from '../../terminal/browser/terminal.js';
 import { VSCodeOscProperty, VSCodeOscPt, VSCodeSequence } from '../../terminal/browser/terminalEscapeSequences.js';
-import { TerminalProcessExtHostProxy } from '../../terminal/browser/terminalProcessExtHostProxy.js';
 import { ITerminalProfileResolverService, TERMINAL_VIEW_ID } from '../../terminal/common/terminal.js';
 import { IConfigurationResolverService } from '../../../services/configurationResolver/common/configurationResolver.js';
 import { IWorkbenchEnvironmentService } from '../../../services/environment/common/environmentService.js';
@@ -1916,8 +1915,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
 
 		if (task.command.runtime === RuntimeType.CustomExecution) {
 			this._currentTask.shellLaunchConfig = launchConfigs = {
-				customPtyImplementation: (id, cols, rows) =>
-					new TerminalProcessExtHostProxy(id, cols, rows, this._terminalService),
+				customPtyImplementation: undefined,
 				waitOnExit,
 				name: this._createTerminalName(task),
 				initialText:

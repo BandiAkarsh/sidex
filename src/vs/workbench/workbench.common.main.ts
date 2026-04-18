@@ -10,6 +10,18 @@ import '../editor/editor.all.js';
 // SideX: Register null stubs for stripped services (must be early)
 import './sidexNullServices.js';
 
+// SideX: Register Rust-backed bridge services as DI singletons
+import '../platform/sidex/browser/sidexFileSystemProvider.js';
+import '../platform/sidex/browser/sidexSearchProvider.js';
+import '../platform/sidex/browser/sidexSCMProvider.js';
+import '../platform/sidex/browser/sidexSyntaxService.js';
+import '../platform/sidex/browser/sidexLspService.js';
+import '../platform/sidex/browser/sidexDapService.js';
+import '../platform/sidex/browser/sidexRemoteService.js';
+import '../platform/sidex/common/sidexThemeService.js';
+import '../platform/sidex/common/sidexSettingsService.js';
+import '../platform/sidex/common/sidexKeymapService.js';
+
 import './api/browser/extensionHost.contribution.js';
 import './browser/workbench.contribution.js';
 
@@ -286,63 +298,5 @@ import './contrib/opener/browser/opener.contribution.js';
 
 // Null stubs for stripped services
 import '../editor/browser/services/renameSymbolTrackerService.js';
-
-// ---- Disabled in SideX ----
-// The following contributions were removed or disabled:
-// - telemetry, performance, notebooks (notebook/interactive/replNotebook), surveys (nps/languageSurveys)
-// - welcome experiences (welcomeGettingStarted, welcomeWalkthrough, welcomeViews)
-// - update, relauncher, emmet, inlayHints accessibility
-// - callHierarchy, typeHierarchy, languageDetection, outline (handled by sidex-lsp/sidex-workspace)
-// - codeEditor, codeActions, bulkEdit preview, customEditor, imagePreview (handled by Rust / sidex-editor)
-// - mergeEditor, multiDiffEditor, processExplorer, comments, externalUriOpener
-// - authentication contribution, userDataProfile contribution, timeline, localHistory
-// - list widget contribution, bracketPairColorizer2Telemetry, accessibility, meteredConnection
-// - share, scrollLocking, dropOrPasteInto
-// - semanticTokensStylingService (disabled in editor.all.ts)
-//
-// They can be re-enabled by uncommenting their imports below if needed.
-//
-// import '../editor/common/services/semanticTokensStylingService.js';
-// import './contrib/telemetry/browser/telemetry.contribution.js';
-// import './contrib/performance/browser/performance.contribution.js';
-// import './contrib/notebook/browser/notebook.contribution.js';
-// import './contrib/interactive/browser/interactive.contribution.js';
-// import './contrib/replNotebook/browser/repl.contribution.js';
-// import './contrib/bulkEdit/browser/preview/bulkEdit.contribution.js';
-// import './contrib/processExplorer/browser/processExplorer.contribution.js';
-// import './contrib/mergeEditor/browser/mergeEditor.contribution.js';
-// import './contrib/multiDiffEditor/browser/multiDiffEditor.contribution.js';
-// import './contrib/comments/browser/comments.contribution.js';
-// import './contrib/customEditor/browser/customEditor.contribution.js';
-// import './contrib/imagePreview/browser/imagePreview.contribution.js';
-// import './contrib/externalUriOpener/common/externalUriOpener.contribution.js';
-// import './contrib/relauncher/browser/relauncher.contribution.js';
-// import './contrib/emmet/browser/emmet.contribution.js';
-// import './contrib/codeEditor/browser/codeEditor.contribution.js';
-// import './contrib/inlayHints/browser/inlayHintsAccessibilty.js';
-// import './contrib/update/browser/update.contribution.js';
-// import './contrib/surveys/browser/nps.contribution.js';
-// import './contrib/surveys/browser/languageSurveys.contribution.js';
-// import './contrib/welcomeGettingStarted/browser/gettingStarted.contribution.js';
-// import './contrib/welcomeWalkthrough/browser/walkThrough.contribution.js';
-// import './contrib/welcomeViews/common/viewsWelcome.contribution.js';
-// import './contrib/welcomeViews/common/newFile.contribution.js';
-// import './contrib/callHierarchy/browser/callHierarchy.contribution.js';
-// import './contrib/typeHierarchy/browser/typeHierarchy.contribution.js';
-// import './contrib/codeEditor/browser/outline/documentSymbolsOutline.js';
-// import './contrib/outline/browser/outline.contribution.js';
-// import './contrib/languageDetection/browser/languageDetection.contribution.js';
-// import './contrib/authentication/browser/authentication.contribution.js';
-// import './contrib/userDataProfile/browser/userDataProfile.contribution.js';
-// import './contrib/codeActions/browser/codeActions.contribution.js';
-// import './contrib/timeline/browser/timeline.contribution.js';
-// import './contrib/localHistory/browser/localHistory.contribution.js';
-// import './contrib/list/browser/list.contribution.js';
-// import './contrib/bracketPairColorizer2Telemetry/browser/bracketPairColorizer2Telemetry.contribution.js';
-// import './contrib/accessibility/browser/accessibility.contribution.js';
-// import './contrib/meteredConnection/browser/meteredConnection.contribution.js';
-// import './contrib/share/browser/share.contribution.js';
-// import './contrib/scrollLocking/browser/scrollLocking.contribution.js';
-// import './contrib/dropOrPasteInto/browser/dropOrPasteInto.contribution.js';
 
 //#endregion

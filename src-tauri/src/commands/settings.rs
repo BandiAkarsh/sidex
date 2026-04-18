@@ -32,19 +32,28 @@ impl SettingsStore {
     }
 }
 
-/// Get settings. If `section` is provided, returns only the value for that key;
-/// otherwise returns the full merged settings object.
+/// Get settings.
+///
+/// - `section`: if provided, returns only the value for that key
+/// - `scope`: one of `"user"`, `"workspace"`, or omitted/`"merged"` for the
+///   full merged object across all layers
 #[allow(clippy::needless_pass_by_value)]
 #[tauri::command]
 pub fn settings_get(
     state: State<'_, Arc<SettingsStore>>,
     section: Option<String>,
+    scope: Option<String>,
 ) -> Result<Value, String> {
     let settings = state.inner.read().map_err(|e| e.to_string())?;
 
-    match section {
-        Some(key) => Ok(settings.get_raw(&key).cloned().unwrap_or(Value::Null)),
-        None => {
+    if let Some(key) = section {
+        return Ok(settings.get_raw(&key).cloned().unwrap_or(Value::Null));
+    }
+
+    match scope.as_deref() {
+        Some("user") => Ok(settings.user_layer().clone()),
+        Some("workspace") => Ok(settings.workspace_layer().clone()),
+        Some("merged") | None => {
             let mut merged = serde_json::Map::new();
             // Collect all keys across layers via the builtin defaults as the
             // canonical key set, then overlay user/workspace via get_raw.
@@ -58,6 +67,9 @@ pub fn settings_get(
             }
             Ok(Value::Object(merged))
         }
+        Some(other) => Err(format!(
+            "invalid scope '{other}': expected \"user\", \"workspace\", or \"merged\""
+        )),
     }
 }
 

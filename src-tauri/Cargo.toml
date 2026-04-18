@@ -107,8 +107,10 @@ sidex-extensions = { path = "../crates/sidex-extensions" }
 sidex-terminal = { path = "../crates/sidex-terminal" }
 sidex-lsp = { path = "../crates/sidex-lsp" }
 sidex-keymap = { path = "../crates/sidex-keymap" }
-sidex-editor = { path = "../crates/sidex-editor" }
 sidex-extension-api = { path = "../crates/sidex-extension-api" }
+
+tree-sitter = "0.24"
+tree-sitter-rust = "0.23"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

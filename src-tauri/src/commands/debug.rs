@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, State};
+use tokio::sync::Mutex as AsyncMutex;
 
 struct DebugAdapterHandle {
     child: Child,
@@ -308,4 +309,200 @@ pub fn dap_get_adapter_registry() -> Result<Vec<DebugAdapterInfo>, String> {
         })
         .collect();
     Ok(infos)
+}
+
+// ---------------------------------------------------------------------------
+// High-level DAP client (sidex-dap DebugClient)
+// ---------------------------------------------------------------------------
+
+pub struct DapClientStore {
+    clients: AsyncMutex<HashMap<u32, Arc<sidex_dap::DebugClient>>>,
+    next_id: AsyncMutex<u32>,
+}
+
+impl DapClientStore {
+    pub fn new() -> Self {
+        Self {
+            clients: AsyncMutex::new(HashMap::new()),
+            next_id: AsyncMutex::new(1),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DapEventPayload {
+    pub adapter_id: u32,
+    pub event: sidex_dap::DapEvent,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DapStartResult {
+    pub adapter_id: u32,
+    pub capabilities: sidex_dap::Capabilities,
+}
+
+/// Launch a debug session via `sidex-dap`. Resolves `type_name` against the
+/// built-in adapter registry, spawns the adapter, performs the initialize
+/// handshake, and sends the launch request.
+#[tauri::command]
+pub async fn dap_start_adapter(
+    app: AppHandle,
+    state: State<'_, Arc<DapClientStore>>,
+    type_name: String,
+    config: sidex_dap::LaunchConfig,
+) -> Result<DapStartResult, String> {
+    let registry = sidex_dap::DebugAdapterRegistry::with_builtins();
+    let command_line = registry
+        .command_line(&type_name)
+        .ok_or_else(|| format!("debug adapter type '{type_name}' is not registered"))?;
+
+    let client = sidex_dap::DebugClient::launch(&command_line, &config)
+        .await
+        .map_err(|e| e.to_string())?;
+
+    let id = {
+        let mut next = state.next_id.lock().await;
+        let id = *next;
+        *next += 1;
+        id
+    };
+
+    let app_for_events = app.clone();
+    client
+        .on_event(move |event| {
+            let _ = app_for_events.emit(
+                "dap-event",
+                DapEventPayload {
+                    adapter_id: id,
+                    event,
+                },
+            );
+        })
+        .await;
+
+    let capabilities = client.capabilities().await;
+    state.clients.lock().await.insert(id, Arc::new(client));
+
+    Ok(DapStartResult {
+        adapter_id: id,
+        capabilities,
+    })
+}
+
+/// Send a raw DAP request through a managed `DebugClient` session.
+#[tauri::command]
+pub async fn dap_send_request(
+    state: State<'_, Arc<DapClientStore>>,
+    adapter_id: u32,
+    command: String,
+    arguments: Option<serde_json::Value>,
+) -> Result<serde_json::Value, String> {
+    let client = {
+        let clients = state.clients.lock().await;
+        clients
+            .get(&adapter_id)
+            .cloned()
+            .ok_or_else(|| format!("DAP adapter {adapter_id} not found"))?
+    };
+    let args = arguments.unwrap_or(serde_json::Value::Null);
+
+    match command.as_str() {
+        "continue" => {
+            let thread_id = args
+                .get("threadId")
+                .and_then(serde_json::Value::as_i64)
+                .ok_or("missing threadId")?;
+            client.continue_execution(thread_id).await.map_err(|e| e.to_string())?;
+            Ok(serde_json::Value::Null)
+        }
+        "next" => {
+            let thread_id = args.get("threadId").and_then(serde_json::Value::as_i64).ok_or("missing threadId")?;
+            client.next(thread_id).await.map_err(|e| e.to_string())?;
+            Ok(serde_json::Value::Null)
+        }
+        "stepIn" => {
+            let thread_id = args.get("threadId").and_then(serde_json::Value::as_i64).ok_or("missing threadId")?;
+            client.step_in(thread_id).await.map_err(|e| e.to_string())?;
+            Ok(serde_json::Value::Null)
+        }
+        "stepOut" => {
+            let thread_id = args.get("threadId").and_then(serde_json::Value::as_i64).ok_or("missing threadId")?;
+            client.step_out(thread_id).await.map_err(|e| e.to_string())?;
+            Ok(serde_json::Value::Null)
+        }
+        "pause" => {
+            let thread_id = args.get("threadId").and_then(serde_json::Value::as_i64).ok_or("missing threadId")?;
+            client.pause(thread_id).await.map_err(|e| e.to_string())?;
+            Ok(serde_json::Value::Null)
+        }
+        "stackTrace" => {
+            let thread_id = args.get("threadId").and_then(serde_json::Value::as_i64).ok_or("missing threadId")?;
+            let frames = client.stack_trace(thread_id).await.map_err(|e| e.to_string())?;
+            serde_json::to_value(frames).map_err(|e| e.to_string())
+        }
+        "scopes" => {
+            let frame_id = args.get("frameId").and_then(serde_json::Value::as_i64).ok_or("missing frameId")?;
+            let scopes = client.scopes(frame_id).await.map_err(|e| e.to_string())?;
+            serde_json::to_value(scopes).map_err(|e| e.to_string())
+        }
+        "variables" => {
+            let vars_ref = args
+                .get("variablesReference")
+                .and_then(serde_json::Value::as_i64)
+                .ok_or("missing variablesReference")?;
+            let vars = client.variables(vars_ref).await.map_err(|e| e.to_string())?;
+            serde_json::to_value(vars).map_err(|e| e.to_string())
+        }
+        "threads" => {
+            let threads = client.threads().await.map_err(|e| e.to_string())?;
+            serde_json::to_value(threads).map_err(|e| e.to_string())
+        }
+        "evaluate" => {
+            let expression = args.get("expression").and_then(serde_json::Value::as_str).ok_or("missing expression")?;
+            let frame_id = args.get("frameId").and_then(serde_json::Value::as_i64);
+            let result = client
+                .evaluate(expression, frame_id)
+                .await
+                .map_err(|e| e.to_string())?;
+            Ok(serde_json::json!({ "result": result }))
+        }
+        "setBreakpoints" => {
+            let path = args
+                .get("source")
+                .and_then(|s| s.get("path"))
+                .and_then(serde_json::Value::as_str)
+                .ok_or("missing source.path")?;
+            let breakpoints: Vec<sidex_dap::SourceBreakpoint> = args
+                .get("breakpoints")
+                .cloned()
+                .map(serde_json::from_value)
+                .transpose()
+                .map_err(|e| e.to_string())?
+                .unwrap_or_default();
+            let confirmed = client
+                .set_breakpoints(path, &breakpoints)
+                .await
+                .map_err(|e| e.to_string())?;
+            serde_json::to_value(confirmed).map_err(|e| e.to_string())
+        }
+        _ => Err(format!("unsupported DAP command: {command}")),
+    }
+}
+
+/// Disconnect and remove a managed debug client.
+#[tauri::command]
+pub async fn dap_stop_adapter(
+    state: State<'_, Arc<DapClientStore>>,
+    adapter_id: u32,
+) -> Result<(), String> {
+    let client = {
+        let mut clients = state.clients.lock().await;
+        clients
+            .remove(&adapter_id)
+            .ok_or_else(|| format!("DAP adapter {adapter_id} not found"))?
+    };
+    client.disconnect().await.map_err(|e| e.to_string())?;
+    Ok(())
 }

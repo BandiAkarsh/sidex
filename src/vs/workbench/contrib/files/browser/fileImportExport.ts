@@ -48,7 +48,6 @@ import { createSingleCallFunction } from '../../../../base/common/functional.js'
 import { coalesce } from '../../../../base/common/arrays.js';
 import { canceled } from '../../../../base/common/errors.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { WebFileSystemAccess } from '../../../../platform/files/browser/webFileSystemAccess.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
 
@@ -765,42 +764,11 @@ export class FileDownload {
 		}
 
 		const maxBlobDownloadSize = 32 * ByteSize.MB; // avoid to download via blob-trick >32MB to avoid memory pressure
-		const preferFileSystemAccessWebApis = stat.isDirectory || stat.size > maxBlobDownloadSize;
 
-		// Folder: use FS APIs to download files and folders if available and preferred
-		const activeWindow = getActiveWindow();
-		if (preferFileSystemAccessWebApis && WebFileSystemAccess.supported(activeWindow)) {
-			try {
-				const parentFolder: FileSystemDirectoryHandle = await activeWindow.showDirectoryPicker();
-				const operation: IDownloadOperation = {
-					startTime: Date.now(),
-					progressScheduler: new RunOnceWorker<IProgressStep>(steps => {
-						progress.report(steps[steps.length - 1]);
-					}, 1000),
-
-					filesTotal: stat.isDirectory ? 0 : 1, // folders increment filesTotal within downloadFolder method
-					filesDownloaded: 0,
-
-					totalBytesDownloaded: 0,
-					fileBytesDownloaded: 0
-				};
-
-				if (stat.isDirectory) {
-					const targetFolder = await parentFolder.getDirectoryHandle(stat.name, { create: true });
-					await this.downloadFolderBrowser(stat, targetFolder, operation, cts.token);
-				} else {
-					await this.downloadFileBrowser(parentFolder, stat, operation, cts.token);
-				}
-
-				operation.progressScheduler.dispose();
-			} catch (error) {
-				this.logService.warn(error);
-				cts.cancel(); // `showDirectoryPicker` will throw an error when the user cancels
-			}
-		}
-
-		// File: use traditional download to circumvent browser limitations
-		else if (stat.isFile) {
+		// SideX: no browser File System Access API in Tauri. Fall through to the
+		// traditional file download path for single files; directory downloads are
+		// unsupported here (folders are exported via File → Export Folder instead).
+		if (stat.isFile) {
 			let bufferOrUri: Uint8Array | URI;
 			try {
 				bufferOrUri = (

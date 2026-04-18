@@ -3,9 +3,16 @@
  *  High-level wrapper that routes Source Control operations through the Rust
  *  `sidex-git` crate via Tauri IPC, intended for consumers that need a
  *  simplified, typed interface without directly touching the VS Code SCM API.
+ *
+ *  Registration note: VS Code's ISCMService (contrib/scm/common/scm.ts) is a
+ *  rich interface for repository/resource groups and is unchanged. This bridge
+ *  exposes a thin string-path API via its own decorator. TODO: build an
+ *  ISCMProvider adapter on top of this to replace the default git extension.
  *--------------------------------------------------------------------------------------------*/
 
 import { invoke } from '../../../sidex-bridge.js';
+import { createDecorator } from '../../instantiation/common/instantiation.js';
+import { InstantiationType, registerSingleton } from '../../instantiation/common/extensions.js';
 
 export interface GitFileStatus {
 	path: string;
@@ -28,7 +35,14 @@ export interface GitLogEntry {
 	message: string;
 }
 
+export const ISideXSCMProviderService = createDecorator<ISideXSCMProviderService>('sidexSCMProviderService');
+
+export interface ISideXSCMProviderService extends SideXSCMProvider {
+	readonly _serviceBrand: undefined;
+}
+
 export class SideXSCMProvider {
+	declare readonly _serviceBrand: undefined;
 	async getStatus(repoRoot: string): Promise<GitFileStatus[]> {
 		try {
 			return await invoke('git_status', { repoRoot }) as GitFileStatus[] || [];
@@ -79,3 +93,5 @@ export class SideXSCMProvider {
 		} catch { return false; }
 	}
 }
+
+registerSingleton(ISideXSCMProviderService, SideXSCMProvider, InstantiationType.Delayed);

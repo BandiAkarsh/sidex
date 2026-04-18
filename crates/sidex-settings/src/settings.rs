@@ -89,6 +89,16 @@ impl Settings {
             .or_else(|| Self::lookup(&self.default_layer, key))
     }
 
+    /// Get the entire user layer as a JSON value.
+    pub fn user_layer(&self) -> &Value {
+        &self.user_layer
+    }
+
+    /// Get the entire workspace layer as a JSON value.
+    pub fn workspace_layer(&self) -> &Value {
+        &self.workspace_layer
+    }
+
     /// Set a value in the **user** layer.
     pub fn set(&mut self, key: &str, value: Value) {
         let old = self.get_raw(key).cloned();

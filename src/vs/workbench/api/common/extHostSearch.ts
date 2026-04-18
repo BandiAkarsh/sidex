@@ -1,13 +1,12 @@
 /*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *  SideX — ExtHost search stub. Search is routed through TauriSearchService; extension-
+ *  registered search providers are accepted but not wired to a manager.
  *--------------------------------------------------------------------------------------------*/
 
 import { IDisposable, toDisposable } from '../../../base/common/lifecycle.js';
 import type * as vscode from 'vscode';
 import { ExtHostSearchShape, MainThreadSearchShape, MainContext } from './extHost.protocol.js';
 import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
-import { FileSearchManager } from '../../services/search/common/fileSearchManager.js';
 import { IExtHostRpcService } from './extHostRpcService.js';
 import { IURITransformerService } from './extHostUriTransformerService.js';
 import { ILogService } from '../../../platform/log/common/log.js';
@@ -17,19 +16,14 @@ import {
 	IFileQuery,
 	IRawTextQuery,
 	IRawQuery,
-	ITextQuery,
 	IFolderQuery,
 	IRawAITextQuery,
-	IAITextQuery
+	IAITextQuery,
+	ITextQuery
 } from '../../services/search/common/search.js';
 import { URI, UriComponents } from '../../../base/common/uri.js';
-import { TextSearchManager } from '../../services/search/common/textSearchManager.js';
 import { CancellationToken } from '../../../base/common/cancellation.js';
 import { revive } from '../../../base/common/marshalling.js';
-import {
-	OldFileSearchProviderConverter,
-	OldTextSearchProviderConverter
-} from '../../services/search/common/searchExtConversionTypes.js';
 
 export interface IExtHostSearch extends ExtHostSearchShape {
 	registerTextSearchProviderOld(scheme: string, provider: vscode.TextSearchProvider): IDisposable;
@@ -50,13 +44,9 @@ export class ExtHostSearch implements IExtHostSearch {
 	protected readonly _proxy: MainThreadSearchShape;
 	protected _handlePool: number = 0;
 
-	private readonly _textSearchProvider = new Map<number, vscode.TextSearchProvider2>();
 	private readonly _textSearchUsedSchemes = new Set<string>();
-	private readonly _aiTextSearchProvider = new Map<number, vscode.AITextSearchProvider>();
 	private readonly _aiTextSearchUsedSchemes = new Set<string>();
-	private readonly _fileSearchProvider = new Map<number, vscode.FileSearchProvider2>();
 	private readonly _fileSearchUsedSchemes = new Set<string>();
-	private readonly _fileSearchManager: FileSearchManager;
 
 	constructor(
 		@IExtHostRpcService private extHostRpc: IExtHostRpcService,
@@ -64,108 +54,65 @@ export class ExtHostSearch implements IExtHostSearch {
 		@ILogService protected _logService: ILogService
 	) {
 		this._proxy = this.extHostRpc.getProxy(MainContext.MainThreadSearch);
-		this._fileSearchManager = new FileSearchManager();
 	}
 
 	protected _transformScheme(scheme: string): string {
 		return this._uriTransformer.transformOutgoingScheme(scheme);
 	}
 
-	registerTextSearchProviderOld(scheme: string, provider: vscode.TextSearchProvider): IDisposable {
-		if (this._textSearchUsedSchemes.has(scheme)) { throw new Error(`a text search provider for the scheme '${scheme}' is already registered`); }
-		this._textSearchUsedSchemes.add(scheme);
-		const handle = this._handlePool++;
-		this._textSearchProvider.set(handle, new OldTextSearchProviderConverter(provider));
-		this._proxy.$registerTextSearchProvider(handle, this._transformScheme(scheme));
-		return toDisposable(() => { this._textSearchUsedSchemes.delete(scheme); this._textSearchProvider.delete(handle); this._proxy.$unregisterProvider(handle); });
+	registerTextSearchProviderOld(scheme: string, _provider: vscode.TextSearchProvider): IDisposable {
+		return this._registerNoop(this._textSearchUsedSchemes, scheme, 'text');
 	}
 
-	registerTextSearchProvider(scheme: string, provider: vscode.TextSearchProvider2): IDisposable {
-		if (this._textSearchUsedSchemes.has(scheme)) { throw new Error(`a text search provider for the scheme '${scheme}' is already registered`); }
-		this._textSearchUsedSchemes.add(scheme);
-		const handle = this._handlePool++;
-		this._textSearchProvider.set(handle, provider);
-		this._proxy.$registerTextSearchProvider(handle, this._transformScheme(scheme));
-		return toDisposable(() => { this._textSearchUsedSchemes.delete(scheme); this._textSearchProvider.delete(handle); this._proxy.$unregisterProvider(handle); });
+	registerTextSearchProvider(scheme: string, _provider: vscode.TextSearchProvider2): IDisposable {
+		return this._registerNoop(this._textSearchUsedSchemes, scheme, 'text');
 	}
 
-	registerAITextSearchProvider(scheme: string, provider: vscode.AITextSearchProvider): IDisposable {
-		if (this._aiTextSearchUsedSchemes.has(scheme)) { throw new Error(`an AI text search provider for the scheme '${scheme}'is already registered`); }
-		this._aiTextSearchUsedSchemes.add(scheme);
-		const handle = this._handlePool++;
-		this._aiTextSearchProvider.set(handle, provider);
-		this._proxy.$registerAITextSearchProvider(handle, this._transformScheme(scheme));
-		return toDisposable(() => { this._aiTextSearchUsedSchemes.delete(scheme); this._aiTextSearchProvider.delete(handle); this._proxy.$unregisterProvider(handle); });
+	registerAITextSearchProvider(scheme: string, _provider: vscode.AITextSearchProvider): IDisposable {
+		return this._registerNoop(this._aiTextSearchUsedSchemes, scheme, 'aiText');
 	}
 
-	registerFileSearchProviderOld(scheme: string, provider: vscode.FileSearchProvider): IDisposable {
-		if (this._fileSearchUsedSchemes.has(scheme)) { throw new Error(`a file search provider for the scheme '${scheme}' is already registered`); }
-		this._fileSearchUsedSchemes.add(scheme);
-		const handle = this._handlePool++;
-		this._fileSearchProvider.set(handle, new OldFileSearchProviderConverter(provider));
-		this._proxy.$registerFileSearchProvider(handle, this._transformScheme(scheme));
-		return toDisposable(() => { this._fileSearchUsedSchemes.delete(scheme); this._fileSearchProvider.delete(handle); this._proxy.$unregisterProvider(handle); });
+	registerFileSearchProviderOld(scheme: string, _provider: vscode.FileSearchProvider): IDisposable {
+		return this._registerNoop(this._fileSearchUsedSchemes, scheme, 'file');
 	}
 
-	registerFileSearchProvider(scheme: string, provider: vscode.FileSearchProvider2): IDisposable {
-		if (this._fileSearchUsedSchemes.has(scheme)) { throw new Error(`a file search provider for the scheme '${scheme}' is already registered`); }
-		this._fileSearchUsedSchemes.add(scheme);
-		const handle = this._handlePool++;
-		this._fileSearchProvider.set(handle, provider);
-		this._proxy.$registerFileSearchProvider(handle, this._transformScheme(scheme));
-		return toDisposable(() => { this._fileSearchUsedSchemes.delete(scheme); this._fileSearchProvider.delete(handle); this._proxy.$unregisterProvider(handle); });
+	registerFileSearchProvider(scheme: string, _provider: vscode.FileSearchProvider2): IDisposable {
+		return this._registerNoop(this._fileSearchUsedSchemes, scheme, 'file');
 	}
 
-	$provideFileSearchResults(handle: number, session: number, rawQuery: IRawFileQuery, token: vscode.CancellationToken): Promise<ISearchCompleteStats> {
-		const query = reviveQuery(rawQuery);
-		const provider = this._fileSearchProvider.get(handle);
-		if (provider) {
-			return this._fileSearchManager.fileSearch(query, provider, batch => {
-				this._proxy.$handleFileMatch(handle, session, batch.map(p => p.resource));
-			}, token);
+	private _registerNoop(set: Set<string>, scheme: string, kind: string): IDisposable {
+		if (set.has(scheme)) {
+			throw new Error(`a ${kind} search provider for the scheme '${scheme}' is already registered`);
 		}
-		throw new Error('unknown provider: ' + handle);
+		set.add(scheme);
+		this._logService.trace(`[SideX] extHostSearch: ignoring ${kind} provider for scheme '${scheme}' (search routed through Rust)`);
+		return toDisposable(() => set.delete(scheme));
+	}
+
+	async $provideFileSearchResults(_handle: number, _session: number, _rawQuery: IRawFileQuery, _token: vscode.CancellationToken): Promise<ISearchCompleteStats> {
+		return { messages: [] };
 	}
 
 	async doInternalFileSearchWithCustomCallback(_query: IFileQuery, _token: CancellationToken, _handleFileMatch: (data: URI[]) => void): Promise<ISearchCompleteStats> {
 		return { messages: [] };
 	}
 
-	$clearCache(cacheKey: string): Promise<void> {
-		this._fileSearchManager.clearCache(cacheKey);
-		return Promise.resolve(undefined);
+	async $clearCache(_cacheKey: string): Promise<void> {
+		return undefined;
 	}
 
-	$provideTextSearchResults(handle: number, session: number, rawQuery: IRawTextQuery, token: vscode.CancellationToken): Promise<ISearchCompleteStats> {
-		const provider = this._textSearchProvider.get(handle);
-		if (!provider || !provider.provideTextSearchResults) { throw new Error(`Unknown Text Search Provider ${handle}`); }
-		const query = reviveQuery(rawQuery);
-		const engine = this.createTextSearchManager(query, provider);
-		return engine.search(progress => this._proxy.$handleTextMatch(handle, session, progress), token);
+	async $provideTextSearchResults(_handle: number, _session: number, _rawQuery: IRawTextQuery, _token: vscode.CancellationToken): Promise<ISearchCompleteStats> {
+		return { messages: [] };
 	}
 
-	$provideAITextSearchResults(handle: number, session: number, rawQuery: IRawAITextQuery, token: vscode.CancellationToken): Promise<ISearchCompleteStats> {
-		const provider = this._aiTextSearchProvider.get(handle);
-		if (!provider || !provider.provideAITextSearchResults) { throw new Error(`Unknown AI Text Search Provider ${handle}`); }
-		const query = reviveQuery(rawQuery);
-		const engine = this.createAITextSearchManager(query, provider);
-		return engine.search(progress => this._proxy.$handleTextMatch(handle, session, progress), token, result => this._proxy.$handleKeywordResult(handle, session, result));
+	async $provideAITextSearchResults(_handle: number, _session: number, _rawQuery: IRawAITextQuery, _token: vscode.CancellationToken): Promise<ISearchCompleteStats> {
+		return { messages: [] };
 	}
 
 	$enableExtensionHostSearch(): void { }
 
-	async $getAIName(handle: number): Promise<string | undefined> {
-		const provider = this._aiTextSearchProvider.get(handle);
-		if (!provider || !provider.provideAITextSearchResults) { return undefined; }
-		return provider.name ?? 'AI';
-	}
-
-	protected createTextSearchManager(query: ITextQuery, provider: vscode.TextSearchProvider2): TextSearchManager {
-		return new TextSearchManager({ query, provider }, { readdir: _resource => Promise.resolve([]), toCanonicalName: encoding => encoding }, 'textSearchProvider');
-	}
-
-	protected createAITextSearchManager(query: IAITextQuery, provider: vscode.AITextSearchProvider): TextSearchManager {
-		return new TextSearchManager({ query, provider }, { readdir: _resource => Promise.resolve([]), toCanonicalName: encoding => encoding }, 'aiTextSearchProvider');
+	async $getAIName(_handle: number): Promise<string | undefined> {
+		return undefined;
 	}
 }
 

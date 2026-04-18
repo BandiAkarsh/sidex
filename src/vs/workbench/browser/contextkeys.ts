@@ -74,7 +74,6 @@ import { getRemoteName } from '../../platform/remote/common/remoteHosts.js';
 import { getVirtualWorkspaceScheme } from '../../platform/workspace/common/virtualWorkspace.js';
 import { IWorkingCopyService } from '../services/workingCopy/common/workingCopyService.js';
 import { isNative } from '../../base/common/platform.js';
-import { WebFileSystemAccess } from '../../platform/files/browser/webFileSystemAccess.js';
 import { IProductService } from '../../platform/product/common/productService.js';
 import { getTitleBarStyle } from '../../platform/window/common/window.js';
 import { mainWindow } from '../../base/browser/window.js';
@@ -154,7 +153,8 @@ export class WorkbenchContextKeysHandler extends Disposable {
 		this.updateWorkspaceContextKeys();
 
 		// Capabilities
-		HasWebFileSystemAccess.bindTo(this.contextKeyService).set(WebFileSystemAccess.supported(mainWindow));
+		// SideX: running in Tauri — there is no browser File System Access API.
+		HasWebFileSystemAccess.bindTo(this.contextKeyService).set(false);
 
 		// Development
 		const isDevelopment = !this.environmentService.isBuilt || this.environmentService.isExtensionDevelopment;
