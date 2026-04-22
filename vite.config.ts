@@ -72,27 +72,40 @@ export default defineConfig({
           }
           return 'assets/[name]-[hash][extname]';
         },
-        manualChunks(id) {
+        manualChunks(id, { getModuleInfo }) {
+          const isWorkerDep = (moduleId: string, visited = new Set<string>()): boolean => {
+            if (visited.has(moduleId)) return false;
+            visited.add(moduleId);
+            const info = getModuleInfo(moduleId);
+            if (!info) return false;
+            if (info.isEntry && (moduleId.includes('WorkerMain') || moduleId.includes('workerMain'))) {
+              return true;
+            }
+            for (const importer of info.importers) {
+              if (isWorkerDep(importer, visited)) return true;
+            }
+            return false;
+          };
+
+          if (isWorkerDep(id)) {
+            return undefined;
+          }
+
           if (id.endsWith('/vs/nls.ts') || id.endsWith('/vs/nls.js')) {
             return 'nls';
           }
-          if (id.includes('/vs/base/')) {
+          if (id.includes('/vs/base/') || id.endsWith('/vs/amdX.ts') || id.endsWith('/vs/amdX.js') || id.endsWith('/vs/sidex-bridge.ts') || id.endsWith('/vs/sidex-bridge.js')) {
             return 'base';
           }
-          if (id.endsWith('/vs/amdX.ts') || id.endsWith('/vs/amdX.js')) {
-            return 'base';
-          }
-          if (id.endsWith('/vs/sidex-bridge.ts') || id.endsWith('/vs/sidex-bridge.js')) {
-            return 'base';
-          }
-          if (id.includes('/vs/editor/') && !id.includes('/workbench/')) {
-            return 'monaco';
-          }
+
           if (id.includes('xterm') || id.includes('/terminal/')) {
             return 'terminal';
           }
-          if (id.includes('/vs/platform/')) {
-            return 'platform';
+          if (
+            (id.includes('/vs/editor/') && !id.includes('/workbench/')) ||
+            id.includes('/vs/platform/')
+          ) {
+            return 'core';
           }
         },
       },

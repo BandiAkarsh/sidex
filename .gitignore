@@ -96,4 +96,5 @@ infrastructure/marketplace-proxy/node_modules/
 extensions-rust/css-language-extension/css-data.json
 extensions-rust/css-language-extension/css-builtin.json
 extensions-rust/css-language-extension/src/css_data.rs
+extensions-meta.json
 public/builtin-extensions.js
