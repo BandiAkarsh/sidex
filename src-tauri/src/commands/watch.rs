@@ -446,9 +446,9 @@ pub async fn watch_start(
         .map(|exts| exts.iter().map(|e| e.to_lowercase()).collect());
     let exts_clone = file_extensions.clone();
 
-    // Spawn debounce task
+    // Spawn debounce task (needs cloned app)
     let (event_sender, debounce_task) =
-        spawn_debounce_task(watch_id, app_clone, debounce_duration, emit_content);
+        spawn_debounce_task(watch_id, app_clone.clone(), debounce_duration, emit_content);
 
     let sender_clone = event_sender.clone();
 
@@ -456,6 +456,18 @@ pub async fn watch_start(
     let mut watcher = RecommendedWatcher::new(
         move |res: Result<Event, notify::Error>| {
             if let Ok(event) = res {
+                // Emit cache invalidation event for modified/created/deleted files
+                if matches!(event.kind, EventKind::Create(_) | EventKind::Modify(_) | EventKind::Remove(_)) {
+                    let paths: Vec<String> = event
+                        .paths
+                        .iter()
+                        .map(|p| p.to_string_lossy().to_string())
+                        .collect();
+
+                    // Emit event that cache can listen to (handled via frontend or separate task)
+                    let _ = app_clone.emit("cache-invalidate", paths);
+                }
+
                 // Process each path in the event
                 for path in &event.paths {
                     // Skip ignored paths

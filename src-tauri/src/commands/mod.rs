@@ -1,3 +1,5 @@
+pub mod cache;
+pub use cache::*;
 pub mod compress;
 pub mod crypto;
 pub mod db_state;
