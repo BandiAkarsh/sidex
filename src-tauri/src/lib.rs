@@ -393,6 +393,53 @@ pub fn run() {
         .manage(Arc::new(
             WasmExtensionRuntime::new().expect("failed to initialize WASM runtime"),
         ))
+        .register_asynchronous_uri_scheme_protocol("sidex-asset", |_ctx, request, responder| {
+            std::thread::spawn(move || {
+                let raw_path = request.uri().path();
+                let decoded = urlencoding::decode(raw_path.strip_prefix('/').unwrap_or(raw_path))
+                    .unwrap_or_default();
+
+                let Ok(data) = std::fs::read(decoded.as_ref()) else {
+                    responder.respond(
+                        tauri::http::Response::builder()
+                            .status(404)
+                            .header("Access-Control-Allow-Origin", "*")
+                            .body(Vec::new())
+                            .unwrap(),
+                    );
+                    return;
+                };
+
+                let mime = match std::path::Path::new(decoded.as_ref())
+                    .extension()
+                    .and_then(|e| e.to_str())
+                {
+                    Some("png") => "image/png",
+                    Some("jpg" | "jpeg") => "image/jpeg",
+                    Some("gif") => "image/gif",
+                    Some("svg") => "image/svg+xml",
+                    Some("webp") => "image/webp",
+                    Some("ico") => "image/x-icon",
+                    Some("woff") => "font/woff",
+                    Some("woff2") => "font/woff2",
+                    Some("ttf") => "font/ttf",
+                    Some("css") => "text/css",
+                    Some("js") => "text/javascript",
+                    Some("json") => "application/json",
+                    Some("wasm") => "application/wasm",
+                    _ => "application/octet-stream",
+                };
+
+                responder.respond(
+                    tauri::http::Response::builder()
+                        .status(200)
+                        .header("Content-Type", mime)
+                        .header("Access-Control-Allow-Origin", "*")
+                        .body(data)
+                        .unwrap(),
+                );
+            });
+        })
         .setup(|app| {
             let app_data = app
                 .path()

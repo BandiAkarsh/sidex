@@ -73,6 +73,18 @@ export default defineConfig({
           return 'assets/[name]-[hash][extname]';
         },
         manualChunks(id) {
+          if (id.endsWith('/vs/nls.ts') || id.endsWith('/vs/nls.js')) {
+            return 'nls';
+          }
+          if (id.includes('/vs/base/')) {
+            return 'base';
+          }
+          if (id.endsWith('/vs/amdX.ts') || id.endsWith('/vs/amdX.js')) {
+            return 'base';
+          }
+          if (id.endsWith('/vs/sidex-bridge.ts') || id.endsWith('/vs/sidex-bridge.js')) {
+            return 'base';
+          }
           if (id.includes('/vs/editor/') && !id.includes('/workbench/')) {
             return 'monaco';
           }
